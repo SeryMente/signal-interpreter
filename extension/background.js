@@ -468,7 +468,7 @@ importScripts("telemetry-db.js");
 
   var SIGNAL_BRIDGE_URL="ws://127.0.0.1:8787/";
   var signalBridgeSocket=null,signalBridgeReconnectTimer=null,signalBridgeReconnectDelay=500;
-  var signalActiveSessionId=null,signalLastSpeakerId=null,signalLastSpeakerAt=0,signalLastActivityLogAt=0,signalLiveConsoleOpen=false;
+  var signalActiveSessionId=null,signalLastSpeakerId=null,signalLastSpeakerAt=0,signalLastActivityLogAt=0,signalLiveConsoleOpen=false,signalBridgeContextSessionId=null;
   function recordSignalDiagnostic(action,payload,level,source){record(action,Object.assign({sessionId:signalActiveSessionId},payload||{}),level||"info",source||"signal-bridge");}
 
   function normalizeSignalSourceUrl(rawUrl){
@@ -560,8 +560,10 @@ importScripts("telemetry-db.js");
     }).then(function(r){broadcastSignalEvent({type:"signal.session.updated",sessionId:message.sessionId,session:r.session,timestamp:iso()});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})})
   }
   async function sendSignalBridgeContextForSession(session){
-    if(!session||!signalBridgeSocket||signalBridgeSocket.readyState!==WebSocket.OPEN)return;
-    try{signalBridgeSocket.send(JSON.stringify({type:"signal.caption.context",sourceTabId:session.sourceTabId||null,sourceTitle:String(session.title||"").slice(0,300),sourceOrigin:normalizeSignalSessionUrl(session.sourceUrl||session.sourceKey),timestamp:iso()}))}catch(error){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_SEND_ERROR",{sessionId:session.id,error:String(error)},"warn")}
+    if(!session)return;
+    signalBridgeContextSessionId=session.id;
+    if(!signalBridgeSocket||signalBridgeSocket.readyState!==WebSocket.OPEN){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_QUEUED",{sessionId:session.id,sourceTabId:session.sourceTabId,sourceOrigin:session.sourceKey});connectSignalBridge();return}
+    try{signalBridgeSocket.send(JSON.stringify({type:"signal.caption.context",sourceTabId:session.sourceTabId||null,sourceTitle:String(session.title||"").slice(0,300),sourceOrigin:normalizeSignalSessionUrl(session.sourceUrl||session.sourceKey),timestamp:iso()}));recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_SENT",{sessionId:session.id,sourceTabId:session.sourceTabId,sourceTitle:String(session.title||"").slice(0,300),sourceOrigin:normalizeSignalSessionUrl(session.sourceUrl||session.sourceKey)})}catch(error){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_SEND_ERROR",{sessionId:session.id,error:String(error)},"warn")}
   }
   async function isSignalCaptionInScope(sessionId){
     try{
@@ -640,7 +642,7 @@ importScripts("telemetry-db.js");
     if(signalBridgeSocket&&(signalBridgeSocket.readyState===WebSocket.OPEN||signalBridgeSocket.readyState===WebSocket.CONNECTING))return;
     clearTimeout(signalBridgeReconnectTimer);updateSignalBridgeState({status:"connecting",url:SIGNAL_BRIDGE_URL,error:null});
     try{signalBridgeSocket=new WebSocket(SIGNAL_BRIDGE_URL);}catch(error){updateSignalBridgeState({status:"error",error:String(error)});scheduleSignalBridgeReconnect();return;}
-    signalBridgeSocket.addEventListener("open",function(){signalBridgeReconnectDelay=500;updateSignalBridgeState({status:"connected",url:SIGNAL_BRIDGE_URL,connectedAt:iso(),error:null});recordSignalDiagnostic("SIGNAL_BRIDGE_CONNECTED",{url:SIGNAL_BRIDGE_URL});loadSignalSessions().then(function(data){var active=data.sessions.find(function(s){return s.id===data.activeSessionId});if(active)sendSignalBridgeContextForSession(active)}).catch(function(){})});
+     signalBridgeSocket.addEventListener("open",function(){signalBridgeReconnectDelay=500;updateSignalBridgeState({status:"connected",url:SIGNAL_BRIDGE_URL,connectedAt:iso(),error:null});recordSignalDiagnostic("SIGNAL_BRIDGE_CONNECTED",{url:SIGNAL_BRIDGE_URL});loadSignalSessions().then(function(data){var wantedId=signalBridgeContextSessionId||data.activeSessionId,active=data.sessions.find(function(s){return s.id===wantedId})||data.sessions.find(function(s){return s.id===data.activeSessionId});if(active)sendSignalBridgeContextForSession(active)}).catch(function(error){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_RESTORE_ERROR",{error:String(error)},"warn")})});
     signalBridgeSocket.addEventListener("message",function(message){try{var parsed=JSON.parse(message.data);handleSignalBridgeEvent(parsed);}catch(error){updateSignalBridgeState({status:"error",error:"JSON inválido del Signal Interpreter Bridge"});recordSignalDiagnostic("SIGNAL_BRIDGE_MESSAGE_ERROR",{message:String(error),dataType:typeof message.data,dataLength:typeof message.data==="string"?message.data.length:null},"error")}});
     signalBridgeSocket.addEventListener("error",function(){updateSignalBridgeState({status:"error",error:"No se pudo conectar con Signal Interpreter Bridge"});recordSignalDiagnostic("SIGNAL_BRIDGE_SOCKET_ERROR",{url:SIGNAL_BRIDGE_URL},"error");});
     signalBridgeSocket.addEventListener("close",function(event){signalBridgeSocket=null;updateSignalBridgeState({status:"disconnected",captionActive:false});recordSignalDiagnostic("SIGNAL_BRIDGE_CLOSED",{code:event&&event.code!=null?event.code:null,reason:event&&event.reason?String(event.reason).slice(0,200):null},"warn");scheduleSignalBridgeReconnect();});
@@ -793,7 +795,7 @@ importScripts("telemetry-db.js");
     if (message.type === "EFFECTIF_END_CALL") {
       closeCall("manual", NaN, sendResponse); return true;
     }
-    if(message.type==="SIGNAL_LIVE_CONSOLE_OPEN"){signalLiveConsoleOpen=true;recordSignalDiagnostic("SIGNAL_LIVE_CONSOLE_READY",{senderContext:"live-ui"});sendResponse({ok:true});return false;}
+     if(message.type==="SIGNAL_LIVE_CONSOLE_OPEN"){signalLiveConsoleOpen=true;recordSignalDiagnostic("SIGNAL_LIVE_CONSOLE_READY",{senderContext:"live-ui"});loadSignalSessions().then(function(data){var active=data.sessions.find(function(s){return s.id===data.activeSessionId});if(active)sendSignalBridgeContextForSession(active)}).catch(function(error){recordSignalDiagnostic("SIGNAL_LIVE_CONTEXT_RESTORE_ERROR",{error:String(error)},"warn")});sendResponse({ok:true});return false;}
     if(message.type==="SIGNAL_LIVE_CONSOLE_CLOSE"){signalLiveConsoleOpen=false;recordSignalDiagnostic("SIGNAL_LIVE_CONSOLE_CLOSED",{senderContext:"live-ui"});sendResponse({ok:true});return false;}
     if(message.type==="SIGNAL_LIVE_UI_ERROR"){recordSignalDiagnostic("SIGNAL_LIVE_UI_ERROR",{phase:message.phase||"unknown",error:String(message.error||"unknown")},"error");sendResponse({ok:true});return false;}
     if(message.type==="GET_SIGNAL_INTERPRETER_STATE"){
