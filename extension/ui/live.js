@@ -87,7 +87,7 @@ function restoreBounds(){
 function toggleFocus(v){focusMode=typeof v==="boolean"?v:!focusMode;$("focusOverlay").classList.toggle("hidden",!focusMode);if(focusMode)renderFocus()}
 function handle(e){
   if(!e||!e.type)return;
-  if(e.type==="signal.session.active"||e.type==="signal.session.updated"){upsertSession(e.session);activeSessionId=e.sessionId||activeSessionId;var active=sessions.find(function(x){return x.id===activeSessionId});if(active)applySession(active);return}
+  if(e.type==="signal.session.active"||e.type==="signal.session.updated"){var existing=sessions.find(function(x){return x.id===e.sessionId}),incoming=normalizeSession(e.session||{});if(e.type==="signal.session.updated"&&!incoming.segments.length&&existing&&existing.segments.length)incoming.segments=existing.segments.slice(-100);upsertSession(incoming);activeSessionId=e.sessionId||activeSessionId;var active=sessions.find(function(x){return x.id===activeSessionId});if(active)applySession(active);return}
   if(e.type==="bridge.connected"){$("bridgeDot").classList.add("ok");$("bridgeStatus").textContent="CONECTADO";$("bridgeText").textContent="Conectado";return}
   if(e.type==="bridge.heartbeat")return;
   if(e.type==="caption.status"&&(!e.sessionId||e.sessionId===activeSessionId)){$("captionText").textContent=e.status==="found"?"Activo":"Esperando";return}
