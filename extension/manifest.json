@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Signal Interpreter",
+  "version": "0.1.0",
+  "description": "Asistente independiente para interpretación médica en tiempo real.",
+  "minimum_chrome_version": "116",
+  "permissions": ["storage"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Signal Interpreter",
+    "default_popup": "ui/popup.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src ws://127.0.0.1:8787 http://127.0.0.1:8787"
+  }
+}
