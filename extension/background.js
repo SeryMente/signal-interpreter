@@ -222,34 +222,32 @@ importScripts("telemetry-db.js");
     }
   }
   async function ensureOffscreen() {
-    var target = chrome.runtime.getURL("offscreen.html");
-    if (chrome.runtime.getContexts) {
-      var contexts = await chrome.runtime.getContexts({ contextTypes: ["OFFSCREEN_DOCUMENT"], documentUrls: [target] });
-      if (contexts.length) return;
-      try { if (await chrome.offscreen.hasDocument()) await chrome.offscreen.closeDocument(); } catch (_) {}
-    } else {
-      try { if (await chrome.offscreen.hasDocument()) return; } catch (_) {}
-    }
-    if (!offscreenCreation) {
-      offscreenCreation = chrome.offscreen.createDocument({
-        url: "offscreen.html",
-        reasons: ["AUDIO_PLAYBACK","USER_MEDIA"],
-        justification: "Reproducir alertas y analizar localmente el audio de una pestaña para estimar número de voces."
-      }).finally(function () { offscreenCreation = null; });
+    var target=chrome.runtime.getURL("offscreen.html");
+    if(chrome.runtime.getContexts){
+      var contexts=await chrome.runtime.getContexts({contextTypes:["OFFSCREEN_DOCUMENT"],documentUrls:[target]});
+      if(contexts.length)return;
+      try{if(await chrome.offscreen.hasDocument())await chrome.offscreen.closeDocument()}catch(_){}
+    }else{try{if(await chrome.offscreen.hasDocument())return}catch(_){}}
+    if(!offscreenCreation){
+      offscreenCreation=chrome.offscreen.createDocument({
+        url:"offscreen.html",
+        reasons:["AUDIO_PLAYBACK","USER_MEDIA"],
+        justification:"Reproducir alertas y analizar localmente el audio de una pestaña para estimar número de voces."
+      }).finally(function(){offscreenCreation=null});
     }
     await offscreenCreation;
   }
-  async function startSignalAudioAnalysis(streamId, tabId) {
-    if (!streamId) return { ok: false, error: "Falta streamId" };
-    try {
+  async function startSignalAudioAnalysis(streamId,tabId){
+    if(!streamId)return{ok:false,error:"Falta streamId"};
+    try{
       await ensureOffscreen();
-      var response = await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_AUDIO_ANALYSIS",streamId:streamId,tabId:tabId||null});
-      return response || {ok:false,error:"Sin respuesta del analizador"};
-    } catch (error) { return {ok:false,error:String(error)}; }
+      var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_AUDIO_ANALYSIS",streamId:streamId,tabId:tabId||null});
+      return response||{ok:false,error:"Sin respuesta del analizador"};
+    }catch(error){return{ok:false,error:String(error)}}
   }
-  async function stopSignalAudioAnalysis() {
-    try { await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_STOP_AUDIO_ANALYSIS"}); return {ok:true}; }
-    catch (error) { return {ok:false,error:String(error)}; }
+  async function stopSignalAudioAnalysis(){
+    try{await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_STOP_AUDIO_ANALYSIS"});return{ok:true}}
+    catch(error){return{ok:false,error:String(error)}}
   }
   function handleSession(event) {
     chrome.storage.local.get(["effectifState"], function (stored) {
@@ -476,15 +474,14 @@ importScripts("telemetry-db.js");
   function handleSignalBridgeEvent(event){
     if(!event||!event.type)return;
     if(event.type==="speaker.activity"){signalLastSpeakerId=event.speakerId||null;signalLastSpeakerAt=Date.now();broadcastSignalEvent(event);return;}
-    if(event.type==="speaker.count"){broadcastSignalEvent(event);return;}
-    if(event.type==="audio.status"){broadcastSignalEvent(event);return;}
+    if(event.type==="speaker.count"||event.type==="audio.status"){broadcastSignalEvent(event);return;}
     if(event.type==="bridge.connected"){signalBridgeReconnectDelay=500;updateSignalBridgeState({status:"connected",url:SIGNAL_BRIDGE_URL,connectedAt:event.timestamp||iso(),error:null});}
     else if(event.type==="bridge.heartbeat"){updateSignalBridgeState({status:"connected",lastHeartbeat:event.timestamp||iso(),error:null});}
     else if(event.type==="caption.status"){updateSignalBridgeState({status:"connected",captionActive:event.status==="found",error:null});}
     else if(event.type==="caption.segment"&&typeof event.text==="string"){
       var text=event.text.trim();if(!text)return;
       var captionEvent=Object.assign({},event);
-      if(signalLastSpeakerId && Date.now()-signalLastSpeakerAt<=1600)captionEvent.speakerId=signalLastSpeakerId;
+      if(signalLastSpeakerId&&Date.now()-signalLastSpeakerAt<=1600)captionEvent.speakerId=signalLastSpeakerId;
       signalTranscriptBuffer.push({id:"signal-"+(event.sequence||Date.now())+"-"+Date.now(),text:text,timestamp:event.timestamp||iso(),reason:event.reason||"stable",source:event.source||"live-caption",speakerId:captionEvent.speakerId||null});
       if(signalTranscriptBuffer.length>200)signalTranscriptBuffer=signalTranscriptBuffer.slice(-200);
       chrome.storage.local.get(["effectifState"]).then(function(stored){var state=Object.assign(baseState(),stored.effectifState||{});state.signalInterpreterTranscript={active:true,segments:signalTranscriptBuffer.length,lastTimestamp:event.timestamp||iso()};return chrome.storage.local.set({effectifState:state});}).catch(function(){});
@@ -576,39 +573,220 @@ importScripts("telemetry-db.js");
       record("MISSED_CALL_CLASSIFIED", missed, "warn", "alarm");
     });
   });
-  async function openSignalLiveWindow() {
-    var targetUrl = chrome.runtime.getURL("ui/live.html");
-    try {
-      var windows = await chrome.windows.getAll({ populate: true, windowTypes: ["popup"] });
-      var existing = windows.find(function (win) {
-        return Array.isArray(win.tabs) && win.tabs.some(function (tab) {
-          return String(tab.url || "").split("#")[0].split("?")[0] === targetUrl;
-        });
-      });
-      if (existing && existing.id != null) {
-        await chrome.windows.update(existing.id, { focused: true, state: "normal" });
-        return { ok: true, windowId: existing.id, reused: true };
-      }
-      var stored = await chrome.storage.local.get(["signalLiveBounds"]);
-      var bounds = stored.signalLiveBounds || {};
-      var createData = {
-        url: targetUrl,
-        type: "popup",
-        focused: true,
-        width: Number.isFinite(bounds.width) ? bounds.width : 760,
-        height: Number.isFinite(bounds.height) ? bounds.height : 760
-      };
-      if (Number.isFinite(bounds.left)) createData.left = bounds.left;
-      if (Number.isFinite(bounds.top)) createData.top = bounds.top;
-      var created = await chrome.windows.create(createData);
-      return { ok: !!created, windowId: created && created.id, reused: false };
-    } catch (error) {
-      return { ok: false, error: String(error) };
-    }
+  async function openSignalLiveWindow(audioStreamId,tabId){
+    var targetUrl=chrome.runtime.getURL("ui/live.html");
+    try{
+      var windows=await chrome.windows.getAll({populate:true,windowTypes:["popup"]});
+      var existing=windows.find(function(win){return Array.isArray(win.tabs)&&win.tabs.some(function(tab){return String(tab.url||"").split("#")[0].split("?")[0]===targetUrl})});
+      if(existing&&existing.id!=null){await chrome.windows.update(existing.id,{focused:true,state:"normal"});if(audioStreamId)startSignalAudioAnalysis(audioStreamId,tabId);return{ok:true,windowId:existing.id,reused:true}}
+      var stored=await chrome.storage.local.get(["signalLiveBounds"]),bounds=stored.signalLiveBounds||{};
+      var createData={url:targetUrl,type:"popup",focused:true,width:Number.isFinite(bounds.width)?bounds.width:760,height:Number.isFinite(bounds.height)?bounds.height:760};
+      if(Number.isFinite(bounds.left))createData.left=bounds.left;if(Number.isFinite(bounds.top))createData.top=bounds.top;
+      var created=await chrome.windows.create(createData);if(audioStreamId)startSignalAudioAnalysis(audioStreamId,tabId);
+      return{ok:!!created,windowId:created&&created.id,reused:false};
+    }catch(error){return{ok:false,error:String(error)}}
   }
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-    if (!message || message.target === "offscreen") return false;
+    if (!message) return false;
+    if (message.target === "offscreen" && message.type === "SIGNAL_AUDIO_EVENT") {
+      var audioEvent=message.event||{};
+      if(audioEvent.type==="speaker.activity"){signalLastSpeakerId=audioEvent.speakerId||null;signalLastSpeakerAt=Date.now();}
+      broadcastSignalEvent(audioEvent);
+      return false;
+    }
+    if (message.type === "OPEN_SIGNAL_LIVE_WINDOW") { openSignalLiveWindow().then(sendResponse); return true; }
     if (message.type === "OPEN_SIGNAL_LIVE_WINDOW") { openSignalLiveWindow(message.audioStreamId||null,message.tabId||null).then(sendResponse); return true; }
     if (message.type === "SIGNAL_START_AUDIO_ANALYSIS") { startSignalAudioAnalysis(message.streamId,message.tabId).then(sendResponse); return true; }
     if (message.type === "SIGNAL_STOP_AUDIO_ANALYSIS") { stopSignalAudioAnalysis().then(sendResponse); return true; }
-    if (message.target === "offscreen" && message.type === "SIGNAL_AUDIO_EVENT") { var ae=message.event||{}; if(ae.type==="speaker.activity"){signalLastSpeakerId=ae.speakerId||null;signalLastSpeakerAt=Date.now();} broadcastSignalEvent(ae); return false; }
+    if (message.type === "EFFECTIF_EVENT") {
+      var event = Object.assign({
+        timestamp: iso(), tabId: sender.tab ? sender.tab.id : null,
+        source: "content", level: "info"
+      }, message.event || {});
+      appendEvent(event, function () { sendResponse({ ok: true }); });
+      if (event.action === "PLATFORM_SESSION_STARTED" || event.action === "PLATFORM_SESSION_ENDED") handleSession(event);
+      if (event.action === "AVAILABILITY_STATE") handleAvailability(event);
+      if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event);
+      if (event.action === "CONNECT_CLICKED") alertOnConnect(event);
+      if (event.action === "CALL_ROUTE_ENTERED") startCall(event);
+      if (event.action === "CALL_END_CLICKED") {
+        var clickedSeconds = event.payload && event.payload.platformSeconds;
+        closeCall("end-button", typeof clickedSeconds === "number" ? clickedSeconds : NaN, null);
+      }
+      if (event.action === "CALL_ROUTE_ENDED") {
+        var seconds = event.payload && event.payload.platformSeconds;
+        closeCall("route", typeof seconds === "number" ? seconds : NaN, null);
+      }
+      return true;
+    }
+    if (message.type === "EFFECTIF_TELEMETRY_STATS") {
+      KhoraTelemetryDB.stats().then(function (stats) { sendResponse({ ok: true, stats: stats }); })
+        .catch(function (error) { sendResponse({ ok: false, error: String(error) }); });
+      return true;
+    }
+    if (message.type === "EFFECTIF_REFRESH_EXCHANGE_RATE") {
+      refreshExchangeRate("manual").then(function (rate) { sendResponse({ ok: true, rate: rate }); })
+        .catch(function (error) { sendResponse({ ok: false, error: String(error) }); });
+      return true;
+    }
+    if (message.type === "EFFECTIF_TEST_SOUND") {
+      playSound(message.volume).then(function () {
+        record("ALERT_SOUND_TESTED", {}, "info", "popup"); sendResponse({ ok: true });
+      }).catch(function (error) { sendResponse({ ok: false, error: String(error) }); });
+      return true;
+    }
+    if (message.type === "EFFECTIF_PLATFORM_SNAPSHOT") {
+      savePlatformSnapshot(message, sender, sendResponse); return true;
+    }
+    if (message.type === "EFFECTIF_END_CALL") {
+      closeCall("manual", NaN, sendResponse); return true;
+    }
+    if(message.type==="GET_SIGNAL_INTERPRETER_STATE"){chrome.storage.local.get(["effectifState"]).then(function(stored){var state=Object.assign(baseState(),stored.effectifState||{});sendResponse({ok:true,bridge:state.signalInterpreterBridge,transcript:signalTranscriptBuffer.slice(-50)});}).catch(function(error){sendResponse({ok:false,error:String(error)});});return true;}
+    if(message.type==="CLEAR_SIGNAL_INTERPRETER_TRANSCRIPT"){signalTranscriptBuffer=[];chrome.storage.local.get(["effectifState"]).then(function(stored){var state=Object.assign(baseState(),stored.effectifState||{});state.signalInterpreterTranscript={active:!!(state.signalInterpreterBridge&&state.signalInterpreterBridge.captionActive),segments:0,lastTimestamp:null};return chrome.storage.local.set({effectifState:state});}).then(function(){broadcastSignalEvent({type:"caption.clear",timestamp:iso()});sendResponse({ok:true});}).catch(function(error){sendResponse({ok:false,error:String(error)});});return true;}
+    if(message.type==="EFFECTIF_START_TRANSCRIPTION"){connectSignalBridge();sendResponse({ok:true,engine:"signal-live-caption",global:true});return false;}
+    if(message.type==="EFFECTIF_STOP_TRANSCRIPTION"){sendResponse({ok:true,engine:"signal-live-caption",global:true});return false;}
+    if (TRANSCRIPTION_MODULE_AVAILABLE && message.type === "EFFECTIF_TRANSCRIPT_SEGMENT") {
+      var segment = message.payload || {};
+      record("TRANSCRIPT_SEGMENT_RENDERED", {
+        speaker: segment.speaker, engine: segment.engine,
+        latencyMs: segment.latencyMs, characters: String(segment.text || "").length,
+        platformAudioModified: false
+      }, "info", "worker");
+      sendResponse({ ok: true }); return false;
+    }
+    if (TRANSCRIPTION_MODULE_AVAILABLE && message.type === "EFFECTIF_TRANSCRIPTION_STATUS") {
+      var status = message.payload || {};
+      mutateState(async function (state) {
+        state.transcriptionStatus = Object.assign({}, state.transcriptionStatus || {}, status);
+      });
+      record("TRANSCRIPTION_STATUS", {
+        phase: status.phase, connected: status.connected,
+        engine: status.engine, error: status.error,
+        platformAudioModified: false
+      }, status.error ? "warn" : "info", "worker");
+      sendResponse({ ok: true }); return false;
+    }
+    if (TRANSCRIPTION_MODULE_AVAILABLE && message.type === "EFFECTIF_TRANSCRIPTION_METRICS") {
+      var workerMetrics = message.payload || {};
+      mutateState(async function (state) {
+        state.transcriptionMetrics = Object.assign({}, state.transcriptionMetrics || {}, workerMetrics);
+      });
+      record("TRANSCRIPTION_METRICS", {
+        segments: workerMetrics.segments, localSegments: workerMetrics.localSegments,
+        groqSegments: workerMetrics.groqSegments, queueDepth: workerMetrics.queueDepth,
+        averageLatencyMs: workerMetrics.averageLatencyMs,
+        groqEstimatedUsd: workerMetrics.groqEstimatedUsd,
+        platformAudioModified: false
+      }, "info", "worker");
+      sendResponse({ ok: true }); return false;
+    }
+    if (message.type === "EFFECTIF_WORKER_PROBE") {
+      sendResponse({ ok: false, error: "Módulo reservado: no disponible en esta versión" }); return false;
+    }
+    if (message.type === "EFFECTIF_TEST_TRANSCRIPTION") {
+      sendResponse({ ok: false, error: "Módulo reservado: no disponible en esta versión" }); return false;
+    }
+    if (TRANSCRIPTION_MODULE_AVAILABLE && message.type === "EFFECTIF_TEST_TRANSCRIPTION_DORMANT") {
+      chrome.storage.local.get(["effectifConfig"], function (stored) {
+        var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+        ensureOffscreen().then(function () {
+          return chrome.runtime.sendMessage({
+            target: "offscreen", type: "EFFECTIF_TEST_LOCAL_TRANSCRIPTION",
+            apiKey: config.groqApiKey || GROQ_API_KEY,
+            mode: config.transcriptionMode || "auto",
+            localModel: config.localWhisperModel || "large-v3-turbo",
+            groqModel: config.groqModel || GROQ_MODEL,
+            microphoneId: config.selectedMicrophoneId || "",
+            speakerId: config.selectedSpeakerId || ""
+          });
+        }).then(sendResponse).catch(function (error) {
+          sendResponse({ ok: false, error: String(error) });
+        });
+      });
+      return true;
+    }
+    if (message.type === "EFFECTIF_OPEN_SIDE_PANEL") {
+      sendResponse({ ok: false, error: "Módulo reservado: no disponible en esta versión" }); return false;
+    }
+    if (TRANSCRIPTION_MODULE_AVAILABLE && message.type === "EFFECTIF_GROQ_USAGE") {
+      updateGroqUsage(message); sendResponse({ ok: true }); return false;
+    }
+    return false;
+  });
+  var networkRequests = new Map();
+  function sanitizedRequestUrl(raw) {
+    try {
+      var url = new URL(raw);
+      return url.origin + url.pathname
+        .replace(/\/call\/[^/]+/g, "/call/<ID>")
+        .replace(/\/profile\/[^/]+/g, "/profile/<ID>")
+        .slice(0, 500);
+    } catch (_) { return "[INVALID_URL]"; }
+  }
+  chrome.webRequest.onBeforeRequest.addListener(function (details) {
+    if (!cachedConfig.observationEnabled || !cachedConfig.networkTelemetryEnabled) return;
+    networkRequests.set(details.requestId, { at: Date.now(), method: details.method, type: details.type, url: sanitizedRequestUrl(details.url), tabId: details.tabId });
+    if (networkRequests.size > 5000) networkRequests.delete(networkRequests.keys().next().value);
+  }, { urls: ["https://app.cloudinterpreter.com/*"] });
+  chrome.webRequest.onCompleted.addListener(function (details) {
+    var started = networkRequests.get(details.requestId); networkRequests.delete(details.requestId);
+    if (!started) return;
+    record("NETWORK_REQUEST_COMPLETED", {
+      method: started.method, type: started.type, url: started.url, tabId: started.tabId,
+      statusCode: details.statusCode, fromCache: !!details.fromCache,
+      durationMs: Math.max(0, Date.now() - started.at)
+    }, details.statusCode >= 400 ? "warn" : "info", "webRequest");
+  }, { urls: ["https://app.cloudinterpreter.com/*"] });
+  chrome.webRequest.onErrorOccurred.addListener(function (details) {
+    var started = networkRequests.get(details.requestId); networkRequests.delete(details.requestId);
+    if (!started) return;
+    record("NETWORK_REQUEST_ERROR", { method: started.method, type: started.type, url: started.url, tabId: started.tabId, error: details.error, durationMs: Math.max(0, Date.now() - started.at) }, "warn", "webRequest");
+  }, { urls: ["https://app.cloudinterpreter.com/*"] });
+  chrome.windows.onRemoved.addListener(function () {});
+  chrome.storage.onChanged.addListener(function (changes, area) {
+    if (area === "local" && changes.effectifConfig) {
+      cachedConfig = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.newValue || {});
+    }
+  });
+
+  chrome.commands.onCommand.addListener(function (command) {
+    if (command !== "toggle-auto-answer") return;
+    chrome.storage.local.get(["effectifConfig"], function (stored) {
+      var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+      config.autoAnswerEnabled = !config.autoAnswerEnabled;
+      chrome.storage.local.set({ effectifConfig: config });
+      record(config.autoAnswerEnabled ? "AUTO_ANSWER_ENABLED" : "AUTO_ANSWER_DISABLED", {}, "info", "keyboard");
+    });
+  });
+  function routeShape(url) {
+    try {
+      return new URL(url).pathname
+        .replace(/^\/call\/[^/]+/, "/call/<ID>")
+        .replace(/^\/profile\/[^/]+/, "/profile/<ID>");
+    } catch (_) { return ""; }
+  }
+  chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    var url = changeInfo.url || tab.url || "";
+    if (!/^https:\/\/app\.cloudinterpreter\.com\//.test(url)) return;
+    if (changeInfo.url || changeInfo.status === "complete") {
+      record("TAB_LIFECYCLE", {
+        tabId: tabId, status: changeInfo.status || "url-change",
+        route: routeShape(url), active: !!tab.active
+      }, "info", "tabs");
+    }
+  });
+  chrome.tabs.onRemoved.addListener(function (tabId) {
+    chrome.storage.local.get(["effectifState"], function (stored) {
+      var state = Object.assign(baseState(), stored.effectifState || {});
+      if (state.transcriptionTabId === tabId) {
+        chrome.runtime.sendMessage({
+          target: "offscreen", type: "EFFECTIF_STOP_LOCAL_TRANSCRIPTION", reason: "tab-closed"
+        }).catch(function () {});
+        state.transcriptionActive = false;
+        state.transcriptionTabId = null;
+        chrome.storage.local.set({ effectifState: state });
+        record("TRANSCRIPTION_TAB_CLOSED", { tabId: tabId }, "warn", "tabs");
+      }
+    });
+  });
+})();
