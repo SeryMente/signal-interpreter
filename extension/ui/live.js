@@ -1,18 +1,19 @@
 (function(){
 "use strict";
 var $=function(id){return document.getElementById(id)};
-var items=[],activeSpeaker="CLIENTE",view="timeline",autoScroll=true,lastSignal=null,focusMode=false;
+var items=[],activeSpeaker="CLIENTE",view="timeline",autoScroll=true,lastSignal=null,focusMode=false,audioVoices=0,audioConfidence=0,voiceMap={A:"CLIENTE",B:"PROFESIONAL"};
 var sizes={compact:{width:430,height:700},normal:{width:760,height:760},reading:{width:1200,height:820}};
 var seen={CLIENTE:0,PROFESIONAL:0,YO:0};
 
 function esc(v){return String(v||"").replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function time(v){try{return new Date(v).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})}catch(_){return"—"}}
 function speakerClass(s){return s==="PROFESIONAL"?"professional":s==="YO"?"me":"client"}
+function mappedSpeaker(raw){return voiceMap[raw]||null}
 function updateCounts(){
   $("clientCount").textContent=seen.CLIENTE;$("professionalCount").textContent=seen.PROFESIONAL;$("meCount").textContent=seen.YO;
   var external=(seen.CLIENTE>0?1:0)+(seen.PROFESIONAL>0?1:0);
   $("participantSummary").textContent=(external===2?"2 VOCES EXTERNAS":"1 VOZ EXTERNA")+" · "+(external+1)+" PARTICIPANTES OBSERVADOS";
-  $("participantDetection").textContent=external===2?"2 voces externas observadas · 3 participantes en la conversación":"1 voz externa observada · 2 participantes observados";
+  $("participantDetection").textContent=audioVoices?((audioVoices===2?"2 voces externas detectadas":"1 voz externa detectada")+" · confianza "+Math.round(audioConfidence*100)+"%"):("Asignación manual · "+(external===2?"2 voces externas observadas":"1 voz externa observada"));
 }
 function makeTurn(x){
   var node=document.createElement("article");node.className="turn "+speakerClass(x.speaker);
@@ -79,10 +80,14 @@ function handle(e){
   if(e.type==="bridge.connected"){ $("bridgeDot").classList.add("ok");$("bridgeStatus").textContent="CONECTADO";$("bridgeText").textContent="Conectado";return}
   if(e.type==="bridge.heartbeat")return;
   if(e.type==="caption.status"){$("captionText").textContent=e.status==="found"?"Activo":"Esperando";return}
-  if(e.type==="caption.segment"){addItem(e.text,activeSpeaker,e.timestamp,e.reason);return}
+  if(e.type==="speaker.count"){audioVoices=Number(e.externalVoices)||0;audioConfidence=Number(e.confidence)||0;$("audioText").textContent=audioVoices?(audioVoices+" voz"+(audioVoices===1?"":"es")+" · "+Math.round(audioConfidence*100)+"%"):"Esperando";updateCounts();return}
+  if(e.type==="speaker.activity"){var mapped=mappedSpeaker(e.speakerId);if(mapped){activeSpeaker=mapped;syncSpeakerButtons()}return}
+  if(e.type==="audio.status"){$("audioText").textContent=e.status==="connected"?"ACTIVO":e.status==="error"?"ERROR":"ESPERANDO";return}
+  if(e.type==="caption.segment"){var mapped=mappedSpeaker(e.speakerId);addItem(e.text,mapped||activeSpeaker,e.timestamp,e.reason);return}
   if(e.type==="caption.clear"){return}
 }
 document.querySelectorAll("[data-speaker]").forEach(function(b){b.addEventListener("click",function(){activeSpeaker=b.dataset.speaker;syncSpeakerButtons();if(activeSpeaker==="YO")$("yo").focus()})});
+document.querySelectorAll("[data-map]").forEach(function(b){b.addEventListener("click",function(){var p=b.dataset.map.split(":");voiceMap[p[0]]=p[1];chrome.storage.local.set({signalVoiceMap:voiceMap});updateCounts()})});
 document.querySelectorAll("[data-view]").forEach(function(b){b.addEventListener("click",function(){setView(b.dataset.view)})});
 $("sendYo").addEventListener("click",submitYo);$("yo").addEventListener("keydown",function(e){if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();submitYo()}});
 $("clear").addEventListener("click",function(){items=[];seen={CLIENTE:0,PROFESIONAL:0,YO:0};lastSignal=null;chrome.runtime.sendMessage({type:"CLEAR_SIGNAL_INTERPRETER_TRANSCRIPT"}).catch(function(){});render()});
@@ -108,7 +113,7 @@ chrome.runtime.onMessage.addListener(function(m){if(m&&m.type==="SIGNAL_INTERPRE
 chrome.runtime.sendMessage({type:"GET_SIGNAL_INTERPRETER_STATE"}).then(function(r){
  if(!r||!r.ok)return;
  $("bridgeDot").classList.toggle("ok",r.bridge&&r.bridge.status==="connected");$("bridgeStatus").textContent=r.bridge&&r.bridge.status==="connected"?"CONECTADO":"DESCONECTADO";$("bridgeText").textContent=r.bridge&&r.bridge.status==="connected"?"Conectado":"Desconectado";$("captionText").textContent=r.bridge&&r.bridge.captionActive?"Activo":"Esperando";
- items=(Array.isArray(r.transcript)?r.transcript:[]).map(function(x){return Object.assign({},x,{speaker:"CLIENTE"})});seen.CLIENTE=items.length;lastSignal=items.length?items[items.length-1].timestamp:null;render();syncSpeakerButtons();restoreBounds()
+ items=(Array.isArray(r.transcript)?r.transcript:[]).map(function(x){return Object.assign({},x,{speaker:mappedSpeaker(x.speakerId)||"CLIENTE"})});items.forEach(function(x){seen[x.speaker]=(seen[x.speaker]||0)+1});lastSignal=items.length?items[items.length-1].timestamp:null;render();syncSpeakerButtons();chrome.storage.local.get(["signalVoiceMap"]).then(function(st){voiceMap=Object.assign({},voiceMap,st.signalVoiceMap||{});render()}).catch(function(){});restoreBounds()
 }).catch(function(){restoreBounds();render()});
 window.addEventListener("beforeunload",saveBounds);render();syncSpeakerButtons()
 })();
