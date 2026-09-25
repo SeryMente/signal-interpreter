@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
   var DB_NAME = "signal-interpreter-telemetry";
-  var DB_VERSION = 1;
+  var DB_VERSION = 2;
   var dbPromise = null;
 
   function requestPromise(request) {
@@ -34,6 +34,11 @@
           var snapshots = db.createObjectStore("snapshots", { keyPath: "id", autoIncrement: true });
           snapshots.createIndex("capturedAt", "capturedAt", { unique: false });
           snapshots.createIndex("key", "key", { unique: false });
+        }
+        if (!db.objectStoreNames.contains("signalSegments")) {
+          var segments = db.createObjectStore("signalSegments", { keyPath: "id" });
+          segments.createIndex("sessionId", "sessionId", { unique: false });
+          segments.createIndex("timestamp", "timestamp", { unique: false });
         }
         if (!db.objectStoreNames.contains("metadata")) db.createObjectStore("metadata", { keyPath: "key" });
       };
@@ -90,6 +95,44 @@
     await done;
     return result;
   }
+  async function getSignalSegments(sessionId, limit) {
+    var db = await open();
+    var tx = db.transaction("signalSegments", "readonly");
+    var done = transactionDone(tx);
+    var index = tx.objectStore("signalSegments").index("sessionId");
+    var request = index.openCursor(IDBKeyRange.only(sessionId), "prev");
+    var values = [];
+    var max = Math.max(1, Math.min(1000, Number(limit) || 200));
+    await new Promise(function (resolve, reject) {
+      request.onsuccess = function () {
+        var cursor = request.result;
+        if (!cursor || values.length >= max) { resolve(); return; }
+        values.push(cursor.value);
+        cursor.continue();
+      };
+      request.onerror = function () { reject(request.error); };
+    });
+    await done;
+    values.reverse();
+    return values;
+  }
+  async function deleteSignalSession(sessionId) {
+    var db = await open();
+    var tx = db.transaction("signalSegments", "readwrite");
+    var done = transactionDone(tx);
+    var index = tx.objectStore("signalSegments").index("sessionId");
+    var request = index.openCursor(IDBKeyRange.only(sessionId));
+    await new Promise(function (resolve, reject) {
+      request.onsuccess = function () {
+        var cursor = request.result;
+        if (!cursor) { resolve(); return; }
+        cursor.delete();
+        cursor.continue();
+      };
+      request.onerror = function () { reject(request.error); };
+    });
+    await done;
+  }
   async function deleteBefore(storeName, indexName, cutoffIso) {
     var db = await open();
     var tx = db.transaction(storeName, "readwrite");
@@ -128,32 +171,72 @@
     await done;
     return deleted;
   }
+  async function trimSignalSegments(maxSegments) {
+    var total = await count("signalSegments");
+    var excess = Math.max(0, total - Math.max(1000, Number(maxSegments) || 100000));
+    if (!excess) return 0;
+    var db = await open();
+    var tx = db.transaction("signalSegments", "readwrite");
+    var done = transactionDone(tx);
+    var request = tx.objectStore("signalSegments").openCursor();
+    var deleted = 0;
+    await new Promise(function (resolve, reject) {
+      request.onsuccess = function () {
+        var cursor = request.result;
+        if (!cursor || deleted >= excess) { resolve(); return; }
+        cursor.delete(); deleted += 1; cursor.continue();
+      };
+      request.onerror = function () { reject(request.error); };
+    });
+    await done;
+    return deleted;
+  }
   async function prune(options) {
     options = options || {};
     var days = Math.max(7, Number(options.retentionDays) || 180);
     var cutoff = new Date(Date.now() - days * 86400000).toISOString();
     var expiredEvents = await deleteBefore("events", "timestamp", cutoff);
     var expiredSnapshots = await deleteBefore("snapshots", "capturedAt", cutoff);
+    var expiredSignalSegments = await deleteBefore("signalSegments", "timestamp", cutoff);
     var excessEvents = await trimEvents(options.maxEvents || 250000);
-    return { cutoff: cutoff, expiredEvents: expiredEvents, expiredSnapshots: expiredSnapshots, excessEvents: excessEvents };
+    var excessSignalSegments = await trimSignalSegments(options.maxSignalSegments || 100000);
+    return {
+      cutoff: cutoff,
+      expiredEvents: expiredEvents,
+      expiredSnapshots: expiredSnapshots,
+      expiredSignalSegments: expiredSignalSegments,
+      excessEvents: excessEvents,
+      excessSignalSegments: excessSignalSegments
+    };
   }
   async function stats() {
-    var results = await Promise.all([count("events"), count("snapshots"), edge("events", "next"), edge("events", "prev")]);
+    var results = await Promise.all([
+      count("events"),
+      count("snapshots"),
+      count("signalSegments"),
+      edge("events", "next"),
+      edge("events", "prev")
+    ]);
     var estimate = null;
     try { estimate = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate() : null; } catch (_) {}
     return {
       database: DB_NAME,
-      events: results[0], snapshots: results[1],
-      oldestEventAt: results[2] && results[2].timestamp || null,
-      newestEventAt: results[3] && results[3].timestamp || null,
+      events: results[0],
+      snapshots: results[1],
+      signalSegments: results[2],
+      oldestEventAt: results[3] && results[3].timestamp || null,
+      newestEventAt: results[4] && results[4].timestamp || null,
       usageBytes: estimate && estimate.usage || null,
       quotaBytes: estimate && estimate.quota || null
     };
   }
   async function clear() {
     var db = await open();
-    var tx = db.transaction(["events", "snapshots", "metadata"], "readwrite");
-    tx.objectStore("events").clear(); tx.objectStore("snapshots").clear(); tx.objectStore("metadata").clear();
+    var tx = db.transaction(["events", "snapshots", "signalSegments", "metadata"], "readwrite");
+    tx.objectStore("events").clear();
+    tx.objectStore("snapshots").clear();
+    tx.objectStore("signalSegments").clear();
+    tx.objectStore("metadata").clear();
     await transactionDone(tx);
   }
 
@@ -161,9 +244,13 @@
     open: open,
     putEvent: function (event) { return put("events", event); },
     putEvents: function (events) { return putMany("events", events); },
-    putSnapshot: function (snapshot) { return put("snapshots", snapshot); },
     getEvents: function () { return getAll("events"); },
+    putSnapshot: function (snapshot) { return put("snapshots", snapshot); },
     getSnapshots: function () { return getAll("snapshots"); },
+    putSignalSegment: function (segment) { return put("signalSegments", segment); },
+    getSignalSegments: getSignalSegments,
+    getAllSignalSegments: function () { return getAll("signalSegments"); },
+    clearSignalSession: deleteSignalSession,
     putMetadata: function (key, value) { return put("metadata", { key: key, value: value, updatedAt: new Date().toISOString() }); },
     stats: stats,
     prune: prune,
