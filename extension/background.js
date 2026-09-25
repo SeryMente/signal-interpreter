@@ -82,6 +82,12 @@ function scheduleReconnect() {
 }
 
 function handleEvent(event) {
+  if (event.type === "caption.delta" || event.type === "caption.revision") {
+    // Diagnóstico bruto: no persiste ni actualiza la UI.
+    state.lastEvent = event;
+    return;
+  }
+
   state.lastEvent = event;
 
   if (event.type === "bridge.connected" || event.type === "bridge.heartbeat") {
