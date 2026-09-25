@@ -510,7 +510,7 @@ importScripts("telemetry-db.js");
     session.segments=(session.segments||[]).concat(segment).slice(-100);session.segmentCount=Math.max(0,Number(session.segmentCount||0))+(dbOk?1:0);
     try{await saveSignalSessions(data.sessions,data.activeSessionId||sessionId);cacheOk=true}
     catch(error){cacheError=String(error);recordSignalDiagnostic("SIGNAL_SESSION_CACHE_ERROR",{sessionId:sessionId,error:cacheError},"error")}
-    return{ok:dbOk||cacheOk,dbOk:dbOk,cacheOk:cacheOk,dbError:dbError,cacheError:cacheError}
+    return{ok:dbOk||cacheOk,dbOk:dbOk,cacheOk:cacheOk,dbError:dbError,cacheError:cacheError,session:signalSessionCopy(session,true)}
   }
   async function activateSignalSession(sessionId,audioStreamId){
     var data=await loadSignalSessions(),session=data.sessions.find(function(s){return s.id===sessionId});if(!session)return{ok:false,error:"Sesión no encontrada"};
@@ -546,7 +546,10 @@ importScripts("telemetry-db.js");
       var id=message.sessionId||data.activeSessionId,s=data.sessions.find(function(x){return x.id===id});if(!s)throw new Error("Sesión no encontrada");
       var text=String(message.text||"").trim();if(!text)throw new Error("Texto vacío");
       var seg={id:"manual-"+uid(),text:text.slice(0,12000),timestamp:iso(),reason:"manual",source:"manual",speaker:message.speaker==="YO"?"YO":"CLIENTE"};
-      s.segments=(s.segments||[]).concat(seg).slice(-200);return saveSignalSessions(data.sessions,id).then(function(){return{ok:true,session:signalSessionCopy(s),segment:seg}})
+      return persistSignalSegment(id,seg).then(function(persisted){
+        if(!persisted.ok)throw new Error((persisted.dbError||persisted.cacheError)||"No se pudo persistir el segmento");
+        return{ok:true,session:persisted.session,segment:seg}
+      })
     }).then(function(r){broadcastSignalEvent({type:"caption.segment",sessionId:message.sessionId||r.session.id,manual:true,speaker:r.segment.speaker,segmentId:r.segment.id,text:r.segment.text,timestamp:r.segment.timestamp,reason:"manual",source:"manual"});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})})
   }
   function updateSignalBridgeState(patch){chrome.storage.local.get(["effectifState"]).then(function(stored){var state=Object.assign(baseState(),stored.effectifState||{});state.signalInterpreterBridge=Object.assign({},state.signalInterpreterBridge||{},patch||{});return chrome.storage.local.set({effectifState:state})}).catch(function(error){recordSignalDiagnostic("SIGNAL_BRIDGE_STATE_ERROR",{message:String(error)},"warn")})}
