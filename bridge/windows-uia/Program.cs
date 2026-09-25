@@ -8,19 +8,42 @@ internal static class Program
     private const string CaptionBubbleClass = "CaptionBubbleLabel";
     private const string CaptionViewClass = "AXVirtualView";
     private static readonly Regex Whitespace = new(@"\s+", RegexOptions.Compiled);
+    private static LocalTransport? Transport;
 
     private static void Main(string[] args)
     {
         var intervalMs = GetInt(args, "--interval-ms", 150, 50);
         var stabilityMs = GetInt(args, "--stability-ms", 750, 250);
+        var port = GetInt(args, "--port", 8787, 1024);
         var reconciler = new CaptionReconciler(TimeSpan.FromMilliseconds(stabilityMs));
 
         long sequence = 0;
         var found = false;
         var previousRawSnapshot = "";
 
+        try
+        {
+            Transport = new LocalTransport(port);
+            Transport.Start();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Signal Interpreter Bridge | transport error | {ex.Message}");
+            Transport = null;
+        }
+
         Console.Error.WriteLine(
-            $"Signal Interpreter Bridge | UIA Live Caption | poll={intervalMs}ms | stability={stabilityMs}ms");
+            $"Signal Interpreter Bridge | UIA Live Caption | poll={intervalMs}ms | stability={stabilityMs}ms | ws={(Transport?.WebSocketUrl ?? "disabled")}");
+
+        Emit(new
+        {
+            type = "bridge.status",
+            status = Transport is null ? "transport_disabled" : "listening",
+            protocol = "signal-interpreter.v1",
+            transport = "websocket",
+            url = Transport?.WebSocketUrl,
+            timestamp = DateTimeOffset.UtcNow
+        });
 
         while (true)
         {
@@ -202,7 +225,17 @@ internal static class Program
 
     private static void Emit(object value)
     {
-        Console.Out.WriteLine(JsonSerializer.Serialize(value));
+        var json = JsonSerializer.Serialize(value);
+        Console.Out.WriteLine(json);
         Console.Out.Flush();
+
+        try
+        {
+            Transport?.Publish(value);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Signal Interpreter Bridge | publish error | {ex.Message}");
+        }
     }
 }
