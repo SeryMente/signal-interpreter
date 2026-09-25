@@ -677,8 +677,10 @@ importScripts("telemetry-db.js");
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (!message) return false;
     if (message.target === "offscreen" && message.type === "SIGNAL_AUDIO_EVENT") {
-      var audioEvent=message.event||{};
-      if(audioEvent.type==="speaker.activity"){signalLastSpeakerId=audioEvent.speakerId||null;signalLastSpeakerAt=Date.now();}
+      var audioEvent=message.event||{},audioNow=Date.now();
+      var audioMeta={eventType:audioEvent.type||"unknown",sessionId:signalActiveSessionId,tabId:audioEvent.tabId||null,status:audioEvent.status||null,speakerId:audioEvent.speakerId||null,externalVoices:audioEvent.externalVoices!=null?audioEvent.externalVoices:null,confidence:audioEvent.confidence!=null?audioEvent.confidence:null,error:audioEvent.error||null};
+      if(audioEvent.type!=="speaker.activity"||audioNow-signalLastActivityLogAt>=1500){if(audioEvent.type==="speaker.activity")signalLastActivityLogAt=audioNow;recordSignalDiagnostic("SIGNAL_OFFSCREEN_EVENT_RECEIVED",audioMeta,audioEvent.status==="error"?"error":"info","offscreen");}
+      if(audioEvent.type==="speaker.activity"){signalLastSpeakerId=audioEvent.speakerId||null;signalLastSpeakerAt=audioNow;}
       broadcastSignalEvent(Object.assign({},audioEvent,{sessionId:signalActiveSessionId}));return false;
     }
     if (message.type === "OPEN_SIGNAL_LIVE_WINDOW") { recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_REQUESTED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",hasSuppliedStream:!!message.audioStreamId}); openSignalLiveWindow(message.audioStreamId||null,message.tabId||null,message.sourceUrl||"",message.sourceTitle||"").then(function(response){if(response&&response.ok)recordSignalDiagnostic("SIGNAL_CONSOLE_OPENED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",windowId:response.windowId,reused:!!response.reused,sessionId:response.session&&response.session.id||null,audioOk:!!(response.audio&&response.audio.ok)});else recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_ERROR",{tabId:message.tabId||null,error:response&&response.error||"unknown"},"error");sendResponse(response)}).catch(function(error){recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_EXCEPTION",{tabId:message.tabId||null,error:String(error)},"error");sendResponse({ok:false,error:String(error)});});return true; }
