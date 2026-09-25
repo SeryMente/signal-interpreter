@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Signal Interpreter</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <div class="eyebrow">SIGNAL INTERPRETER</div>
+        <h1>Interpretación</h1>
+      </div>
+      <button id="connect" class="ghost">Conectar</button>
+    </header>
+
+    <section class="status-row">
+      <span id="bridgeDot" class="dot"></span>
+      <span id="bridgeStatus">Bridge desconectado</span>
+      <span class="sep">·</span>
+      <span id="captionStatus">Caption inactivo</span>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>CLIENTE</h2>
+        <button id="clear" class="ghost small">Limpiar</button>
+      </div>
+      <div id="client" class="transcript" aria-live="polite">
+        <div class="empty">Esperando señal externa…</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>YO</h2>
+      </div>
+      <textarea id="yo" placeholder="Entrada propia del intérprete…"></textarea>
+    </section>
+  </main>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
