@@ -202,7 +202,7 @@
     try {
       var stats = await KhoraTelemetryDB.stats();
       $("telemetryCount").textContent = stats.events.toLocaleString("es-MX") + " eventos";
-      $("telemetryMeta").textContent = stats.snapshots.toLocaleString("es-MX") + " snapshots · " + formatBytes(stats.usageBytes) + " usados · desde " + (stats.oldestEventAt ? new Date(stats.oldestEventAt).toLocaleString() : "ahora");
+      $("telemetryMeta").textContent = stats.snapshots.toLocaleString("es-MX") + " snapshots · " + Number(stats.signalSegments||0).toLocaleString("es-MX") + " segmentos Signal · " + formatBytes(stats.usageBytes) + " usados · desde " + (stats.oldestEventAt ? new Date(stats.oldestEventAt).toLocaleString() : "ahora");
     } catch (error) {
       $("telemetryCount").textContent = "Base no disponible";
       $("telemetryMeta").textContent = String(error);
@@ -211,19 +211,37 @@
   $("export").addEventListener("click", async function () {
     var button = this; button.disabled = true; status("Leyendo historial persistente…");
     try {
-      var stored = await chrome.storage.local.get(["effectifConfig", "effectifState", "effectifPlatformMirror"]);
-      var results = await Promise.all([KhoraTelemetryDB.getEvents(), KhoraTelemetryDB.getSnapshots(), KhoraTelemetryDB.stats()]);
+      var stored = await chrome.storage.local.get(["effectifConfig", "effectifState", "effectifPlatformMirror", "signalInterpreterSessions", "signalInterpreterActiveSessionId", "effectifLastEvent", "effectifTelemetryHealth"]);
+      var results = await Promise.all([KhoraTelemetryDB.getEvents(), KhoraTelemetryDB.getSnapshots(), KhoraTelemetryDB.getAllSignalSegments(), KhoraTelemetryDB.stats()]);
+      var eventSummary = {};
+      results[0].forEach(function (event) {
+        var key = String(event.action || "UNKNOWN");
+        eventSummary[key] = Number(eventSummary[key] || 0) + 1;
+      });
+      var safeConfig = Object.assign({}, stored.effectifConfig || {});
+      if (safeConfig.groqApiKey) safeConfig.groqApiKey = "[REDACTED]";
+      var sessions = (Array.isArray(stored.signalInterpreterSessions) ? stored.signalInterpreterSessions : []).map(function (session) {
+        var copy = Object.assign({}, session); delete copy.segments; return copy;
+      });
       var payload = {
-        schema: "khora-effectif-observation/v2", exportedAt: new Date().toISOString(),
-        config: Object.assign({}, stored.effectifConfig || {}, { groqApiKey: stored.effectifConfig && stored.effectifConfig.groqApiKey ? "[REDACTED]" : "" }),
-        state: stored.effectifState || {}, telemetry: results[2],
-        events: results[0], platformSnapshots: results[1], platformMirror: stored.effectifPlatformMirror || {}
+        schema: "signal-interpreter-diagnostic/v3", exportedAt: new Date().toISOString(),
+        report: {
+          purpose: "Diagnóstico reproducible de captura, bridge, Live Caption y persistencia por sesión",
+          eventsCount: results[0].length, snapshotsCount: results[1].length, signalSegmentsCount: results[2].length,
+          eventSummary: eventSummary
+        },
+        bridgeState: stored.effectifState && stored.effectifState.signalInterpreterBridge || null,
+        telemetryHealth: stored.effectifTelemetryHealth || null, lastEvent: stored.effectifLastEvent || null,
+        config: safeConfig, state: stored.effectifState || {},
+        activeSessionId: stored.signalInterpreterActiveSessionId || null, sessions: sessions,
+        events: results[0], platformSnapshots: results[1], signalSegments: results[2],
+        platformMirror: stored.effectifPlatformMirror || {}, telemetry: results[3]
       };
       var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      var link = document.createElement("a"); link.href = URL.createObjectURL(blob);
-      link.download = "effectif-observacion-persistente-" + new Date().toISOString().replace(/[:.]/g, "-") + ".json";
-      link.click(); setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
-      status("Exportados " + results[0].length.toLocaleString("es-MX") + " eventos y " + results[1].length.toLocaleString("es-MX") + " snapshots");
+      var url = URL.createObjectURL(blob), link = document.createElement("a");
+      link.href = url; link.download = "signal-interpreter-diagnostico-" + new Date().toISOString().replace(/[:.]/g, "-") + ".json";
+      document.body.appendChild(link); link.click(); link.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+      status("Diagnóstico: " + results[0].length.toLocaleString("es-MX") + " eventos · " + results[2].length.toLocaleString("es-MX") + " segmentos · " + results[1].length.toLocaleString("es-MX") + " snapshots");
     } catch (error) { status("No se pudo exportar: " + String(error), true); }
     finally { button.disabled = false; }
   });
