@@ -1,31 +1,17 @@
 # Signal Interpreter — Extension
 
-## Desarrollo local
+Conserva la base funcional de Khora · Effectif v0.8.0 para Cloud Interpreter y sustituye su ruta de transcripción.
 
-1. Abre chrome://extensions.
-2. Activa Developer mode.
-3. Usa Load unpacked y selecciona la carpeta extension.
-4. Arranca SignalInterpreterBridge.exe.
-5. Mantén Chrome Live Caption activo.
-6. Abre el popup de Signal Interpreter.
+Cloud: Auto-Answer, OPI/VRI, Online/Offline, llamadas perdidas, cronómetros, ingresos, USD/MXN, overlay, espejo de pantallas, telemetría persistente/exportable y sonido.
 
-## Transporte local
+Transcripción global:
+Chrome Live Caption → Windows UI Automation → Signal Interpreter Bridge → WebSocket local → CLIENTE.
 
-La extensión se conecta a ws://127.0.0.1:8787/
+Puede probarse en cualquier pestaña, incluyendo sesame.com con Maya.
 
-El Bridge también expone http://127.0.0.1:8787/health para verificación.
+CLIENTE = señal externa observada.
+YO = producción propia del intérprete.
 
-Eventos consumidos por la extensión:
+El texto de CLIENTE es efímero en la extensión.
 
-- bridge.connected
-- bridge.heartbeat
-- caption.status
-- caption.segment
-
-La extensión no usa caption.delta ni caption.revision como texto final.
-
-## Separación
-
-CLIENTE recibe la señal externa observada.
-
-YO permanece separado como entrada propia del intérprete.
+Carga local: chrome://extensions → Developer mode → Load unpacked → carpeta extension/.
