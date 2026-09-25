@@ -22,7 +22,10 @@ function updateCounts(){
   $("clientCount").textContent=seen.CLIENTE;$("professionalCount").textContent=seen.PROFESIONAL;$("meCount").textContent=seen.YO;
   var external=(seen.CLIENTE>0?1:0)+(seen.PROFESIONAL>0?1:0);
   $("participantSummary").textContent=(external===2?"2 VOCES EXTERNAS":"1 VOZ EXTERNA")+" · "+(external+1)+" PARTICIPANTES OBSERVADOS";
-  $("participantDetection").textContent=audioVoices?((audioVoices===2?"2 voces externas detectadas":"1 voz externa detectada")+" · confianza "+Math.round(audioConfidence*100)+"%"):("Asignación manual · "+(external===2?"2 voces externas observadas":"1 voz externa observada"));
+  var mode=currentSession&&currentSession.mode||"unknown",profile=currentSession&&currentSession.profile||"generic";
+  var modeLabel=mode==="dialogue"?"DIÁLOGO":mode==="monologue"?"NO DIALOGAL":"DETECTANDO";
+  var profileLabel=profile==="cloud-interpreter-3p"?" · CLOUD INTERPRETER · 3 ROLES":"";
+  $("participantDetection").textContent=modeLabel+profileLabel+" · "+(audioVoices?((audioVoices===2?"2 voces externas detectadas":"1 voz externa detectada")+" · confianza "+Math.round(audioConfidence*100)+"%"):("Asignación manual · "+(external===2?"2 voces externas observadas":"1 voz externa observada")));
 }
 function makeTurn(x){
   var node=document.createElement("article");node.className="turn "+speakerClass(x.speaker);
@@ -87,6 +90,7 @@ function restoreBounds(){
 function toggleFocus(v){focusMode=typeof v==="boolean"?v:!focusMode;$("focusOverlay").classList.toggle("hidden",!focusMode);if(focusMode)renderFocus()}
 function handle(e){
   if(!e||!e.type)return;
+  if(e.type==="signal.session.mode"){var sess=sessions.find(function(x){return x.id===e.sessionId});if(sess){sess.mode=e.mode||sess.mode;sess.profile=e.profile||sess.profile;sess.participantModel=e.participantModel||sess.participantModel;sess.expectedParticipants=e.expectedParticipants!=null?e.expectedParticipants:sess.expectedParticipants;sess.roles=Array.isArray(e.roles)?e.roles:sess.roles;upsertSession(sess);if(e.sessionId===activeSessionId){currentSession=sess;render()}}return}
   if(e.type==="signal.session.active"||e.type==="signal.session.updated"){var existing=sessions.find(function(x){return x.id===e.sessionId}),incoming=normalizeSession(e.session||{});if(e.type==="signal.session.updated"&&!incoming.segments.length&&existing&&existing.segments.length)incoming.segments=existing.segments.slice(-100);upsertSession(incoming);activeSessionId=e.sessionId||activeSessionId;var active=sessions.find(function(x){return x.id===activeSessionId});if(active)applySession(active);return}
   if(e.type==="bridge.connected"){ $("bridgeDot").classList.add("ok"); $("bridgeStatus").textContent="CONECTADO"; $("bridgeText").textContent="Conectado"; $("captionText").textContent="Buscando Live Caption"; return}
   if(e.type==="bridge.status"){var listening=e.status==="listening";$("bridgeDot").classList.toggle("ok",listening);$("bridgeStatus").textContent=listening?"CONECTADO":"ERROR";$("bridgeText").textContent=listening?"Conectado":"Bridge: "+String(e.status||"desconocido");return}
