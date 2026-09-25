@@ -1,0 +1,126 @@
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Windows.Automation;
+
+internal static class Program
+{
+    private const string ChromeWindowClass = "Chrome_WidgetWin_1";
+    private const string CaptionBubbleClass = "CaptionBubbleLabel";
+    private const string CaptionViewClass = "AXVirtualView";
+    private static readonly Regex Whitespace = new(@"\s+", RegexOptions.Compiled);
+
+    private static void Main(string[] args)
+    {
+        var intervalMs = GetInterval(args);
+        var previous = "";
+        long sequence = 0;
+        var found = false;
+
+        Console.Error.WriteLine($"Signal Interpreter Bridge | UIA Live Caption | {intervalMs}ms");
+
+        while (true)
+        {
+            try
+            {
+                var snapshot = ReadCaption();
+                if (!string.IsNullOrWhiteSpace(snapshot))
+                {
+                    if (!found)
+                    {
+                        Emit(new { type="caption.status", status="found", timestamp=DateTimeOffset.UtcNow, sequence=++sequence });
+                        found = true;
+                    }
+
+                    if (!string.Equals(snapshot, previous, StringComparison.Ordinal))
+                    {
+                        if (TryAppend(previous, snapshot, out var delta))
+                            Emit(new { type="caption.delta", mode="append", text=delta, snapshot, timestamp=DateTimeOffset.UtcNow, sequence=++sequence });
+                        else
+                            Emit(new { type="caption.revision", mode="replace", text=snapshot, snapshot, timestamp=DateTimeOffset.UtcNow, sequence=++sequence });
+
+                        previous = snapshot;
+                    }
+                }
+                else if (found)
+                {
+                    Emit(new { type="caption.status", status="not_found", timestamp=DateTimeOffset.UtcNow, sequence=++sequence });
+                    found = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Emit(new { type="bridge.error", error=ex.Message, timestamp=DateTimeOffset.UtcNow, sequence=++sequence });
+            }
+
+            Thread.Sleep(intervalMs);
+        }
+    }
+
+    private static string ReadCaption()
+    {
+        var root = AutomationElement.RootElement;
+        var windows = root.FindAll(
+            TreeScope.Children,
+            new PropertyCondition(AutomationElement.ClassNameProperty, ChromeWindowClass));
+
+        var candidates = new List<string>();
+
+        foreach (AutomationElement window in windows)
+        {
+            var bubbles = window.FindAll(
+                TreeScope.Descendants,
+                new PropertyCondition(AutomationElement.ClassNameProperty, CaptionBubbleClass));
+
+            foreach (AutomationElement bubble in bubbles)
+            {
+                var views = bubble.FindAll(
+                    TreeScope.Descendants,
+                    new PropertyCondition(AutomationElement.ClassNameProperty, CaptionViewClass));
+
+                foreach (AutomationElement view in views)
+                {
+                    var value = Normalize(view.Current.Name);
+                    if (!string.IsNullOrEmpty(value))
+                        candidates.Add(value);
+                }
+            }
+        }
+
+        return candidates.OrderByDescending(x => x.Length).FirstOrDefault() ?? "";
+    }
+
+    private static string Normalize(string value)
+        => string.IsNullOrWhiteSpace(value) ? "" : Whitespace.Replace(value.Trim(), " ");
+
+    private static bool TryAppend(string previous, string current, out string delta)
+    {
+        delta = "";
+        if (string.IsNullOrEmpty(previous))
+        {
+            delta = current;
+            return true;
+        }
+
+        if (!current.StartsWith(previous, StringComparison.Ordinal))
+            return false;
+
+        delta = current[previous.Length..].TrimStart();
+        return !string.IsNullOrEmpty(delta);
+    }
+
+    private static int GetInterval(string[] args)
+    {
+        for (var i = 0; i < args.Length - 1; i++)
+            if (args[i].Equals("--interval-ms", StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(args[i + 1], out var value))
+                return Math.Max(50, value);
+
+        return 150;
+    }
+
+    private static void Emit(object value)
+    {
+        Console.Out.WriteLine(JsonSerializer.Serialize(value));
+        Console.Out.Flush();
+    }
+}
