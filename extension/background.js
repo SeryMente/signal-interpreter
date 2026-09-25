@@ -511,7 +511,7 @@ importScripts("telemetry-db.js");
   chrome.runtime.onSuspend.addListener(function () {
     log("info", "EXTENSION_RUNTIME_SUSPENDING", { pendingNetworkRequests: networkRequests ? networkRequests.size : 0 });
   });
-  initialize().catch(function (error) { console.error("[SIGNAL-INTERPRETER] INIT_ERROR", error); });
+  initialize().then(function(){connectSignalBridge();}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
   chrome.alarms.create("effectif-exchange-rate", { delayInMinutes: 0.1, periodInMinutes: 60 });
   chrome.alarms.create("effectif-telemetry-maintenance", { delayInMinutes: 1, periodInMinutes: 60 });
   refreshExchangeRate("startup").catch(function () {});
