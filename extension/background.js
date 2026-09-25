@@ -558,8 +558,39 @@ importScripts("telemetry-db.js");
       record("MISSED_CALL_CLASSIFIED", missed, "warn", "alarm");
     });
   });
+  async function openSignalLiveWindow() {
+    var targetUrl = chrome.runtime.getURL("ui/live.html");
+    try {
+      var windows = await chrome.windows.getAll({ populate: true, windowTypes: ["popup"] });
+      var existing = windows.find(function (win) {
+        return Array.isArray(win.tabs) && win.tabs.some(function (tab) {
+          return String(tab.url || "").split("#")[0].split("?")[0] === targetUrl;
+        });
+      });
+      if (existing && existing.id != null) {
+        await chrome.windows.update(existing.id, { focused: true, state: "normal" });
+        return { ok: true, windowId: existing.id, reused: true };
+      }
+      var stored = await chrome.storage.local.get(["signalLiveBounds"]);
+      var bounds = stored.signalLiveBounds || {};
+      var createData = {
+        url: targetUrl,
+        type: "popup",
+        focused: true,
+        width: Number.isFinite(bounds.width) ? bounds.width : 760,
+        height: Number.isFinite(bounds.height) ? bounds.height : 760
+      };
+      if (Number.isFinite(bounds.left)) createData.left = bounds.left;
+      if (Number.isFinite(bounds.top)) createData.top = bounds.top;
+      var created = await chrome.windows.create(createData);
+      return { ok: !!created, windowId: created && created.id, reused: false };
+    } catch (error) {
+      return { ok: false, error: String(error) };
+    }
+  }
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (!message || message.target === "offscreen") return false;
+    if (message.type === "OPEN_SIGNAL_LIVE_WINDOW") { openSignalLiveWindow().then(sendResponse); return true; }
     if (message.type === "EFFECTIF_EVENT") {
       var event = Object.assign({
         timestamp: iso(), tabId: sender.tab ? sender.tab.id : null,
@@ -704,6 +735,7 @@ importScripts("telemetry-db.js");
     if (!started) return;
     record("NETWORK_REQUEST_ERROR", { method: started.method, type: started.type, url: started.url, tabId: started.tabId, error: details.error, durationMs: Math.max(0, Date.now() - started.at) }, "warn", "webRequest");
   }, { urls: ["https://app.cloudinterpreter.com/*"] });
+  chrome.windows.onRemoved.addListener(function () {});
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area === "local" && changes.effectifConfig) {
       cachedConfig = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.newValue || {});

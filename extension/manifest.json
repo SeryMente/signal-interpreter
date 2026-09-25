@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "minimum_chrome_version": "116",
   "name": "Signal Interpreter",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Asistente independiente para interpretación médica en tiempo real; Auto-Answer, observabilidad y métricas para Cloud Interpreter.",
   "permissions": [
     "storage",
@@ -10,8 +10,7 @@
     "offscreen",
     "alarms",
     "unlimitedStorage",
-    "webRequest",
-    "sidePanel"
+    "webRequest"
   ],
   "host_permissions": [
     "https://app.cloudinterpreter.com/*",
@@ -56,9 +55,6 @@
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  },
-  "side_panel": {
-    "default_path": "ui/sidepanel.html"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; connect-src ws://127.0.0.1:8787 http://127.0.0.1:8787"

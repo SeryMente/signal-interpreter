@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Signal Interpreter · Live</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="../icons/icon16.png">
+  <link rel="stylesheet" href="live.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span>SIGNAL INTERPRETER</span>
+      <strong>LIVE</strong>
+    </div>
+    <div class="live-state"><i id="bridgeDot"></i><span id="bridgeStatus">DESCONECTADO</span><span class="sep">·</span><span id="participantSummary">2 VOCES EXTERNAS</span></div>
+    <div class="toolbar">
+      <button id="sizeMenu" class="tool" title="Tamaño">TAMAÑO</button>
+      <button data-view="timeline" class="tool active">TIMELINE</button>
+      <button data-view="triptych" class="tool">TRÍPTICO</button>
+      <button id="focusBtn" class="tool">FOCO</button>
+      <button id="clear" class="tool danger">LIMPIAR</button>
+    </div>
+  </header>
+
+  <div id="sizeMenuPanel" class="size-panel hidden">
+    <button data-size="compact"><b>COMPACTO</b><span>430 × 700</span></button>
+    <button data-size="normal"><b>NORMAL</b><span>760 × 760</span></button>
+    <button data-size="reading"><b>LECTURA</b><span>1200 × 820</span></button>
+  </div>
+
+  <main>
+    <section class="conversation-shell">
+      <div class="conversation-head">
+        <div>
+          <span class="eyebrow">CONVERSACIÓN</span>
+          <h1 id="activeSpeakerTitle">CLIENTE</h1>
+        </div>
+        <div class="head-actions">
+          <button data-speaker="CLIENTE" class="speaker-switch client active">1 · CLIENTE</button>
+          <button data-speaker="PROFESIONAL" class="speaker-switch professional">2 · PROFESIONAL</button>
+          <button data-speaker="YO" class="speaker-switch me">3 · YO</button>
+          <button id="scrollLive" class="live-jump">↓ LIVE</button>
+        </div>
+      </div>
+
+      <div id="timeline" class="timeline"></div>
+
+      <div id="triptych" class="triptych hidden">
+        <section class="lane client-lane"><header><span>CLIENTE</span><b id="clientCount">0</b></header><div id="clientLane"></div></section>
+        <section class="lane professional-lane"><header><span>PROFESIONAL</span><b id="professionalCount">0</b></header><div id="professionalLane"></div></section>
+        <section class="lane me-lane"><header><span>YO</span><b id="meCount">0</b></header><div id="meLane"></div></section>
+      </div>
+    </section>
+
+    <aside class="controls">
+      <section class="status-card">
+        <div><span>BRIDGE</span><b id="bridgeText">Desconectado</b></div>
+        <div><span>FUENTE</span><b>Chrome Live Caption</b></div>
+        <div><span>CAPTION</span><b id="captionText">Esperando</b></div>
+        <div><span>SEGMENTOS</span><b id="segmentCount">0</b></div>
+      </section>
+
+      <section class="speaker-card">
+        <span class="eyebrow">ASIGNACIÓN RÁPIDA</span>
+        <p>Las nuevas frases de Live Caption se colocan en el participante activo.</p>
+        <div class="hotkeys"><kbd>1</kbd> CLIENTE <kbd>2</kbd> PROFESIONAL <kbd>3</kbd> YO</div>
+        <div id="participantDetection" class="detection">2 voces externas · pendiente de diferenciación acústica</div>
+      </section>
+
+      <section class="composer">
+        <div class="composer-head"><span class="eyebrow">YO</span><button id="sendYo" class="send">INSERTAR</button></div>
+        <textarea id="yo" placeholder="Escribe tu interpretación…"></textarea>
+      </section>
+
+      <section class="read-options">
+        <span class="eyebrow">LECTURA</span>
+        <label><span>Tamaño</span><input id="fontSize" type="range" min="14" max="34" step="2" value="20"><output id="fontSizeValue">20 px</output></label>
+        <label class="check"><input id="autoScroll" type="checkbox" checked><span>Seguir en vivo</span></label>
+        <label class="check"><input id="compactDensity" type="checkbox"><span>Densidad compacta</span></label>
+      </section>
+    </aside>
+  </main>
+
+  <div id="focusOverlay" class="focus-overlay hidden">
+    <div class="focus-label" id="focusLabel">CLIENTE</div>
+    <div class="focus-text" id="focusText">Esperando señal…</div>
+    <button id="focusExit">SALIR DE FOCO</button>
+  </div>
+
+  <script src="live.js"></script>
+</body>
+</html>

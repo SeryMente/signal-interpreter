@@ -93,7 +93,7 @@
     renderOfficial();
   }
   var openTranscript=$("openTranscript");
-  if(openTranscript)openTranscript.addEventListener("click",function(){chrome.tabs.query({active:true,currentWindow:true},function(tabs){var tab=tabs&&tabs[0];if(!tab||!tab.windowId){status("No se pudo identificar la ventana",true);return;}chrome.sidePanel.open({windowId:tab.windowId}).then(function(){status("Panel CLIENTE abierto");}).catch(function(error){status("No se pudo abrir el panel: "+String(error),true);});});});
+  if(openTranscript)openTranscript.addEventListener("click",function(){chrome.runtime.sendMessage({type:"OPEN_SIGNAL_LIVE_WINDOW"}).then(function(response){status(response&&response.ok?"Consola abierta":"No se pudo abrir la consola",!(response&&response.ok));}).catch(function(error){status("No se pudo abrir la consola: "+String(error),true);});});
   $("enabled").addEventListener("change", function () {
     save({ autoAnswerEnabled: this.checked });
   });
