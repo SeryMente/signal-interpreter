@@ -25,13 +25,13 @@ internal static class Program
         try
         {
             Transport = new LocalTransport(port);
-            Transport.Start();
             Transport.CaptionContextChanged += (title, origin) =>
             {
                 targetWindowTitle = string.IsNullOrWhiteSpace(title) ? null : title.Trim();
                 targetOrigin = string.IsNullOrWhiteSpace(origin) ? null : origin.Trim();
                 Console.Error.WriteLine($"Signal Live Caption Bridge | context | title={(targetWindowTitle ?? "none")} | origin={(targetOrigin ?? "none")}");
             };
+            Transport.Start();
         }
         catch (Exception ex)
         {
