@@ -78,7 +78,7 @@ internal sealed class CaptionReconciler
         {
             var matches = true;
             for (var i = 0; i < length; i++)
-                if (!string.Equals(committedWords[^length + i], currentWords[i], StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(committedWords[committedWords.Length - length + i], currentWords[i], StringComparison.OrdinalIgnoreCase))
                 { matches = false; break; }
             if (matches) return string.Join(" ", currentWords.Skip(length));
         }
