@@ -16,6 +16,8 @@ internal static class Program
         var stabilityMs = GetInt(args, "--stability-ms", 750, 250);
         var port = GetInt(args, "--port", 8787, 1024);
         var reconciler = new CaptionReconciler(TimeSpan.FromMilliseconds(stabilityMs));
+        string? targetWindowTitle = null;
+        string? targetOrigin = null;
         var sequence = 0L;
         var found = false;
         var previousRawSnapshot = "";
@@ -24,6 +26,12 @@ internal static class Program
         {
             Transport = new LocalTransport(port);
             Transport.Start();
+            Transport.CaptionContextChanged += (title, origin) =>
+            {
+                targetWindowTitle = string.IsNullOrWhiteSpace(title) ? null : title.Trim();
+                targetOrigin = string.IsNullOrWhiteSpace(origin) ? null : origin.Trim();
+                Console.Error.WriteLine($"Signal Live Caption Bridge | context | title={(targetWindowTitle ?? "none")} | origin={(targetOrigin ?? "none")}");
+            };
         }
         catch (Exception ex)
         {
@@ -52,7 +60,7 @@ internal static class Program
             try
             {
                 var now = DateTimeOffset.UtcNow;
-                var scan = ReadCaptionDiagnostics();
+                var scan = ReadCaptionDiagnostics(targetWindowTitle, targetOrigin);
                 var snapshot = scan.Text;
 
                 if (now - lastDiagnosticAt >= TimeSpan.FromSeconds(5))
@@ -65,6 +73,9 @@ internal static class Program
                         captionViews = scan.CaptionViews,
                         nonEmptyViews = scan.NonEmptyViews,
                         longestTextLength = scan.LongestTextLength,
+                        matchedChromeWindows = scan.MatchedChromeWindows,
+                        targetWindowTitle = scan.TargetWindowTitle,
+                        targetOrigin = scan.TargetOrigin,
                         sequence = ++scanSequence,
                         timestamp = now
                     });
@@ -129,9 +140,9 @@ internal static class Program
         }
     }
 
-    private sealed record CaptionScan(string Text, int ChromeWindows, int CaptionBubbles, int CaptionViews, int NonEmptyViews, int LongestTextLength);
+    private sealed record CaptionScan(string Text, int ChromeWindows, int CaptionBubbles, int CaptionViews, int NonEmptyViews, int LongestTextLength, int MatchedChromeWindows, string? TargetWindowTitle, string? TargetOrigin);
 
-    private static CaptionScan ReadCaptionDiagnostics()
+    private static CaptionScan ReadCaptionDiagnostics(string? targetWindowTitle, string? targetOrigin)
     {
         var root = AutomationElement.RootElement;
         var windows = root.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ClassNameProperty, ChromeWindowClass));
@@ -140,9 +151,14 @@ internal static class Program
         var viewCount = 0;
         var nonEmpty = 0;
         var longest = 0;
+        var matchedWindows = 0;
 
         foreach (AutomationElement window in windows)
         {
+            var windowName = "";
+            try { windowName = NormalizeTitle(window.Current.Name); } catch { }
+            if (string.IsNullOrWhiteSpace(targetWindowTitle) || !MatchesWindowTitle(windowName, targetWindowTitle)) continue;
+            matchedWindows++;
             var bubbles = window.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ClassNameProperty, CaptionBubbleClass));
             bubbleCount += bubbles.Count;
             foreach (AutomationElement bubble in bubbles)
@@ -164,7 +180,20 @@ internal static class Program
 
         return new CaptionScan(
             candidates.OrderByDescending(x => x.Length).FirstOrDefault() ?? "",
-            windows.Count, bubbleCount, viewCount, nonEmpty, longest);
+            windows.Count, bubbleCount, viewCount, nonEmpty, longest, matchedWindows, targetWindowTitle, targetOrigin);
+    }
+
+    private static string NormalizeTitle(string value)
+        => string.IsNullOrWhiteSpace(value) ? "" : Regex.Replace(value.Trim(), @"\s+", " ");
+
+    private static bool MatchesWindowTitle(string currentName, string targetName)
+    {
+        currentName = NormalizeTitle(currentName);
+        targetName = NormalizeTitle(targetName);
+        if (string.IsNullOrWhiteSpace(currentName) || string.IsNullOrWhiteSpace(targetName)) return false;
+        return currentName.Equals(targetName, StringComparison.OrdinalIgnoreCase)
+            || currentName.Contains(targetName, StringComparison.OrdinalIgnoreCase)
+            || targetName.Contains(currentName, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string Normalize(string value) => string.IsNullOrWhiteSpace(value) ? "" : Whitespace.Replace(value.Trim(), " ");
