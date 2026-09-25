@@ -100,8 +100,22 @@ function handle(e){
 document.querySelectorAll("[data-speaker]").forEach(function(b){b.addEventListener("click",function(){activeSpeaker=b.dataset.speaker;syncSpeakerButtons();persistSessionPatch({activeSpeaker:activeSpeaker},true);if(activeSpeaker==="YO")$("yo").focus()})});
 document.querySelectorAll("[data-map]").forEach(function(b){b.addEventListener("click",function(){var p=b.dataset.map.split(":");voiceMap[p[0]]=p[1];persistSessionPatch({voiceMap:Object.assign({},voiceMap)},true);updateCounts()})});
 document.querySelectorAll("[data-view]").forEach(function(b){b.addEventListener("click",function(){setView(b.dataset.view)})});
+$("exportDiagnostic").addEventListener("click",function(){exportDiagnosticBundle()});
 $("sendYo").addEventListener("click",submitYo);$("yo").addEventListener("keydown",function(e){if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();submitYo()}});
 $("clear").addEventListener("click",function(){if(activeSessionId)chrome.runtime.sendMessage({type:"CLEAR_SIGNAL_INTERPRETER_TRANSCRIPT",sessionId:activeSessionId}).catch(function(){})});
+async function exportDiagnosticBundle(){
+  try{
+    var stored=await chrome.storage.local.get(["effectifConfig","effectifState","effectifPlatformMirror","signalInterpreterSessions","signalInterpreterActiveSessionId","effectifLastEvent","effectifTelemetryHealth"]);
+    var results=await Promise.all([KhoraTelemetryDB.getEvents(),KhoraTelemetryDB.getSnapshots(),KhoraTelemetryDB.getAllSignalSegments(),KhoraTelemetryDB.stats()]);
+    var summary={};results[0].forEach(function(e){var key=String(e.action||"UNKNOWN");summary[key]=(summary[key]||0)+1});
+    var safeConfig=Object.assign({},stored.effectifConfig||{});if(safeConfig.groqApiKey)safeConfig.groqApiKey="[REDACTED]";
+    var sessions=(Array.isArray(stored.signalInterpreterSessions)?stored.signalInterpreterSessions:[]).map(function(s){var copy=Object.assign({},s);delete copy.segments;return copy});
+    var payload={schema:"signal-interpreter-diagnostic/v3",exportedAt:new Date().toISOString(),report:{purpose:"Diagnóstico reproducible de captura, bridge, Live Caption y persistencia por sesión",eventSummary:summary,eventsCount:results[0].length,signalSegmentsCount:results[2].length,snapshotCount:results[1].length},bridgeState:(stored.effectifState&&stored.effectifState.signalInterpreterBridge)||null,telemetryHealth:stored.effectifTelemetryHealth||null,lastEvent:stored.effectifLastEvent||null,config:safeConfig,state:stored.effectifState||{},activeSessionId:stored.signalInterpreterActiveSessionId||null,sessions:sessions,events:results[0],platformSnapshots:results[1],signalSegments:results[2]};
+    var blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download="signal-interpreter-diagnostico-"+new Date().toISOString().replace(/[:.]/g,"-")+".json";document.body.appendChild(link);link.click();link.remove();setTimeout(function(){URL.revokeObjectURL(url)},2000);
+    $("audioText").textContent="LOG DESCARGADO";$("participantDetection").textContent="Diagnóstico: "+results[0].length.toLocaleString("es-MX")+" eventos · "+results[2].length.toLocaleString("es-MX")+" segmentos";
+  }catch(error){$("audioText").textContent="ERROR";$("participantDetection").textContent="Exportación: "+String(error).slice(0,180);chrome.runtime.sendMessage({type:"SIGNAL_LIVE_UI_ERROR",error:String(error),phase:"export"}).catch(function(){})}
+}
+
 $("scrollLive").addEventListener("click",function(){autoScroll=true;$("autoScroll").checked=true;$("timeline").scrollTop=$("timeline").scrollHeight});
 $("focusBtn").addEventListener("click",function(){toggleFocus()});$("focusExit").addEventListener("click",function(){toggleFocus(false)});
 $("sizeMenu").addEventListener("click",function(){$("sizeMenuPanel").classList.toggle("hidden")});
@@ -121,7 +135,7 @@ document.addEventListener("keydown",function(e){
  if(e.key.toLowerCase()==="g")setView("triptych");
 });
 chrome.runtime.onMessage.addListener(function(m){if(m&&m.type==="SIGNAL_INTERPRETER_EVENT")handle(m.event)});
-chrome.runtime.sendMessage({type:"GET_SIGNAL_INTERPRETER_STATE"}).then(function(r){
+chrome.runtime.sendMessage({type:"SIGNAL_LIVE_CONSOLE_OPEN"}).catch(function(){});chrome.runtime.sendMessage({type:"GET_SIGNAL_INTERPRETER_STATE"}).then(function(r){
  if(!r||!r.ok)return;
  sessions=(Array.isArray(r.sessions)?r.sessions:[]).map(normalizeSession);activeSessionId=r.activeSessionId||null;
  var initial=activeSessionId?sessions.find(function(x){return x.id===activeSessionId}):sessions[sessions.length-1];
@@ -129,5 +143,5 @@ chrome.runtime.sendMessage({type:"GET_SIGNAL_INTERPRETER_STATE"}).then(function(
  $("bridgeDot").classList.toggle("ok",r.bridge&&r.bridge.status==="connected");$("bridgeStatus").textContent=r.bridge&&r.bridge.status==="connected"?"CONECTADO":"DESCONECTADO";$("bridgeText").textContent=r.bridge&&r.bridge.status==="connected"?"Conectado":"Desconectado";$("captionText").textContent=r.bridge&&r.bridge.captionActive?"Activo":"Esperando";
  restoreBounds();renderSessionTabs();
 }).catch(function(){restoreBounds();render()});
-window.addEventListener("beforeunload",saveBounds);render();syncSpeakerButtons()
+window.addEventListener("beforeunload",function(){saveBounds();chrome.runtime.sendMessage({type:"SIGNAL_LIVE_CONSOLE_CLOSE"}).catch(function(){})});render();syncSpeakerButtons()
 })();
