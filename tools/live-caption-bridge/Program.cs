@@ -44,12 +44,32 @@ internal static class Program
 
         Console.Error.WriteLine($"Signal Live Caption Bridge | UIA | poll={intervalMs}ms | stability={stabilityMs}ms | ws={(Transport?.WebSocketUrl ?? "disabled")}");
 
+        var scanSequence = 0L;
+        var lastDiagnosticAt = DateTimeOffset.MinValue;
+
         while (true)
         {
             try
             {
                 var now = DateTimeOffset.UtcNow;
-                var snapshot = ReadCaption();
+                var scan = ReadCaptionDiagnostics();
+                var snapshot = scan.Text;
+
+                if (now - lastDiagnosticAt >= TimeSpan.FromSeconds(5))
+                {
+                    Emit(new
+                    {
+                        type = "uia.scan",
+                        chromeWindows = scan.ChromeWindows,
+                        captionBubbles = scan.CaptionBubbles,
+                        captionViews = scan.CaptionViews,
+                        nonEmptyViews = scan.NonEmptyViews,
+                        longestTextLength = scan.LongestTextLength,
+                        sequence = ++scanSequence,
+                        timestamp = now
+                    });
+                    lastDiagnosticAt = now;
+                }
 
                 if (!string.IsNullOrWhiteSpace(snapshot))
                 {
@@ -109,26 +129,42 @@ internal static class Program
         }
     }
 
-    private static string ReadCaption()
+    private sealed record CaptionScan(string Text, int ChromeWindows, int CaptionBubbles, int CaptionViews, int NonEmptyViews, int LongestTextLength);
+
+    private static CaptionScan ReadCaptionDiagnostics()
     {
         var root = AutomationElement.RootElement;
         var windows = root.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ClassNameProperty, ChromeWindowClass));
         var candidates = new List<string>();
+        var bubbleCount = 0;
+        var viewCount = 0;
+        var nonEmpty = 0;
+        var longest = 0;
 
         foreach (AutomationElement window in windows)
         {
             var bubbles = window.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ClassNameProperty, CaptionBubbleClass));
+            bubbleCount += bubbles.Count;
             foreach (AutomationElement bubble in bubbles)
             {
                 var views = bubble.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ClassNameProperty, CaptionViewClass));
+                viewCount += views.Count;
                 foreach (AutomationElement view in views)
                 {
                     var value = Normalize(view.Current.Name);
-                    if (!string.IsNullOrEmpty(value)) candidates.Add(value);
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        nonEmpty++;
+                        longest = Math.Max(longest, value.Length);
+                        candidates.Add(value);
+                    }
                 }
             }
         }
-        return candidates.OrderByDescending(x => x.Length).FirstOrDefault() ?? "";
+
+        return new CaptionScan(
+            candidates.OrderByDescending(x => x.Length).FirstOrDefault() ?? "",
+            windows.Count, bubbleCount, viewCount, nonEmpty, longest);
     }
 
     private static string Normalize(string value) => string.IsNullOrWhiteSpace(value) ? "" : Whitespace.Replace(value.Trim(), " ");
