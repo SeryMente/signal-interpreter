@@ -100,21 +100,16 @@
     var tx = db.transaction("signalSegments", "readonly");
     var done = transactionDone(tx);
     var index = tx.objectStore("signalSegments").index("sessionId");
-    var request = index.openCursor(IDBKeyRange.only(sessionId), "prev");
-    var values = [];
-    var max = Math.max(1, Math.min(1000, Number(limit) || 200));
-    await new Promise(function (resolve, reject) {
-      request.onsuccess = function () {
-        var cursor = request.result;
-        if (!cursor || values.length >= max) { resolve(); return; }
-        values.push(cursor.value);
-        cursor.continue();
-      };
-      request.onerror = function () { reject(request.error); };
-    });
+    var request = index.getAll(IDBKeyRange.only(sessionId));
+    var values = await requestPromise(request);
     await done;
-    values.reverse();
-    return values;
+    var max = Math.max(1, Math.min(1000, Number(limit) || 200));
+    values.sort(function (a, b) {
+      var at = Date.parse(a && a.timestamp || 0), bt = Date.parse(b && b.timestamp || 0);
+      if (Number.isFinite(at) && Number.isFinite(bt) && at !== bt) return at - bt;
+      return String(a && a.id || "").localeCompare(String(b && b.id || ""));
+    });
+    return values.slice(-max);
   }
   async function deleteSignalSession(sessionId) {
     var db = await open();
