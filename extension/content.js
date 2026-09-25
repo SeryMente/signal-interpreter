@@ -1,7 +1,7 @@
 (function () {
   "use strict";
-  if (window.__KHORA_EFFECTIF_V080__) return;
-  window.__KHORA_EFFECTIF_V080__ = true;
+  if (window.__SIGNAL_INTERPRETER_CLOUD_V090__) return;
+  window.__SIGNAL_INTERPRETER_CLOUD_V090__ = true;
 
   var DIALOG = 'div[role="dialog"][aria-modal="true"]';
   var CONNECT = 'button[aria-label="Connect"]';
@@ -327,7 +327,7 @@
       return true;
     }).slice(0, 600).map(function (line) { return mirrorText(line, 500); });
     var snapshot = {
-      schema: "khora-effectif-visible-page/v1", key: key,
+      schema: "signal-interpreter-visible-page/v1", key: key,
       route: routeTemplate(), title: safe(document.title), capturedAt: iso(),
       reason: reason, summary: extractSummary(), tables: extractTables(), lines: lines
     };
