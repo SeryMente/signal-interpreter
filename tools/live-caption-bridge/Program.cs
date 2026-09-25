@@ -72,11 +72,12 @@ internal static class Program
 
                     if (!string.Equals(normalizedSnapshot, previousRawSnapshot, StringComparison.Ordinal))
                     {
+                        var append = TryAppend(previousRawSnapshot, normalizedSnapshot, out var delta);
                         Emit(new
                         {
-                            type = TryAppend(previousRawSnapshot, normalizedSnapshot, out _) ? "caption.delta" : "caption.revision",
-                            mode = TryAppend(previousRawSnapshot, normalizedSnapshot, out var delta) ? "append" : "replace",
-                            text = deltaOrSnapshot(previousRawSnapshot, normalizedSnapshot, delta),
+                            type = append ? "caption.delta" : "caption.revision",
+                            mode = append ? "append" : "replace",
+                            text = append ? delta : normalizedSnapshot,
                             snapshot = normalizedSnapshot,
                             timestamp = now,
                             sequence = ++sequence
@@ -141,10 +142,6 @@ internal static class Program
         return !string.IsNullOrEmpty(delta);
     }
 
-    private static string deltaOrSnapshot(string previous, string current, string delta)
-    {
-        return TryAppend(previous, current, out var appended) ? appended : current;
-    }
 
     private static int GetInt(string[] args, string name, int fallback, int minimum)
     {
