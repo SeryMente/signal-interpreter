@@ -23,6 +23,13 @@
     </div>
   </header>
 
+  <nav class="session-tabs" aria-label="Sesiones por URL">
+    <div class="session-tabs-label">SESIONES</div>
+    <div id="sessionTabsList" class="session-tabs-list">
+      <span class="session-empty">Abre la consola desde una pestaña para crear una sesión.</span>
+    </div>
+  </nav>
+
   <div id="sizeMenuPanel" class="size-panel hidden">
     <button data-size="compact"><b>COMPACTO</b><span>430 × 700</span></button>
     <button data-size="normal"><b>NORMAL</b><span>760 × 760</span></button>
@@ -35,6 +42,7 @@
         <div>
           <span class="eyebrow">CONVERSACIÓN</span>
           <h1 id="activeSpeakerTitle">CLIENTE</h1>
+          <small id="sessionSource" class="session-source">Sin URL de sesión</small>
         </div>
         <div class="head-actions">
           <button data-speaker="CLIENTE" class="speaker-switch client active">1 · CLIENTE</button>
