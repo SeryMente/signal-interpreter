@@ -9,6 +9,7 @@ using System.Text.Json;
 internal sealed class LocalTransport : IDisposable
 {
     private const int MaxPayloadBytes = 1024 * 1024;
+    public event Action<string?, string?>? CaptionContextChanged;
     private readonly TcpListener _listener;
     private readonly CancellationTokenSource _cts = new();
     private readonly ConcurrentDictionary<Guid, ClientConnection> _clients = new();
@@ -90,7 +91,7 @@ internal sealed class LocalTransport : IDisposable
                 await stream.WriteAsync(Encoding.ASCII.GetBytes(response), _cts.Token);
                 await stream.FlushAsync(_cts.Token);
 
-                var connection = new ClientConnection(stream, _cts.Token);
+                var connection = new ClientConnection(stream, _cts.Token, this);
                 var id = Guid.NewGuid();
                 if (!_clients.TryAdd(id, connection)) return;
 
@@ -179,9 +180,11 @@ internal sealed class LocalTransport : IDisposable
     {
         private readonly Stream _stream;
         private readonly CancellationToken _token;
+        private readonly LocalTransport _owner;
         private readonly SemaphoreSlim _sendLock = new(1, 1);
+        private bool _isContextController;
 
-        public ClientConnection(Stream stream, CancellationToken token) { _stream = stream; _token = token; }
+        public ClientConnection(Stream stream, CancellationToken token, LocalTransport owner) { _stream = stream; _token = token; _owner = owner; }
         public void TryQueue(string json) => _ = SendTextAsync(json);
 
         private async Task SendTextAsync(string json)
@@ -229,10 +232,33 @@ internal sealed class LocalTransport : IDisposable
                 await WriteFrameAsync(_stream, 0xA, payload, _token);
                 await _stream.FlushAsync(_token);
             }
+            else if (opcode == 0x1 && payload.Length > 0)
+            {
+                try
+                {
+                    using var doc = JsonDocument.Parse(payload);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("type", out var type) &&
+                        string.Equals(type.GetString(), "signal.caption.context", StringComparison.Ordinal))
+                    {
+                        var title = root.TryGetProperty("sourceTitle", out var titleNode) ? titleNode.GetString() : null;
+                        var origin = root.TryGetProperty("sourceOrigin", out var originNode) ? originNode.GetString() : null;
+                        _isContextController = true;
+                        _owner.CaptionContextChanged?.Invoke(title, origin);
+                    }
+                }
+                catch { }
+            }
             return true;
         }
 
-        public ValueTask DisposeAsync() { try { _stream.Close(); } catch { } _sendLock.Dispose(); return ValueTask.CompletedTask; }
+        public ValueTask DisposeAsync()
+        {
+            if (_isContextController) _owner.CaptionContextChanged?.Invoke(null, null);
+            try { _stream.Close(); } catch { }
+            _sendLock.Dispose();
+            return ValueTask.CompletedTask;
+        }
 
         private static async Task WriteFrameAsync(Stream stream, byte opcode, byte[] payload, CancellationToken token)
         {
