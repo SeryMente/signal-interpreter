@@ -93,7 +93,7 @@
     renderOfficial();
   }
   var openTranscript=$("openTranscript");
-  if(openTranscript)openTranscript.addEventListener("click",function(){chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:tab&&tab.id};if(!tab||tab.id==null){return chrome.runtime.sendMessage(payload)}return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){payload.audioStreamId=streamId;return chrome.runtime.sendMessage(payload)}).catch(function(){return chrome.runtime.sendMessage(payload)});}).then(function(response){status(response&&response.ok?"Consola abierta":"No se pudo abrir la consola",!(response&&response.ok));}).catch(function(error){status("No se pudo abrir la consola: "+String(error),true);});});
+  if(openTranscript)openTranscript.addEventListener("click",function(){chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:tab&&tab.id,sourceUrl:tab&&tab.url||"",sourceTitle:tab&&tab.title||""};if(!tab||tab.id==null){return chrome.runtime.sendMessage(payload)}return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){payload.audioStreamId=streamId;return chrome.runtime.sendMessage(payload)}).catch(function(){return chrome.runtime.sendMessage(payload)});}).then(function(response){status(response&&response.ok?"Consola abierta":"No se pudo abrir la consola",!(response&&response.ok));}).catch(function(error){status("No se pudo abrir la consola: "+String(error),true);});});
   $("enabled").addEventListener("change", function () {
     save({ autoAnswerEnabled: this.checked });
   });
