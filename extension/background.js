@@ -469,7 +469,7 @@ importScripts("telemetry-db.js");
   var SIGNAL_BRIDGE_URL="ws://127.0.0.1:8787/";
   var signalBridgeSocket=null,signalBridgeReconnectTimer=null,signalBridgeReconnectDelay=500;
   var signalActiveSessionId=null,signalLastSpeakerId=null,signalLastSpeakerAt=0,signalLastActivityLogAt=0,signalLiveConsoleOpen=false;
-  function recordSignalDiagnostic(action,payload,level){record(action,Object.assign({sessionId:signalActiveSessionId},payload||{}),level||"info","signal-bridge");}
+  function recordSignalDiagnostic(action,payload,level,source){record(action,Object.assign({sessionId:signalActiveSessionId},payload||{}),level||"info",source||"signal-bridge");}
 
   function normalizeSignalSessionUrl(rawUrl){
     try{var u=new URL(String(rawUrl||""));u.hash="";return u.toString()}catch(_){return String(rawUrl||"")}
