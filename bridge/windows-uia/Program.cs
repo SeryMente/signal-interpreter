@@ -11,45 +11,125 @@ internal static class Program
 
     private static void Main(string[] args)
     {
-        var intervalMs = GetInterval(args);
-        var previous = "";
+        var intervalMs = GetInt(args, "--interval-ms", 150, 50);
+        var stabilityMs = GetInt(args, "--stability-ms", 750, 250);
+        var reconciler = new CaptionReconciler(TimeSpan.FromMilliseconds(stabilityMs));
+
         long sequence = 0;
         var found = false;
+        var previousRawSnapshot = "";
 
-        Console.Error.WriteLine($"Signal Interpreter Bridge | UIA Live Caption | {intervalMs}ms");
+        Console.Error.WriteLine(
+            $"Signal Interpreter Bridge | UIA Live Caption | poll={intervalMs}ms | stability={stabilityMs}ms");
 
         while (true)
         {
             try
             {
+                var now = DateTimeOffset.UtcNow;
                 var snapshot = ReadCaption();
+
                 if (!string.IsNullOrWhiteSpace(snapshot))
                 {
                     if (!found)
                     {
-                        Emit(new { type="caption.status", status="found", timestamp=DateTimeOffset.UtcNow, sequence=++sequence });
+                        Emit(new
+                        {
+                            type = "caption.status",
+                            status = "found",
+                            timestamp = now,
+                            sequence = ++sequence
+                        });
                         found = true;
                     }
 
-                    if (!string.Equals(snapshot, previous, StringComparison.Ordinal))
-                    {
-                        if (TryAppend(previous, snapshot, out var delta))
-                            Emit(new { type="caption.delta", mode="append", text=delta, snapshot, timestamp=DateTimeOffset.UtcNow, sequence=++sequence });
-                        else
-                            Emit(new { type="caption.revision", mode="replace", text=snapshot, snapshot, timestamp=DateTimeOffset.UtcNow, sequence=++sequence });
+                    var normalizedSnapshot = Normalize(snapshot);
 
-                        previous = snapshot;
+                    foreach (var segment in reconciler.Observe(normalizedSnapshot, now))
+                    {
+                        Emit(new
+                        {
+                            type = "caption.segment",
+                            mode = "final",
+                            source = "live-caption",
+                            reason = segment.Reason,
+                            text = segment.Text,
+                            snapshot = segment.Snapshot,
+                            timestamp = now,
+                            sequence = ++sequence
+                        });
+                    }
+
+                    if (!string.Equals(normalizedSnapshot, previousRawSnapshot, StringComparison.Ordinal))
+                    {
+                        if (TryAppend(previousRawSnapshot, normalizedSnapshot, out var delta))
+                        {
+                            Emit(new
+                            {
+                                type = "caption.delta",
+                                mode = "append",
+                                text = delta,
+                                snapshot = normalizedSnapshot,
+                                timestamp = now,
+                                sequence = ++sequence
+                            });
+                        }
+                        else
+                        {
+                            Emit(new
+                            {
+                                type = "caption.revision",
+                                mode = "replace",
+                                text = normalizedSnapshot,
+                                snapshot = normalizedSnapshot,
+                                timestamp = now,
+                                sequence = ++sequence
+                            });
+                        }
+
+                        previousRawSnapshot = normalizedSnapshot;
                     }
                 }
                 else if (found)
                 {
-                    Emit(new { type="caption.status", status="not_found", timestamp=DateTimeOffset.UtcNow, sequence=++sequence });
+                    var nowEmpty = DateTimeOffset.UtcNow;
+
+                    foreach (var segment in reconciler.Flush(nowEmpty, "caption-cleared"))
+                    {
+                        Emit(new
+                        {
+                            type = "caption.segment",
+                            mode = "final",
+                            source = "live-caption",
+                            reason = segment.Reason,
+                            text = segment.Text,
+                            snapshot = segment.Snapshot,
+                            timestamp = nowEmpty,
+                            sequence = ++sequence
+                        });
+                    }
+
+                    Emit(new
+                    {
+                        type = "caption.status",
+                        status = "not_found",
+                        timestamp = nowEmpty,
+                        sequence = ++sequence
+                    });
+
                     found = false;
+                    previousRawSnapshot = "";
                 }
             }
             catch (Exception ex)
             {
-                Emit(new { type="bridge.error", error=ex.Message, timestamp=DateTimeOffset.UtcNow, sequence=++sequence });
+                Emit(new
+                {
+                    type = "bridge.error",
+                    error = ex.Message,
+                    timestamp = DateTimeOffset.UtcNow,
+                    sequence = ++sequence
+                });
             }
 
             Thread.Sleep(intervalMs);
@@ -108,14 +188,16 @@ internal static class Program
         return !string.IsNullOrEmpty(delta);
     }
 
-    private static int GetInterval(string[] args)
+    private static int GetInt(string[] args, string name, int fallback, int minimum)
     {
         for (var i = 0; i < args.Length - 1; i++)
-            if (args[i].Equals("--interval-ms", StringComparison.OrdinalIgnoreCase) &&
+        {
+            if (args[i].Equals(name, StringComparison.OrdinalIgnoreCase) &&
                 int.TryParse(args[i + 1], out var value))
-                return Math.Max(50, value);
+                return Math.Max(minimum, value);
+        }
 
-        return 150;
+        return fallback;
     }
 
     private static void Emit(object value)
