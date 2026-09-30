@@ -69,7 +69,7 @@ async function flush(reason){
   }catch(error){state.consecutiveFailures=Number(state.consecutiveFailures||0)+1;state.lastError=String(error);await setState(state);return{ok:false,batchId:batchId,error:String(error),summary:data.summary}}
 }
 function noteEvent(event){
-  mark().catch(function(){});
+  mark();
   var critical=event&&(event.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(String(event.action||"")));
   if(critical){flush("critical").catch(function(){}) ;return}
   if(!timer)timer=setTimeout(function(){timer=null;flush("event-window").catch(function(){})},30000);
