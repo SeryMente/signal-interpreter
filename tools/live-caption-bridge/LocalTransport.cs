@@ -32,6 +32,8 @@ internal sealed class LocalTransport : IDisposable
 
     public int ClientCount => _clients.Count;
     internal sealed record CaptionContext(string SessionId,string? TraceId,int? SourceTabId,int? SourceWindowId,string? SourceTitle,string? SourceOrigin,int ContextVersion);
+    private void ApplyContext(CaptionContext context){_context=context;CaptionContextChanged?.Invoke(context);}
+    private void ClearContext(Guid connectionId){if(_controllerId!=connectionId)return;_controllerId=null;_context=null;CaptionContextChanged?.Invoke(new CaptionContext("",null,null,null,null,null,0));}
 
     public void Publish(object value)
     {
@@ -262,8 +264,7 @@ internal sealed class LocalTransport : IDisposable
                             var origin=root.TryGetProperty("sourceOrigin",out var originNode)?originNode.GetString():null;
                             var version=root.TryGetProperty("contextVersion",out var vn)&&vn.TryGetInt32(out var vi)?vi:1;
                             if(string.IsNullOrWhiteSpace(sessionId)) return true;
-                            _owner._context=new CaptionContext(sessionId,traceId,tabId,windowId,title,origin,version);
-                            _owner.CaptionContextChanged?.Invoke(_owner._context);
+                            _owner.ApplyContext(new CaptionContext(sessionId,traceId,tabId,windowId,title,origin,version));
                             TryQueue(JsonSerializer.Serialize(new { type="bridge.context.accepted",sessionId,traceId,sourceTabId=tabId,sourceWindowId=windowId,sourceTitle=title,sourceOrigin=origin,contextVersion=version,timestamp=DateTimeOffset.UtcNow }));
                         }
                     }
@@ -275,7 +276,7 @@ internal sealed class LocalTransport : IDisposable
 
         public ValueTask DisposeAsync()
         {
-            if (_isContextController && _owner._controllerId==ConnectionId){_owner._controllerId=null;_owner._context=null;_owner.CaptionContextChanged?.Invoke(new CaptionContext("",null,null,null,null,null,0));}
+            if (_isContextController)_owner.ClearContext(ConnectionId);
             try { _stream.Close(); } catch { }
             _sendLock.Dispose();
             return ValueTask.CompletedTask;
