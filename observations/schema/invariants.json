@@ -1,0 +1,13 @@
+{
+  "schema": "signal-interpreter-diagnostic-invariants/v1",
+  "invariants": [
+    "SESSION_ORIGIN_MATCH: session.origin == source.tab.origin",
+    "SEGMENT_SESSION_MATCH: segment.sourceOrigin == session.sourceOrigin",
+    "SEGMENT_TAB_MATCH: segment.sourceTabId == session.sourceTabId",
+    "CAPTION_AFTER_CONTEXT: caption.segment only after context.accepted",
+    "PERSIST_REQUIRES_SESSION: persisted segment => session exists",
+    "RENDER_REQUIRES_PERSIST: rendered segment => persisted or manual",
+    "NO_SEGMENT_WITHOUT_VALID_SCOPE: no caption segment may survive an invalid scope",
+    "UIA_AMBIGUITY_BLOCKED: caption emission is blocked when more than one target Chrome window matches"
+  ]
+}
