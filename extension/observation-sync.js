@@ -41,13 +41,13 @@ function safeEvent(e){
 }
 async function getState(){var s=await chrome.storage.local.get(["signalObservationSyncState"]);return Object.assign({ackedSequence:0,pendingCount:0,lastAttemptAt:null,lastSuccessAt:null,lastBatchId:null,consecutiveFailures:0,lastError:null},s.signalObservationSyncState||{})}
 async function setState(state){await chrome.storage.local.set({signalObservationSyncState:state})}
-async function mark(){var s=await getState();s.pendingCount=Number(s.pendingCount||0)+1;await setState(s);return s}
+async function mark(){var s=await getState();s.pendingCount=Number(s.pendingCount||0)+1;await setState(s);try{chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5})}catch(_){}return s}
 async function collect(){
   var state=await getState();
   var events=KhoraTelemetryDB.getEventsAfter?await KhoraTelemetryDB.getEventsAfter(Number(state.ackedSequence)||0,MAX_BATCH): (await KhoraTelemetryDB.getEvents()).filter(function(e){return Number(e.sequence||0)>Number(state.ackedSequence||0)}).slice(0,MAX_BATCH);
   if(!events.length)return{state:state,events:[]};
   var critical=events.some(function(e){return e.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(String(e.action||""))});
-  var summary={eventsTotal:events.length,errors:events.filter(function(e){return e.level==="error"}).length,warnings:events.filter(function(e){return e.level==="warn"}).length,critical:critical,firstSequence:events[0].sequence,lastSequence:events[events.length-1].sequence,firstTimestamp:events[0].timestamp,lastTimestamp:events[events.length-1].timestamp,actions:{},categories:{}};
+  var summary={eventsTotal:events.length,errors:events.filter(function(e){return e.level==="error"}).length,warnings:events.filter(function(e){return e.level==="warn"}).length,critical:critical,scopeRejected:events.filter(function(e){return /SCOPE_REJECTED|DOMAIN_MISMATCH|SESSION_MISMATCH/.test(String(e.action||""))}).length,contextEvents:events.filter(function(e){return /CONTEXT/.test(String(e.action||""))}).length,invariantSignals:events.filter(function(e){return /INVARIANT|WITHOUT_VALID_SCOPE|AMBIGUOUS/.test(String(e.action||""))}).length,firstSequence:events[0].sequence,lastSequence:events[events.length-1].sequence,firstTimestamp:events[0].timestamp,lastTimestamp:events[events.length-1].timestamp,actions:{},categories:{}};
   events.forEach(function(e){summary.actions[e.action]=(summary.actions[e.action]||0)+1;summary.categories[e.category||"RUNTIME"]=(summary.categories[e.category||"RUNTIME"]||0)+1});
   return{state:state,events:events.map(safeEvent),summary:summary}
 }
@@ -73,7 +73,7 @@ function noteEvent(event){
   var critical=event&&(event.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(String(event.action||"")));
   if(critical){flush("critical").catch(function(){}) ;return}
   clearTimeout(timer);
-  var delay=Number.isFinite(lastTriggerAt)&&lastTriggerAt?Math.min(MAX_DELAY_MS,Math.max(5000,MIN_GAP_MS-(Date.now()-lastTriggerAt))):30000;
+  var delay=30000;
   timer=setTimeout(function(){flush("event-window").catch(function(){})},delay);
 }
 function start(){try{chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5,periodInMinutes:2})}catch(_){}}
