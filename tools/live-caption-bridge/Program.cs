@@ -111,7 +111,13 @@ internal static class Program
                     var normalizedSnapshot = Normalize(snapshot);
                     if (scan.MatchedChromeWindows != 1 || string.IsNullOrWhiteSpace(scan.SessionId))
                     {
-                        if (scan.MatchedChromeWindows > 1) Emit(new { type = "caption.status", status = "ambiguous", sessionId = scan.SessionId, traceId = scan.TraceId, sourceTabId = scan.SourceTabId, sourceWindowId = scan.SourceWindowId, sourceOrigin = scan.TargetOrigin, targetWindowTitle = scan.TargetWindowTitle, timestamp = now, sequence = ++sequence });
+                        if (scan.MatchedChromeWindows > 1 && found)
+                        {
+                            Emit(new { type = "caption.status", status = "ambiguous", sessionId = scan.SessionId, traceId = scan.TraceId, sourceTabId = scan.SourceTabId, sourceWindowId = scan.SourceWindowId, sourceOrigin = scan.TargetOrigin, targetWindowTitle = scan.TargetWindowTitle, timestamp = now, sequence = ++sequence });
+                            found = false;
+                            reconciler.Reset();
+                            previousRawSnapshot = "";
+                        }
                         Thread.Sleep(intervalMs);
                         continue;
                     }
