@@ -486,7 +486,7 @@ importScripts("telemetry-db.js","observation-sync.js");
     return{mode:"unknown",profile:"generic",participantModel:"unknown",expectedParticipants:null,roles:["PERSONA_A","PERSONA_B"]};
   }
   function normalizeSignalSession(s){
-    s=Object.assign({id:uid(),sourceKey:"",sourceUrl:"",title:"Sesión",sourceTabId:null,createdAt:iso(),lastActivatedAt:null,activationCount:0,segments:[],segmentCount:0,activeSpeaker:"CLIENTE",view:"timeline",fontSize:20,autoScroll:true,compactDensity:false,voiceMap:{A:"CLIENTE",B:"PROFESIONAL"},mode:"unknown",profile:"generic",participantModel:"unknown",expectedParticipants:null,roles:[],detectedSpeakerIds:{}},s||{});
+    s=Object.assign({id:uid(),sourceKey:"",sourceUrl:"",title:"Sesión",sourceTabId:null,sourceWindowId:null,traceId:uid(),lastOperationId:null,createdAt:iso(),lastActivatedAt:null,activationCount:0,segments:[],segmentCount:0,activeSpeaker:"CLIENTE",view:"timeline",fontSize:20,autoScroll:true,compactDensity:false,voiceMap:{A:"CLIENTE",B:"PROFESIONAL"},mode:"unknown",profile:"generic",participantModel:"unknown",expectedParticipants:null,roles:[],detectedSpeakerIds:{}},s||{});
     s.sourceUrl=normalizeSignalSourceUrl(s.sourceUrl||s.sourceKey);
     s.sourceKey=normalizeSignalSessionUrl(s.sourceUrl||s.sourceKey);
     var profile=signalProfileForOrigin(s.sourceKey);
@@ -510,11 +510,12 @@ importScripts("telemetry-db.js","observation-sync.js");
     var sourceKey=normalizeSignalSessionUrl(sourceUrl);
     var data=await loadSignalSessions(),session=data.sessions.find(function(s){return s.sourceKey===sourceKey});
     if(!session){
-      session=normalizeSignalSession({sourceKey:sourceKey,sourceUrl:sourceUrl,title:info&&info.title||"Sesión",sourceTabId:info&&info.tabId!=null?info.tabId:null,createdAt:iso(),lastActivatedAt:iso()});
+      session=normalizeSignalSession({sourceKey:sourceKey,sourceUrl:sourceUrl,title:info&&info.title||"Sesión",sourceTabId:info&&info.tabId!=null?info.tabId:null,sourceWindowId:sourceWindowId,createdAt:iso(),lastActivatedAt:iso()});
       data.sessions.push(session);if(data.sessions.length>50)data.sessions=data.sessions.slice(-50)
     }else{
       if(sourceUrl)session.sourceUrl=sourceUrl;
       if(info&&info.tabId!=null)session.sourceTabId=info.tabId;
+      if(sourceWindowId!=null)session.sourceWindowId=sourceWindowId;
       if(info&&String(info.title||"").trim())session.title=String(info.title).trim().slice(0,140);
       session.lastActivatedAt=iso();
       session=normalizeSignalSession(session);
@@ -566,7 +567,7 @@ importScripts("telemetry-db.js","observation-sync.js");
     if(!session)return;
     signalBridgeContextSessionId=session.id;
     if(!signalBridgeSocket||signalBridgeSocket.readyState!==WebSocket.OPEN){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_QUEUED",{sessionId:session.id,sourceTabId:session.sourceTabId,sourceOrigin:session.sourceKey});connectSignalBridge();return}
-    try{signalBridgeSocket.send(JSON.stringify({type:"signal.caption.context",sourceTabId:session.sourceTabId||null,sourceTitle:String(session.title||"").slice(0,300),sourceOrigin:normalizeSignalSessionUrl(session.sourceUrl||session.sourceKey),timestamp:iso()}));recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_SENT",{sessionId:session.id,sourceTabId:session.sourceTabId,sourceTitle:String(session.title||"").slice(0,300),sourceOrigin:normalizeSignalSessionUrl(session.sourceUrl||session.sourceKey)})}catch(error){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_SEND_ERROR",{sessionId:session.id,error:String(error)},"warn")}
+    try{signalBridgeSocket.send(JSON.stringify({type:"signal.caption.context",sessionId:session.id,traceId:session.traceId||null,sourceTabId:session.sourceTabId||null,sourceWindowId:session.sourceWindowId||null,sourceTitle:String(session.title||"").slice(0,300),sourceOrigin:normalizeSignalSessionUrl(session.sourceUrl||session.sourceKey),contextVersion:1,timestamp:iso()}));recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_SENT",{sessionId:session.id,traceId:session.traceId||null,sourceTabId:session.sourceTabId,sourceWindowId:session.sourceWindowId,sourceTitle:String(session.title||"").slice(0,300),sourceOrigin:normalizeSignalSessionUrl(session.sourceUrl||session.sourceKey)})}catch(error){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_SEND_ERROR",{sessionId:session.id,error:String(error)},"warn")}
   }
   async function isSignalCaptionInScope(sessionId){
     try{
@@ -622,18 +623,21 @@ importScripts("telemetry-db.js","observation-sync.js");
     if(event.type==="bridge.connected"){signalBridgeReconnectDelay=500;updateSignalBridgeState({status:"connected",url:SIGNAL_BRIDGE_URL,connectedAt:event.timestamp||iso(),error:null});recordSignalDiagnostic("SIGNAL_BRIDGE_CONNECTED_EVENT",{url:SIGNAL_BRIDGE_URL})}
     else if(event.type==="bridge.status"){updateSignalBridgeState({status:event.status==="listening"?"connected":String(event.status||"error"),url:event.url||SIGNAL_BRIDGE_URL,error:event.status==="listening"?null:String(event.status||"")||null});recordSignalDiagnostic("SIGNAL_BRIDGE_STATUS",{status:event.status||"unknown",transport:event.transport||null,url:event.url||SIGNAL_BRIDGE_URL});broadcastSignalEvent(Object.assign({},event,{sessionId:sessionId}));return}
     else if(event.type==="bridge.heartbeat"){updateSignalBridgeState({status:"connected",lastHeartbeat:event.timestamp||iso(),error:null});broadcastSignalEvent(Object.assign({},event,{sessionId:sessionId}))}
+    else if(event.type==="bridge.controller.accepted"){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTROLLER_ACCEPTED",{runtimeId:event.runtimeId||null});broadcastSignalEvent(Object.assign({},event,{sessionId:sessionId}));return}
+    else if(event.type==="bridge.context.accepted"){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_ACCEPTED",{sessionId:event.sessionId||null,traceId:event.traceId||null,sourceTabId:event.sourceTabId||null,sourceWindowId:event.sourceWindowId||null,sourceOrigin:event.sourceOrigin||null,contextVersion:event.contextVersion||null});broadcastSignalEvent(Object.assign({},event,{sessionId:event.sessionId||sessionId}));return}
     else if(event.type==="uia.scan"){recordSignalDiagnostic("SIGNAL_UIA_SCAN",{chromeWindows:event.chromeWindows||0,captionBubbles:event.captionBubbles||0,captionViews:event.captionViews||0,nonEmptyViews:event.nonEmptyViews||0,longestTextLength:event.longestTextLength||0,sequence:event.sequence||null});broadcastSignalEvent(Object.assign({},event,{sessionId:sessionId}));return}
     else if(event.type==="caption.status"){updateSignalBridgeState({status:"connected",captionActive:event.status==="found",error:null});recordSignalDiagnostic("SIGNAL_CAPTION_STATUS",{status:event.status||"unknown",sessionId:sessionId},event.status==="found"?"info":"warn")}
     else if(event.type==="caption.segment"&&typeof event.text==="string"){
-      var text=event.text.trim();if(!text){recordSignalDiagnostic("SIGNAL_CAPTION_EMPTY",{sessionId:sessionId,sequence:event.sequence!=null?event.sequence:null},"warn");return}
-      if(!sessionId){recordSignalDiagnostic("SIGNAL_CAPTION_DROPPED_NO_SESSION",{characters:text.length},"error");return}
-      isSignalCaptionInScope(sessionId).then(function(scope){
-        if(!scope.ok){recordSignalDiagnostic("SIGNAL_CAPTION_SCOPE_REJECTED",{sessionId:sessionId,reason:scope.reason,expected:scope.expected||null,observed:scope.observed||null,error:scope.error||null,sequence:event.sequence!=null?event.sequence:null},"warn");return}
+      var text=event.text.trim();if(!text){recordSignalDiagnostic("SIGNAL_CAPTION_EMPTY",{sessionId:eventSessionId,sequence:event.sequence!=null?event.sequence:null},"warn");return}
+      if(!eventSessionId){recordSignalDiagnostic("SIGNAL_CAPTION_DROPPED_NO_SESSION",{characters:text.length},"error");return}
+      if(event.sessionId&&signalActiveSessionId&&event.sessionId!==signalActiveSessionId){recordSignalDiagnostic("SIGNAL_CAPTION_SESSION_MISMATCH",{activeSessionId:signalActiveSessionId,eventSessionId:event.sessionId,sequence:event.sequence||null},"warn");return}
+      isSignalCaptionInScope(eventSessionId).then(function(scope){
+        if(!scope.ok){recordSignalDiagnostic("SIGNAL_CAPTION_SCOPE_REJECTED",{sessionId:eventSessionId,reason:scope.reason,expected:scope.expected||null,observed:scope.observed||null,error:scope.error||null,sequence:event.sequence!=null?event.sequence:null},"warn");return}
         var captionEvent=Object.assign({},event,{sessionId:sessionId,sourceOrigin:scope.session.sourceKey,sourceTabId:scope.session.sourceTabId});
         if(signalLastSpeakerId&&Date.now()-signalLastSpeakerAt<=1600)captionEvent.speakerId=signalLastSpeakerId;
-        var segment={id:"signal-"+sessionId+"-"+(event.sequence!=null?event.sequence:Date.now())+"-"+Date.now(),sequence:event.sequence!=null?event.sequence:null,text:text.slice(0,12000),timestamp:event.timestamp||iso(),reason:event.reason||"stable",source:event.source||"live-caption",speakerId:captionEvent.speakerId||null,sourceOrigin:scope.session.sourceKey,sourceTabId:scope.session.sourceTabId};
-        recordSignalDiagnostic("SIGNAL_CAPTION_SEGMENT_RECEIVED",{sessionId:sessionId,segmentId:segment.id,sequence:segment.sequence,characters:segment.text.length,speakerId:segment.speakerId,reason:segment.reason,source:segment.source,sourceOrigin:segment.sourceOrigin,sourceTabId:segment.sourceTabId},"info");
-        persistSignalSegment(sessionId,segment).catch(function(error){recordSignalDiagnostic("SIGNAL_SEGMENT_PERSIST_UNHANDLED",{sessionId:sessionId,error:String(error)},"error")});
+        var segment={id:"signal-"+eventSessionId+"-"+(event.sequence!=null?event.sequence:Date.now())+"-"+Date.now(),sessionId:eventSessionId,traceId:scope.session.traceId||null,operationId:scope.session.lastOperationId||null,sequence:event.sequence!=null?event.sequence:null,text:text.slice(0,12000),timestamp:event.timestamp||iso(),reason:event.reason||"stable",source:event.source||"live-caption",speakerId:captionEvent.speakerId||null,sourceOrigin:scope.session.sourceKey,sourceTabId:scope.session.sourceTabId,sourceWindowId:scope.session.sourceWindowId||scope.tab.windowId||null};
+        recordSignalDiagnostic("SIGNAL_CAPTION_SEGMENT_RECEIVED",{sessionId:eventSessionId,segmentId:segment.id,sequence:segment.sequence,characters:segment.text.length,speakerId:segment.speakerId,reason:segment.reason,source:segment.source,sourceOrigin:segment.sourceOrigin,sourceTabId:segment.sourceTabId},"info");
+        persistSignalSegment(eventSessionId,segment).catch(function(error){recordSignalDiagnostic("SIGNAL_SEGMENT_PERSIST_UNHANDLED",{sessionId:eventSessionId,error:String(error)},"error")});
         broadcastSignalEvent(captionEvent)
       }).catch(function(error){recordSignalDiagnostic("SIGNAL_CAPTION_SCOPE_ERROR",{sessionId:sessionId,error:String(error)},"error")});
       return
