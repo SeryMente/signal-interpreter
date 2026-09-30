@@ -31,7 +31,7 @@ internal sealed class LocalTransport : IDisposable
     }
 
     public int ClientCount => _clients.Count;
-    private sealed record CaptionContext(string SessionId,string? TraceId,int? SourceTabId,int? SourceWindowId,string? SourceTitle,string? SourceOrigin,int ContextVersion);
+    internal sealed record CaptionContext(string SessionId,string? TraceId,int? SourceTabId,int? SourceWindowId,string? SourceTitle,string? SourceOrigin,int ContextVersion);
 
     public void Publish(object value)
     {
