@@ -275,7 +275,7 @@ internal sealed class LocalTransport : IDisposable
 
         public ValueTask DisposeAsync()
         {
-            if (_isContextController){_owner._controllerId=null;_owner._context=null;_owner.CaptionContextChanged?.Invoke(new CaptionContext("","","",null,null,null,0));}
+            if (_isContextController){_owner._controllerId=null;_owner._context=null;_owner.CaptionContextChanged?.Invoke(new CaptionContext("",null,null,null,null,null,0));}
             try { _stream.Close(); } catch { }
             _sendLock.Dispose();
             return ValueTask.CompletedTask;
