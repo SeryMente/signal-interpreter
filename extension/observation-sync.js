@@ -5,7 +5,7 @@ var MAX_BATCH=200;
 var EVENT_THRESHOLD=50;
 var MIN_GAP_MS=10000;
 var MAX_DELAY_MS=120000;
-var timer=null,lastTriggerAt=0;
+var timer=null,lastTriggerAt=0,pendingEvents=0,alarmScheduled=false;
 
 function iso(){return new Date().toISOString()}
 function uid(){return crypto.randomUUID()}
@@ -41,7 +41,7 @@ function safeEvent(e){
 }
 async function getState(){var s=await chrome.storage.local.get(["signalObservationSyncState"]);return Object.assign({ackedSequence:0,pendingCount:0,lastAttemptAt:null,lastSuccessAt:null,lastBatchId:null,consecutiveFailures:0,lastError:null},s.signalObservationSyncState||{})}
 async function setState(state){await chrome.storage.local.set({signalObservationSyncState:state})}
-async function mark(){var s=await getState();s.pendingCount=Number(s.pendingCount||0)+1;await setState(s);try{chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5})}catch(_){}return s}
+function mark(){pendingEvents+=1;if(!alarmScheduled){alarmScheduled=true;try{chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5})}catch(_){}}return{pendingCount:pendingEvents}}
 async function collect(){
   var state=await getState();
   var events=KhoraTelemetryDB.getEventsAfter?await KhoraTelemetryDB.getEventsAfter(Number(state.ackedSequence)||0,MAX_BATCH): (await KhoraTelemetryDB.getEvents()).filter(function(e){return Number(e.sequence||0)>Number(state.ackedSequence||0)}).slice(0,MAX_BATCH);
@@ -72,9 +72,7 @@ function noteEvent(event){
   mark().catch(function(){});
   var critical=event&&(event.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(String(event.action||"")));
   if(critical){flush("critical").catch(function(){}) ;return}
-  clearTimeout(timer);
-  var delay=30000;
-  timer=setTimeout(function(){flush("event-window").catch(function(){})},delay);
+  if(!timer)timer=setTimeout(function(){timer=null;flush("event-window").catch(function(){})},30000);
 }
 function start(){try{chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5,periodInMinutes:2})}catch(_){}}
 global.SignalObservationSync={noteEvent:noteEvent,flush:flush,start:start};
