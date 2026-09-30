@@ -61,11 +61,11 @@ async function post(payload){
 }
 async function flush(reason){
   var now=Date.now();if(now-lastTriggerAt<MIN_GAP_MS&&reason!=="manual"&&reason!=="critical")return{ok:true,skipped:"rate-limited"};
-  lastTriggerAt=now;var data=await collect();if(!data.events.length)return{ok:true,skipped:"clean"};
+  lastTriggerAt=now;var data=await collect();if(!data.events.length){alarmScheduled=false;pendingEvents=0;return{ok:true,skipped:"clean"}};
   var batchId="batch-"+uid(),payload={schema:"signal-interpreter-observation-batch/v1",batchId:batchId,createdAt:iso(),trigger:reason||"scheduled",extensionVersion:chrome.runtime.getManifest().version,events:data.events,summary:data.summary};
   var state=data.state;state.lastAttemptAt=iso();state.lastBatchId=batchId;await setState(state);
   try{
-    var r=await post(payload);state.ackedSequence=Math.max(Number(state.ackedSequence)||0,Number(data.summary.lastSequence)||0);state.pendingCount=0;state.lastSuccessAt=iso();state.consecutiveFailures=0;state.lastError=null;await setState(state);return{ok:true,batchId:batchId,accepted:r.accepted!==false,sequence:state.ackedSequence,summary:data.summary};
+    var r=await post(payload);state.ackedSequence=Math.max(Number(state.ackedSequence)||0,Number(data.summary.lastSequence)||0);alarmScheduled=false;pendingEvents=0;state.pendingCount=0;state.lastSuccessAt=iso();state.consecutiveFailures=0;state.lastError=null;await setState(state);return{ok:true,batchId:batchId,accepted:r.accepted!==false,sequence:state.ackedSequence,summary:data.summary};
   }catch(error){state.consecutiveFailures=Number(state.consecutiveFailures||0)+1;state.lastError=String(error);await setState(state);return{ok:false,batchId:batchId,error:String(error),summary:data.summary}}
 }
 function noteEvent(event){
