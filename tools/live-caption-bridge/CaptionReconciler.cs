@@ -4,98 +4,71 @@ internal sealed record CaptionSegment(string Text, string Snapshot, string Reaso
 
 internal sealed class CaptionReconciler
 {
-    private static readonly Regex WordPattern = new(@"\S+", RegexOptions.Compiled);
+    private static readonly Regex WhitespacePattern = new(@"\s+", RegexOptions.Compiled);
     private readonly TimeSpan _stabilityWindow;
-    private string _previousSnapshot = "";
-    private DateTimeOffset _changedAt = DateTimeOffset.MinValue;
-    private bool _emittedForCurrentSnapshot;
-    private string _committedSnapshot = "";
+    private string _pendingSnapshot = "";
+    private DateTimeOffset _pendingSince = DateTimeOffset.MinValue;
+    private string _lastEmittedSnapshot = "";
 
-    public CaptionReconciler(TimeSpan stabilityWindow) { _stabilityWindow = stabilityWindow; }
+    public CaptionReconciler(TimeSpan stabilityWindow)
+    {
+        if (stabilityWindow < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(stabilityWindow));
+        _stabilityWindow = stabilityWindow;
+    }
 
     public void Reset()
     {
-        _previousSnapshot = "";
-        _changedAt = DateTimeOffset.MinValue;
-        _emittedForCurrentSnapshot = false;
-        _committedSnapshot = "";
+        _pendingSnapshot = "";
+        _pendingSince = DateTimeOffset.MinValue;
+        _lastEmittedSnapshot = "";
     }
 
     public IReadOnlyList<CaptionSegment> Observe(string snapshot, DateTimeOffset now)
     {
         snapshot = Normalize(snapshot);
         if (string.IsNullOrEmpty(snapshot)) return Array.Empty<CaptionSegment>();
-        var output = new List<CaptionSegment>();
-        if (string.Equals(snapshot, _previousSnapshot, StringComparison.Ordinal))
+        if (!string.Equals(snapshot, _pendingSnapshot, StringComparison.Ordinal))
         {
-            if (!_emittedForCurrentSnapshot && now - _changedAt >= _stabilityWindow)
-                AddStableSegment(output, _previousSnapshot, "stable");
-            return output;
+            _pendingSnapshot = snapshot;
+            _pendingSince = now;
+            return Array.Empty<CaptionSegment>();
         }
-        if (!string.IsNullOrEmpty(_previousSnapshot) && !_emittedForCurrentSnapshot &&
-            now - _changedAt >= _stabilityWindow)
-            AddStableSegment(output, _previousSnapshot, "stable-before-revision");
-        _previousSnapshot = snapshot;
-        _changedAt = now;
-        _emittedForCurrentSnapshot = false;
-        return output;
+        if (now - _pendingSince < _stabilityWindow) return Array.Empty<CaptionSegment>();
+        return EmitStable(snapshot, "stable");
     }
 
     public IReadOnlyList<CaptionSegment> Flush(DateTimeOffset now, string reason)
     {
-        if (string.IsNullOrEmpty(_previousSnapshot) || _emittedForCurrentSnapshot ||
-            now - _changedAt < _stabilityWindow)
+        if (string.IsNullOrEmpty(_pendingSnapshot)) return Array.Empty<CaptionSegment>();
+        return EmitStable(_pendingSnapshot, reason);
+    }
+
+    private IReadOnlyList<CaptionSegment> EmitStable(string snapshot, string reason)
+    {
+        if (string.Equals(snapshot, _lastEmittedSnapshot, StringComparison.Ordinal)) return Array.Empty<CaptionSegment>();
+        if (!string.IsNullOrEmpty(_lastEmittedSnapshot) && _lastEmittedSnapshot.StartsWith(snapshot, StringComparison.Ordinal))
+        {
+            _pendingSnapshot = snapshot;
+            _pendingSince = DateTimeOffset.MaxValue;
             return Array.Empty<CaptionSegment>();
-        var output = new List<CaptionSegment>();
-        AddStableSegment(output, _previousSnapshot, reason);
-        return output;
-    }
-
-    private void AddStableSegment(List<CaptionSegment> output, string snapshot, string reason)
-    {
-        var text = ExtractNovelText(_committedSnapshot, snapshot);
-        if (!ShouldEmit(text))
-        {
-            _committedSnapshot = snapshot;
-            _emittedForCurrentSnapshot = true;
-            return;
         }
-        output.Add(new CaptionSegment(text, snapshot, reason));
-        _committedSnapshot = snapshot;
-        _emittedForCurrentSnapshot = true;
-    }
-
-    private static bool ShouldEmit(string text)
-        => !string.IsNullOrWhiteSpace(text) &&
-           (WordPattern.Matches(text).Count >= 2 || Regex.IsMatch(text.TrimEnd(), @"[.!?…]$"));
-
-    private static string ExtractNovelText(string committed, string current)
-    {
-        committed = Normalize(committed);
-        current = Normalize(current);
-        if (string.IsNullOrEmpty(committed)) return current;
-        if (string.Equals(committed, current, StringComparison.Ordinal)) return "";
-        if (current.StartsWith(committed, StringComparison.Ordinal))
-            return current[committed.Length..].TrimStart();
-        if (committed.StartsWith(current, StringComparison.Ordinal)) return "";
-
-        var committedWords = Tokenize(committed);
-        var currentWords = Tokenize(current);
-        var maxOverlap = Math.Min(10, Math.Min(committedWords.Length, currentWords.Length));
-        for (var length = maxOverlap; length >= 3; length--)
+        var text = snapshot;
+        var finalReason = reason;
+        if (!string.IsNullOrEmpty(_lastEmittedSnapshot) && snapshot.StartsWith(_lastEmittedSnapshot, StringComparison.Ordinal))
         {
-            var matches = true;
-            for (var i = 0; i < length; i++)
-                if (!string.Equals(committedWords[committedWords.Length - length + i], currentWords[i], StringComparison.OrdinalIgnoreCase))
-                { matches = false; break; }
-            if (matches) return string.Join(" ", currentWords.Skip(length));
+            text = snapshot[_lastEmittedSnapshot.Length..].TrimStart();
+            finalReason = reason == "stable" ? "stable-append" : reason;
         }
-        return current;
+        else if (!string.IsNullOrEmpty(_lastEmittedSnapshot))
+        {
+            finalReason = reason == "stable" ? "stable-revision" : reason;
+        }
+        _lastEmittedSnapshot = snapshot;
+        _pendingSnapshot = snapshot;
+        _pendingSince = DateTimeOffset.MaxValue;
+        return string.IsNullOrWhiteSpace(text) ? Array.Empty<CaptionSegment>() : new[] { new CaptionSegment(text, snapshot, finalReason) };
     }
-
-    private static string[] Tokenize(string text)
-        => WordPattern.Matches(Normalize(text)).Select(m => m.Value).ToArray();
 
     private static string Normalize(string value)
-        => string.IsNullOrWhiteSpace(value) ? "" : Regex.Replace(value.Trim(), @"\s+", " ");
+        => string.IsNullOrWhiteSpace(value) ? "" : WhitespacePattern.Replace(value.Trim(), " ");
 }

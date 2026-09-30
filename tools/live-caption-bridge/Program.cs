@@ -9,6 +9,10 @@ internal static class Program
     private const string CaptionViewClass = "AXVirtualView";
     private static readonly Regex Whitespace = new(@"\s+", RegexOptions.Compiled);
     private static LocalTransport? Transport;
+    private static AutomationElement? CachedCaptionBubble;
+    private static int CachedCaptionProcessId;
+    private static DateTimeOffset CachedCaptionLookupAt = DateTimeOffset.MinValue;
+    private static int CachedCaptionEmptyScans;
 
     private static void Main(string[] args)
     {
@@ -157,7 +161,7 @@ internal static class Program
                             timestamp = DateTimeOffset.UtcNow, sequence = ++sequence
                         });
                     }
-                    Emit(new { type = "caption.status", status = "not_found", timestamp = DateTimeOffset.UtcNow, sequence = ++sequence });
+                    Emit(new { type = "caption.status", status = "not_found", sessionId = scan.SessionId, traceId = scan.TraceId, sourceTabId = scan.SourceTabId, sourceWindowId = scan.SourceWindowId, sourceOrigin = scan.TargetOrigin, targetWindowTitle = scan.TargetWindowTitle, timestamp = DateTimeOffset.UtcNow, sequence = ++sequence });
                     found = false;
                     previousRawSnapshot = "";
                 }
@@ -182,38 +186,115 @@ internal static class Program
         var nonEmpty = 0;
         var longest = 0;
         var matchedWindows = 0;
+        var targetProcessId = 0;
 
         foreach (AutomationElement window in windows)
         {
             var windowName = "";
             try { windowName = NormalizeTitle(window.Current.Name); } catch { }
-            if (sourceWindowId.HasValue && window.Current.NativeWindowHandle != sourceWindowId.Value) continue;
-            if (string.IsNullOrWhiteSpace(targetWindowTitle) || !MatchesWindowTitle(windowName, targetWindowTitle)) continue;
-            matchedWindows++;
-            var bubbles = window.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ClassNameProperty, CaptionBubbleClass));
-            bubbleCount += bubbles.Count;
-            foreach (AutomationElement bubble in bubbles)
+            if (!string.IsNullOrWhiteSpace(targetWindowTitle) && MatchesWindowTitle(windowName, targetWindowTitle))
             {
-                var views = bubble.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ClassNameProperty, CaptionViewClass));
-                viewCount += views.Count;
-                foreach (AutomationElement view in views)
+                matchedWindows++;
+                try { targetProcessId = window.Current.ProcessId; } catch { targetProcessId = 0; }
+                var legacyBubble = window.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.ClassNameProperty, CaptionBubbleClass));
+                if (legacyBubble is not null)
                 {
-                    var value = Normalize(view.Current.Name);
-                    if (!string.IsNullOrEmpty(value))
+                    CachedCaptionBubble = legacyBubble;
+                    CachedCaptionProcessId = targetProcessId;
+                    CachedCaptionLookupAt = DateTimeOffset.UtcNow;
+                    CachedCaptionEmptyScans = 0;
+                    CollectCaptionElement(legacyBubble, candidates, ref bubbleCount, ref viewCount, ref nonEmpty, ref longest);
+                }
+            }
+        }
+
+        if (targetProcessId == 0 || CachedCaptionProcessId != targetProcessId)
+        {
+            CachedCaptionBubble = null;
+            CachedCaptionProcessId = targetProcessId;
+            CachedCaptionLookupAt = DateTimeOffset.MinValue;
+            CachedCaptionEmptyScans = 0;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        if (CachedCaptionBubble is not null)
+        {
+            try
+            {
+                var bubbleProcessId = CachedCaptionBubble.Current.ProcessId;
+                var bubbleName = Normalize(CachedCaptionBubble.Current.Name);
+                var offscreen = CachedCaptionBubble.Current.IsOffscreen;
+                if (bubbleProcessId == targetProcessId && !offscreen && !string.IsNullOrEmpty(bubbleName))
+                {
+                    CollectCaptionElement(CachedCaptionBubble, candidates, ref bubbleCount, ref viewCount, ref nonEmpty, ref longest);
+                    CachedCaptionEmptyScans = 0;
+                }
+                else
+                {
+                    CachedCaptionEmptyScans++;
+                    if (CachedCaptionEmptyScans >= 5)
                     {
-                        nonEmpty++;
-                        longest = Math.Max(longest, value.Length);
-                        candidates.Add(value);
+                        CachedCaptionBubble = null;
+                        CachedCaptionLookupAt = DateTimeOffset.MinValue;
+                        CachedCaptionEmptyScans = 0;
                     }
                 }
             }
+            catch
+            {
+                CachedCaptionBubble = null;
+                CachedCaptionLookupAt = DateTimeOffset.MinValue;
+                CachedCaptionEmptyScans = 0;
+            }
+        }
+
+        if (CachedCaptionBubble is null && targetProcessId != 0 && now - CachedCaptionLookupAt >= TimeSpan.FromMilliseconds(500))
+        {
+            CachedCaptionLookupAt = now;
+            try
+            {
+                var bubbleCondition = new PropertyCondition(AutomationElement.ClassNameProperty, CaptionBubbleClass);
+                var bubble = root.FindFirst(TreeScope.Descendants, bubbleCondition);
+                if (bubble is not null && bubble.Current.ProcessId == targetProcessId)
+                {
+                    CachedCaptionBubble = bubble;
+                    CachedCaptionProcessId = targetProcessId;
+                    CachedCaptionEmptyScans = 0;
+                    CollectCaptionElement(bubble, candidates, ref bubbleCount, ref viewCount, ref nonEmpty, ref longest);
+                }
+            }
+            catch { }
         }
 
         return new CaptionScan(
             candidates.OrderByDescending(x => x.Length).FirstOrDefault() ?? "",
             windows.Count, bubbleCount, viewCount, nonEmpty, longest, matchedWindows, targetWindowTitle, targetOrigin, sessionId, traceId, sourceTabId, sourceWindowId, contextVersion);
     }
+    private static void CollectCaptionElement(AutomationElement bubble, List<string> candidates, ref int bubbleCount, ref int viewCount, ref int nonEmpty, ref int longest)
+    {
+        bubbleCount++;
+        var bubbleText = Normalize(bubble.Current.Name);
+        if (!string.IsNullOrEmpty(bubbleText))
+        {
+            nonEmpty++;
+            longest = Math.Max(longest, bubbleText.Length);
+            candidates.Add(bubbleText);
+            return;
+        }
 
+        var view = bubble.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.ClassNameProperty, CaptionViewClass));
+        if (view is not null)
+        {
+            viewCount++;
+            var value = Normalize(view.Current.Name);
+            if (!string.IsNullOrEmpty(value))
+            {
+                nonEmpty++;
+                longest = Math.Max(longest, value.Length);
+                candidates.Add(value);
+            }
+        }
+    }
     private static string NormalizeTitle(string value)
         => string.IsNullOrWhiteSpace(value) ? "" : Regex.Replace(value.Trim(), @"\s+", " ");
 
