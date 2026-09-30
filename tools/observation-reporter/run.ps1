@@ -1,0 +1,1 @@
+$ErrorActionPreference="Stop";$root=(Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path;$env:SIGNAL_INTERPRETER_REPO=$root;& (Get-Command node -ErrorAction Stop).Source "$root\tools\observation-reporter\server.mjs"
