@@ -9,7 +9,9 @@ using System.Text.Json;
 internal sealed class LocalTransport : IDisposable
 {
     private const int MaxPayloadBytes = 1024 * 1024;
-    public event Action<string?, string?>? CaptionContextChanged;
+    public event Action<CaptionContext>? CaptionContextChanged;
+    private CaptionContext? _context;
+    private Guid? _controllerId;
     private readonly TcpListener _listener;
     private readonly CancellationTokenSource _cts = new();
     private readonly ConcurrentDictionary<Guid, ClientConnection> _clients = new();
@@ -29,6 +31,7 @@ internal sealed class LocalTransport : IDisposable
     }
 
     public int ClientCount => _clients.Count;
+    private sealed record CaptionContext(string SessionId,string? TraceId,int? SourceTabId,int? SourceWindowId,string? SourceTitle,string? SourceOrigin,int ContextVersion);
 
     public void Publish(object value)
     {
@@ -92,7 +95,8 @@ internal sealed class LocalTransport : IDisposable
                 await stream.FlushAsync(_cts.Token);
 
                 var connection = new ClientConnection(stream, _cts.Token, this);
-                var id = Guid.NewGuid();
+                connection.ConnectionId = Guid.NewGuid();
+                var id = connection.ConnectionId;
                 if (!_clients.TryAdd(id, connection)) return;
 
                 connection.TryQueue(JsonSerializer.Serialize(new
@@ -182,6 +186,7 @@ internal sealed class LocalTransport : IDisposable
         private readonly CancellationToken _token;
         private readonly LocalTransport _owner;
         private readonly SemaphoreSlim _sendLock = new(1, 1);
+        public Guid ConnectionId { get; set; }
         private bool _isContextController;
 
         public ClientConnection(Stream stream, CancellationToken token, LocalTransport owner) { _stream = stream; _token = token; _owner = owner; }
@@ -238,13 +243,29 @@ internal sealed class LocalTransport : IDisposable
                 {
                     using var doc = JsonDocument.Parse(payload);
                     var root = doc.RootElement;
-                    if (root.TryGetProperty("type", out var type) &&
-                        string.Equals(type.GetString(), "signal.caption.context", StringComparison.Ordinal))
+                    if (root.TryGetProperty("type", out var type))
                     {
-                        var title = root.TryGetProperty("sourceTitle", out var titleNode) ? titleNode.GetString() : null;
-                        var origin = root.TryGetProperty("sourceOrigin", out var originNode) ? originNode.GetString() : null;
-                        _isContextController = true;
-                        _owner.CaptionContextChanged?.Invoke(title, origin);
+                        var typeName=type.GetString();
+                        if (string.Equals(typeName, "signal.caption.controller.hello", StringComparison.Ordinal))
+                        {
+                            _owner._controllerId=ConnectionId;
+                            _isContextController=true;
+                            TryQueue(JsonSerializer.Serialize(new { type="bridge.controller.accepted", runtimeId=root.TryGetProperty("runtimeId",out var rn)?rn.GetString():null, timestamp=DateTimeOffset.UtcNow }));
+                        }
+                        else if (string.Equals(typeName, "signal.caption.context", StringComparison.Ordinal) && _owner._controllerId==ConnectionId)
+                        {
+                            var sessionId=root.TryGetProperty("sessionId",out var sn)?sn.GetString():"";
+                            var traceId=root.TryGetProperty("traceId",out var tr)?tr.GetString():null;
+                            var tabId=root.TryGetProperty("sourceTabId",out var tn)&&tn.TryGetInt32(out var ti)?ti:(int?)null;
+                            var windowId=root.TryGetProperty("sourceWindowId",out var wn)&&wn.TryGetInt32(out var wi)?wi:(int?)null;
+                            var title=root.TryGetProperty("sourceTitle",out var titleNode)?titleNode.GetString():null;
+                            var origin=root.TryGetProperty("sourceOrigin",out var originNode)?originNode.GetString():null;
+                            var version=root.TryGetProperty("contextVersion",out var vn)&&vn.TryGetInt32(out var vi)?vi:1;
+                            if(string.IsNullOrWhiteSpace(sessionId)) return true;
+                            _owner._context=new CaptionContext(sessionId,traceId,tabId,windowId,title,origin,version);
+                            _owner.CaptionContextChanged?.Invoke(_owner._context);
+                            TryQueue(JsonSerializer.Serialize(new { type="bridge.context.accepted",sessionId,traceId,sourceTabId=tabId,sourceWindowId=windowId,sourceTitle=title,sourceOrigin=origin,contextVersion=version,timestamp=DateTimeOffset.UtcNow }));
+                        }
                     }
                 }
                 catch { }
@@ -254,7 +275,7 @@ internal sealed class LocalTransport : IDisposable
 
         public ValueTask DisposeAsync()
         {
-            if (_isContextController) _owner.CaptionContextChanged?.Invoke(null, null);
+            if (_isContextController){_owner._controllerId=null;_owner._context=null;_owner.CaptionContextChanged?.Invoke(new CaptionContext("","","",null,null,null,0));}
             try { _stream.Close(); } catch { }
             _sendLock.Dispose();
             return ValueTask.CompletedTask;
