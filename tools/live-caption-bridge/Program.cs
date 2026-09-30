@@ -187,6 +187,7 @@ internal static class Program
         {
             var windowName = "";
             try { windowName = NormalizeTitle(window.Current.Name); } catch { }
+            if (sourceWindowId.HasValue && window.Current.NativeWindowHandle != sourceWindowId.Value) continue;
             if (string.IsNullOrWhiteSpace(targetWindowTitle) || !MatchesWindowTitle(windowName, targetWindowTitle)) continue;
             matchedWindows++;
             var bubbles = window.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ClassNameProperty, CaptionBubbleClass));
