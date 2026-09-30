@@ -142,6 +142,8 @@ importScripts("telemetry-db.js","observation-sync.js");
       );
     } catch (_) {}
   }
+  function inferEventPhase(action){var a=String(action||"");if(/_REQUESTED$|_QUEUED$/.test(a))return"start";if(/_STARTED$|_CONNECTED$|_SENT$/.test(a))return"started";if(/_COMPLETED$|_UPDATED$|_PERSISTED$|_ACCEPTED$/.test(a))return"completed";if(/_ERROR$|_FAILED$/.test(a))return"error";if(/_REJECTED$|_BLOCKED$/.test(a))return"blocked";if(/_TIMEOUT$/.test(a))return"timeout";if(/_ABORTED$/.test(a))return"aborted";return"event"}
+  function inferEventOutcome(action,level){var a=String(action||"");if(level==="error"||/_ERROR$|_FAILED$/.test(a))return"error";if(/_REJECTED$|_BLOCKED$/.test(a))return"blocked";if(/_TIMEOUT$/.test(a))return"timeout";if(/_ACCEPTED$|_COMPLETED$|_PERSISTED$|_UPDATED$|_STARTED$|_CONNECTED$/.test(a))return"success";return"observed"}
   function inferEventCategory(action){var a=String(action||"");if(/^SIGNAL_/.test(a)){if(/CAPTION/.test(a))return"LIVE_CAPTION";if(/UIA/.test(a))return"UIA";if(/BRIDGE/.test(a))return"BRIDGE";if(/SESSION/.test(a))return"SESSION";if(/DIALOGUE/.test(a))return"DIALOGUE";if(/AUDIO/.test(a))return"CAPTURE";if(/PERSIST|SEGMENT/.test(a))return"STORAGE";if(/CONSOLE|LIVE_/.test(a))return"UI";return"SIGNAL"}if(/NETWORK|EXCHANGE/.test(a))return"BILLING";if(/TRANSCRIPTION/.test(a))return"TRANSCRIPT";if(/CALL|MISSED/.test(a))return"SESSION";if(/SOUND/.test(a))return"SOUND";return"RUNTIME"}
   function appendEvent(input, callback) {
     eventQueue = eventQueue.then(async function () {
@@ -150,7 +152,7 @@ importScripts("telemetry-db.js","observation-sync.js");
       var event = Object.assign({
         schema: "khora-effectif-event/v3", id: uid(), sequence: sequence,
         timestamp: iso(), level: "info", source: "background",
-        extensionVersion: chrome.runtime.getManifest().version, category: inferEventCategory(input && input.action), component: (input && input.source) || "background", phase: "event", outcome: "observed", traceId: uid(), operationId: null, parentEventId: null, attempt: 1, durationMs: null, session: {}, environment: { extensionVersion: chrome.runtime.getManifest().version, userAgent: typeof navigator!=="undefined"?navigator.userAgent:"", platform: typeof navigator!=="undefined"?navigator.platform:"" }, expected: null, observed: null, reasonCode: null, metrics: {}, privacy: { rawTextStored: false, captionTextStored: false, credentialRedaction: "active" }
+        extensionVersion: chrome.runtime.getManifest().version, category: inferEventCategory(input && input.action), component: (input && input.source) || "background", phase: inferEventPhase(input && input.action), outcome: inferEventOutcome(input && input.action, input && input.level || "info"), traceId: (input && input.traceId) || uid(), operationId: (input && input.operationId) || null, parentEventId: (input && input.parentEventId) || null, attempt: Number(input && input.attempt) || 1, durationMs: input && input.durationMs != null ? Number(input.durationMs) : null, session: {}, environment: { extensionVersion: chrome.runtime.getManifest().version, userAgent: typeof navigator!=="undefined"?navigator.userAgent:"", platform: typeof navigator!=="undefined"?navigator.platform:"" }, expected: null, observed: null, reasonCode: null, metrics: {}, privacy: { rawTextStored: false, captionTextStored: false, credentialRedaction: "active" }
       }, input || {});
       delete event.apiKey; delete event.audio; delete event.text;
       if (event.payload) {
@@ -161,6 +163,7 @@ importScripts("telemetry-db.js","observation-sync.js");
       event.ingestDelayMs = Math.max(0, Date.parse(event.ingestedAt) - Date.parse(event.timestamp || event.ingestedAt));
       event.payload = scrub(event.payload || {}, 0);
       event.context = scrub(event.context || {}, 0);
+      try{var pp=event.payload||{};event.reasonCode=event.reasonCode||pp.reasonCode||pp.reason||null;event.error=event.error||pp.error||pp.message||null;event.metrics=event.metrics&&Object.keys(event.metrics).length?event.metrics:((pp.metrics&&typeof pp.metrics==="object")?pp.metrics:{});event.expected=event.expected!=null?event.expected:(pp.expected!=null?pp.expected:null);event.observed=event.observed!=null?event.observed:(pp.observed!=null?pp.observed:null);}catch(_){}
       try{var ep=event.payload||{};event.session=Object.assign({},event.session||{},ep.sessionId?{sessionId:ep.sessionId}:{} ,ep.sourceOrigin?{sourceOrigin:ep.sourceOrigin}:{} ,ep.sourceTabId!=null?{sourceTabId:ep.sourceTabId}:{} ,ep.sourceWindowId!=null?{sourceWindowId:ep.sourceWindowId}:{});}catch(_){}
       event.url = redactString(event.url || "");
       var health = Object.assign({ dbWrites: 0, dbErrors: 0, lastWriteAt: null }, stored.effectifTelemetryHealth || {});
@@ -663,7 +666,7 @@ importScripts("telemetry-db.js","observation-sync.js");
   });
   chrome.runtime.onInstalled.addListener(function (details) {
     chrome.offscreen.closeDocument().catch(function () {});
-    initialize().then(function(){connectSignalBridge();}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+    initialize().then(function(){try{SignalObservationSync.start()}catch(_){}connectSignalBridge();}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
     chrome.alarms.create("effectif-exchange-rate", { delayInMinutes: 0.1, periodInMinutes: 60 });
     chrome.alarms.create("effectif-telemetry-maintenance", { delayInMinutes: 1, periodInMinutes: 60 });
   chrome.alarms.create("signal-observation-sync", { delayInMinutes: 0.5, periodInMinutes: 2 });
@@ -688,7 +691,7 @@ importScripts("telemetry-db.js","observation-sync.js");
   chrome.runtime.onSuspend.addListener(function () {
     log("info", "EXTENSION_RUNTIME_SUSPENDING", { pendingNetworkRequests: networkRequests ? networkRequests.size : 0 });
   });
-  initialize().then(function(){connectSignalBridge();}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+  initialize().then(function(){try{SignalObservationSync.start()}catch(_){}connectSignalBridge();}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
   chrome.alarms.create("effectif-exchange-rate", { delayInMinutes: 0.1, periodInMinutes: 60 });
   chrome.alarms.create("effectif-telemetry-maintenance", { delayInMinutes: 1, periodInMinutes: 60 });
   refreshExchangeRate("startup").catch(function () {});
