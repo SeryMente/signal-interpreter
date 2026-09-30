@@ -39,6 +39,9 @@ internal static class Program
                 targetWindowTitle = string.IsNullOrWhiteSpace(context.SourceTitle) ? null : context.SourceTitle.Trim();
                 targetOrigin = string.IsNullOrWhiteSpace(context.SourceOrigin) ? null : context.SourceOrigin.Trim();
                 targetContextVersion = context.ContextVersion;
+                reconciler.Reset();
+                found = false;
+                previousRawSnapshot = "";
                 Console.Error.WriteLine($"Signal Live Caption Bridge | context | session={targetSessionId ?? "none"} | tab={targetTabId?.ToString() ?? "none"} | window={targetWindowId?.ToString() ?? "none"} | title={(targetWindowTitle ?? "none")} | origin={(targetOrigin ?? "none")}");
             };
             Transport.Start();
@@ -106,6 +109,13 @@ internal static class Program
                     }
 
                     var normalizedSnapshot = Normalize(snapshot);
+                    if (scan.MatchedChromeWindows != 1 || string.IsNullOrWhiteSpace(scan.SessionId))
+                    {
+                        if (scan.MatchedChromeWindows > 1) Emit(new { type = "caption.status", status = "ambiguous", sessionId = scan.SessionId, traceId = scan.TraceId, sourceTabId = scan.SourceTabId, sourceWindowId = scan.SourceWindowId, sourceOrigin = scan.TargetOrigin, targetWindowTitle = scan.TargetWindowTitle, timestamp = now, sequence = ++sequence });
+                        Thread.Sleep(intervalMs);
+                        continue;
+                    }
+
                     foreach (var segment in reconciler.Observe(normalizedSnapshot, now))
                     {
                         Emit(new
