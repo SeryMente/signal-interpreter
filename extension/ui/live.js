@@ -106,7 +106,7 @@ function handle(e){
 document.querySelectorAll("[data-speaker]").forEach(function(b){b.addEventListener("click",function(){activeSpeaker=b.dataset.speaker;syncSpeakerButtons();persistSessionPatch({activeSpeaker:activeSpeaker},true);if(activeSpeaker==="YO")$("yo").focus()})});
 document.querySelectorAll("[data-map]").forEach(function(b){b.addEventListener("click",function(){var p=b.dataset.map.split(":");voiceMap[p[0]]=p[1];persistSessionPatch({voiceMap:Object.assign({},voiceMap)},true);updateCounts()})});
 document.querySelectorAll("[data-view]").forEach(function(b){b.addEventListener("click",function(){setView(b.dataset.view)})});
-$("exportDiagnostic").addEventListener("click",function(){exportDiagnosticBundle()});
+$("exportDiagnostic").addEventListener("click",function(){exportDiagnosticBundle()});$("syncDiagnostic").addEventListener("click",function(){var b=$("syncDiagnostic");b.disabled=true;b.textContent="SINCRONIZANDO…";chrome.runtime.sendMessage({type:"SIGNAL_OBSERVATION_SYNC_NOW"}).then(function(r){b.textContent=r&&r.ok?"SINCRONIZADO":"REINTENTAR";setTimeout(function(){b.textContent="SINCRONIZAR LOG";b.disabled=false},1800)}).catch(function(){b.textContent="REINTENTAR";setTimeout(function(){b.textContent="SINCRONIZAR LOG";b.disabled=false},1800)})});
 $("sendYo").addEventListener("click",submitYo);$("yo").addEventListener("keydown",function(e){if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();submitYo()}});
 $("clear").addEventListener("click",function(){if(activeSessionId)chrome.runtime.sendMessage({type:"CLEAR_SIGNAL_INTERPRETER_TRANSCRIPT",sessionId:activeSessionId}).catch(function(){})});
 async function exportDiagnosticBundle(){
