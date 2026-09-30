@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Signal Interpreter observation batch",
+  "type": "object",
+  "required": [
+    "schema",
+    "batchId",
+    "createdAt",
+    "trigger",
+    "extensionVersion",
+    "events",
+    "summary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "signal-interpreter-observation-batch/v1"
+    },
+    "batchId": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "trigger": {
+      "type": "string"
+    },
+    "extensionVersion": {
+      "type": "string"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "./event-schema.json"
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "eventsTotal",
+        "errors",
+        "warnings",
+        "firstSequence",
+        "lastSequence"
+      ],
+      "properties": {
+        "eventsTotal": {
+          "type": "integer"
+        },
+        "errors": {
+          "type": "integer"
+        },
+        "warnings": {
+          "type": "integer"
+        },
+        "critical": {
+          "type": "boolean"
+        },
+        "sessionCount": {
+          "type": "integer"
+        },
+        "scopeRejected": {
+          "type": "integer"
+        },
+        "contextEvents": {
+          "type": "integer"
+        },
+        "invariantSignals": {
+          "type": "integer"
+        },
+        "phases": {
+          "type": "object"
+        },
+        "outcomes": {
+          "type": "object"
+        },
+        "actions": {
+          "type": "object"
+        },
+        "categories": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}
