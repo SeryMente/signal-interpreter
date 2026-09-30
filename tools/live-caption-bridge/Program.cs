@@ -16,7 +16,6 @@ internal static class Program
         var stabilityMs = GetInt(args, "--stability-ms", 750, 250);
         var port = GetInt(args, "--port", 8787, 1024);
         var reconciler = new CaptionReconciler(TimeSpan.FromMilliseconds(stabilityMs));
-        LocalTransport.CaptionContext? targetContext = null;
         string? targetWindowTitle = null;
         string? targetOrigin = null;
         int? targetTabId = null;
@@ -33,7 +32,6 @@ internal static class Program
             Transport = new LocalTransport(port);
             Transport.CaptionContextChanged += context =>
             {
-                targetContext = context;
                 targetSessionId = string.IsNullOrWhiteSpace(context.SessionId) ? null : context.SessionId;
                 targetTraceId = string.IsNullOrWhiteSpace(context.TraceId) ? null : context.TraceId;
                 targetTabId = context.SourceTabId;
