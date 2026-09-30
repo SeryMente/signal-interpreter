@@ -19,7 +19,8 @@
     "https://api.frankfurter.app/*",
     "https://api.frankfurter.dev/*",
     "https://open.er-api.com/*",
-    "http://127.0.0.1:8787/*"
+    "http://127.0.0.1:8787/*",
+    "http://127.0.0.1:8788/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -59,6 +60,6 @@
     "128": "icons/icon128.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src ws://127.0.0.1:8787 http://127.0.0.1:8787"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src ws://127.0.0.1:8787 http://127.0.0.1:8787 http://127.0.0.1:8788"
   }
 }
