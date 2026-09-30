@@ -6,7 +6,7 @@ import {fileURLToPath} from "node:url";
 
 const ROOT=process.env.SIGNAL_INTERPRETER_REPO?path.resolve(process.env.SIGNAL_INTERPRETER_REPO):path.resolve(path.dirname(fileURLToPath(import.meta.url)),"../..");
 const OBS=path.join(ROOT,"observations"),BATCHES=path.join(OBS,"batches"),LATEST=path.join(OBS,"latest");
-const PORT=Number(process.env.SIGNAL_OBSERVATION_PORT||8788),MAX_BYTES=5*1024*1024,COMMIT_WINDOW_MS=Number(process.env.SIGNAL_OBSERVATION_COMMIT_WINDOW_MS||120000);
+const PORT=Number(process.env.SIGNAL_OBSERVATION_PORT||8788),MAX_BYTES=5*1024*1024,COMMIT_WINDOW_MS=Number(process.env.SIGNAL_OBSERVATION_COMMIT_WINDOW_MS||600000);
 let syncTimer=null,syncRunning=false,dirty=false,forceNext=false;
 const iso=()=>new Date().toISOString();
 function write(file,data){fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,data)}
