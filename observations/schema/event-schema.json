@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Signal Interpreter diagnostic event",
+  "type": "object",
+  "required": [
+    "schema",
+    "id",
+    "sequence",
+    "timestamp",
+    "level",
+    "category",
+    "component",
+    "phase",
+    "action",
+    "outcome"
+  ],
+  "properties": {
+    "schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "sequence": {
+      "type": "integer"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "ingestedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "level": {
+      "enum": [
+        "debug",
+        "info",
+        "warn",
+        "error"
+      ]
+    },
+    "category": {
+      "type": "string"
+    },
+    "component": {
+      "type": "string"
+    },
+    "phase": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string"
+    },
+    "outcome": {
+      "type": "string"
+    },
+    "traceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "operationId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parentEventId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "attempt": {
+      "type": "integer"
+    },
+    "durationMs": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "session": {
+      "type": "object"
+    },
+    "environment": {
+      "type": "object"
+    },
+    "expected": {
+      "type": [
+        "object",
+        "string",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "observed": {
+      "type": [
+        "object",
+        "string",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "reasonCode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "error": {
+      "type": [
+        "object",
+        "string",
+        "null"
+      ]
+    },
+    "metrics": {
+      "type": "object"
+    },
+    "context": {
+      "type": "object"
+    },
+    "privacy": {
+      "type": "object"
+    }
+  }
+}
