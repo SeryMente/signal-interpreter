@@ -13,6 +13,14 @@ internal sealed class CaptionReconciler
 
     public CaptionReconciler(TimeSpan stabilityWindow) { _stabilityWindow = stabilityWindow; }
 
+    public void Reset()
+    {
+        _previousSnapshot = "";
+        _changedAt = DateTimeOffset.MinValue;
+        _emittedForCurrentSnapshot = false;
+        _committedSnapshot = "";
+    }
+
     public IReadOnlyList<CaptionSegment> Observe(string snapshot, DateTimeOffset now)
     {
         snapshot = Normalize(snapshot);
