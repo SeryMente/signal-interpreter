@@ -16,8 +16,14 @@ internal static class Program
         var stabilityMs = GetInt(args, "--stability-ms", 750, 250);
         var port = GetInt(args, "--port", 8787, 1024);
         var reconciler = new CaptionReconciler(TimeSpan.FromMilliseconds(stabilityMs));
+        LocalTransport.CaptionContext? targetContext = null;
         string? targetWindowTitle = null;
         string? targetOrigin = null;
+        int? targetTabId = null;
+        int? targetWindowId = null;
+        string? targetSessionId = null;
+        string? targetTraceId = null;
+        var targetContextVersion = 0;
         var sequence = 0L;
         var found = false;
         var previousRawSnapshot = "";
@@ -25,11 +31,17 @@ internal static class Program
         try
         {
             Transport = new LocalTransport(port);
-            Transport.CaptionContextChanged += (title, origin) =>
+            Transport.CaptionContextChanged += context =>
             {
-                targetWindowTitle = string.IsNullOrWhiteSpace(title) ? null : title.Trim();
-                targetOrigin = string.IsNullOrWhiteSpace(origin) ? null : origin.Trim();
-                Console.Error.WriteLine($"Signal Live Caption Bridge | context | title={(targetWindowTitle ?? "none")} | origin={(targetOrigin ?? "none")}");
+                targetContext = context;
+                targetSessionId = string.IsNullOrWhiteSpace(context.SessionId) ? null : context.SessionId;
+                targetTraceId = string.IsNullOrWhiteSpace(context.TraceId) ? null : context.TraceId;
+                targetTabId = context.SourceTabId;
+                targetWindowId = context.SourceWindowId;
+                targetWindowTitle = string.IsNullOrWhiteSpace(context.SourceTitle) ? null : context.SourceTitle.Trim();
+                targetOrigin = string.IsNullOrWhiteSpace(context.SourceOrigin) ? null : context.SourceOrigin.Trim();
+                targetContextVersion = context.ContextVersion;
+                Console.Error.WriteLine($"Signal Live Caption Bridge | context | session={targetSessionId ?? "none"} | tab={targetTabId?.ToString() ?? "none"} | window={targetWindowId?.ToString() ?? "none"} | title={(targetWindowTitle ?? "none")} | origin={(targetOrigin ?? "none")}");
             };
             Transport.Start();
         }
@@ -60,7 +72,7 @@ internal static class Program
             try
             {
                 var now = DateTimeOffset.UtcNow;
-                var scan = ReadCaptionDiagnostics(targetWindowTitle, targetOrigin);
+                var scan = ReadCaptionDiagnostics(targetWindowTitle, targetOrigin, targetTabId, targetWindowId, targetSessionId, targetTraceId, targetContextVersion);
                 var snapshot = scan.Text;
 
                 if (now - lastDiagnosticAt >= TimeSpan.FromSeconds(5))
@@ -76,6 +88,11 @@ internal static class Program
                         matchedChromeWindows = scan.MatchedChromeWindows,
                         targetWindowTitle = scan.TargetWindowTitle,
                         targetOrigin = scan.TargetOrigin,
+                        sessionId = scan.SessionId,
+                        traceId = scan.TraceId,
+                        sourceTabId = scan.SourceTabId,
+                        sourceWindowId = scan.SourceWindowId,
+                        contextVersion = scan.ContextVersion,
                         sequence = ++scanSequence,
                         timestamp = now
                     });
@@ -86,7 +103,7 @@ internal static class Program
                 {
                     if (!found)
                     {
-                        Emit(new { type = "caption.status", status = "found", timestamp = now, sequence = ++sequence });
+                        Emit(new { type = "caption.status", status = scan.MatchedChromeWindows==1 ? "found" : scan.MatchedChromeWindows>1 ? "ambiguous" : "not_found", sessionId=scan.SessionId, traceId=scan.TraceId, sourceTabId=scan.SourceTabId, sourceWindowId=scan.SourceWindowId, sourceOrigin=scan.TargetOrigin, targetWindowTitle=scan.TargetWindowTitle, timestamp = now, sequence = ++sequence });
                         found = true;
                     }
 
@@ -95,7 +112,7 @@ internal static class Program
                     {
                         Emit(new
                         {
-                            type = "caption.segment", mode = "final", source = "live-caption",
+                            type = "caption.segment", mode = "final", source = "live-caption", sessionId = scan.SessionId, traceId = scan.TraceId, sourceTabId = scan.SourceTabId, sourceWindowId = scan.SourceWindowId, sourceOrigin = scan.TargetOrigin, targetWindowTitle = scan.TargetWindowTitle,
                             reason = segment.Reason, text = segment.Text, snapshot = segment.Snapshot,
                             timestamp = now, sequence = ++sequence
                         });
@@ -106,7 +123,7 @@ internal static class Program
                         var append = TryAppend(previousRawSnapshot, normalizedSnapshot, out var delta);
                         Emit(new
                         {
-                            type = append ? "caption.delta" : "caption.revision",
+                            type = append ? "caption.delta" : "caption.revision", sessionId = scan.SessionId, traceId = scan.TraceId, sourceTabId = scan.SourceTabId, sourceWindowId = scan.SourceWindowId, sourceOrigin = scan.TargetOrigin,
                             mode = append ? "append" : "replace",
                             text = append ? delta : normalizedSnapshot,
                             snapshot = normalizedSnapshot,
@@ -140,9 +157,9 @@ internal static class Program
         }
     }
 
-    private sealed record CaptionScan(string Text, int ChromeWindows, int CaptionBubbles, int CaptionViews, int NonEmptyViews, int LongestTextLength, int MatchedChromeWindows, string? TargetWindowTitle, string? TargetOrigin);
+    private sealed record CaptionScan(string Text, int ChromeWindows, int CaptionBubbles, int CaptionViews, int NonEmptyViews, int LongestTextLength, int MatchedChromeWindows, string? TargetWindowTitle, string? TargetOrigin, string? SessionId, string? TraceId, int? SourceTabId, int? SourceWindowId, int ContextVersion);
 
-    private static CaptionScan ReadCaptionDiagnostics(string? targetWindowTitle, string? targetOrigin)
+    private static CaptionScan ReadCaptionDiagnostics(string? targetWindowTitle, string? targetOrigin, int? sourceTabId, int? sourceWindowId, string? sessionId, string? traceId, int contextVersion)
     {
         var root = AutomationElement.RootElement;
         var windows = root.FindAll(TreeScope.Children, new PropertyCondition(AutomationElement.ClassNameProperty, ChromeWindowClass));
@@ -180,7 +197,7 @@ internal static class Program
 
         return new CaptionScan(
             candidates.OrderByDescending(x => x.Length).FirstOrDefault() ?? "",
-            windows.Count, bubbleCount, viewCount, nonEmpty, longest, matchedWindows, targetWindowTitle, targetOrigin);
+            windows.Count, bubbleCount, viewCount, nonEmpty, longest, matchedWindows, targetWindowTitle, targetOrigin, sessionId, traceId, sourceTabId, sourceWindowId, contextVersion);
     }
 
     private static string NormalizeTitle(string value)
