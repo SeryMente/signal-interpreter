@@ -1,4 +1,4 @@
-importScripts("telemetry-db.js");
+importScripts("telemetry-db.js","observation-sync.js");
 (function () {
   "use strict";
 
@@ -142,6 +142,7 @@ importScripts("telemetry-db.js");
       );
     } catch (_) {}
   }
+  function inferEventCategory(action){var a=String(action||"");if(/^SIGNAL_/.test(a)){if(/CAPTION/.test(a))return"LIVE_CAPTION";if(/UIA/.test(a))return"UIA";if(/BRIDGE/.test(a))return"BRIDGE";if(/SESSION/.test(a))return"SESSION";if(/DIALOGUE/.test(a))return"DIALOGUE";if(/AUDIO/.test(a))return"CAPTURE";if(/PERSIST|SEGMENT/.test(a))return"STORAGE";if(/CONSOLE|LIVE_/.test(a))return"UI";return"SIGNAL"}if(/NETWORK|EXCHANGE/.test(a))return"BILLING";if(/TRANSCRIPTION/.test(a))return"TRANSCRIPT";if(/CALL|MISSED/.test(a))return"SESSION";if(/SOUND/.test(a))return"SOUND";return"RUNTIME"}
   function appendEvent(input, callback) {
     eventQueue = eventQueue.then(async function () {
       var stored = await chrome.storage.local.get(["effectifEvents", "effectifEventSequence", "effectifTelemetryHealth"]);
@@ -149,7 +150,7 @@ importScripts("telemetry-db.js");
       var event = Object.assign({
         schema: "khora-effectif-event/v3", id: uid(), sequence: sequence,
         timestamp: iso(), level: "info", source: "background",
-        extensionVersion: chrome.runtime.getManifest().version
+        extensionVersion: chrome.runtime.getManifest().version, category: inferEventCategory(input && input.action), component: (input && input.source) || "background", phase: "event", outcome: "observed", traceId: uid(), operationId: null, parentEventId: null, attempt: 1, durationMs: null, session: {}, environment: { extensionVersion: chrome.runtime.getManifest().version, userAgent: typeof navigator!=="undefined"?navigator.userAgent:"", platform: typeof navigator!=="undefined"?navigator.platform:"" }, expected: null, observed: null, reasonCode: null, metrics: {}, privacy: { rawTextStored: false, captionTextStored: false, credentialRedaction: "active" }
       }, input || {});
       delete event.apiKey; delete event.audio; delete event.text;
       if (event.payload) {
@@ -160,6 +161,7 @@ importScripts("telemetry-db.js");
       event.ingestDelayMs = Math.max(0, Date.parse(event.ingestedAt) - Date.parse(event.timestamp || event.ingestedAt));
       event.payload = scrub(event.payload || {}, 0);
       event.context = scrub(event.context || {}, 0);
+      try{var ep=event.payload||{};event.session=Object.assign({},event.session||{},ep.sessionId?{sessionId:ep.sessionId}:{} ,ep.sourceOrigin?{sourceOrigin:ep.sourceOrigin}:{} ,ep.sourceTabId!=null?{sourceTabId:ep.sourceTabId}:{} ,ep.sourceWindowId!=null?{sourceWindowId:ep.sourceWindowId}:{});}catch(_){}
       event.url = redactString(event.url || "");
       var health = Object.assign({ dbWrites: 0, dbErrors: 0, lastWriteAt: null }, stored.effectifTelemetryHealth || {});
       try {
@@ -178,6 +180,7 @@ importScripts("telemetry-db.js");
         effectifTelemetryHealth: health
       });
       log(event.level, event.action || "EVENT", event.payload);
+      try{if(typeof SignalObservationSync!=="undefined"&&SignalObservationSync&&SignalObservationSync.noteEvent)SignalObservationSync.noteEvent(event)}catch(_){}
       if (callback) callback(event);
     }).catch(function (error) {
       console.error("[SIGNAL-INTERPRETER] EVENT_LOG_ERROR", String(error));
@@ -652,6 +655,7 @@ importScripts("telemetry-db.js");
     initialize().then(function(){connectSignalBridge();}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
     chrome.alarms.create("effectif-exchange-rate", { delayInMinutes: 0.1, periodInMinutes: 60 });
     chrome.alarms.create("effectif-telemetry-maintenance", { delayInMinutes: 1, periodInMinutes: 60 });
+  chrome.alarms.create("signal-observation-sync", { delayInMinutes: 0.5, periodInMinutes: 2 });
     refreshExchangeRate("installed").catch(function () {});
     if (details && details.reason === "update" &&
         /^0\.4\./.test(String(details.previousVersion || ""))) {
@@ -739,6 +743,7 @@ importScripts("telemetry-db.js");
   }
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (!message) return false;
+    if(message.type==="SIGNAL_OBSERVATION_SYNC_NOW"){try{SignalObservationSync.flush("manual").then(function(r){sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})})}catch(e){sendResponse({ok:false,error:String(e)})}return true;}
     if (message.target === "offscreen" && message.type === "SIGNAL_AUDIO_EVENT") {
       var audioEvent=message.event||{},audioNow=Date.now();
       var audioMeta={eventType:audioEvent.type||"unknown",sessionId:signalActiveSessionId,tabId:audioEvent.tabId||null,status:audioEvent.status||null,speakerId:audioEvent.speakerId||null,externalVoices:audioEvent.externalVoices!=null?audioEvent.externalVoices:null,confidence:audioEvent.confidence!=null?audioEvent.confidence:null,error:audioEvent.error||null};
