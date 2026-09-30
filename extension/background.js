@@ -150,7 +150,7 @@ importScripts("telemetry-db.js","observation-sync.js");
       var stored = await chrome.storage.local.get(["effectifEvents", "effectifEventSequence", "effectifTelemetryHealth"]);
       var sequence = Number(stored.effectifEventSequence || 0) + 1;
       var event = Object.assign({
-        schema: "khora-effectif-event/v3", id: uid(), sequence: sequence,
+        schema: "khora-effectif-event/v4", id: uid(), sequence: sequence,
         timestamp: iso(), level: "info", source: "background",
         extensionVersion: chrome.runtime.getManifest().version, category: inferEventCategory(input && input.action), component: (input && input.source) || "background", phase: inferEventPhase(input && input.action), outcome: inferEventOutcome(input && input.action, input && input.level || "info"), traceId: (input && input.traceId) || uid(), operationId: (input && input.operationId) || null, parentEventId: (input && input.parentEventId) || null, attempt: Number(input && input.attempt) || 1, durationMs: input && input.durationMs != null ? Number(input.durationMs) : null, session: {}, environment: { extensionVersion: chrome.runtime.getManifest().version, userAgent: typeof navigator!=="undefined"?navigator.userAgent:"", platform: typeof navigator!=="undefined"?navigator.platform:"" }, expected: null, observed: null, reasonCode: null, metrics: {}, privacy: { rawTextStored: false, captionTextStored: false, credentialRedaction: "active" }
       }, input || {});
