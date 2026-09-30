@@ -471,7 +471,7 @@ importScripts("telemetry-db.js","observation-sync.js");
 
   var SIGNAL_BRIDGE_URL="ws://127.0.0.1:8787/";
   var signalBridgeSocket=null,signalBridgeReconnectTimer=null,signalBridgeReconnectDelay=500;
-  var signalActiveSessionId=null,signalLastSpeakerId=null,signalLastSpeakerAt=0,signalLastActivityLogAt=0,signalLiveConsoleOpen=false,signalBridgeContextSessionId=null;
+  var signalActiveSessionId=null,signalLastSpeakerId=null,signalLastSpeakerAt=0,signalLastActivityLogAt=0,signalLiveConsoleOpen=false,signalBridgeContextSessionId=null,signalLivePort=null,signalRuntimeId=uid();
   function recordSignalDiagnostic(action,payload,level,source){record(action,Object.assign({sessionId:signalActiveSessionId},payload||{}),level||"info",source||"signal-bridge");}
 
   function normalizeSignalSourceUrl(rawUrl){
@@ -507,7 +507,8 @@ importScripts("telemetry-db.js","observation-sync.js");
   }
   async function ensureSignalSession(info){
     var sourceUrl=normalizeSignalSourceUrl(info&&info.sourceUrl||"");
-    var sourceKey=normalizeSignalSessionUrl(sourceUrl);
+    var sourceKey=normalizeSignalSessionUrl(sourceUrl),sourceWindowId=null;
+    try{if(info&&info.tabId!=null){var sourceTab=await chrome.tabs.get(info.tabId);sourceWindowId=sourceTab&&sourceTab.windowId!=null?sourceTab.windowId:null}}catch(_){}
     var data=await loadSignalSessions(),session=data.sessions.find(function(s){return s.sourceKey===sourceKey});
     if(!session){
       session=normalizeSignalSession({sourceKey:sourceKey,sourceUrl:sourceUrl,title:info&&info.title||"Sesión",sourceTabId:info&&info.tabId!=null?info.tabId:null,sourceWindowId:sourceWindowId,createdAt:iso(),lastActivatedAt:iso()});
@@ -628,18 +629,18 @@ importScripts("telemetry-db.js","observation-sync.js");
     else if(event.type==="uia.scan"){recordSignalDiagnostic("SIGNAL_UIA_SCAN",{chromeWindows:event.chromeWindows||0,captionBubbles:event.captionBubbles||0,captionViews:event.captionViews||0,nonEmptyViews:event.nonEmptyViews||0,longestTextLength:event.longestTextLength||0,sequence:event.sequence||null});broadcastSignalEvent(Object.assign({},event,{sessionId:sessionId}));return}
     else if(event.type==="caption.status"){updateSignalBridgeState({status:"connected",captionActive:event.status==="found",error:null});recordSignalDiagnostic("SIGNAL_CAPTION_STATUS",{status:event.status||"unknown",sessionId:sessionId},event.status==="found"?"info":"warn")}
     else if(event.type==="caption.segment"&&typeof event.text==="string"){
-      var text=event.text.trim();if(!text){recordSignalDiagnostic("SIGNAL_CAPTION_EMPTY",{sessionId:eventSessionId,sequence:event.sequence!=null?event.sequence:null},"warn");return}
+      var text=event.text.trim(),eventSessionId=event.sessionId||sessionId;if(!text){recordSignalDiagnostic("SIGNAL_CAPTION_EMPTY",{sessionId:eventSessionId,sequence:event.sequence!=null?event.sequence:null},"warn");return}
       if(!eventSessionId){recordSignalDiagnostic("SIGNAL_CAPTION_DROPPED_NO_SESSION",{characters:text.length},"error");return}
       if(event.sessionId&&signalActiveSessionId&&event.sessionId!==signalActiveSessionId){recordSignalDiagnostic("SIGNAL_CAPTION_SESSION_MISMATCH",{activeSessionId:signalActiveSessionId,eventSessionId:event.sessionId,sequence:event.sequence||null},"warn");return}
       isSignalCaptionInScope(eventSessionId).then(function(scope){
         if(!scope.ok){recordSignalDiagnostic("SIGNAL_CAPTION_SCOPE_REJECTED",{sessionId:eventSessionId,reason:scope.reason,expected:scope.expected||null,observed:scope.observed||null,error:scope.error||null,sequence:event.sequence!=null?event.sequence:null},"warn");return}
-        var captionEvent=Object.assign({},event,{sessionId:sessionId,sourceOrigin:scope.session.sourceKey,sourceTabId:scope.session.sourceTabId});
+        var captionEvent=Object.assign({},event,{sessionId:eventSessionId,sourceOrigin:scope.session.sourceKey,sourceTabId:scope.session.sourceTabId,sourceWindowId:scope.session.sourceWindowId||scope.tab.windowId||null});
         if(signalLastSpeakerId&&Date.now()-signalLastSpeakerAt<=1600)captionEvent.speakerId=signalLastSpeakerId;
         var segment={id:"signal-"+eventSessionId+"-"+(event.sequence!=null?event.sequence:Date.now())+"-"+Date.now(),sessionId:eventSessionId,traceId:scope.session.traceId||null,operationId:scope.session.lastOperationId||null,sequence:event.sequence!=null?event.sequence:null,text:text.slice(0,12000),timestamp:event.timestamp||iso(),reason:event.reason||"stable",source:event.source||"live-caption",speakerId:captionEvent.speakerId||null,sourceOrigin:scope.session.sourceKey,sourceTabId:scope.session.sourceTabId,sourceWindowId:scope.session.sourceWindowId||scope.tab.windowId||null};
         recordSignalDiagnostic("SIGNAL_CAPTION_SEGMENT_RECEIVED",{sessionId:eventSessionId,segmentId:segment.id,sequence:segment.sequence,characters:segment.text.length,speakerId:segment.speakerId,reason:segment.reason,source:segment.source,sourceOrigin:segment.sourceOrigin,sourceTabId:segment.sourceTabId},"info");
         persistSignalSegment(eventSessionId,segment).catch(function(error){recordSignalDiagnostic("SIGNAL_SEGMENT_PERSIST_UNHANDLED",{sessionId:eventSessionId,error:String(error)},"error")});
         broadcastSignalEvent(captionEvent)
-      }).catch(function(error){recordSignalDiagnostic("SIGNAL_CAPTION_SCOPE_ERROR",{sessionId:sessionId,error:String(error)},"error")});
+      }).catch(function(error){recordSignalDiagnostic("SIGNAL_CAPTION_SCOPE_ERROR",{sessionId:eventSessionId,error:String(error)},"error")});
       return
     }
     broadcastSignalEvent(Object.assign({},event,{sessionId:sessionId}))
@@ -649,11 +650,17 @@ importScripts("telemetry-db.js","observation-sync.js");
     if(signalBridgeSocket&&(signalBridgeSocket.readyState===WebSocket.OPEN||signalBridgeSocket.readyState===WebSocket.CONNECTING))return;
     clearTimeout(signalBridgeReconnectTimer);updateSignalBridgeState({status:"connecting",url:SIGNAL_BRIDGE_URL,error:null});
     try{signalBridgeSocket=new WebSocket(SIGNAL_BRIDGE_URL);}catch(error){updateSignalBridgeState({status:"error",error:String(error)});scheduleSignalBridgeReconnect();return;}
-     signalBridgeSocket.addEventListener("open",function(){signalBridgeReconnectDelay=500;updateSignalBridgeState({status:"connected",url:SIGNAL_BRIDGE_URL,connectedAt:iso(),error:null});recordSignalDiagnostic("SIGNAL_BRIDGE_CONNECTED",{url:SIGNAL_BRIDGE_URL});loadSignalSessions().then(function(data){var wantedId=signalBridgeContextSessionId||data.activeSessionId,active=data.sessions.find(function(s){return s.id===wantedId})||data.sessions.find(function(s){return s.id===data.activeSessionId});if(active)sendSignalBridgeContextForSession(active)}).catch(function(error){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_RESTORE_ERROR",{error:String(error)},"warn")})});
+     signalBridgeSocket.addEventListener("open",function(){signalBridgeReconnectDelay=500;updateSignalBridgeState({status:"connected",url:SIGNAL_BRIDGE_URL,connectedAt:iso(),error:null});recordSignalDiagnostic("SIGNAL_BRIDGE_CONNECTED",{url:SIGNAL_BRIDGE_URL});try{signalBridgeSocket.send(JSON.stringify({type:"signal.caption.controller.hello",runtimeId:signalRuntimeId,extensionVersion:chrome.runtime.getManifest().version,timestamp:iso()}));recordSignalDiagnostic("SIGNAL_BRIDGE_CONTROLLER_HELLO_SENT",{runtimeId:signalRuntimeId})}catch(error){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTROLLER_HELLO_ERROR",{error:String(error)},"warn")}loadSignalSessions().then(function(data){var wantedId=signalBridgeContextSessionId||data.activeSessionId,active=data.sessions.find(function(s){return s.id===wantedId})||data.sessions.find(function(s){return s.id===data.activeSessionId});if(active)sendSignalBridgeContextForSession(active)}).catch(function(error){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_RESTORE_ERROR",{error:String(error)},"warn")})});
     signalBridgeSocket.addEventListener("message",function(message){try{var parsed=JSON.parse(message.data);handleSignalBridgeEvent(parsed);}catch(error){updateSignalBridgeState({status:"error",error:"JSON inválido del Signal Interpreter Bridge"});recordSignalDiagnostic("SIGNAL_BRIDGE_MESSAGE_ERROR",{message:String(error),dataType:typeof message.data,dataLength:typeof message.data==="string"?message.data.length:null},"error")}});
     signalBridgeSocket.addEventListener("error",function(){updateSignalBridgeState({status:"error",error:"No se pudo conectar con Signal Interpreter Bridge"});recordSignalDiagnostic("SIGNAL_BRIDGE_SOCKET_ERROR",{url:SIGNAL_BRIDGE_URL},"error");});
     signalBridgeSocket.addEventListener("close",function(event){signalBridgeSocket=null;updateSignalBridgeState({status:"disconnected",captionActive:false});recordSignalDiagnostic("SIGNAL_BRIDGE_CLOSED",{code:event&&event.code!=null?event.code:null,reason:event&&event.reason?String(event.reason).slice(0,200):null},"warn");scheduleSignalBridgeReconnect();});
   }
+  chrome.runtime.onConnect.addListener(function(port){
+    if(!port||port.name!=="signal-live-console")return;
+    signalLivePort=port;signalLiveConsoleOpen=true;recordSignalDiagnostic("SIGNAL_LIVE_PORT_CONNECTED",{runtimeId:signalRuntimeId});connectSignalBridge();
+    port.onMessage.addListener(function(message){if(!message||message.type!=="signal.live.context")return;loadSignalSessions().then(function(data){var s=data.sessions.find(function(x){return x.id===(message.sessionId||data.activeSessionId)});if(s)sendSignalBridgeContextForSession(s)}).catch(function(error){recordSignalDiagnostic("SIGNAL_LIVE_PORT_CONTEXT_ERROR",{error:String(error)},"warn")})});
+    port.onDisconnect.addListener(function(){if(signalLivePort!==port)return;signalLivePort=null;signalLiveConsoleOpen=false;recordSignalDiagnostic("SIGNAL_LIVE_PORT_DISCONNECTED",{})});
+  });
   chrome.runtime.onInstalled.addListener(function (details) {
     chrome.offscreen.closeDocument().catch(function () {});
     initialize().then(function(){connectSignalBridge();}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
