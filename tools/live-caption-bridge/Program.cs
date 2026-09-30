@@ -102,12 +102,6 @@ internal static class Program
 
                 if (!string.IsNullOrWhiteSpace(snapshot))
                 {
-                    if (!found)
-                    {
-                        Emit(new { type = "caption.status", status = scan.MatchedChromeWindows==1 ? "found" : scan.MatchedChromeWindows>1 ? "ambiguous" : "not_found", sessionId=scan.SessionId, traceId=scan.TraceId, sourceTabId=scan.SourceTabId, sourceWindowId=scan.SourceWindowId, sourceOrigin=scan.TargetOrigin, targetWindowTitle=scan.TargetWindowTitle, timestamp = now, sequence = ++sequence });
-                        found = true;
-                    }
-
                     var normalizedSnapshot = Normalize(snapshot);
                     if (scan.MatchedChromeWindows != 1 || string.IsNullOrWhiteSpace(scan.SessionId))
                     {
@@ -120,6 +114,11 @@ internal static class Program
                         }
                         Thread.Sleep(intervalMs);
                         continue;
+                    }
+                    if (!found)
+                    {
+                        Emit(new { type = "caption.status", status = "found", sessionId=scan.SessionId, traceId=scan.TraceId, sourceTabId=scan.SourceTabId, sourceWindowId=scan.SourceWindowId, sourceOrigin=scan.TargetOrigin, targetWindowTitle=scan.TargetWindowTitle, timestamp = now, sequence = ++sequence });
+                        found = true;
                     }
 
                     foreach (var segment in reconciler.Observe(normalizedSnapshot, now))
