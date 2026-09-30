@@ -95,6 +95,12 @@
     await done;
     return result;
   }
+  async function getEventsAfter(sequence, limit) {
+    var db=await open(),tx=db.transaction("events","readonly"),done=transactionDone(tx),store=tx.objectStore("events"),max=Math.max(1,Math.min(1000,Number(limit)||200)),values=[];
+    var request=store.openCursor(IDBKeyRange.lowerBound(Number(sequence)||0,true),"next");
+    await new Promise(function(resolve,reject){request.onsuccess=function(){var cursor=request.result;if(!cursor||values.length>=max){resolve();return}values.push(cursor.value);cursor.continue()};request.onerror=function(){reject(request.error||new Error("Event cursor failed"))}});
+    await done;return values;
+  }
   async function getSignalSegments(sessionId, limit) {
     var db = await open();
     var tx = db.transaction("signalSegments", "readonly");
@@ -240,6 +246,7 @@
     putEvent: function (event) { return put("events", event); },
     putEvents: function (events) { return putMany("events", events); },
     getEvents: function () { return getAll("events"); },
+    getEventsAfter: getEventsAfter,
     putSnapshot: function (snapshot) { return put("snapshots", snapshot); },
     getSnapshots: function () { return getAll("snapshots"); },
     putSignalSegment: function (segment) { return put("signalSegments", segment); },
