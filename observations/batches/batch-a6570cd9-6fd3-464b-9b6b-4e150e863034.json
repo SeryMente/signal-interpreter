@@ -1,0 +1,98 @@
+{
+  "schema": "signal-interpreter-observation-batch/v1",
+  "batchId": "batch-a6570cd9-6fd3-464b-9b6b-4e150e863034",
+  "createdAt": "2026-10-01T23:42:27.710Z",
+  "trigger": "critical",
+  "extensionVersion": "0.9.3",
+  "summary": {
+    "eventsTotal": 2,
+    "errors": 0,
+    "warnings": 2,
+    "critical": true,
+    "scopeRejected": 0,
+    "contextEvents": 0,
+    "invariantSignals": 0,
+    "firstSequence": 1,
+    "lastSequence": 2,
+    "firstTimestamp": "2026-10-01T23:42:27.611Z",
+    "lastTimestamp": "2026-10-01T23:42:27.695Z",
+    "actions": {
+      "EXCHANGE_RATE_ERROR": 2
+    },
+    "categories": {
+      "BILLING": 2
+    }
+  },
+  "events": [
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b66181ef-6aa1-48a3-a7ce-ad462f31d5e2",
+      "sequence": 1,
+      "timestamp": "2026-10-01T23:42:27.611Z",
+      "ingestedAt": "2026-10-01T23:42:27.612Z",
+      "level": "warn",
+      "category": "BILLING",
+      "component": "background",
+      "phase": "error",
+      "action": "EXCHANGE_RATE_ERROR",
+      "outcome": "error",
+      "traceId": "1298844a-23b7-4571-b7a7-b9206544c260",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "startup",
+      "error": "TypeError: Failed to fetch | TypeError: Failed to fetch | TypeError: Failed to fetch",
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "ae4c65af-3e60-438f-af45-057837eb0717",
+      "sequence": 2,
+      "timestamp": "2026-10-01T23:42:27.695Z",
+      "ingestedAt": "2026-10-01T23:42:27.696Z",
+      "level": "warn",
+      "category": "BILLING",
+      "component": "background",
+      "phase": "error",
+      "action": "EXCHANGE_RATE_ERROR",
+      "outcome": "error",
+      "traceId": "a8a47f86-f83d-4a73-860f-6279cfb6b62d",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "installed",
+      "error": "TypeError: Failed to fetch | TypeError: Failed to fetch | TypeError: Failed to fetch",
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    }
+  ]
+}
