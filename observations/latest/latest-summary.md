@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: `batch-e180cd9e-b80a-4edb-a5a0-18737e79fcf2`
-- Recibido: `2026-10-01T22:40:38.811Z`
+- Batch: `batch-d0aa6ee2-e9b5-452c-b9ba-c9e3382dd3b3`
+- Recibido: `2026-10-01T22:42:42.595Z`
 - Trigger: event-window
 - Extensión: 0.9.3
 - Eventos: 200
-- Errores: 1
-- Warnings: 3
-- Secuencia: 4801 → 5000
+- Errores: 0
+- Warnings: 2
+- Secuencia: 5601 → 5800
 
 ## Categorías
 ```json
@@ -19,26 +19,9 @@
 ## Acciones
 ```json
 {
-  "SCREEN_MAP": 18,
-  "NETWORK_REQUEST_COMPLETED": 96,
-  "TAB_LIFECYCLE": 10,
-  "AVAILABILITY_STATE": 3,
-  "PERFORMANCE_HEARTBEAT": 14,
-  "USER_INTERACTION": 7,
-  "PAGE_LIFECYCLE": 7,
-  "PAGE_VISIBILITY_CHANGED": 7,
-  "PLATFORM_MIRROR_UPDATED": 7,
-  "EXCHANGE_RATE_ERROR": 1,
-  "TELEMETRY_MAINTENANCE": 1,
-  "INCOMING_DIALOG_DETECTED": 1,
-  "CONNECT_BUTTON_FOUND": 1,
-  "CONNECT_CLICKED": 1,
-  "PLATFORM_INTEGRITY_CHECK": 3,
-  "STATE_MUTATION_ERROR": 1,
-  "NETWORK_REQUEST_ERROR": 1,
-  "CALL_ROUTE_ENTERED": 1,
-  "MEDIA_HEALTH": 18,
-  "CALL_TIMER_STARTED": 1,
-  "TRANSCRIPTION_MODULE_DORMANT": 1
+  "PERFORMANCE_HEARTBEAT": 174,
+  "EXCHANGE_RATE_ERROR": 2,
+  "NETWORK_REQUEST_COMPLETED": 22,
+  "TELEMETRY_MAINTENANCE": 2
 }
 ```
