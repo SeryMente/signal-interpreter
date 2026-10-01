@@ -615,11 +615,48 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
   async function signalMicControlSession(session,action){
     if(!session||session.sourceTabId==null)return{ok:false,error:"Sesión sin pestaña fuente"};
     try{
-      var result=await chrome.tabs.sendMessage(session.sourceTabId,{type:"SIGNAL_MIC_CONTROL",action:action,sessionId:session.id,lang:"es-MX"});
-      recordSignalDiagnostic("SIGNAL_MIC_CONTROL",{sessionId:session.id,sourceTabId:session.sourceTabId,action:action,ok:!!(result&&result.ok)},result&&result.ok?"info":"warn");
-      return result||{ok:false,error:"Sin respuesta del contenido"};
+      var results=await chrome.scripting.executeScript({
+        target:{tabId:session.sourceTabId,allFrames:false},
+        world:"MAIN",
+        args:[session.id,action,"es-MX"],
+        func:function(sessionId,action,lang){
+          var KEY="__SIGNAL_INTERPRETER_MAIN_MIC__";
+          function emit(type,payload){
+            try{window.postMessage(Object.assign({source:"signal-interpreter-mic",type:type,sessionId:sessionId,timestamp:new Date().toISOString()},payload||{}),"*")}catch(_){}
+          }
+          var state=window[KEY];
+          if(action==="stop"){
+            if(state&&state.sessionId===sessionId)return state.stop();
+            emit("status",{status:"stopped"});
+            return{ok:true,alreadyStopped:true};
+          }
+          var C=window.SpeechRecognition||window.webkitSpeechRecognition;
+          if(!C){emit("status",{status:"unsupported",error:"SpeechRecognition no disponible en el contexto principal"});return{ok:false,error:"SpeechRecognition no disponible"}}
+          if(state&&state.sessionId!==sessionId){try{state.stop()}catch(_){}state=null}
+          if(!state){
+            state={sessionId:sessionId,recognition:null,running:false,blocked:false,stopped:false,timer:null,generation:0,lastFinal:"",lastFinalAt:0};
+            state.start=function(){
+              if(state.stopped||state.blocked||state.running)return{ok:true,alreadyRunning:true};
+              state.generation++;var generation=state.generation;var r=new C();state.recognition=r;
+              r.lang=lang||"es-MX";r.continuous=true;r.interimResults=false;r.maxAlternatives=1;
+              r.onstart=function(){if(generation!==state.generation)return;state.running=true;emit("status",{status:"listening"})};
+              r.onresult=function(ev){if(generation!==state.generation)return;for(var i=ev.resultIndex;i<ev.results.length;i++){var result=ev.results[i];if(result&&result.isFinal){var text=String(result[0]&&result[0].transcript||"").trim(),now=Date.now();if(text&&(text!==state.lastFinal||now-state.lastFinalAt>1800)){state.lastFinal=text;state.lastFinalAt=now;emit("result",{text:text})}}}};
+              r.onerror=function(ev){if(generation!==state.generation)return;var code=String(ev&&ev.error||"unknown");emit("status",{status:code,error:String(ev&&ev.message||"")||null});if(code==="not-allowed"||code==="service-not-allowed"||code==="audio-capture"){state.blocked=true;state.running=false}};
+              r.onend=function(){if(generation!==state.generation)return;state.running=false;if(state.stopped||state.blocked){if(state.stopped)emit("status",{status:"stopped"});return}emit("status",{status:"restarting"});clearTimeout(state.timer);state.timer=setTimeout(function(){if(!state.stopped&&!state.blocked&&!state.running)state.start()},350)};
+              try{r.start();emit("status",{status:"starting"});return{ok:true}}catch(error){state.running=false;emit("status",{status:"error",error:String(error)});return{ok:false,error:String(error)}}
+            };
+            state.stop=function(){state.generation++;state.stopped=true;state.running=false;state.blocked=true;clearTimeout(state.timer);state.timer=null;try{if(state.recognition)state.recognition.stop()}catch(_){}state.recognition=null;emit("status",{status:"stopped"});return{ok:true}};
+            window[KEY]=state;
+          }
+          state.stopped=false;state.blocked=false;
+          return state.start();
+        }
+      });
+      var result=results&&results[0]&&results[0].result;
+      recordSignalDiagnostic("SIGNAL_MIC_CONTROL",{sessionId:session.id,sourceTabId:session.sourceTabId,action:action,ok:!!(result&&result.ok),world:"MAIN"},result&&result.ok?"info":"warn");
+      return result||{ok:false,error:"Sin resultado del main world"};
     }catch(error){
-      recordSignalDiagnostic("SIGNAL_MIC_CONTROL_ERROR",{sessionId:session.id,sourceTabId:session.sourceTabId,action:action,error:String(error)},"warn");
+      recordSignalDiagnostic("SIGNAL_MIC_CONTROL_ERROR",{sessionId:session.id,sourceTabId:session.sourceTabId,action:action,world:"MAIN",error:String(error)},"warn");
       return{ok:false,error:String(error)};
     }
   }
