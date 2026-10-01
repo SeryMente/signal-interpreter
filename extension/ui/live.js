@@ -1,7 +1,7 @@
 (function(){
 "use strict";
 var $=function(id){return document.getElementById(id)};
-var items=[],sessions=[],activeSessionId=null,currentSession=null,activeSpeaker="CLIENTE",view="timeline",autoScroll=true,lastSignal=null,focusMode=false,audioVoices=0,audioConfidence=0,voiceMap={A:"CLIENTE",B:"PROFESIONAL"},sessionSaveTimer=null,livePort=null,livePortRetry=null;
+var items=[],sessions=[],activeSessionId=null,currentSession=null,activeSpeaker="CLIENTE",view="timeline",autoScroll=true,lastSignal=null,focusMode=false,audioVoices=0,audioConfidence=0,voiceMap={A:"CLIENTE",B:"PROFESIONAL"},sessionSaveTimer=null,livePort=null,livePortRetry=null,micController=null;
 var sizes={compact:{width:430,height:700},normal:{width:760,height:760},reading:{width:1200,height:820}};
 var seen={CLIENTE:0,PROFESIONAL:0,YO:0};
 
@@ -10,7 +10,7 @@ function time(v){try{return new Date(v).toLocaleTimeString([], {hour:"2-digit",m
 function speakerClass(s){return s==="PROFESIONAL"?"professional":s==="YO"?"me":"client"}
 function mappedSpeaker(raw){return voiceMap[raw]||null}
 function sessionParts(s){try{var u=new URL(String(s&&s.sourceUrl||"")),host=u.hostname.replace(/^www\./,""),path=(u.pathname||"/")+(u.search||"");return{title:(s&&s.title)||host||"Sesión",url:host+(path.length>48?path.slice(0,45)+"…":path)}}catch(_){return{title:(s&&s.title)||"Sesión",url:String(s&&s.sourceUrl||"")}}}
-function normalizeSession(s){s=Object.assign({segments:[],activeSpeaker:"CLIENTE",view:"timeline",fontSize:20,autoScroll:true,compactDensity:false,voiceMap:{A:"CLIENTE",B:"PROFESIONAL"}},s||{});s.segments=Array.isArray(s.segments)?s.segments.slice(-200):[];return s}
+function normalizeSession(s){s=Object.assign({segments:[],activeSpeaker:"CLIENTE",view:"timeline",fontSize:20,autoScroll:true,compactDensity:false,voiceMap:{A:"CLIENTE",B:"PROFESIONAL"}},s||{});s.segments=SignalDialogue.sortSegments(Array.isArray(s.segments)?s.segments.slice(-200):[]);return s}
 function upsertSession(s){if(!s||!s.id)return;var n=normalizeSession(s),i=sessions.findIndex(function(x){return x.id===n.id});if(i<0)sessions.push(n);else sessions[i]=n}
 function recomputeSeen(){seen={CLIENTE:0,PROFESIONAL:0,YO:0};items.forEach(function(x){seen[x.speaker]=(seen[x.speaker]||0)+1})}
 function sendLiveContext(){if(!livePort||!currentSession)return;try{livePort.postMessage({type:"signal.live.context",sessionId:currentSession.id,sourceOrigin:currentSession.sourceKey||null,sourceTabId:currentSession.sourceTabId||null})}catch(_) {}}
@@ -21,13 +21,11 @@ function applySession(s){if(!s)return;currentSession=normalizeSession(s);activeS
 function persistSessionPatch(patch,immediate){if(!activeSessionId)return;if(currentSession)currentSession=Object.assign({},currentSession,patch);upsertSession(currentSession);renderSessionTabs();clearTimeout(sessionSaveTimer);var send=function(){chrome.runtime.sendMessage({type:"UPDATE_SIGNAL_SESSION",sessionId:activeSessionId,patch:patch}).catch(function(){})};if(immediate)send();else sessionSaveTimer=setTimeout(send,120)}
 async function activateSession(id){if(!id)return;clearTimeout(sessionSaveTimer);var local=sessions.find(function(s){return s.id===id});if(local)applySession(local);try{var r=await chrome.runtime.sendMessage({type:"ACTIVATE_SIGNAL_SESSION",sessionId:id});if(!r||!r.ok)throw new Error(r&&r.error||"No se pudo activar la sesión");if(r.session){upsertSession(r.session);applySession(r.session)}if(r.audio&&r.audio.error){$("audioText").textContent="ERROR";$("participantDetection").textContent="Captura: "+String(r.audio.error).slice(0,150)}}catch(error){$("audioText").textContent="ERROR";$("participantDetection").textContent="Captura: "+String(error).slice(0,150)}}
 function updateCounts(){
-  $("clientCount").textContent=seen.CLIENTE;$("professionalCount").textContent=seen.PROFESIONAL;$("meCount").textContent=seen.YO;
-  var external=(seen.CLIENTE>0?1:0)+(seen.PROFESIONAL>0?1:0);
-  $("participantSummary").textContent=(external===2?"2 VOCES EXTERNAS":"1 VOZ EXTERNA")+" · "+(external+1)+" PARTICIPANTES OBSERVADOS";
-  var mode=currentSession&&currentSession.mode||"unknown",profile=currentSession&&currentSession.profile||"generic";
-  var modeLabel=mode==="dialogue"?"DIÁLOGO":mode==="monologue"?"NO DIALOGAL":"DETECTANDO";
-  var profileLabel=profile==="cloud-interpreter-3p"?" · CLOUD INTERPRETER · 3 ROLES":"";
-  $("participantDetection").textContent=modeLabel+profileLabel+" · "+(audioVoices?((audioVoices===2?"2 voces externas detectadas":"1 voz externa detectada")+" · confianza "+Math.round(audioConfidence*100)+"%"):("Asignación manual · "+(external===2?"2 voces externas observadas":"1 voz externa observada")));
+  $("clientCount").textContent=seen.CLIENTE;$("meCount").textContent=seen.YO;
+  var observed=(seen.CLIENTE>0?1:0)+(seen.YO>0?1:0);
+  $("participantSummary").textContent="2 PARTICIPANTES · "+observed+" CON TEXTO";
+  var mic=($("micText")&&$("micText").textContent)||"ESPERANDO";
+  $("participantDetection").textContent="CLIENTE: Live Caption · YO: Micrófono · MIC "+mic;
 }
 function makeTurn(x){
   var node=document.createElement("article");node.className="turn "+speakerClass(x.speaker);
@@ -42,12 +40,12 @@ function renderTimeline(){
   if(autoScroll)host.scrollTop=host.scrollHeight;
 }
 function renderTriptych(){
-  ["clientLane","professionalLane","meLane"].forEach(function(id){$(id).replaceChildren()});
+  ["clientLane","meLane"].forEach(function(id){$(id).replaceChildren()});
   items.forEach(function(x){
-    var id=x.speaker==="CLIENTE"?"clientLane":x.speaker==="PROFESIONAL"?"professionalLane":"meLane";
+    var id=x.speaker==="YO"?"meLane":"clientLane";
     var p=document.createElement("div");p.className="lane-item";p.innerHTML="<time>"+time(x.timestamp)+"</time><p>"+esc(x.text)+"</p>";$(id).appendChild(p)
   });
-  ["clientLane","professionalLane","meLane"].forEach(function(id){$(id).scrollTop=$(id).scrollHeight});
+  ["clientLane","meLane"].forEach(function(id){$(id).scrollTop=$(id).scrollHeight});
 }
 function render(){
   renderSessionTabs();renderSource();renderTimeline();renderTriptych();updateCounts();$("segmentCount").textContent=String(items.length);
@@ -62,10 +60,14 @@ function syncSpeakerButtons(){
 function addEventSegment(e){
   var id=e.sessionId||activeSessionId;if(!id)return;var sess=sessions.find(function(x){return x.id===id});if(!sess)return;
   var sid=e.segmentId||("signal-"+(e.sequence||Date.now())+"-"+String(e.timestamp||""));if((sess.segments||[]).some(function(x){return x.id===sid}))return;
-  var text=String(e.text||"").trim();if(!text)return;var speaker=(e.manual&&e.speaker)?e.speaker:(mappedSpeaker(e.speakerId)||sess.activeSpeaker||"CLIENTE");
-  var x={id:sid,speaker:speaker,text:text,timestamp:e.timestamp||new Date().toISOString(),reason:e.reason||"stable",source:e.source||"live-caption"};sess.segments=(sess.segments||[]).concat(x).slice(-200);upsertSession(sess);
+  var text=String(e.text||"").trim();if(!text)return;var speaker=e.source==="microphone"||e.speaker==="YO"?"YO":"CLIENTE";
+  var x={id:sid,speaker:speaker,text:text,timestamp:e.timestamp||new Date().toISOString(),reason:e.reason||"stable",source:e.source||"live-caption"};sess.segments=SignalDialogue.sortSegments((sess.segments||[]).concat(x).slice(-200));upsertSession(sess);
   if(id===activeSessionId){currentSession=sess;items=sess.segments.slice(-200);recomputeSeen();lastSignal=x.timestamp;render()}
 }
+function updateMicUi(status){var el=$("micText"),b=$("micToggle");if(el){el.textContent=status==="listening"?"ACTIVO":status==="starting"?"INICIANDO":status==="restarting"?"REINICIANDO":status==="unsupported"?"NO DISPONIBLE":status==="not-allowed"||status==="service-not-allowed"?"BLOQUEADO":status==="audio-capture"?"SIN MICRÓFONO":status==="error"?"ERROR":status==="stopped"?"DETENIDO":"ESPERANDO";}if(b){b.textContent=(status==="listening"||status==="starting"||status==="restarting")?"MIC ON":"ACTIVAR MIC";}if(typeof updateCounts==="function")updateCounts();}
+function sendMicStatus(status,error){try{chrome.runtime.sendMessage({type:"SIGNAL_MIC_STATUS",sessionId:activeSessionId,status:status,error:error||null,lang:"es-MX"}).catch(function(){})}catch(_){}updateMicUi(status)}
+function startMicrophone(){if(!micController){micController=new SignalMicController({lang:"es-MX",onStatus:function(status){sendMicStatus(status)},onError:function(error){sendMicStatus("error",error)},onFinal:function(text){if(!activeSessionId)return;var timestamp=new Date().toISOString();chrome.runtime.sendMessage({type:"ADD_SIGNAL_MIC_SEGMENT",sessionId:activeSessionId,text:text,timestamp:timestamp}).then(function(r){if(!r||!r.ok)sendMicStatus("error",r&&r.error||"No se pudo guardar la transcripción del micrófono")}).catch(function(error){sendMicStatus("error",String(error))});}});}return micController.start()}
+function toggleMicrophone(){if(!micController)return startMicrophone();if(micController.running&&!micController.blocked)return micController.stop();return micController.retry()}
 function submitYo(){
   var value=$("yo").value.trim();if(!value||!activeSessionId)return;
   chrome.runtime.sendMessage({type:"ADD_SIGNAL_SESSION_SEGMENT",sessionId:activeSessionId,text:value,speaker:"YO"}).then(function(r){if(r&&r.ok&&r.session){upsertSession(r.session);applySession(r.session);$("yo").value="";activeSpeaker="YO";syncSpeakerButtons();$("yo").focus()}else if(r&&!r.ok){$("audioText").textContent="ERROR";$("participantDetection").textContent=String(r.error||"No se pudo insertar YO")}}).catch(function(error){$("audioText").textContent="ERROR";$("participantDetection").textContent=String(error)})
@@ -109,7 +111,7 @@ document.querySelectorAll("[data-speaker]").forEach(function(b){b.addEventListen
 document.querySelectorAll("[data-map]").forEach(function(b){b.addEventListener("click",function(){var p=b.dataset.map.split(":");voiceMap[p[0]]=p[1];persistSessionPatch({voiceMap:Object.assign({},voiceMap)},true);updateCounts()})});
 document.querySelectorAll("[data-view]").forEach(function(b){b.addEventListener("click",function(){setView(b.dataset.view)})});
 $("exportDiagnostic").addEventListener("click",function(){exportDiagnosticBundle()});$("syncDiagnostic").addEventListener("click",function(){var b=$("syncDiagnostic");b.disabled=true;b.textContent="SINCRONIZANDO…";chrome.runtime.sendMessage({type:"SIGNAL_OBSERVATION_SYNC_NOW"}).then(function(r){b.textContent=r&&r.ok?"SINCRONIZADO":"REINTENTAR";setTimeout(function(){b.textContent="SINCRONIZAR LOG";b.disabled=false},1800)}).catch(function(){b.textContent="REINTENTAR";setTimeout(function(){b.textContent="SINCRONIZAR LOG";b.disabled=false},1800)})});
-$("sendYo").addEventListener("click",submitYo);$("yo").addEventListener("keydown",function(e){if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();submitYo()}});
+$("sendYo").addEventListener("click",submitYo);$("yo").addEventListener("keydown",function(e){if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();submitYo()}});$("micToggle").addEventListener("click",function(){toggleMicrophone()});
 $("clear").addEventListener("click",function(){if(activeSessionId)chrome.runtime.sendMessage({type:"CLEAR_SIGNAL_INTERPRETER_TRANSCRIPT",sessionId:activeSessionId}).catch(function(){})});
 async function exportDiagnosticBundle(){
   try{
@@ -135,8 +137,7 @@ $("timeline").addEventListener("scroll",function(){var el=$("timeline");autoScro
 document.addEventListener("keydown",function(e){
  if(e.target&&/TEXTAREA|INPUT/.test(e.target.tagName))return;
  if(e.key==="1"){activeSpeaker="CLIENTE";syncSpeakerButtons();persistSessionPatch({activeSpeaker:activeSpeaker},true)}
- if(e.key==="2"){activeSpeaker="PROFESIONAL";syncSpeakerButtons();persistSessionPatch({activeSpeaker:activeSpeaker},true)}
- if(e.key==="3"){activeSpeaker="YO";syncSpeakerButtons();persistSessionPatch({activeSpeaker:activeSpeaker},true);$("yo").focus()}
+ if(e.key==="2"){activeSpeaker="YO";syncSpeakerButtons();persistSessionPatch({activeSpeaker:activeSpeaker},true);$("yo").focus()}
  if(e.key.toLowerCase()==="f")toggleFocus(true);
  if(e.key==="Escape"&&focusMode)toggleFocus(false);
  if(e.key.toLowerCase()==="t")setView("timeline");
@@ -149,7 +150,7 @@ openLiveKeepalive();chrome.runtime.sendMessage({type:"SIGNAL_LIVE_CONSOLE_OPEN"}
  var initial=activeSessionId?sessions.find(function(x){return x.id===activeSessionId}):sessions[sessions.length-1];
  if(initial)applySession(initial);else{items=[];render()}
  $("bridgeDot").classList.toggle("ok",r.bridge&&r.bridge.status==="connected");$("bridgeStatus").textContent=r.bridge&&r.bridge.status==="connected"?"CONECTADO":"DESCONECTADO";$("bridgeText").textContent=r.bridge&&r.bridge.status==="connected"?"Conectado":"Desconectado";$("captionText").textContent=r.bridge&&r.bridge.captionActive?"Activo":"Esperando";
- restoreBounds();renderSessionTabs();
+ restoreBounds();renderSessionTabs();startMicrophone();
 }).catch(function(){restoreBounds();render()});
-window.addEventListener("beforeunload",function(){saveBounds();if(livePortRetry)clearTimeout(livePortRetry);try{livePort&&livePort.disconnect()}catch(_){}chrome.runtime.sendMessage({type:"SIGNAL_LIVE_CONSOLE_CLOSE"}).catch(function(){})});render();syncSpeakerButtons()
+window.addEventListener("beforeunload",function(){saveBounds();if(livePortRetry)clearTimeout(livePortRetry);try{livePort&&livePort.disconnect()}catch(_){}if(micController)micController.stop();chrome.runtime.sendMessage({type:"SIGNAL_LIVE_CONSOLE_CLOSE"}).catch(function(){})});render();syncSpeakerButtons()
 })();

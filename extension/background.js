@@ -1,4 +1,4 @@
-importScripts("telemetry-db.js","observation-sync.js");
+importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
 (function () {
   "use strict";
 
@@ -45,6 +45,7 @@ importScripts("telemetry-db.js","observation-sync.js");
   var eventQueue = Promise.resolve();
   var stateQueue = Promise.resolve();
   var cachedConfig = Object.assign({}, DEFAULT_CONFIG);
+  var signalCaptionCursors = new Map();
 
   function uid() { return crypto.randomUUID(); }
   function iso() { return new Date().toISOString(); }
@@ -489,14 +490,14 @@ importScripts("telemetry-db.js","observation-sync.js");
     return{mode:"unknown",profile:"generic",participantModel:"unknown",expectedParticipants:null,roles:["PERSONA_A","PERSONA_B"]};
   }
   function normalizeSignalSession(s){
-    s=Object.assign({id:uid(),sourceKey:"",sourceUrl:"",title:"Sesión",sourceTabId:null,sourceWindowId:null,traceId:uid(),lastOperationId:null,createdAt:iso(),lastActivatedAt:null,activationCount:0,segments:[],segmentCount:0,activeSpeaker:"CLIENTE",view:"timeline",fontSize:20,autoScroll:true,compactDensity:false,voiceMap:{A:"CLIENTE",B:"PROFESIONAL"},mode:"unknown",profile:"generic",participantModel:"unknown",expectedParticipants:null,roles:[],detectedSpeakerIds:{}},s||{});
+    s=Object.assign({id:uid(),sourceKey:"",sourceUrl:"",title:"Sesión",sourceTabId:null,sourceWindowId:null,traceId:uid(),lastOperationId:null,createdAt:iso(),lastActivatedAt:null,activationCount:0,segments:[],segmentCount:0,activeSpeaker:"CLIENTE",view:"timeline",fontSize:20,autoScroll:true,compactDensity:false,voiceMap:{A:"CLIENTE",B:"PROFESIONAL"},mode:"unknown",profile:"generic",participantModel:"unknown",expectedParticipants:null,roles:[],captionCursor:"",detectedSpeakerIds:{}},s||{});
     s.sourceUrl=normalizeSignalSourceUrl(s.sourceUrl||s.sourceKey);
     s.sourceKey=normalizeSignalSessionUrl(s.sourceUrl||s.sourceKey);
     var profile=signalProfileForOrigin(s.sourceKey);
     s.profile=s.profile||profile.profile;s.participantModel=s.participantModel||profile.participantModel;s.expectedParticipants=s.expectedParticipants!=null?s.expectedParticipants:profile.expectedParticipants;s.roles=Array.isArray(s.roles)&&s.roles.length?s.roles:profile.roles;
     if(s.sourceKey==="https://app.cloudinterpreter.com"){s.profile=profile.profile;s.participantModel=profile.participantModel;s.expectedParticipants=3;s.roles=profile.roles;s.mode="dialogue";}
     s.segments=Array.isArray(s.segments)?s.segments.slice(-100):[];s.segmentCount=Math.max(Number(s.segmentCount)||0,s.segments.length);
-    s.detectedSpeakerIds=s.detectedSpeakerIds&&typeof s.detectedSpeakerIds==="object"?s.detectedSpeakerIds:{};
+    s.detectedSpeakerIds=s.detectedSpeakerIds&&typeof s.detectedSpeakerIds==="object"?s.detectedSpeakerIds:{};s.captionCursor=SignalDialogue.normalize(s.captionCursor);
     return s
   }
   function signalSessionCopy(s,includeSegments){var copy=normalizeSignalSession(s);if(!includeSegments)copy.segments=[];return JSON.parse(JSON.stringify(copy))}
@@ -512,7 +513,7 @@ importScripts("telemetry-db.js","observation-sync.js");
     var sourceUrl=normalizeSignalSourceUrl(info&&info.sourceUrl||"");
     var sourceKey=normalizeSignalSessionUrl(sourceUrl),sourceWindowId=null;
     try{if(info&&info.tabId!=null){var sourceTab=await chrome.tabs.get(info.tabId);sourceWindowId=sourceTab&&sourceTab.windowId!=null?sourceTab.windowId:null}}catch(_){}
-    var data=await loadSignalSessions(),session=data.sessions.find(function(s){return s.sourceKey===sourceKey});
+    var requestedTabId=info&&info.tabId!=null?Number(info.tabId):null;var data=await loadSignalSessions(),session=data.sessions.find(function(s){return s.sourceKey===sourceKey&&Number(s.sourceTabId)===requestedTabId});
     if(!session){
       session=normalizeSignalSession({sourceKey:sourceKey,sourceUrl:sourceUrl,title:info&&info.title||"Sesión",sourceTabId:info&&info.tabId!=null?info.tabId:null,sourceWindowId:sourceWindowId,createdAt:iso(),lastActivatedAt:iso()});
       data.sessions.push(session);if(data.sessions.length>50)data.sessions=data.sessions.slice(-50)
@@ -532,7 +533,7 @@ importScripts("telemetry-db.js","observation-sync.js");
     var dbOk=false,cacheOk=false,dbError=null,cacheError=null;
     try{await KhoraTelemetryDB.putSignalSegment(storedSegment);dbOk=true;recordSignalDiagnostic("SIGNAL_SEGMENT_PERSISTED",{sessionId:sessionId,segmentId:segment.id,sequence:segment.sequence||null,characters:String(segment.text||"").length});}
     catch(error){dbError=String(error);recordSignalDiagnostic("SIGNAL_SEGMENT_PERSIST_ERROR",{sessionId:sessionId,segmentId:segment.id,error:dbError},"error")}
-    session.segments=(session.segments||[]).concat(segment).slice(-100);session.segmentCount=Math.max(0,Number(session.segmentCount||0))+(dbOk?1:0);
+    session.segments=(session.segments||[]).concat(segment).slice(-100);session.segmentCount=Math.max(0,Number(session.segmentCount||0))+(dbOk?1:0);if(segment.captionSnapshot)session.captionCursor=SignalDialogue.normalize(segment.captionSnapshot);
     try{await saveSignalSessions(data.sessions,data.activeSessionId||sessionId);cacheOk=true}
     catch(error){cacheError=String(error);recordSignalDiagnostic("SIGNAL_SESSION_CACHE_ERROR",{sessionId:sessionId,error:cacheError},"error")}
     return{ok:dbOk||cacheOk,dbOk:dbOk,cacheOk:cacheOk,dbError:dbError,cacheError:cacheError,session:signalSessionCopy(session,true)}
@@ -540,17 +541,11 @@ importScripts("telemetry-db.js","observation-sync.js");
   async function activateSignalSession(sessionId,audioStreamId){
     var data=await loadSignalSessions(),session=data.sessions.find(function(s){return s.id===sessionId});if(!session)return{ok:false,error:"Sesión no encontrada"};
     recordSignalDiagnostic("SIGNAL_SESSION_ACTIVATION_REQUESTED",{sessionId:sessionId,sourceTabId:session.sourceTabId,hasSuppliedStream:!!audioStreamId});
-    session.lastActivatedAt=iso();session.activationCount=Number(session.activationCount||0)+1;await saveSignalSessions(data.sessions,session.id);signalLastSpeakerId=null;signalLastSpeakerAt=0;
+    session.lastActivatedAt=iso();session.activationCount=Number(session.activationCount||0)+1;signalCaptionCursors.set(session.id,SignalDialogue.normalize(session.captionCursor||""));await saveSignalSessions(data.sessions,session.id);signalLastSpeakerId=null;signalLastSpeakerAt=0;
     try{var persisted=await KhoraTelemetryDB.getSignalSegments(session.id,200),legacy=session.segments||[],known={};persisted.forEach(function(item){known[item.id]=true});var migrated=0;for(var li=0;li<legacy.length;li+=1){if(known[legacy[li].id])continue;try{await KhoraTelemetryDB.putSignalSegment(Object.assign({},legacy[li],{sessionId:session.id}));migrated+=1}catch(_){}if(migrated>=100)break}if(migrated)persisted=await KhoraTelemetryDB.getSignalSegments(session.id,200);if(persisted.length){session.segments=persisted.slice(-100);session.segmentCount=Math.max(Number(session.segmentCount||0),persisted.length);await saveSignalSessions(data.sessions,session.id)}recordSignalDiagnostic("SIGNAL_SESSION_HISTORY_LOADED",{sessionId:session.id,count:persisted.length,migratedLegacy:migrated});}catch(error){recordSignalDiagnostic("SIGNAL_SESSION_HISTORY_LOAD_ERROR",{sessionId:session.id,error:String(error)},"warn")}
-    var audio={ok:false,error:null},streamId=audioStreamId||null;
-    try{
-      await stopSignalAudioAnalysis();recordSignalDiagnostic("SIGNAL_AUDIO_CAPTURE_PREPARED",{sessionId:session.id,sourceTabId:session.sourceTabId,hasSuppliedStream:!!streamId});
-      if(!streamId&&session.sourceTabId!=null){recordSignalDiagnostic("SIGNAL_TAB_CAPTURE_REQUESTED",{sessionId:session.id,sourceTabId:session.sourceTabId});streamId=await chrome.tabCapture.getMediaStreamId({targetTabId:session.sourceTabId})}
-      if(streamId){recordSignalDiagnostic("SIGNAL_AUDIO_CAPTURE_START_REQUESTED",{sessionId:session.id,sourceTabId:session.sourceTabId,streamIdPresent:true});audio=await startSignalAudioAnalysis(streamId,session.sourceTabId)}else audio={ok:false,error:"No hay pestaña origen disponible para captura acústica"}
-    }catch(error){audio={ok:false,error:String(error)}}
-    if(audio.ok)recordSignalDiagnostic("SIGNAL_AUDIO_CAPTURE_STARTED",{sessionId:session.id,sourceTabId:session.sourceTabId});else recordSignalDiagnostic("SIGNAL_AUDIO_CAPTURE_ERROR",{sessionId:session.id,sourceTabId:session.sourceTabId,error:audio.error||"unknown"},"error");
+    var audio=null;
     sendSignalBridgeContextForSession(session);
-    recordSignalDiagnostic("SIGNAL_SESSION_ACTIVATED",{sessionId:session.id,sourceOrigin:session.sourceKey,segmentCount:Number(session.segmentCount||0),audioOk:!!audio.ok,mode:session.mode,profile:session.profile});
+    recordSignalDiagnostic("SIGNAL_SESSION_ACTIVATED",{sessionId:session.id,sourceOrigin:session.sourceKey,segmentCount:Number(session.segmentCount||0),audioOk:false,mode:session.mode,profile:session.profile,audioAnalysis:"disabled-for-live-caption"});
     broadcastSignalEvent({type:"signal.session.active",sessionId:session.id,session:signalSessionCopy(session,true),audio:audio,timestamp:iso()});
     return{ok:true,session:signalSessionCopy(session,true),audio:audio}
   }
@@ -579,10 +574,10 @@ importScripts("telemetry-db.js","observation-sync.js");
       if(!session)return{ok:false,reason:"session-not-found"};
       if(!session.sourceTabId)return{ok:false,reason:"source-tab-missing"};
       var tab=await chrome.tabs.get(session.sourceTabId),origin=normalizeSignalSessionUrl(tab.url||"");
-      if(origin!==session.sourceKey)return{ok:false,reason:"domain-mismatch",expected:session.sourceKey,observed:origin};
-      if(!tab.active)return{ok:false,reason:"source-tab-not-active",observed:origin};
+      if(origin!==session.sourceKey)return{ok:false,reason:"domain-mismatch",expected:session.sourceKey,observed:origin};       if(!tab.active)return{ok:false,reason:"source-tab-not-active",observed:origin};
+
       var win=await chrome.windows.get(tab.windowId);
-      if(!win.focused&&!signalLiveConsoleOpen)return{ok:false,reason:"source-window-not-focused",observed:origin};
+
       return{ok:true,session:session,tab:tab,window:win}
     }catch(error){return{ok:false,reason:"scope-check-error",error:String(error)}}
   }
@@ -616,6 +611,21 @@ importScripts("telemetry-db.js","observation-sync.js");
       })
     }).then(function(r){broadcastSignalEvent({type:"caption.segment",sessionId:message.sessionId||r.session.id,manual:true,speaker:r.segment.speaker,segmentId:r.segment.id,text:r.segment.text,timestamp:r.segment.timestamp,reason:"manual",source:"manual"});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})})
   }
+  function addSignalMicrophoneSegment(message,sendResponse){
+    loadSignalSessions().then(function(data){
+      var id=message.sessionId||data.activeSessionId,s=data.sessions.find(function(x){return x.id===id});if(!s)throw new Error("Sesión no encontrada");
+      var text=String(message.text||"").trim();if(!text)throw new Error("Texto vacío");
+      var seg={id:"mic-"+uid(),sessionId:id,text:text.slice(0,12000),timestamp:message.timestamp||iso(),reason:"speech-final",source:"microphone",speaker:"YO",speakerId:"YO"};
+      return persistSignalSegment(id,seg).then(function(persisted){
+        if(!persisted.ok)throw new Error((persisted.dbError||persisted.cacheError)||"No se pudo persistir el segmento de micrófono");
+        return{ok:true,session:persisted.session,segment:seg}
+      })
+    }).then(function(r){
+      recordSignalDiagnostic("SIGNAL_MIC_SEGMENT_PERSISTED",{sessionId:r.session.id,segmentId:r.segment.id,characters:r.segment.text.length});
+      broadcastSignalEvent({type:"caption.segment",sessionId:r.session.id,manual:true,speaker:"YO",speakerId:"YO",segmentId:r.segment.id,text:r.segment.text,timestamp:r.segment.timestamp,reason:"speech-final",source:"microphone"});
+      sendResponse(r);
+    }).catch(function(e){recordSignalDiagnostic("SIGNAL_MIC_SEGMENT_ERROR",{sessionId:message.sessionId||signalActiveSessionId,error:String(e)},"error");sendResponse({ok:false,error:String(e)})})
+  }
   function updateSignalBridgeState(patch){chrome.storage.local.get(["effectifState"]).then(function(stored){var state=Object.assign(baseState(),stored.effectifState||{});state.signalInterpreterBridge=Object.assign({},state.signalInterpreterBridge||{},patch||{});return chrome.storage.local.set({effectifState:state})}).catch(function(error){recordSignalDiagnostic("SIGNAL_BRIDGE_STATE_ERROR",{message:String(error)},"warn")})}
   function broadcastSignalEvent(event){chrome.runtime.sendMessage({type:"SIGNAL_INTERPRETER_EVENT",event:event}).catch(function(error){if(signalLiveConsoleOpen)recordSignalDiagnostic("SIGNAL_LIVE_BROADCAST_ERROR",{eventType:event&&event.type,error:String(error)},"warn")})}
   function handleSignalBridgeEvent(event){
@@ -630,17 +640,20 @@ importScripts("telemetry-db.js","observation-sync.js");
     else if(event.type==="bridge.controller.accepted"){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTROLLER_ACCEPTED",{runtimeId:event.runtimeId||null});broadcastSignalEvent(Object.assign({},event,{sessionId:sessionId}));return}
     else if(event.type==="bridge.context.accepted"){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_ACCEPTED",{sessionId:event.sessionId||null,traceId:event.traceId||null,sourceTabId:event.sourceTabId||null,sourceWindowId:event.sourceWindowId||null,sourceOrigin:event.sourceOrigin||null,contextVersion:event.contextVersion||null});broadcastSignalEvent(Object.assign({},event,{sessionId:event.sessionId||sessionId}));return}
     else if(event.type==="uia.scan"){recordSignalDiagnostic("SIGNAL_UIA_SCAN",{sessionId:event.sessionId||sessionId,traceId:event.traceId||null,sourceTabId:event.sourceTabId||null,sourceWindowId:event.sourceWindowId||null,targetWindowTitle:event.targetWindowTitle||null,targetOrigin:event.targetOrigin||null,contextVersion:event.contextVersion||null,chromeWindows:event.chromeWindows||0,captionBubbles:event.captionBubbles||0,captionViews:event.captionViews||0,nonEmptyViews:event.nonEmptyViews||0,longestTextLength:event.longestTextLength||0,matchedChromeWindows:event.matchedChromeWindows||0,sequence:event.sequence||null});broadcastSignalEvent(Object.assign({},event,{sessionId:event.sessionId||sessionId}));return}
-    else if(event.type==="caption.status"){updateSignalBridgeState({status:"connected",captionActive:event.status==="found",error:null});recordSignalDiagnostic("SIGNAL_CAPTION_STATUS",{status:event.status||"unknown",sessionId:event.sessionId||sessionId,traceId:event.traceId||null,sourceTabId:event.sourceTabId||null,sourceWindowId:event.sourceWindowId||null,sourceOrigin:event.sourceOrigin||null,targetWindowTitle:event.targetWindowTitle||null},event.status==="found"?"info":"warn");broadcastSignalEvent(Object.assign({},event,{sessionId:event.sessionId||sessionId}));}
+    else if(event.type==="caption.status"){var captionSessionId=event.sessionId||sessionId;if(event.status!=="found"&&captionSessionId){signalCaptionCursors.delete(captionSessionId);loadSignalSessions().then(function(data){var s=data.sessions.find(function(x){return x.id===captionSessionId});if(s){s.captionCursor="";return saveSignalSessions(data.sessions,data.activeSessionId||captionSessionId)}}).catch(function(){})}updateSignalBridgeState({status:"connected",captionActive:event.status==="found",error:null});recordSignalDiagnostic("SIGNAL_CAPTION_STATUS",{status:event.status||"unknown",sessionId:captionSessionId,traceId:event.traceId||null,sourceTabId:event.sourceTabId||null,sourceWindowId:event.sourceWindowId||null,sourceOrigin:event.sourceOrigin||null,targetWindowTitle:event.targetWindowTitle||null},event.status==="found"?"info":"warn");broadcastSignalEvent(Object.assign({},event,{sessionId:captionSessionId}));}
     else if(event.type==="caption.segment"&&typeof event.text==="string"){
       var text=event.text.trim(),eventSessionId=event.sessionId||sessionId;if(!text){recordSignalDiagnostic("SIGNAL_CAPTION_EMPTY",{sessionId:eventSessionId,sequence:event.sequence!=null?event.sequence:null},"warn");return}
       if(!eventSessionId){recordSignalDiagnostic("SIGNAL_CAPTION_DROPPED_NO_SESSION",{characters:text.length},"error");return}
       if(event.sessionId&&signalActiveSessionId&&event.sessionId!==signalActiveSessionId){recordSignalDiagnostic("SIGNAL_CAPTION_SESSION_MISMATCH",{activeSessionId:signalActiveSessionId,eventSessionId:event.sessionId,sequence:event.sequence||null},"warn");return}
       isSignalCaptionInScope(eventSessionId).then(function(scope){
         if(!scope.ok){recordSignalDiagnostic("SIGNAL_CAPTION_SCOPE_REJECTED",{sessionId:eventSessionId,reason:scope.reason,expected:scope.expected||null,observed:scope.observed||null,error:scope.error||null,sequence:event.sequence!=null?event.sequence:null},"warn");return}
-        var captionEvent=Object.assign({},event,{sessionId:eventSessionId,sourceOrigin:scope.session.sourceKey,sourceTabId:scope.session.sourceTabId,sourceWindowId:scope.session.sourceWindowId||scope.tab.windowId||null});
-        if(signalLastSpeakerId&&Date.now()-signalLastSpeakerAt<=1600)captionEvent.speakerId=signalLastSpeakerId;
-        var segment={id:"signal-"+eventSessionId+"-"+(event.sequence!=null?event.sequence:Date.now())+"-"+Date.now(),sessionId:eventSessionId,traceId:scope.session.traceId||null,operationId:scope.session.lastOperationId||null,sequence:event.sequence!=null?event.sequence:null,text:text.slice(0,12000),timestamp:event.timestamp||iso(),reason:event.reason||"stable",source:event.source||"live-caption",speakerId:captionEvent.speakerId||null,sourceOrigin:scope.session.sourceKey,sourceTabId:scope.session.sourceTabId,sourceWindowId:scope.session.sourceWindowId||scope.tab.windowId||null};
-        recordSignalDiagnostic("SIGNAL_CAPTION_SEGMENT_RECEIVED",{sessionId:eventSessionId,segmentId:segment.id,sequence:segment.sequence,characters:segment.text.length,speakerId:segment.speakerId,reason:segment.reason,source:segment.source,sourceOrigin:segment.sourceOrigin,sourceTabId:segment.sourceTabId,sourceWindowId:segment.sourceWindowId},"info");
+        var cursor=SignalDialogue.normalize(signalCaptionCursors.get(eventSessionId)||scope.session.captionCursor||""),delta=SignalDialogue.captionDelta(cursor,event);
+        if(!delta.emit){recordSignalDiagnostic("SIGNAL_CAPTION_DUPLICATE_SUPPRESSED",{sessionId:eventSessionId,sequence:event.sequence!=null?event.sequence:null,reason:delta.reason||"duplicate"},"info");return}
+        var nextSnapshot=SignalDialogue.normalize(event.snapshot||event.text||"");
+        var captionEvent=Object.assign({},event,{sessionId:eventSessionId,sourceOrigin:scope.session.sourceKey,sourceTabId:scope.session.sourceTabId,sourceWindowId:scope.session.sourceWindowId||scope.tab.windowId||null,speakerId:null,text:delta.text});
+        var segment={id:"signal-"+eventSessionId+"-"+(event.sequence!=null?event.sequence:Date.now())+"-"+Date.now(),sessionId:eventSessionId,traceId:scope.session.traceId||null,operationId:scope.session.lastOperationId||null,sequence:event.sequence!=null?event.sequence:null,text:delta.text.slice(0,12000),timestamp:event.timestamp||iso(),reason:delta.mode==="append"?"new":(event.reason||delta.mode||"stable"),source:"live-caption",speakerId:null,captionSnapshot:nextSnapshot,sourceOrigin:scope.session.sourceKey,sourceTabId:scope.session.sourceTabId,sourceWindowId:scope.session.sourceWindowId||scope.tab.windowId||null};
+        scope.session.captionCursor=nextSnapshot;signalCaptionCursors.set(eventSessionId,nextSnapshot);
+        recordSignalDiagnostic("SIGNAL_CAPTION_SEGMENT_RECEIVED",{sessionId:eventSessionId,segmentId:segment.id,sequence:segment.sequence,characters:segment.text.length,speakerId:null,reason:segment.reason,source:segment.source,sourceOrigin:segment.sourceOrigin,sourceTabId:segment.sourceTabId,sourceWindowId:segment.sourceWindowId,deltaMode:delta.mode},"info");
         persistSignalSegment(eventSessionId,segment).catch(function(error){recordSignalDiagnostic("SIGNAL_SEGMENT_PERSIST_UNHANDLED",{sessionId:eventSessionId,error:String(error)},"error")});
         broadcastSignalEvent(captionEvent)
       }).catch(function(error){recordSignalDiagnostic("SIGNAL_CAPTION_SCOPE_ERROR",{sessionId:eventSessionId,error:String(error)},"error")});
@@ -769,6 +782,8 @@ importScripts("telemetry-db.js","observation-sync.js");
     if (message.type === "ACTIVATE_SIGNAL_SESSION") { activateSignalSession(message.sessionId,null).then(sendResponse);return true; }
     if (message.type === "UPDATE_SIGNAL_SESSION") { updateSignalSession(message,sendResponse);return true; }
     if (message.type === "ADD_SIGNAL_SESSION_SEGMENT") { addSignalSessionSegment(message,sendResponse);return true; }
+    if (message.type === "ADD_SIGNAL_MIC_SEGMENT") { recordSignalDiagnostic("SIGNAL_MIC_SEGMENT_RECEIVED",{sessionId:message.sessionId||signalActiveSessionId,characters:String(message.text||"").trim().length,source:"microphone"});addSignalMicrophoneSegment(message,sendResponse);return true; }
+    if (message.type === "SIGNAL_MIC_STATUS") { recordSignalDiagnostic("SIGNAL_MIC_STATUS",{sessionId:message.sessionId||signalActiveSessionId,status:message.status||"unknown",error:message.error||null,lang:message.lang||null},message.status==="error"?"warn":"info");sendResponse({ok:true});return false; }
     if (message.type === "SIGNAL_START_AUDIO_ANALYSIS") { startSignalAudioAnalysis(message.streamId,message.tabId).then(sendResponse); return true; }
     if (message.type === "SIGNAL_STOP_AUDIO_ANALYSIS") { stopSignalAudioAnalysis().then(sendResponse); return true; }
     if (message.type === "EFFECTIF_EVENT") {
@@ -827,7 +842,7 @@ importScripts("telemetry-db.js","observation-sync.js");
       loadSignalSessions().then(async function(data){
         var id=message.sessionId||data.activeSessionId,s=data.sessions.find(function(x){return x.id===id});if(!s)throw new Error("Sesión no encontrada");
         try{await KhoraTelemetryDB.clearSignalSession(id);recordSignalDiagnostic("SIGNAL_SESSION_HISTORY_CLEARED",{sessionId:id})}catch(error){recordSignalDiagnostic("SIGNAL_SESSION_HISTORY_CLEAR_ERROR",{sessionId:id,error:String(error)},"error")}
-        s.segments=[];s.segmentCount=0;return saveSignalSessions(data.sessions,id).then(function(){broadcastSignalEvent({type:"caption.clear",sessionId:id,timestamp:iso()});return{ok:true,session:signalSessionCopy(s,true)}})
+        s.segments=[];s.segmentCount=0;s.captionCursor="";signalCaptionCursors.delete(id);return saveSignalSessions(data.sessions,id).then(function(){broadcastSignalEvent({type:"caption.clear",sessionId:id,timestamp:iso()});return{ok:true,session:signalSessionCopy(s,true)}})
       }).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)})});return true;
     }
     if(message.type==="EFFECTIF_START_TRANSCRIPTION"){connectSignalBridge();recordSignalDiagnostic("SIGNAL_TRANSCRIPTION_START_REQUESTED",{source:"effectif-control"});sendResponse({ok:true,engine:"signal-live-caption",global:true});return false;}

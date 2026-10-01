@@ -13,7 +13,7 @@
       <span>SIGNAL INTERPRETER</span>
       <strong>LIVE</strong>
     </div>
-    <div class="live-state"><i id="bridgeDot"></i><span id="bridgeStatus">DESCONECTADO</span><span class="sep">·</span><span id="participantSummary">2 VOCES EXTERNAS</span></div>
+    <div class="live-state"><i id="bridgeDot"></i><span id="bridgeStatus">DESCONECTADO</span><span class="sep">·</span><span id="participantSummary">2 PARTICIPANTES</span></div>
     <div class="toolbar">
       <button id="sizeMenu" class="tool" title="Tamaño">TAMAÑO</button>
       <button data-view="timeline" class="tool active">TIMELINE</button>
@@ -47,8 +47,7 @@
         </div>
         <div class="head-actions">
           <button data-speaker="CLIENTE" class="speaker-switch client active">1 · CLIENTE</button>
-          <button data-speaker="PROFESIONAL" class="speaker-switch professional">2 · PROFESIONAL</button>
-          <button data-speaker="YO" class="speaker-switch me">3 · YO</button>
+          <button data-speaker="YO" class="speaker-switch me">2 · YO</button>
           <button id="scrollLive" class="live-jump">↓ LIVE</button>
         </div>
       </div>
@@ -57,27 +56,26 @@
 
       <div id="triptych" class="triptych hidden">
         <section class="lane client-lane"><header><span>CLIENTE</span><b id="clientCount">0</b></header><div id="clientLane"></div></section>
-        <section class="lane professional-lane"><header><span>PROFESIONAL</span><b id="professionalCount">0</b></header><div id="professionalLane"></div></section>
         <section class="lane me-lane"><header><span>YO</span><b id="meCount">0</b></header><div id="meLane"></div></section>
       </div>
     </section>
 
     <aside class="controls">
-      <section class="status-card"><div><span>ACÚSTICA</span><b id="audioText">Esperando</b></div>
+      <section class="status-card"><div><span>MICRÓFONO</span><b id="micText">Iniciando…</b></div><div><span>ACÚSTICA</span><b id="audioText">Esperando</b></div>
         <div><span>BRIDGE</span><b id="bridgeText">Desconectado</b></div>
         <div><span>FUENTE</span><b>Chrome Live Caption</b></div>
-        <div><span>CAPTION</span><b id="captionText">Esperando</b></div>
+        <div><span>CAPTION</span><b id="captionText">Esperando</b></div><div><span>ENTRADA</span><b>Live Caption + Micrófono</b></div>
         <div><span>SEGMENTOS</span><b id="segmentCount">0</b></div>
       </section>
 
       <section class="speaker-card">
         <span class="eyebrow">ASIGNACIÓN RÁPIDA</span>
-        <p>Las nuevas frases de Live Caption se colocan en el participante activo.</p>
-        <div class="hotkeys"><kbd>1</kbd> CLIENTE <kbd>2</kbd> PROFESIONAL <kbd>3</kbd> YO</div>
-        <div id="participantDetection" class="detection">Detector acústico: esperando captura</div><div class="voice-map"><span>VOZ A</span><button data-map="A:CLIENTE">→ CLIENTE</button><button data-map="A:PROFESIONAL">→ PROF</button><span>VOZ B</span><button data-map="B:CLIENTE">→ CLIENTE</button><button data-map="B:PROFESIONAL">→ PROF</button></div>
+        <p>Live Caption entra como <strong>CLIENTE</strong> y tu micrófono como <strong>YO</strong>.</p>
+        <div class="hotkeys"><kbd>1</kbd> CLIENTE <kbd>2</kbd> YO</div>
+        <div id="participantDetection" class="detection">Esperando diálogo…</div>
       </section>
 
-      <section class="composer">
+      <section class="composer"><div class="mic-head"><span class="eyebrow">MICRÓFONO</span><button id="micToggle" class="send" type="button">MIC AUTO</button></div>
         <div class="composer-head"><span class="eyebrow">YO</span><button id="sendYo" class="send">INSERTAR</button></div>
         <textarea id="yo" placeholder="Escribe tu interpretación…"></textarea>
       </section>
@@ -97,7 +95,9 @@
     <button id="focusExit">SALIR DE FOCO</button>
   </div>
 
+  <script src="../dialogue-engine.js"></script>
   <script src="../telemetry-db.js"></script>
+  <script src="mic-controller.js"></script>
   <script src="live.js"></script>
 </body>
 </html>
