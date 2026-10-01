@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: `batch-d0aa6ee2-e9b5-452c-b9ba-c9e3382dd3b3`
-- Recibido: `2026-10-01T22:42:42.595Z`
+- Batch: `batch-3b4089a7-452d-4a49-845d-2c9336052588`
+- Recibido: `2026-10-01T22:43:14.489Z`
 - Trigger: event-window
 - Extensión: 0.9.3
 - Eventos: 200
 - Errores: 0
-- Warnings: 2
-- Secuencia: 5601 → 5800
+- Warnings: 1
+- Secuencia: 5801 → 6000
 
 ## Categorías
 ```json
@@ -19,9 +19,9 @@
 ## Acciones
 ```json
 {
-  "PERFORMANCE_HEARTBEAT": 174,
-  "EXCHANGE_RATE_ERROR": 2,
-  "NETWORK_REQUEST_COMPLETED": 22,
-  "TELEMETRY_MAINTENANCE": 2
+  "PERFORMANCE_HEARTBEAT": 175,
+  "NETWORK_REQUEST_COMPLETED": 23,
+  "EXCHANGE_RATE_ERROR": 1,
+  "TELEMETRY_MAINTENANCE": 1
 }
 ```
