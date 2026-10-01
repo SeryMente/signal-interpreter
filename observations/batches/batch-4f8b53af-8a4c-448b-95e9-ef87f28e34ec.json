@@ -1,32 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-40a23edd-bc69-4709-a516-0e5e57acb5c6",
-  "createdAt": "2026-10-01T23:52:43.696Z",
+  "batchId": "batch-4f8b53af-8a4c-448b-95e9-ef87f28e34ec",
+  "createdAt": "2026-10-01T23:52:43.679Z",
   "trigger": "critical",
   "extensionVersion": "0.9.3",
   "summary": {
-    "eventsTotal": 8,
+    "eventsTotal": 7,
     "errors": 0,
-    "warnings": 2,
+    "warnings": 1,
     "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
     "firstSequence": 1,
-    "lastSequence": 8,
+    "lastSequence": 7,
     "firstTimestamp": "2026-10-01T23:52:43.503Z",
-    "lastTimestamp": "2026-10-01T23:52:43.677Z",
+    "lastTimestamp": "2026-10-01T23:52:43.671Z",
     "actions": {
       "PERFORMANCE_HEARTBEAT": 1,
       "PLATFORM_SESSION_STARTED": 1,
       "OBSERVER_STARTED": 1,
       "PLATFORM_INTEGRITY_CHECK": 1,
       "SCREEN_MAP": 2,
-      "EXCHANGE_RATE_ERROR": 2
+      "EXCHANGE_RATE_ERROR": 1
     },
     "categories": {
       "RUNTIME": 6,
-      "BILLING": 2
+      "BILLING": 1
     }
   },
   "events": [
@@ -274,42 +274,6 @@
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "da6d2047-aeee-490b-a0af-1aed904c9737",
-      "sequence": 8,
-      "timestamp": "2026-10-01T23:52:43.677Z",
-      "ingestedAt": "2026-10-01T23:52:43.677Z",
-      "level": "warn",
-      "category": "BILLING",
-      "component": "background",
-      "phase": "error",
-      "action": "EXCHANGE_RATE_ERROR",
-      "outcome": "error",
-      "traceId": "5d6edb1c-811c-438c-96b1-4ee79387a3a6",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.9.3",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "installed",
-      "error": "TypeError: Failed to fetch | TypeError: Failed to fetch | TypeError: Failed to fetch",
-      "metrics": {},
-      "context": "[OMITTED]",
-      "privacy": {
-        "rawTextStored": "[OMITTED]",
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      }
     }
-  ],
-  "receivedAt": "2026-10-01T23:52:43.691Z"
+  ]
 }
