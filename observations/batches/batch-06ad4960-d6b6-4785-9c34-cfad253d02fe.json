@@ -1,11 +1,11 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-fb34647a-6c0a-47a7-940f-1fd728b86b45",
-  "createdAt": "2026-10-01T23:47:37.047Z",
+  "batchId": "batch-06ad4960-d6b6-4785-9c34-cfad253d02fe",
+  "createdAt": "2026-10-01T23:47:37.026Z",
   "trigger": "critical",
   "extensionVersion": "0.9.3",
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 2,
     "critical": true,
@@ -13,16 +13,14 @@
     "contextEvents": 0,
     "invariantSignals": 0,
     "firstSequence": 1,
-    "lastSequence": 3,
+    "lastSequence": 2,
     "firstTimestamp": "2026-10-01T23:47:36.965Z",
-    "lastTimestamp": "2026-10-01T23:47:37.043Z",
+    "lastTimestamp": "2026-10-01T23:47:37.022Z",
     "actions": {
-      "EXCHANGE_RATE_ERROR": 2,
-      "SIGNAL_BRIDGE_CONNECTED": 1
+      "EXCHANGE_RATE_ERROR": 2
     },
     "categories": {
-      "BILLING": 2,
-      "BRIDGE": 1
+      "BILLING": 2
     }
   },
   "events": [
@@ -95,42 +93,6 @@
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "d753fa9e-c85b-4767-a71f-79e60aa199bf",
-      "sequence": 3,
-      "timestamp": "2026-10-01T23:47:37.043Z",
-      "ingestedAt": "2026-10-01T23:47:37.044Z",
-      "level": "info",
-      "category": "BRIDGE",
-      "component": "signal-bridge",
-      "phase": "started",
-      "action": "SIGNAL_BRIDGE_CONNECTED",
-      "outcome": "success",
-      "traceId": "e9c9f945-d715-45db-b393-dfd8aeb7960a",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.9.3",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": "[OMITTED]",
-      "privacy": {
-        "rawTextStored": "[OMITTED]",
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      }
     }
-  ],
-  "receivedAt": "2026-10-01T23:47:37.045Z"
+  ]
 }
