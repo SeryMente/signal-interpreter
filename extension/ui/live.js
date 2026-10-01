@@ -1,7 +1,7 @@
 (function(){
 "use strict";
 var $=function(id){return document.getElementById(id)};
-var items=[],sessions=[],activeSessionId=null,currentSession=null,activeSpeaker="CLIENTE",view="timeline",autoScroll=true,lastSignal=null,focusMode=false,audioVoices=0,audioConfidence=0,voiceMap={A:"CLIENTE",B:"PROFESIONAL"},sessionSaveTimer=null,livePort=null,livePortRetry=null,micController=null;
+var items=[],sessions=[],activeSessionId=null,currentSession=null,activeSpeaker="CLIENTE",view="timeline",autoScroll=true,lastSignal=null,focusMode=false,audioVoices=0,audioConfidence=0,voiceMap={A:"CLIENTE",B:"PROFESIONAL"},sessionSaveTimer=null,livePort=null,livePortRetry=null,micStatus="starting";
 var sizes={compact:{width:430,height:700},normal:{width:760,height:760},reading:{width:1200,height:820}};
 var seen={CLIENTE:0,PROFESIONAL:0,YO:0};
 
@@ -104,6 +104,7 @@ function handle(e){
   if(e.type==="speaker.count"&&(!e.sessionId||e.sessionId===activeSessionId)){audioVoices=Number(e.externalVoices)||0;audioConfidence=Number(e.confidence)||0;$("audioText").textContent=audioVoices?(audioVoices+" voz"+(audioVoices===1?"":"es")+" · "+Math.round(audioConfidence*100)+"%"):"Esperando";updateCounts();return}
   if(e.type==="speaker.activity"&&(!e.sessionId||e.sessionId===activeSessionId)){var mapped=mappedSpeaker(e.speakerId);if(mapped){activeSpeaker=mapped;syncSpeakerButtons()}return}
   if(e.type==="audio.status"&&(!e.sessionId||e.sessionId===activeSessionId)){$("audioText").textContent=e.status==="connected"?"ACTIVO":e.status==="error"?"ERROR":"ESPERANDO";return}
+  if(e.type==="mic.status"&&(!e.sessionId||e.sessionId===activeSessionId)){updateMicUi(e.status,e.error);return}
   if(e.type==="caption.segment"){addEventSegment(e);return}
   if(e.type==="caption.clear"){var clearId=e.sessionId||activeSessionId,sess=sessions.find(function(x){return x.id===clearId});if(sess){sess.segments=[];upsertSession(sess);if(clearId===activeSessionId){items=[];recomputeSeen();lastSignal=null;render()}}return}
 }
@@ -150,7 +151,7 @@ openLiveKeepalive();chrome.runtime.sendMessage({type:"SIGNAL_LIVE_CONSOLE_OPEN"}
  var initial=activeSessionId?sessions.find(function(x){return x.id===activeSessionId}):sessions[sessions.length-1];
  if(initial)applySession(initial);else{items=[];render()}
  $("bridgeDot").classList.toggle("ok",r.bridge&&r.bridge.status==="connected");$("bridgeStatus").textContent=r.bridge&&r.bridge.status==="connected"?"CONECTADO":"DESCONECTADO";$("bridgeText").textContent=r.bridge&&r.bridge.status==="connected"?"Conectado":"Desconectado";$("captionText").textContent=r.bridge&&r.bridge.captionActive?"Activo":"Esperando";
- restoreBounds();renderSessionTabs();startMicrophone();
+ restoreBounds();renderSessionTabs();requestMicrophone("start");
 }).catch(function(){restoreBounds();render()});
-window.addEventListener("beforeunload",function(){saveBounds();if(livePortRetry)clearTimeout(livePortRetry);try{livePort&&livePort.disconnect()}catch(_){}if(micController)micController.stop();chrome.runtime.sendMessage({type:"SIGNAL_LIVE_CONSOLE_CLOSE"}).catch(function(){})});render();syncSpeakerButtons()
+window.addEventListener("beforeunload",function(){saveBounds();if(livePortRetry)clearTimeout(livePortRetry);try{livePort&&livePort.disconnect()}catch(_){}chrome.runtime.sendMessage({type:"SIGNAL_LIVE_CONSOLE_CLOSE"}).catch(function(){})});render();syncSpeakerButtons()
 })();

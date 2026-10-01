@@ -52,6 +52,8 @@
     permittedConnectClicks: 0,
     forbiddenPlatformActions: 0
   };
+  var signalMicController = null;
+  var signalMicSessionId = null;
 
   function iso() { return new Date().toISOString(); }
   function normalized(value) { return String(value || "").replace(/\s+/g, " ").trim(); }
@@ -570,6 +572,37 @@
     }
   }
 
+  function sendSignalMicStatus(status, error) {
+    try {
+      chrome.runtime.sendMessage({ type: "SIGNAL_MIC_STATUS", sessionId: signalMicSessionId, status: status, error: error || null, lang: "es-MX", source: "content-microphone" }).catch(function () {});
+    } catch (_) {}
+  }
+  function stopSignalMic() {
+    if (!signalMicController) return Promise.resolve({ ok: true, alreadyStopped: true });
+    try { signalMicController.stop(); } catch (_) {}
+    signalMicController = null;
+    signalMicSessionId = null;
+    return Promise.resolve({ ok: true });
+  }
+  function startSignalMic(sessionId, lang) {
+    if (!sessionId) return Promise.resolve({ ok: false, error: "Sesión de micrófono no especificada" });
+    if (signalMicController && signalMicSessionId === sessionId) return signalMicController.start();
+    if (signalMicController) { try { signalMicController.stop(); } catch (_) {} }
+    signalMicSessionId = sessionId;
+    signalMicController = new SignalMicController({
+      lang: lang || "es-MX",
+      onStatus: function (status) { sendSignalMicStatus(status); },
+      onError: function (error) { sendSignalMicStatus("error", error); },
+      onFinal: function (text) {
+        if (!signalMicSessionId || !String(text || "").trim()) return;
+        chrome.runtime.sendMessage({ type: "ADD_SIGNAL_MIC_SEGMENT", sessionId: signalMicSessionId, text: String(text).trim(), timestamp: iso() }).then(function (response) {
+          if (!response || !response.ok) sendSignalMicStatus("error", response && response.error || "No se pudo guardar la transcripción del micrófono");
+        }).catch(function (error) { sendSignalMicStatus("error", String(error)); });
+      }
+    });
+    return signalMicController.start();
+  }
+
   chrome.storage.local.get(["effectifConfig", "effectifState"], function (stored) {
     state = stored.effectifState || {};
     apply(stored.effectifConfig);
@@ -579,7 +612,16 @@
     if (changes.effectifState) { state = changes.effectifState.newValue || {}; renderOverlay(); }
     if (changes.effectifConfig) apply(changes.effectifConfig.newValue);
   });
-  chrome.runtime.onMessage.addListener(function (message) {
+  chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+    if (message && message.type === "SIGNAL_MIC_CONTROL") {
+      var action = String(message.action || "start");
+      var work;
+      if (action === "stop") work = stopSignalMic();
+      else if (action === "retry" && signalMicController) work = signalMicController.retry();
+      else work = startSignalMic(message.sessionId || "", message.lang || "es-MX");
+      work.then(function (result) { sendResponse(result); }).catch(function (error) { sendResponse({ ok: false, error: String(error) }); });
+      return true;
+    }
     if (message && message.type === "EFFECTIF_REQUEST_PLATFORM_SNAPSHOT") {
       capturePlatformMirror("popup-refresh");
     }
@@ -612,5 +654,8 @@
     if (telemetryTimer) clearInterval(telemetryTimer);
     performanceSnapshot("pagehide");
     stop("pagehide");
+    try { if (signalMicController) signalMicController.stop(); } catch (_) {}
+    signalMicController = null;
+    signalMicSessionId = null;
   });
 })();

@@ -17,9 +17,7 @@
       return append?{emit:true,text:append,mode:"append"}:{emit:false,reason:"duplicate"};
     }
     if(previous.indexOf(snapshot)===0)return{emit:false,reason:"replay-prefix"};
-    var at=commonPrefixBoundary(previous,snapshot),delta=snapshot.slice(at).trim();
-    if(!delta&&provided)delta=provided;
-    return delta?{emit:true,text:delta,mode:"revision"}:{emit:false,reason:"revision-empty"};
+    return{emit:false,reason:"revision-suppressed"};
   }
   function sortSegments(items){
     return (Array.isArray(items)?items:[]).slice(-200).sort(function(a,b){

@@ -545,6 +545,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
     try{var persisted=await KhoraTelemetryDB.getSignalSegments(session.id,200),legacy=session.segments||[],known={};persisted.forEach(function(item){known[item.id]=true});var migrated=0;for(var li=0;li<legacy.length;li+=1){if(known[legacy[li].id])continue;try{await KhoraTelemetryDB.putSignalSegment(Object.assign({},legacy[li],{sessionId:session.id}));migrated+=1}catch(_){}if(migrated>=100)break}if(migrated)persisted=await KhoraTelemetryDB.getSignalSegments(session.id,200);if(persisted.length){session.segments=persisted.slice(-100);session.segmentCount=Math.max(Number(session.segmentCount||0),persisted.length);await saveSignalSessions(data.sessions,session.id)}recordSignalDiagnostic("SIGNAL_SESSION_HISTORY_LOADED",{sessionId:session.id,count:persisted.length,migratedLegacy:migrated});}catch(error){recordSignalDiagnostic("SIGNAL_SESSION_HISTORY_LOAD_ERROR",{sessionId:session.id,error:String(error)},"warn")}
     var audio=null;
     sendSignalBridgeContextForSession(session);
+    signalMicControlSession(session,"start").catch(function(){});
     recordSignalDiagnostic("SIGNAL_SESSION_ACTIVATED",{sessionId:session.id,sourceOrigin:session.sourceKey,segmentCount:Number(session.segmentCount||0),audioOk:false,mode:session.mode,profile:session.profile,audioAnalysis:"disabled-for-live-caption"});
     broadcastSignalEvent({type:"signal.session.active",sessionId:session.id,session:signalSessionCopy(session,true),audio:audio,timestamp:iso()});
     return{ok:true,session:signalSessionCopy(session,true),audio:audio}
@@ -611,6 +612,18 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
       })
     }).then(function(r){broadcastSignalEvent({type:"caption.segment",sessionId:message.sessionId||r.session.id,manual:true,speaker:r.segment.speaker,segmentId:r.segment.id,text:r.segment.text,timestamp:r.segment.timestamp,reason:"manual",source:"manual"});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})})
   }
+  async function signalMicControlSession(session,action){
+    if(!session||session.sourceTabId==null)return{ok:false,error:"Sesión sin pestaña fuente"};
+    try{
+      var result=await chrome.tabs.sendMessage(session.sourceTabId,{type:"SIGNAL_MIC_CONTROL",action:action,sessionId:session.id,lang:"es-MX"});
+      recordSignalDiagnostic("SIGNAL_MIC_CONTROL",{sessionId:session.id,sourceTabId:session.sourceTabId,action:action,ok:!!(result&&result.ok)},result&&result.ok?"info":"warn");
+      return result||{ok:false,error:"Sin respuesta del contenido"};
+    }catch(error){
+      recordSignalDiagnostic("SIGNAL_MIC_CONTROL_ERROR",{sessionId:session.id,sourceTabId:session.sourceTabId,action:action,error:String(error)},"warn");
+      return{ok:false,error:String(error)};
+    }
+  }
+
   function addSignalMicrophoneSegment(message,sendResponse){
     loadSignalSessions().then(function(data){
       var id=message.sessionId||data.activeSessionId,s=data.sessions.find(function(x){return x.id===id});if(!s)throw new Error("Sesión no encontrada");
@@ -648,7 +661,16 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
       isSignalCaptionInScope(eventSessionId).then(function(scope){
         if(!scope.ok){recordSignalDiagnostic("SIGNAL_CAPTION_SCOPE_REJECTED",{sessionId:eventSessionId,reason:scope.reason,expected:scope.expected||null,observed:scope.observed||null,error:scope.error||null,sequence:event.sequence!=null?event.sequence:null},"warn");return}
         var cursor=SignalDialogue.normalize(signalCaptionCursors.get(eventSessionId)||scope.session.captionCursor||""),delta=SignalDialogue.captionDelta(cursor,event);
-        if(!delta.emit){recordSignalDiagnostic("SIGNAL_CAPTION_DUPLICATE_SUPPRESSED",{sessionId:eventSessionId,sequence:event.sequence!=null?event.sequence:null,reason:delta.reason||"duplicate"},"info");return}
+        if(!delta.emit){
+          recordSignalDiagnostic("SIGNAL_CAPTION_DUPLICATE_SUPPRESSED",{sessionId:eventSessionId,sequence:event.sequence!=null?event.sequence:null,reason:delta.reason||"duplicate"},"info");
+          if(delta.reason==="revision-suppressed"){
+            scope.session.captionCursor=SignalDialogue.normalize(event.snapshot||event.text||"");
+            signalCaptionCursors.set(eventSessionId,scope.session.captionCursor);
+            loadSignalSessions().then(function(data){var s=data.sessions.find(function(x){return x.id===eventSessionId});if(!s)return;s.captionCursor=scope.session.captionCursor;return saveSignalSessions(data.sessions,data.activeSessionId||eventSessionId)}).catch(function(){});
+            recordSignalDiagnostic("SIGNAL_CAPTION_REVISION_CURSOR_ADVANCED",{sessionId:eventSessionId,sequence:event.sequence!=null?event.sequence:null},"info");
+          }
+          return;
+        }
         var nextSnapshot=SignalDialogue.normalize(event.snapshot||event.text||"");
         var captionEvent=Object.assign({},event,{sessionId:eventSessionId,sourceOrigin:scope.session.sourceKey,sourceTabId:scope.session.sourceTabId,sourceWindowId:scope.session.sourceWindowId||scope.tab.windowId||null,speakerId:null,text:delta.text});
         var segment={id:"signal-"+eventSessionId+"-"+(event.sequence!=null?event.sequence:Date.now())+"-"+Date.now(),sessionId:eventSessionId,traceId:scope.session.traceId||null,operationId:scope.session.lastOperationId||null,sequence:event.sequence!=null?event.sequence:null,text:delta.text.slice(0,12000),timestamp:event.timestamp||iso(),reason:delta.mode==="append"?"new":(event.reason||delta.mode||"stable"),source:"live-caption",speakerId:null,captionSnapshot:nextSnapshot,sourceOrigin:scope.session.sourceKey,sourceTabId:scope.session.sourceTabId,sourceWindowId:scope.session.sourceWindowId||scope.tab.windowId||null};
@@ -782,6 +804,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
     if (message.type === "ACTIVATE_SIGNAL_SESSION") { activateSignalSession(message.sessionId,null).then(sendResponse);return true; }
     if (message.type === "UPDATE_SIGNAL_SESSION") { updateSignalSession(message,sendResponse);return true; }
     if (message.type === "ADD_SIGNAL_SESSION_SEGMENT") { addSignalSessionSegment(message,sendResponse);return true; }
+    if (message.type === "SIGNAL_MIC_CONTROL") {
+      loadSignalSessions().then(function(data){var s=data.sessions.find(function(x){return x.id===(message.sessionId||data.activeSessionId)});if(!s)throw new Error("Sesión no encontrada");return signalMicControlSession(s,String(message.action||"start"))}).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)})});return true;
+    }
     if (message.type === "ADD_SIGNAL_MIC_SEGMENT") { recordSignalDiagnostic("SIGNAL_MIC_SEGMENT_RECEIVED",{sessionId:message.sessionId||signalActiveSessionId,characters:String(message.text||"").trim().length,source:"microphone"});addSignalMicrophoneSegment(message,sendResponse);return true; }
     if (message.type === "SIGNAL_MIC_STATUS") { recordSignalDiagnostic("SIGNAL_MIC_STATUS",{sessionId:message.sessionId||signalActiveSessionId,status:message.status||"unknown",error:message.error||null,lang:message.lang||null},message.status==="error"?"warn":"info");sendResponse({ok:true});return false; }
     if (message.type === "SIGNAL_START_AUDIO_ANALYSIS") { startSignalAudioAnalysis(message.streamId,message.tabId).then(sendResponse); return true; }
@@ -830,7 +855,11 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
       closeCall("manual", NaN, sendResponse); return true;
     }
      if(message.type==="SIGNAL_LIVE_CONSOLE_OPEN"){signalLiveConsoleOpen=true;recordSignalDiagnostic("SIGNAL_LIVE_CONSOLE_READY",{senderContext:"live-ui"});loadSignalSessions().then(function(data){var active=data.sessions.find(function(s){return s.id===data.activeSessionId});if(active)sendSignalBridgeContextForSession(active)}).catch(function(error){recordSignalDiagnostic("SIGNAL_LIVE_CONTEXT_RESTORE_ERROR",{error:String(error)},"warn")});sendResponse({ok:true});return false;}
-    if(message.type==="SIGNAL_LIVE_CONSOLE_CLOSE"){signalLiveConsoleOpen=false;recordSignalDiagnostic("SIGNAL_LIVE_CONSOLE_CLOSED",{senderContext:"live-ui"});sendResponse({ok:true});return false;}
+    if(message.type==="SIGNAL_LIVE_CONSOLE_CLOSE"){
+      signalLiveConsoleOpen=false;
+      loadSignalSessions().then(function(data){var s=data.sessions.find(function(x){return x.id===data.activeSessionId});if(s)return signalMicControlSession(s,"stop")}).catch(function(){});
+      recordSignalDiagnostic("SIGNAL_LIVE_CONSOLE_CLOSED",{senderContext:"live-ui"});sendResponse({ok:true});return false;
+    }
     if(message.type==="SIGNAL_LIVE_UI_ERROR"){recordSignalDiagnostic("SIGNAL_LIVE_UI_ERROR",{phase:message.phase||"unknown",error:String(message.error||"unknown")},"error");sendResponse({ok:true});return false;}
     if(message.type==="GET_SIGNAL_INTERPRETER_STATE"){
       Promise.all([chrome.storage.local.get(["effectifState"]),loadSignalSessions()]).then(function(results){
@@ -976,12 +1005,27 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
         route: routeShape(url), active: !!tab.active
       }, "info", "tabs");
     }
+    if (changeInfo.status === "complete") {
+      loadSignalSessions().then(function(data){
+        var active=data.sessions.find(function(s){return s.id===data.activeSessionId});
+        if(active && Number(active.sourceTabId)===Number(tabId))signalMicControlSession(active,"start").catch(function(){});
+      }).catch(function(){});
+    }
   });
   chrome.tabs.onActivated.addListener(function(info){
     loadSignalSessions().then(function(data){
       var active=data.sessions.find(function(s){return s.id===data.activeSessionId});if(!active)return;
-      if(Number(active.sourceTabId)===Number(info.tabId)){sendSignalBridgeContextForSession(active);return}
-      chrome.tabs.get(info.tabId).then(function(tab){if(/^chrome-extension:\/\//.test(String(tab.url||"")))return;stopSignalAudioAnalysis().catch(function(){});recordSignalDiagnostic("SIGNAL_SOURCE_TAB_DEACTIVATED",{sessionId:active.id,sourceTabId:active.sourceTabId,activeTabId:info.tabId,activeOrigin:normalizeSignalSessionUrl(tab.url||"")},"info")}).catch(function(){})
+      if(Number(active.sourceTabId)===Number(info.tabId)){
+        sendSignalBridgeContextForSession(active);
+        signalMicControlSession(active,"start").catch(function(){});
+        return;
+      }
+      chrome.tabs.get(info.tabId).then(function(tab){
+        if(/^chrome-extension:\/\//.test(String(tab.url||"")))return;
+        if(Number(tab.windowId)===Number(active.sourceWindowId))signalMicControlSession(active,"stop").catch(function(){});
+        stopSignalAudioAnalysis().catch(function(){});
+        recordSignalDiagnostic("SIGNAL_SOURCE_TAB_DEACTIVATED",{sessionId:active.id,sourceTabId:active.sourceTabId,activeTabId:info.tabId,activeOrigin:normalizeSignalSessionUrl(tab.url||"")},"info")
+      }).catch(function(){})
     }).catch(function(){})
   });
     chrome.tabs.onRemoved.addListener(function (tabId) {
