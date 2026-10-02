@@ -78,9 +78,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   }
   async function refreshExchangeRate(reason) {
     var sources = [
-      { url: "https://open.er-api.com/v6/latest/USD", name: "ExchangeRate-API", read: function (data) { return { rate: Number(data && data.rates && data.rates.MXN), date: data && data.time_last_update_utc ? new Date(data.time_last_update_utc).toISOString().slice(0, 10) : null, updatedAt: data && data.time_last_update_utc || null }; } },
-      { url: "https://api.frankfurter.dev/v2/rate/usd/mxn", name: "Frankfurter / blended daily", read: function (data) { return { rate: Number(data && data.rate), date: data && data.date, updatedAt: data && data.date ? data.date + "T16:00:00Z" : null }; } },
-      { url: "https://api.frankfurter.app/latest?from=USD&to=MXN", name: "Frankfurter / legacy daily", read: function (data) { return { rate: Number(data && data.rates && data.rates.MXN), date: data && data.date, updatedAt: data && data.date ? data.date + "T16:00:00Z" : null }; } }
+      { url: "https://api.exchangerate.fun/latest?base=USD", name: "ExchangeRate.fun / hourly", read: function (data) { return { rate: Number(data && data.rates && data.rates.MXN), date: data && data.timestamp ? new Date(Number(data.timestamp) * 1000).toISOString().slice(0, 10) : null, updatedAt: data && data.timestamp ? new Date(Number(data.timestamp) * 1000).toISOString() : null }; } },
+      { url: "https://api.frankfurter.dev/v2/rate/usd/mxn", name: "Frankfurter / blended daily", read: function (data) { return { rate: Number(data && data.rate), date: data && data.date, updatedAt: data && data.date || null }; } },
+      { url: "https://open.er-api.com/v6/latest/USD", name: "ExchangeRate-API / daily", read: function (data) { return { rate: Number(data && data.rates && data.rates.MXN), date: data && data.time_last_update_utc ? new Date(data.time_last_update_utc).toISOString().slice(0, 10) : null, updatedAt: data && data.time_last_update_utc || null }; } }
     ];
     var failures = [];
     for (var i = 0; i < sources.length; i += 1) {
@@ -524,6 +524,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if(!statsTab)statsTab=tabs.find(function(tab){return isAuthorizedCloudUrl(tab.url);})||null;
     if(!statsTab)throw new Error("No se pudo sincronizar en segundo plano y no hay una pestaña autorizada de Cloud Interpreter abierta.");
     var isStatsTab=/^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(statsTab.url||""));
+    var beforeStore=await chrome.storage.local.get(["effectifPlatformMirror"]);
+    var previous=beforeStore.effectifPlatformMirror&&beforeStore.effectifPlatformMirror.statistics;
+    var previousCapturedAt=previous&&previous.capturedAt?String(previous.capturedAt):"";
     try {
       await sendPlatformSnapshotRequest(statsTab, isStatsTab);
     } catch(error) {
@@ -533,7 +536,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     var deadline=Date.now()+5000;
     while(Date.now()<deadline){
       var stored2=await chrome.storage.local.get(["effectifPlatformMirror"]),candidate=stored2.effectifPlatformMirror&&stored2.effectifPlatformMirror.statistics;
-      if(candidate&&candidate.tabId===statsTab.id)return {ok:true,method:"existing-tab",snapshot:candidate};
+      if(candidate&&candidate.tabId===statsTab.id&&String(candidate.capturedAt||"")>previousCapturedAt)return {ok:true,method:"existing-tab",snapshot:candidate};
       await new Promise(function(resolve){setTimeout(resolve,150);});
     }
     throw new Error("La plataforma no entregó un dato oficial nuevo.");
