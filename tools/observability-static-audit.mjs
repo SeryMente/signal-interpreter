@@ -14,9 +14,11 @@ assert.deepEqual(manifest.content_scripts[0].matches,["https://app.cloudinterpre
 assert.ok(popup.includes("getEventsAfter"));
 assert.ok(popup.includes("sendNativeMessage"));
 assert.ok(content.includes("extractPortalStructure"));
+assert.ok(content.includes("PORTAL_STRUCTURE_SNAPSHOT"));
 assert.ok(background.includes("NETWORK_ACTIVITY_WINDOW"));
 assert.ok(host.includes('Repo = "SeryMente/signal-interpreter"'));
 assert.ok(host.includes('Path = "diagnostics/latest.json"'));
+assert.ok(host.includes('DiagnosticsBranch = "observability"'));
 
 const forbidden=["CaptionBubbleLabel","AXVirtualView","SpeechRecognition","SignalLiveCaptionBridge","127.0.0.1:8787"];
 for(const value of [background,content,popup]){
