@@ -25,6 +25,9 @@
   var overlayHost = null;
   var overlayRoot = null;
   var overlayTimer = null;
+  var overlayLifecycleActive = false;
+  var overlayLifecycleCallId = null;
+  var overlayRatingStopEmitted = false;
   var callDisplayStartedAt = null;
   var observer = null;
   var telemetryStarted = false;
@@ -186,6 +189,7 @@
     }
     if (callRouteId && callRouteId !== previousCallId) {
       callDisplayStartedAt = Date.now();
+      activateOverlayForCall(callRouteId, "call-route-entered");
       var evidence = callActivationEvidence();
       emit("CALL_ROUTE_ENTERED", { callId: callRouteId, reason: reason, evidence: evidence });
       if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; }
@@ -201,10 +205,11 @@
       }
       emitIntegrity("call-entered");
     }
-    if (!callRouteId) {
+    if (!callRouteId && !isRatingRoute()) {
       callDisplayStartedAt = null;
       lastCallEndMeasurement = null;
     }
+    if (isRatingRoute() && overlayLifecycleActive) renderOverlay();
     schedulePlatformMirror("route:" + reason);
     portalStructureSnapshot("route:" + reason, true);
     updateDiagnosticTimers();
@@ -606,16 +611,56 @@
     var baseUsd = hasOfficial ? officialUsd : completedUsd;
     return { calls: calls.length, modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd, totalUsd: baseUsd + (hasOfficial ? 0 : liveUsd), officialUsd: hasOfficial ? officialUsd : null, fx: fx };
   }
-  function stopOverlay() {
+  function stopOverlay(reason) {
     if (overlayTimer) clearInterval(overlayTimer);
     overlayTimer = null;
     if (overlayHost) overlayHost.remove();
     overlayHost = null;
     overlayRoot = null;
+    if (reason === "rating-stars" && overlayLifecycleCallId && !overlayRatingStopEmitted) {
+      overlayRatingStopEmitted = true;
+      emit("EARNINGS_OVERLAY_STOPPED", { callId: overlayLifecycleCallId, reason: "rating-stars-visible" });
+    }
+    overlayLifecycleActive = false;
+    overlayLifecycleCallId = null;
+    overlayRatingStopEmitted = false;
+  }
+  function isRatingRoute() {
+    return /^\/call\/[^/?#]+\/rate\/?$/.test(location.pathname);
+  }
+  function ratingStarsVisible() {
+    if (!isRatingRoute()) return false;
+    var nodes = Array.from(document.querySelectorAll("button,[role='button'],[aria-label],[title],[class]")).filter(visibleElement).slice(0, 400);
+    var namedStars = nodes.filter(function (element) {
+      var label = normalized(
+        (element.getAttribute && element.getAttribute("aria-label") || "") + " " +
+        (element.getAttribute && element.getAttribute("title") || "") + " " +
+        (element.getAttribute && element.getAttribute("class") || "")
+      );
+      var text = normalized(element.textContent || "");
+      return /(?:^|\\s)(?:[1-5]\\s*stars?|stars?\\s*[1-5])(?:\\s|$)/i.test(label) ||
+        /rating|star/i.test(label) && /[1-5]|rate/i.test(label + " " + text) ||
+        /(?:rate|rating).*(?:1|2|3|4|5)/i.test(text);
+    });
+    if (namedStars.length >= 2) return true;
+    var starLike = nodes.filter(function (element) {
+      var label = normalized((element.getAttribute && element.getAttribute("aria-label") || "") + " " + (element.getAttribute && element.getAttribute("title") || ""));
+      var cls = String(element.getAttribute && element.getAttribute("class") || "");
+      return /star|rating/i.test(label + " " + cls);
+    });
+    return starLike.length >= 3;
+  }
+  function activateOverlayForCall(callId, reason) {
+    if (!callId) return;
+    overlayLifecycleActive = true;
+    overlayLifecycleCallId = callId;
+    overlayRatingStopEmitted = false;
+    emit("EARNINGS_OVERLAY_STARTED", { callId: callId, reason: reason || "call-start" });
+    renderOverlay();
   }
   function ensureOverlay() {
-    if (!config.overlayEnabled || !document.documentElement || !currentCallId()) {
-      stopOverlay();
+    if (!config.overlayEnabled || !document.documentElement || !overlayLifecycleActive) {
+      if (!overlayLifecycleActive) stopOverlay();
       return;
     }
     if (overlayHost && overlayHost.isConnected) return;
@@ -641,8 +686,12 @@
     overlayTimer = setInterval(renderOverlay, 100);
   }
   function renderOverlay() {
-    if (!currentCallId()) {
-      stopOverlay();
+    if (!overlayLifecycleActive) {
+      if (currentCallId()) activateOverlayForCall(currentCallId(), "call-detected");
+      else return;
+    }
+    if (ratingStarsVisible()) {
+      stopOverlay("rating-stars");
       return;
     }
     ensureOverlay();
