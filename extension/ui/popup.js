@@ -66,7 +66,7 @@
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
     $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
-    $("groqStatus").textContent = "CLAVE LOCAL";
+    $("groqStatus").textContent = "Clave local ✓ · " + (config.groqModel || "whisper-large-v3-turbo");
     $("sessionTimer").textContent = duration(state.sessionStartedAt);
     $("onlineTimer").textContent = duration(state.onlineStartedAt);
     $("callTimer").textContent = duration(state.callStartedAt);
@@ -87,8 +87,11 @@
     var liveRate = state.callModality === "VRI" ? Number(config.vriRatePerMinute || 0.25) : Number(config.opiRatePerMinute || 0.20);
     var earnedUsd = completedUsd + liveSeconds / 60 * liveRate;
     var fx = Number(config.usdMxnRate || 0);
-    $("earnedToday").textContent = "US$" + earnedUsd.toFixed(4);
-    $("earnedTodayMxn").textContent = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
+    var earnedUsdText = "US$" + earnedUsd.toFixed(4);
+    var earnedMxnText = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
+    $("earnedToday").textContent = earnedUsdText;
+    $("earnedTodayMxn").textContent = earnedMxnText;
+    if ($("earningSummary")) $("earningSummary").textContent = earnedUsdText + " · " + earnedMxnText;
     $("exchangeRate").textContent = fx > 0 ? "$" + fx.toFixed(4) : "No disponible";
     $("exchangeMeta").textContent = fx > 0
       ? "Fecha de referencia: " + (config.exchangeRateDate || "última disponible")
@@ -151,6 +154,10 @@
         '<p class="preview">' + escapeHtml(preview || "Sin contenido visible") + '</p></details>';
     });
     host.innerHTML = cards.length ? cards.join("") : "<small>Aún no hay pantallas sincronizadas.</small>";
+    var stats = mirror.statistics || {};
+    var summary = stats.summary || {};
+    var official = [summary.earned ? "Ganado " + summary.earned : "", summary.callCount ? summary.callCount + " llamadas" : "", summary.callLength ? summary.callLength : ""].filter(Boolean).join(" · ");
+    if ($("officialSummary")) $("officialSummary").innerHTML = official ? "<strong>" + escapeHtml(official) + "</strong>" : "<small>Aún no hay datos oficiales sincronizados.</small>";
   }
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, function (character) {
@@ -300,6 +307,18 @@
     }catch(error){status("No se pudo publicar la observabilidad: "+String(error),true);}
     finally{button.disabled=false;}
   });
+  function renderEarningsOnly() {
+    var today = localDay();
+    var completed = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) { return localDay(call.startedAt || call.endedAt) === today; }) : [];
+    var completedUsd = completed.reduce(function (sum, call) { return sum + Number(call.estimatedRevenue || call.estimatedAmount || 0); }, 0);
+    var liveSeconds = state.callStartedAt ? Math.max(0, (Date.now() - Date.parse(state.callStartedAt)) / 1000) : 0;
+    var liveRate = state.callModality === "VRI" ? Number(config.vriRatePerMinute || 0.25) : Number(config.opiRatePerMinute || 0.20);
+    var earnedUsd = completedUsd + liveSeconds / 60 * liveRate;
+    var fx = Number(config.usdMxnRate || 0);
+    var usdText = "US$" + earnedUsd.toFixed(4); var mxnText = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
+    $("earnedToday").textContent = usdText; $("earnedTodayMxn").textContent = mxnText;
+    if ($("earningSummary")) $("earningSummary").textContent = usdText + " · " + mxnText;
+  }
   chrome.storage.local.get(["effectifConfig", "effectifState", "effectifLastEvent", "effectifPlatformMirror"], function (stored) {
     config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}); delete config.groqApiKey;
     state = stored.effectifState || {};
@@ -320,6 +339,8 @@
     }
     render();
   });
-  setInterval(render, 250);
-  setInterval(refreshTelemetryStats, 10000);
+  setInterval(function () {
+    $("sessionTimer").textContent = duration(state.sessionStartedAt); $("onlineTimer").textContent = duration(state.onlineStartedAt); $("callTimer").textContent = duration(state.callStartedAt); renderEarningsOnly();
+  }, 1000);
+  setInterval(refreshTelemetryStats, 30000);
 })();
