@@ -585,6 +585,22 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     record("PLATFORM_OFFICIAL_SYNC_COMPLETED",{method:method,url:OFFICIAL_STATS_URL,earned:parsed.earned,callLength:parsed.callLength,callCount:parsed.callCount,localEstimateUsd:Math.round(localEstimateUsd*10000)/10000,deltaUsd:deltaUsd},"info","popup");
     return {ok:true,method:method,snapshot:mirror.statistics};
   }
+  async function syncOfficialPlatformData(){
+    var tabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"});
+    var cloudTabs=tabs.filter(function(tab){return isAuthorizedCloudUrl(tab.url);});
+    var callTab=cloudTabs.find(function(tab){return /^https:\/\/app\.cloudinterpreter\.com\/call\/[^/?#]+(?:[?#].*)?$/.test(String(tab.url||""));});
+    var statsTab=cloudTabs.find(function(tab){return /^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(tab.url||""));});
+    var targetTab=callTab||statsTab||cloudTabs[0];
+    if(!targetTab) throw new Error("Sincronización silenciosa no disponible: abre Cloud Interpreter primero.");
+    try{
+      var trpc=await readOfficialStatsViaTrpc(targetTab.id);
+      if(trpc&&trpc.summary&&trpc.summary.earned) return await persistOfficialStats(targetTab,trpc,"page-trpc-silent");
+      throw new Error("La sesión autenticada no devolvió el resumen oficial.");
+    }catch(error){
+      record("PLATFORM_OFFICIAL_PAGE_TRPC_ERROR",{url:OFFICIAL_STATS_URL,tabId:targetTab.id,route:String(targetTab.url||""),error:String(error)},"warn","popup");
+      throw new Error("No se pudo sincronizar sin navegar ni abrir pestañas: "+String(error));
+    }
+  }
   function updateGroqUsage(message) {
     chrome.storage.local.get(["effectifState", "effectifConfig"], function (stored) {
       var state = Object.assign(baseState(), stored.effectifState || {});
