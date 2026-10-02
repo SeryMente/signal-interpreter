@@ -14,9 +14,6 @@
       <section class="transcription-control"><div><strong>Consola de transcripción</strong><small>Groq Whisper · audio de pestaña + micrófono</small></div><button id="openTranscript" class="secondary compact">Abrir consola</button></section>
       <section class="telemetry-control">
         <div class="telemetry-head"><div><strong>Groq Speech-to-Text</strong><small>Transcripción directa de audio; la clave nunca se exporta en diagnósticos.</small></div><b id="groqStatus">SIN CONFIGURAR</b></div>
-        <label class="label">Groq API Key
-          <input id="groqApiKey" type="password" autocomplete="off" spellcheck="false" placeholder="gsk_…">
-        </label>
         <label class="label">Modelo
           <select id="groqModel"><option value="whisper-large-v3-turbo">whisper-large-v3-turbo</option><option value="whisper-large-v3">whisper-large-v3</option></select>
         </label>
@@ -69,7 +66,7 @@
       <section class="official">
         <div class="official-head">
           <div><span class="label">DATOS OFICIALES VISIBLES</span><small>Solo para cotejo cuando visites esas pantallas; el cálculo local no requiere abrir Statistics.</small></div>
-          <button id="refresh" class="secondary compact">Actualizar</button>
+          <div class="official-actions"><button id="syncOfficial" class="compact">Sincroniza</button><button id="refresh" class="secondary compact">Actualizar</button></div>
         </div>
         <nav class="quick">
           <button data-open="logs" class="secondary">Statistics</button>

@@ -320,7 +320,7 @@
         return { rows: rows };
       }).filter(function (table) { return table.rows.length; });
   }
-  function capturePlatformMirror(reason) {
+  function capturePlatformMirror(reason, force) {
     var key = mirrorKey();
     if (!key || !config.observationEnabled) return;
     var root = document.querySelector("main") || document.body;
@@ -338,7 +338,7 @@
     var signature = JSON.stringify({
       key: key, summary: snapshot.summary, tables: snapshot.tables, lines: lines
     });
-    if (signature === lastMirrorSignature) return;
+    if (signature === lastMirrorSignature && !force) return;
     lastMirrorSignature = signature;
     try {
       var snapshotPromise = chrome.runtime.sendMessage({ type: "EFFECTIF_PLATFORM_SNAPSHOT", snapshot: snapshot });
@@ -599,7 +599,7 @@
   });
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message && message.type === "EFFECTIF_REQUEST_PLATFORM_SNAPSHOT") {
-      capturePlatformMirror("popup-refresh");
+      capturePlatformMirror("popup-sync", true);
     }
   });
   document.addEventListener("click", function (event) {
