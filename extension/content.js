@@ -524,8 +524,9 @@
     var official = platformMirror.statistics && platformMirror.statistics.summary || {};
     var officialUsd = Number(official.earnedUsd);
     if (!(officialUsd > 0)) officialUsd = parseOfficialUsd(official.earned);
-    var baseUsd = Number.isFinite(officialUsd) && officialUsd > 0 ? officialUsd : completedUsd;
-    return { calls: calls.length, modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd, totalUsd: baseUsd + liveUsd, officialUsd: officialUsd > 0 ? officialUsd : null, fx: fx };
+    var hasOfficial = Number.isFinite(officialUsd) && officialUsd >= 0 && official.earned != null;
+    var baseUsd = hasOfficial ? officialUsd : completedUsd;
+    return { calls: calls.length, modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd, totalUsd: baseUsd + (hasOfficial ? 0 : liveUsd), officialUsd: hasOfficial ? officialUsd : null, fx: fx };
   }
   function ensureOverlay() {
     if (!config.overlayEnabled || !document.documentElement) {
