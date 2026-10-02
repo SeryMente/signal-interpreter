@@ -5,7 +5,10 @@ param(
 )
 $ErrorActionPreference="Stop"
 if(-not(Test-Path -LiteralPath $ExtensionPath)){throw "No existe ExtensionPath: $ExtensionPath"}
-if(-not(Get-Command dotnet -ErrorAction SilentlyContinue)){throw "Se necesita .NET SDK (dotnet)."}
+$dotnet=(Get-Command dotnet -ErrorAction SilentlyContinue).Source
+if(-not $dotnet -and (Test-Path "$env:USERPROFILE\.dotnet\dotnet.exe")){$dotnet="$env:USERPROFILE\.dotnet\dotnet.exe"}
+if(-not $dotnet){throw "Se necesita .NET SDK (dotnet)."}
+
 if(-not(Get-Command gh -ErrorAction SilentlyContinue)){throw "Se necesita GitHub CLI (gh)."}
 $hostName="com.serymente.signal_interpreter.observability"
 $sourceRoot=Join-Path $PSScriptRoot "observability-native-host"
@@ -21,7 +24,7 @@ if(-not $ExtensionId){
 }
 if($ExtensionId -notmatch '^[a-p]{32}$'){throw "ExtensionId inválido: $ExtensionId"}
 Write-Host "EXTENSION_ID=$ExtensionId"
-dotnet publish (Join-Path $sourceRoot "SignalInterpreterObservabilityHost.csproj") -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o $installRoot | Out-Host
+& $dotnet publish (Join-Path $sourceRoot "SignalInterpreterObservabilityHost.csproj") -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o $installRoot | Out-Host
 $binary=Join-Path $installRoot "SignalInterpreterObservabilityHost.exe"
 if(-not(Test-Path -LiteralPath $binary)){throw "No se generó el host nativo."}
 $manifestPath=Join-Path $installRoot "$hostName.json"
