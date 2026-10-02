@@ -78,7 +78,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   }
   async function refreshExchangeRate(reason) {
     var sources = [
-      { url: "https://api.exchangerate.fun/latest?base=USD", name: "ExchangeRate.fun / hourly", read: function (data) { return { rate: Number(data && data.rates && data.rates.MXN), date: data && data.timestamp ? new Date(Number(data.timestamp) * 1000).toISOString().slice(0, 10) : null, updatedAt: data && data.timestamp ? new Date(Number(data.timestamp) * 1000).toISOString() : null }; } },
+      { url: "https://api.exchangerate.fun/latest?base=USD", name: "ExchangeRate.fun / hourly snapshot", read: function (data) { return { rate: Number(data && data.rates && data.rates.MXN), date: data && data.timestamp ? new Date(Number(data.timestamp) * 1000).toISOString().slice(0, 10) : null, updatedAt: data && data.timestamp ? new Date(Number(data.timestamp) * 1000).toISOString() : null }; } },
       { url: "https://api.frankfurter.dev/v2/rate/usd/mxn", name: "Frankfurter / blended daily", read: function (data) { return { rate: Number(data && data.rate), date: data && data.date, updatedAt: data && data.date || null }; } },
       { url: "https://open.er-api.com/v6/latest/USD", name: "ExchangeRate-API / daily", read: function (data) { return { rate: Number(data && data.rates && data.rates.MXN), date: data && data.time_last_update_utc ? new Date(data.time_last_update_utc).toISOString().slice(0, 10) : null, updatedAt: data && data.time_last_update_utc || null }; } }
     ];
@@ -496,50 +496,66 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     });
   }
   async function syncOfficialPlatformData(){
-    try{
-      var response=await fetch(OFFICIAL_STATS_URL,{method:"GET",credentials:"include",cache:"no-store",redirect:"follow"});
-      var raw=await response.text();
-      if(response.ok){
-        var parsed=extractOfficialStatsFromHtml(raw);
-        if(parsed){
-          var stored=await chrome.storage.local.get(["effectifPlatformMirror"]);
-          var mirror=Object.assign({},stored.effectifPlatformMirror||{});
-          mirror.statistics=Object.assign({},mirror.statistics||{},{
-            schema:"signal-interpreter-official-stats/v1",key:"statistics",route:"/profile/<ID>/logs",
-            url:OFFICIAL_STATS_URL,capturedAt:iso(),reason:"background-fetch",summary:{
-              earned:parsed.earned,earnedUsd:parsed.earnedUsd,callLength:parsed.callLength,callCount:parsed.callCount
-            },source:"platform-background-fetch"
-          });
-          await chrome.storage.local.set({effectifPlatformMirror:mirror});
-          record("PLATFORM_OFFICIAL_SYNC_COMPLETED",{method:"background-fetch",url:OFFICIAL_STATS_URL,earned:parsed.earned,callLength:parsed.callLength,callCount:parsed.callCount},"info","popup");
-          return {ok:true,method:"background-fetch",snapshot:mirror.statistics};
-        }
-      }
-    }catch(error){record("PLATFORM_OFFICIAL_BACKGROUND_FETCH_ERROR",{url:OFFICIAL_STATS_URL,error:String(error)},"warn","popup");}
     var tabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"});
     var statsTab=null;
     for(var i=0;i<tabs.length;i+=1){
       if(/^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(tabs[i].url||""))){statsTab=tabs[i];break;}
     }
-    if(!statsTab)statsTab=tabs.find(function(tab){return isAuthorizedCloudUrl(tab.url);})||null;
-    if(!statsTab)throw new Error("No se pudo sincronizar en segundo plano y no hay una pestaña autorizada de Cloud Interpreter abierta.");
-    var isStatsTab=/^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(statsTab.url||""));
-    var beforeStore=await chrome.storage.local.get(["effectifPlatformMirror"]);
-    var previous=beforeStore.effectifPlatformMirror&&beforeStore.effectifPlatformMirror.statistics;
-    var previousCapturedAt=previous&&previous.capturedAt?String(previous.capturedAt):"";
-    try {
-      await sendPlatformSnapshotRequest(statsTab, isStatsTab);
-    } catch(error) {
-      if (isStatsTab) throw new Error("Statistics no respondió después de actualizar la pestaña: "+String(error));
-      throw new Error("La pestaña autorizada no respondió. Abre Statistics para sincronizar sin interrumpir una llamada: "+String(error));
+    if(!statsTab){
+      throw new Error("Abre Statistics en Cloud Interpreter y vuelve a pulsar Sincroniza.");
     }
-    var deadline=Date.now()+5000;
+    var beforeCapturedAt=null;
+    try{
+      var before=await chrome.storage.local.get(["effectifPlatformMirror"]);
+      var beforeStats=before.effectifPlatformMirror&&before.effectifPlatformMirror.statistics;
+      if(beforeStats&&beforeStats.tabId===statsTab.id) beforeCapturedAt=String(beforeStats.capturedAt||"");
+    }catch(_){}
+    async function requestSnapshot(){
+      await new Promise(function(resolve,reject){
+        chrome.tabs.sendMessage(statsTab.id,{type:"EFFECTIF_REQUEST_PLATFORM_SNAPSHOT",force:true},function(){
+          if(chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message)); else resolve(true);
+        });
+      });
+    }
+    try{
+      await requestSnapshot();
+    }catch(firstError){
+      try{
+        await new Promise(function(resolve,reject){
+          chrome.tabs.reload(statsTab.id,{bypassCache:true},function(){
+            if(chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message)); else resolve(true);
+          });
+        });
+        await new Promise(function(resolve,reject){
+          var done=false;
+          function onUpdated(tabId,info){
+            if(tabId!==statsTab.id||info.status!=="complete"||done)return;
+            done=true;chrome.tabs.onUpdated.removeListener(onUpdated);resolve(true);
+          }
+          chrome.tabs.onUpdated.addListener(onUpdated);
+          setTimeout(function(){
+            if(done)return;
+            done=true;chrome.tabs.onUpdated.removeListener(onUpdated);
+            reject(new Error("Statistics no terminó de cargar."));
+          },8000);
+        });
+        await requestSnapshot();
+      }catch(reloadError){
+        throw new Error("Statistics no respondió. Se actualizó la pestaña y volvió a fallar: "+String(reloadError));
+      }
+    }
+    var deadline=Date.now()+6000;
     while(Date.now()<deadline){
-      var stored2=await chrome.storage.local.get(["effectifPlatformMirror"]),candidate=stored2.effectifPlatformMirror&&stored2.effectifPlatformMirror.statistics;
-      if(candidate&&candidate.tabId===statsTab.id&&String(candidate.capturedAt||"")>previousCapturedAt)return {ok:true,method:"existing-tab",snapshot:candidate};
+      var stored=await chrome.storage.local.get(["effectifPlatformMirror"]);
+      var candidate=stored.effectifPlatformMirror&&stored.effectifPlatformMirror.statistics;
+      var capturedAt=String(candidate&&candidate.capturedAt||"");
+      if(candidate&&candidate.tabId===statsTab.id&&(!beforeCapturedAt||capturedAt>beforeCapturedAt)){
+        record("PLATFORM_OFFICIAL_SYNC_COMPLETED",{method:"existing-statistics-tab",url:OFFICIAL_STATS_URL,earned:candidate.summary&&candidate.summary.earned,callLength:candidate.summary&&candidate.summary.callLength,callCount:candidate.summary&&candidate.summary.callCount},"info","popup");
+        return {ok:true,method:"existing-statistics-tab",snapshot:candidate};
+      }
       await new Promise(function(resolve){setTimeout(resolve,150);});
     }
-    throw new Error("La plataforma no entregó un dato oficial nuevo.");
+    throw new Error("Statistics no entregó un dato oficial nuevo.");
   }
   function updateGroqUsage(message) {
     chrome.storage.local.get(["effectifState", "effectifConfig"], function (stored) {

@@ -40,14 +40,14 @@ try
     var tempPayload = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "signal-observability-" + Guid.NewGuid().ToString("N") + ".json");
     try
     {
-        var sha = await TryGetCurrentShaAsync();
+        var current = await GetCurrentFileStateAsync();
         var request = new Dictionary<string, object?>
         {
             ["message"] = "chore: update latest development observability",
             ["content"] = Convert.ToBase64String(diagnosticBytes),
             ["branch"] = DiagnosticsBranch
         };
-        if (!string.IsNullOrWhiteSpace(sha)) request["sha"] = sha;
+        if (current.Exists && !string.IsNullOrWhiteSpace(current.Sha)) request["sha"] = current.Sha;
         await File.WriteAllTextAsync(tempPayload, JsonSerializer.Serialize(request), new UTF8Encoding(false));
         var output = await RunGhAsync("api", $"repos/{Repo}/contents/{Path}", "--method", "PUT", "--input", tempPayload);
         using var responseDoc = JsonDocument.Parse(output);
@@ -68,15 +68,21 @@ catch (Exception ex)
     try { WriteMessage(new { ok = false, error = ex.Message }); } catch { }
 }
 
-static async Task<string> TryGetCurrentShaAsync()
+static async Task<(bool Exists, string Sha)> GetCurrentFileStateAsync()
 {
     try
     {
-        var output = await RunGhAsync("api", $"repos/{Repo}/contents/{Path}", "--field", $"ref={DiagnosticsBranch}", "--jq", ".sha");
+        var output = await RunGhAsync("api", $"repos/{Repo}/contents/{Path}?ref={DiagnosticsBranch}", "--jq", ".sha");
         var sha = output.Trim();
-        return sha.Length > 0 ? sha : "";
+        return (sha.Length > 0, sha);
     }
-    catch { return ""; }
+    catch (Exception ex)
+    {
+        if (ex.Message.Contains("404", StringComparison.OrdinalIgnoreCase) ||
+            ex.Message.Contains("Not Found", StringComparison.OrdinalIgnoreCase))
+            return (false, "");
+        throw;
+    }
 }
 
 static async Task<string> RunGhAsync(params string[] arguments)
