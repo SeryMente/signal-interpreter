@@ -360,17 +360,35 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     }).then(function (state) {
       if (!state || state.callId !== callId) return;
       record("TRANSCRIPTION_MODULE_READY", { callId: callId, engine: "groq-whisper" }, "info", "background");
-      chrome.storage.local.get(["effectifConfig"], function (stored) {
-        var current = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-        if (!current.soundEnabled) return;
-        playSound(Math.max(0.95, Number(current.volume || 0))).then(function () {
-          record("CALL_ALERT_SOUND_PLAYED", { callId: callId, trigger: "call-route-entered", prominent: true }, "info", "offscreen");
-        }).catch(function (error) {
-          record("CALL_ALERT_SOUND_ERROR", { callId: callId, trigger: "call-route-entered", message: String(error) }, "error", "offscreen");
-        });
+      requestCallAlert(callId, "call-route-entered");
+    });
+  }
+  function requestCallAlert(callId, trigger) {
+    chrome.storage.local.get(["effectifConfig", "effectifCallAlert"], function (stored) {
+      var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+      if (!config.soundEnabled) return;
+      var now = Date.now();
+      var previous = stored.effectifCallAlert || {};
+      if (previous.playedAt && now - Number(previous.playedAt) < 3000 && (!callId || !previous.callId || previous.callId === callId)) return;
+      var marker = { callId: callId || previous.callId || null, requestedAt: now, playedAt: null, trigger: trigger || "call" };
+      chrome.storage.local.set({ effectifCallAlert: marker });
+      record("CALL_ALERT_SOUND_REQUESTED", {
+        callId: marker.callId, trigger: marker.trigger, requestedAt: now
+      }, "info", "background");
+      playSound(Math.max(0.95, Number(config.volume || 0))).then(function () {
+        var playedAt = Date.now();
+        chrome.storage.local.set({ effectifCallAlert: Object.assign({}, marker, { playedAt: playedAt }) });
+        record("CALL_ALERT_SOUND_PLAYED", {
+          callId: marker.callId, trigger: marker.trigger, latencyMs: playedAt - now, prominent: true
+        }, "info", "offscreen");
+      }).catch(function (error) {
+        record("CALL_ALERT_SOUND_ERROR", {
+          callId: marker.callId, trigger: marker.trigger, latencyMs: Date.now() - now, message: String(error)
+        }, "error", "offscreen");
       });
     });
   }
+
   function alertOnConnect(event) {
     mutateState(async function (state) {
       state.lastConnectAt = event.timestamp;
@@ -388,6 +406,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         reason: "await-call-route"
       }, "info", "background");
     });
+    requestCallAlert(null, "connect-click");
   }
   function rememberCallEnd(event) {
     mutateState(async function (state) {
