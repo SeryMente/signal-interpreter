@@ -443,7 +443,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     var text=stripHtml(raw),earned=null,callLength=null,callCount=null;
     function valueAfter(labels){
       for(var i=0;i<labels.length;i+=1){
-        var rx=new RegExp(labels[i]+"\\s*(?:[:\\-]|)\\s*([^\\n]{1,120})","i"),m=text.match(rx);
+        var rx=new RegExp(labels[i]+"\\s*(?:[:\\-]|)\\s*([^\\n]{1,160})","i"),m=text.match(rx);
         if(m&&m[1])return String(m[1]).trim();
       }
       return null;
@@ -456,72 +456,64 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     var earnedUsd=money?Number(String(money[1]).replace(/,/g,".")):null;
     return {earned:earned,earnedUsd:Number.isFinite(earnedUsd)?earnedUsd:null,callLength:callLength,callCount:callCount,rawSource:"background-fetch"};
   }
+  function readVisibleOfficialSummaryFromPage() {
+    function normalize(value){return String(value||"").replace(/\s+/g," ").trim();}
+    function parseMoney(value){
+      var match=String(value||"").match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
+      return match?Number(String(match[1]).replace(/,/g,".")):null;
+    }
+    var text=normalize(document.body&&document.body.innerText);
+    if(!text)return null;
+    var result={};
+    var earned=text.match(/(?:Totally earned|Total earned|Today's earnings|Earned today|Ganado hoy)[\s\S]{0,180}?(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/i);
+    var length=text.match(/Total call length\s*[:\-]?\s*([0-9]{1,3}:[0-9]{2}(?::[0-9]{2})?)/i);
+    var count=text.match(/Total number of calls\s*[:\-]?\s*([0-9]+)/i);
+    if(earned){result.earned="$"+earned[1];result.earnedUsd=parseMoney(result.earned);}
+    if(length)result.callLength=length[1];
+    if(count)result.callCount=count[1];
+    if(!result.earned){
+      var nodes=Array.from(document.querySelectorAll("body *")).filter(function(el){return el.children.length<=2;});
+      for(var i=0;i<nodes.length;i+=1){
+        var label=normalize(nodes[i].textContent);
+        if(!/^(Totally earned|Total earned|Today's earnings|Earned today|Ganado hoy)$/i.test(label))continue;
+        var parent=nodes[i].parentElement;
+        var values=parent?String(parent.innerText||"").split(/\n+/).map(normalize).filter(Boolean):[];
+        for(var j=0;j<values.length;j+=1){
+          var value=values[j].match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
+          if(value){result.earned="$"+value[1];result.earnedUsd=parseMoney(result.earned);break;}
+        }
+        if(result.earned)break;
+      }
+    }
+    return result.earned?result:null;
+  }
   async function readOfficialStatsInPage(tabId) {
-    var results = await chrome.scripting.executeScript({
-      target: { tabId: tabId },
-      world: "MAIN",
-      func: async function (statsUrl) {
-        function normalized(value) { return String(value || "").replace(/\s+/g, " ").trim(); }
-        function parseMoney(value) {
-          var match = String(value || "").match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
-          return match ? Number(String(match[1]).replace(",", ".")) : null;
-        }
-        function fromDocument(doc) {
-          var definitions = [
-            ["earned", /^(Totally earned|Total earned)$/i],
-            ["callLength", /^Total call length$/i],
-            ["callCount", /^Total number of calls$/i]
-          ];
-          var result = {};
-          var elements = Array.from(doc.querySelectorAll("main *,body *")).filter(function (el) {
-            return el.children.length <= 2;
-          });
-          definitions.forEach(function (definition) {
-            for (var i = 0; i < elements.length; i += 1) {
-              if (!definition[1].test(normalized(elements[i].textContent))) continue;
-              var parent = elements[i].parentElement;
-              var values = parent ? String(parent.innerText || "").split(/\n+/).map(normalized).filter(Boolean) : [];
-              var value = values.filter(function (item) { return !definition[1].test(item); })[0] || "";
-              if (value) result[definition[0]] = value;
-              break;
-            }
-          });
-          if (!result.earned) {
-            var text = normalized(doc.body && doc.body.innerText);
-            var earned = text.match(/Totally earned\s*\$\s*([0-9]+(?:[.,][0-9]+)?)/i);
-            var length = text.match(/Total call length\s*([0-9]{1,2}:?[0-9]{2}:?[0-9]{2})/i);
-            var count = text.match(/Total number of calls\s*([0-9]+)/i);
-            if (earned) result.earned = "$" + earned[1];
-            if (length) result.callLength = length[1];
-            if (count) result.callCount = count[1];
-          }
-          if (!result.earned) return null;
-          result.earnedUsd = parseMoney(result.earned);
-          return result;
-        }
-        try {
-          if (location.origin !== "https://app.cloudinterpreter.com") throw new Error("Pestaña fuera del dominio autorizado.");
-          if (/\/logs\/?$/.test(location.pathname)) {
-            var current = fromDocument(document);
-            if (current) return {ok:true,method:"page-dom",summary:current};
-          }
-          var response = await fetch(statsUrl, {method:"GET",credentials:"include",cache:"no-store",redirect:"follow"});
-          if (!response.ok) throw new Error("HTTP " + response.status);
-          var html = await response.text();
-          var parsed = fromDocument(new DOMParser().parseFromString(html,"text/html"));
-          if (parsed) return {ok:true,method:"page-fetch",summary:parsed};
-          return {ok:false,error:"Statistics respondió pero no incluyó el resumen en HTML."};
-        } catch (error) {
-          return {ok:false,error:String(error)};
-        }
-      },
-      args: [OFFICIAL_STATS_URL]
+    var results=await chrome.scripting.executeScript({
+      target:{tabId:tabId},
+      world:"MAIN",
+      func:readVisibleOfficialSummaryFromPage
     });
     var result=results&&results[0]&&results[0].result;
-    if(!result||!result.ok) throw new Error(result&&result.error||"No se pudo leer Statistics desde el contexto autenticado.");
-    return result;
+    if(!result)throw new Error("Statistics aún no mostró el resumen oficial.");
+    return {ok:true,method:"page-dom",summary:result};
   }
-  async function persistOfficialStats(tab, readResult, method) {
+  async function readOfficialStatsInBackgroundTab() {
+    var tab=await chrome.tabs.create({url:OFFICIAL_STATS_URL,active:false});
+    try{
+      var deadline=Date.now()+15000,lastError="Statistics aún no mostró el resumen oficial.";
+      while(Date.now()<deadline){
+        try{
+          var read=await readOfficialStatsInPage(tab.id);
+          if(read&&read.summary&&read.summary.earned)return {tab:tab,read:read};
+        }catch(error){lastError=String(error);}
+        await new Promise(function(resolve){setTimeout(resolve,400);});
+      }
+      throw new Error(lastError);
+    }finally{
+      try{await chrome.tabs.remove(tab.id);}catch(_){}
+    }
+  }
+  async function persistOfficialStats(tab,readResult,method){
     var parsed=readResult.summary||{};
     var stored=await chrome.storage.local.get(["effectifPlatformMirror"]);
     var mirror=Object.assign({},stored.effectifPlatformMirror||{});
@@ -536,39 +528,50 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     return {ok:true,method:method,snapshot:mirror.statistics};
   }
   async function syncOfficialPlatformData(){
+    try{
+      var response=await fetch(OFFICIAL_STATS_URL,{method:"GET",credentials:"include",cache:"no-store",redirect:"follow"});
+      var raw=await response.text();
+      if(response.ok){
+        var parsed=extractOfficialStatsFromHtml(raw);
+        if(parsed){
+          var stored=await chrome.storage.local.get(["effectifPlatformMirror"]);
+          var mirror=Object.assign({},stored.effectifPlatformMirror||{});
+          mirror.statistics=Object.assign({},mirror.statistics||{},{
+            schema:"signal-interpreter-official-stats/v1",key:"statistics",route:"/profile/<ID>/logs",
+            url:OFFICIAL_STATS_URL,capturedAt:iso(),reason:"background-fetch",
+            summary:{earned:parsed.earned,earnedUsd:parsed.earnedUsd,callLength:parsed.callLength,callCount:parsed.callCount},
+            source:"platform-background-fetch"
+          });
+          await chrome.storage.local.set({effectifPlatformMirror:mirror});
+          record("PLATFORM_OFFICIAL_SYNC_COMPLETED",{method:"background-fetch",url:OFFICIAL_STATS_URL,earned:parsed.earned,callLength:parsed.callLength,callCount:parsed.callCount},"info","popup");
+          return {ok:true,method:"background-fetch",snapshot:mirror.statistics};
+        }
+        record("PLATFORM_OFFICIAL_BACKGROUND_FETCH_EMPTY",{url:OFFICIAL_STATS_URL},"info","popup");
+      }
+    }catch(error){
+      record("PLATFORM_OFFICIAL_BACKGROUND_FETCH_ERROR",{url:OFFICIAL_STATS_URL,error:String(error)},"warn","popup");
+    }
     var tabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"});
     var statsTab=null;
     for(var i=0;i<tabs.length;i+=1){
       if(/^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(tabs[i].url||""))){statsTab=tabs[i];break;}
     }
-    if(!statsTab) statsTab=tabs.find(function(tab){return isAuthorizedCloudUrl(tab.url);})||null;
-    if(!statsTab) throw new Error("No hay una pestaña de Cloud Interpreter abierta.");
-    try {
-      var direct=await readOfficialStatsInPage(statsTab.id);
-      return await persistOfficialStats(statsTab,direct,direct.method);
-    } catch(error) {
-      record("PLATFORM_OFFICIAL_BACKGROUND_PAGE_ERROR",{url:OFFICIAL_STATS_URL,tabId:statsTab.id,error:String(error)},"warn","popup");
-    }
-    var isStats=/^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(statsTab.url||""));
-    if(isStats) {
-      try {
-        await new Promise(function(resolve,reject){
-          chrome.tabs.sendMessage(statsTab.id,{type:"EFFECTIF_REQUEST_PLATFORM_SNAPSHOT",force:true},function(){
-            if(chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message)); else resolve(true);
-          });
-        });
-        var deadline=Date.now()+5000;
-        while(Date.now()<deadline){
-          var stored=await chrome.storage.local.get(["effectifPlatformMirror"]);
-          var candidate=stored.effectifPlatformMirror&&stored.effectifPlatformMirror.statistics;
-          if(candidate&&candidate.tabId===statsTab.id) return {ok:true,method:"existing-statistics-tab",snapshot:candidate};
-          await new Promise(function(resolve){setTimeout(resolve,150);});
-        }
-      } catch(error) {
-        record("PLATFORM_OFFICIAL_SYNC_FALLBACK_ERROR",{url:OFFICIAL_STATS_URL,tabId:statsTab.id,error:String(error)},"warn","popup");
+    if(!statsTab)statsTab=tabs.find(function(tab){return isAuthorizedCloudUrl(tab.url);})||null;
+    if(statsTab){
+      try{
+        var direct=await readOfficialStatsInPage(statsTab.id);
+        if(direct&&direct.summary&&direct.summary.earned)return await persistOfficialStats(statsTab,direct,"existing-page-dom");
+      }catch(error){
+        record("PLATFORM_OFFICIAL_BACKGROUND_PAGE_ERROR",{url:OFFICIAL_STATS_URL,tabId:statsTab.id,error:String(error)},"warn","popup");
       }
     }
-    throw new Error("No se pudo leer el dato oficial desde la sesión autenticada de Cloud Interpreter.");
+    try{
+      var background=await readOfficialStatsInBackgroundTab();
+      return await persistOfficialStats(background.tab,background.read,"background-statistics-tab");
+    }catch(error){
+      record("PLATFORM_OFFICIAL_BACKGROUND_TAB_ERROR",{url:OFFICIAL_STATS_URL,error:String(error)},"error","popup");
+      throw new Error("Statistics no entregó el dato oficial en segundo plano: "+String(error));
+    }
   }
   function updateGroqUsage(message) {
     chrome.storage.local.get(["effectifState", "effectifConfig"], function (stored) {
