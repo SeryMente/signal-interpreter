@@ -563,6 +563,27 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
       return saveSignalSessions(data.sessions,data.activeSessionId).then(function(){return{ok:true,session:signalSessionCopy(s)}})
     }).then(function(r){broadcastSignalEvent({type:"signal.session.updated",sessionId:message.sessionId,session:r.session,timestamp:iso()});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})})
   }
+  async function deleteSignalSession(message,sendResponse){
+    try{
+      var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId,deletedIndex=data.sessions.findIndex(function(x){return x.id===id}),session=deletedIndex>=0?data.sessions[deletedIndex]:null;
+      if(!session)throw new Error("Sesi\u00f3n no encontrada");
+      try{if(session.sourceTabId!=null)await signalMicControlSession(session,"stop")}catch(error){recordSignalDiagnostic("SIGNAL_SESSION_MIC_STOP_ON_DELETE_ERROR",{sessionId:id,error:String(error)},"warn","session-delete")}
+      try{await KhoraTelemetryDB.clearSignalSession(id)}catch(error){recordSignalDiagnostic("SIGNAL_SESSION_DELETE_HISTORY_ERROR",{sessionId:id,error:String(error)},"error","session-delete");throw new Error("No se pudo borrar el historial de la sesi\u00f3n: "+String(error))}
+      var wasActive=data.activeSessionId===id;
+      data.sessions.splice(deletedIndex,1);
+      signalCaptionCursors.delete(id);
+      if(wasActive)signalActiveSessionId=null;
+      var nextId=wasActive?null:data.activeSessionId;
+      if(wasActive&&data.sessions.length){var nextIndex=Math.max(0,deletedIndex-1);if(nextIndex>=data.sessions.length)nextIndex=data.sessions.length-1;nextId=data.sessions[nextIndex].id;}
+      await saveSignalSessions(data.sessions,nextId);
+      if(wasActive){signalLastSpeakerId=null;signalLastSpeakerAt=0;signalBridgeContextSessionId=null;}
+      var nextSession=null;
+      if(nextId){var activation=await activateSignalSession(nextId,null);if(activation&&activation.ok)nextSession=activation.session;}
+      recordSignalDiagnostic("SIGNAL_SESSION_DELETED",{deletedSessionId:id,remainingSessions:data.sessions.length,activeSessionId:nextId||null,sourceTabId:session.sourceTabId||null},"info","session-delete");
+      broadcastSignalEvent({type:"signal.session.deleted",sessionId:id,activeSessionId:nextId||null,session:nextSession,timestamp:iso()});
+      sendResponse({ok:true,deletedSessionId:id,activeSessionId:nextId||null,session:nextSession});
+    }catch(error){recordSignalDiagnostic("SIGNAL_SESSION_DELETE_ERROR",{sessionId:message.sessionId||signalActiveSessionId,error:String(error)},"error","session-delete");sendResponse({ok:false,error:String(error)})}
+  }
   async function sendSignalBridgeContextForSession(session){
     if(!session)return;
     signalBridgeContextSessionId=session.id;
@@ -840,6 +861,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
     if (message.type === "OPEN_SIGNAL_LIVE_WINDOW") { recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_REQUESTED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",hasSuppliedStream:!!message.audioStreamId}); openSignalLiveWindow(message.audioStreamId||null,message.tabId||null,message.sourceUrl||"",message.sourceTitle||"").then(function(response){if(response&&response.ok)recordSignalDiagnostic("SIGNAL_CONSOLE_OPENED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",windowId:response.windowId,reused:!!response.reused,sessionId:response.session&&response.session.id||null,audioOk:!!(response.audio&&response.audio.ok)});else recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_ERROR",{tabId:message.tabId||null,error:response&&response.error||"unknown"},"error");sendResponse(response)}).catch(function(error){recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_EXCEPTION",{tabId:message.tabId||null,error:String(error)},"error");sendResponse({ok:false,error:String(error)});});return true; }
     if (message.type === "ACTIVATE_SIGNAL_SESSION") { activateSignalSession(message.sessionId,null).then(sendResponse);return true; }
     if (message.type === "UPDATE_SIGNAL_SESSION") { updateSignalSession(message,sendResponse);return true; }
+    if (message.type === "DELETE_SIGNAL_SESSION") { deleteSignalSession(message,sendResponse);return true; }
     if (message.type === "ADD_SIGNAL_SESSION_SEGMENT") { addSignalSessionSegment(message,sendResponse);return true; }
     if (message.type === "SIGNAL_MIC_CONTROL") {
       loadSignalSessions().then(function(data){var s=data.sessions.find(function(x){return x.id===(message.sessionId||data.activeSessionId)});if(!s)throw new Error("Sesión no encontrada");return signalMicControlSession(s,String(message.action||"start"))}).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)})});return true;
