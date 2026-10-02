@@ -82,10 +82,13 @@
       payload: payload || {}
     };
     try {
-      console[event.level === "error" ? "error" : event.level === "warn" ? "warn" : "log"](
+      console[event.level === "error" ? "error" : "log"](
         "[SIGNAL-INTERPRETER]", event.timestamp, action, event.payload
       );
-      chrome.runtime.sendMessage({ type: "EFFECTIF_EVENT", event: event });
+      try {
+        var messagePromise = chrome.runtime.sendMessage({ type: "EFFECTIF_EVENT", event: event });
+        if (messagePromise && typeof messagePromise.catch === "function") messagePromise.catch(function () {});
+      } catch (_) {}
     } catch (_) {}
   }
   function parsePlatformSeconds() {
@@ -337,7 +340,10 @@
     });
     if (signature === lastMirrorSignature) return;
     lastMirrorSignature = signature;
-    chrome.runtime.sendMessage({ type: "EFFECTIF_PLATFORM_SNAPSHOT", snapshot: snapshot });
+    try {
+      var snapshotPromise = chrome.runtime.sendMessage({ type: "EFFECTIF_PLATFORM_SNAPSHOT", snapshot: snapshot });
+      if (snapshotPromise && typeof snapshotPromise.catch === "function") snapshotPromise.catch(function () {});
+    } catch (_) {}
   }
   function schedulePlatformMirror(reason) {
     if (mirrorTimer) clearTimeout(mirrorTimer);
@@ -427,10 +433,20 @@
       }).observe({ type: "layout-shift", buffered: true });
     } catch (_) {}
     window.addEventListener("error", function (event) {
-      emit("PAGE_RUNTIME_ERROR", { message: safe(event.message), filename: safe(event.filename).replace(/\?.*$/, ""), line: event.lineno || null, column: event.colno || null }, "error");
+      var message = safe(event.message);
+      if (/Extension context invalidated/i.test(message)) {
+        try { event.preventDefault(); } catch (_) {}
+        return;
+      }
+      emit("PAGE_RUNTIME_ERROR", { message: message, filename: safe(event.filename).replace(/\?.*$/, ""), line: event.lineno || null, column: event.colno || null }, "error");
     }, true);
     window.addEventListener("unhandledrejection", function (event) {
-      emit("PAGE_UNHANDLED_REJECTION", { reason: safe(event.reason && (event.reason.stack || event.reason.message) || event.reason).slice(0, 1000) }, "error");
+      var reason = safe(event.reason && (event.reason.stack || event.reason.message) || event.reason).slice(0, 1000);
+      if (/Extension context invalidated/i.test(reason)) {
+        try { event.preventDefault(); } catch (_) {}
+        return;
+      }
+      emit("PAGE_UNHANDLED_REJECTION", { reason: reason }, "error");
     });
     ["focus", "blur", "online", "offline", "pageshow", "pagehide", "freeze", "resume"].forEach(function (name) {
       window.addEventListener(name, function (event) { emit("PAGE_LIFECYCLE", { event: name, persisted: !!event.persisted }); });

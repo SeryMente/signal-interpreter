@@ -138,7 +138,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
   }
   function log(level, action, payload) {
     try {
-      var target = console[level === "error" ? "error" : level === "warn" ? "warn" : "log"];
+      var target = console[level === "error" ? "error" : "log"];
       var printable = payload || {};
       if (printable && typeof printable === "object") {
         try { printable = JSON.stringify(printable); } catch (_) { printable = String(printable); }
