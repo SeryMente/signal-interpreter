@@ -1,0 +1,4023 @@
+{
+  "schema": "signal-interpreter-observation-batch/v1",
+  "batchId": "batch-3e95667e-90be-4283-80f0-109d7e9ba2c6",
+  "createdAt": "2026-10-02T17:07:03.752Z",
+  "trigger": "event-window",
+  "extensionVersion": "0.9.3",
+  "summary": {
+    "eventsTotal": 109,
+    "errors": 0,
+    "warnings": 0,
+    "critical": false,
+    "scopeRejected": 0,
+    "contextEvents": 0,
+    "invariantSignals": 0,
+    "firstSequence": 48120,
+    "lastSequence": 48228,
+    "firstTimestamp": "2026-10-02T17:06:33.477Z",
+    "lastTimestamp": "2026-10-02T17:07:03.477Z",
+    "actions": {
+      "MEDIA_HEALTH": 31,
+      "SIGNAL_BRIDGE_EVENT_RECEIVED": 46,
+      "SIGNAL_CAPTION_SEGMENT_RECEIVED": 5,
+      "SIGNAL_SEGMENT_PERSISTED": 6,
+      "SIGNAL_UIA_SCAN": 6,
+      "PERFORMANCE_HEARTBEAT": 1,
+      "PAGE_LIFECYCLE": 6,
+      "SIGNAL_MIC_SEGMENT_RECEIVED": 1,
+      "SIGNAL_MIC_SEGMENT_PERSISTED": 1,
+      "PLATFORM_INTEGRITY_CHECK": 2,
+      "SIGNAL_CAPTION_DUPLICATE_SUPPRESSED": 2,
+      "SIGNAL_CAPTION_REVISION_CURSOR_ADVANCED": 2
+    },
+    "categories": {
+      "RUNTIME": 40,
+      "BRIDGE": 46,
+      "LIVE_CAPTION": 9,
+      "STORAGE": 8,
+      "UIA": 6
+    }
+  },
+  "events": [
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "c2231e00-8e90-436c-9370-4f86fe50b403",
+      "sequence": 48120,
+      "timestamp": "2026-10-02T17:06:33.477Z",
+      "ingestedAt": "2026-10-02T17:06:33.705Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "5fe36516-bd74-4684-80a1-6cc7b9c82f2f",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "2a5925b2-11aa-46a2-97ab-0d3324c8aa6d",
+      "sequence": 48121,
+      "timestamp": "2026-10-02T17:06:34.076Z",
+      "ingestedAt": "2026-10-02T17:06:34.076Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "55ff5d28-14e7-46fe-b5a7-80b580294144",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "stable-append",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "a34b7afc-3fdd-442b-ad2f-e8ade15b9130",
+      "sequence": 48122,
+      "timestamp": "2026-10-02T17:06:34.352Z",
+      "ingestedAt": "2026-10-02T17:06:34.352Z",
+      "level": "info",
+      "category": "LIVE_CAPTION",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_CAPTION_SEGMENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "9a3e148a-c0a7-470e-99fd-baa6550e4062",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962",
+        "sourceOrigin": "https://app.cloudinterpreter.com",
+        "sourceTabId": 220907006,
+        "sourceWindowId": 220906129
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "new",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "c52dcf76-593d-4dbe-9982-723056bf12f3",
+      "sequence": 48123,
+      "timestamp": "2026-10-02T17:06:34.651Z",
+      "ingestedAt": "2026-10-02T17:06:34.651Z",
+      "level": "info",
+      "category": "STORAGE",
+      "component": "signal-bridge",
+      "phase": "completed",
+      "action": "SIGNAL_SEGMENT_PERSISTED",
+      "outcome": "success",
+      "traceId": "d90f856c-c364-4d1e-bf76-c3a9e741aa64",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "0a579032-305b-419a-9f66-5422d3fdee4a",
+      "sequence": 48124,
+      "timestamp": "2026-10-02T17:06:34.477Z",
+      "ingestedAt": "2026-10-02T17:06:35.018Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "c84ec420-2b04-4b48-a112-adabacff9fb5",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "d39cd282-650c-41d1-b3f4-aa6cc6519e0b",
+      "sequence": 48125,
+      "timestamp": "2026-10-02T17:06:35.275Z",
+      "ingestedAt": "2026-10-02T17:06:35.275Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "49baac4a-859f-4d18-940d-5d13276fe14e",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "bce4652c-bd93-4cac-a7bd-c14cafda3054",
+      "sequence": 48126,
+      "timestamp": "2026-10-02T17:06:35.537Z",
+      "ingestedAt": "2026-10-02T17:06:35.537Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "d267b204-8e57-4a73-a82b-b99f0d1fb748",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "df3cdd98-b61f-4bed-a8dc-b9ada15e1e7b",
+      "sequence": 48127,
+      "timestamp": "2026-10-02T17:06:35.771Z",
+      "ingestedAt": "2026-10-02T17:06:35.771Z",
+      "level": "info",
+      "category": "UIA",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_UIA_SCAN",
+      "outcome": "observed",
+      "traceId": "73527ebf-8209-46a8-8898-72e08a988593",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962",
+        "sourceTabId": 220907006,
+        "sourceWindowId": 220906129
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "54506fda-6c0d-4153-ab4d-7fb69f834553",
+      "sequence": 48128,
+      "timestamp": "2026-10-02T17:06:36.010Z",
+      "ingestedAt": "2026-10-02T17:06:36.010Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "a14825fd-7629-4690-90f8-47175d3c1553",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "972e0825-7bed-44fa-91b0-06004335329f",
+      "sequence": 48129,
+      "timestamp": "2026-10-02T17:06:35.396Z",
+      "ingestedAt": "2026-10-02T17:06:36.252Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "PERFORMANCE_HEARTBEAT",
+      "outcome": "observed",
+      "traceId": "acd2cc5b-0009-40e8-8316-3dd8c58c85ef",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "heartbeat",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "8b4599f2-b641-4a5d-9293-7dff51fcf266",
+      "sequence": 48130,
+      "timestamp": "2026-10-02T17:06:35.490Z",
+      "ingestedAt": "2026-10-02T17:06:36.488Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "8db67f29-b86e-45d0-896d-653df5316c02",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "000e6abb-93a6-4e39-b67f-86f9dec76033",
+      "sequence": 48131,
+      "timestamp": "2026-10-02T17:06:36.745Z",
+      "ingestedAt": "2026-10-02T17:06:36.745Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "c9811a0e-1cc8-42d1-8fcb-7cd2b937817f",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "fc56b5cd-4f48-47ff-b285-a9ba89636b65",
+      "sequence": 48132,
+      "timestamp": "2026-10-02T17:06:36.982Z",
+      "ingestedAt": "2026-10-02T17:06:36.982Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "d0e62dfd-e346-4e12-9609-46fb1d6e9a9c",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "19a7979f-25b2-4e08-a6e6-e49047da2cd7",
+      "sequence": 48133,
+      "timestamp": "2026-10-02T17:06:37.207Z",
+      "ingestedAt": "2026-10-02T17:06:37.208Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "21010272-0624-44e6-b8c2-b718c762c62a",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "47458ee3-302f-4728-8a86-200a0a4e354a",
+      "sequence": 48134,
+      "timestamp": "2026-10-02T17:06:36.477Z",
+      "ingestedAt": "2026-10-02T17:06:37.456Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "474b021a-763c-47c1-aba5-fed3e4bb92c8",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "90e30744-71b8-4318-8f47-b4de6450b441",
+      "sequence": 48135,
+      "timestamp": "2026-10-02T17:06:37.687Z",
+      "ingestedAt": "2026-10-02T17:06:37.687Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "a1428a27-d90d-46b2-8946-c69faf5caccb",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b34842e3-f627-431b-9bbd-84bcfe861bf9",
+      "sequence": 48136,
+      "timestamp": "2026-10-02T17:06:37.937Z",
+      "ingestedAt": "2026-10-02T17:06:37.937Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "95961011-8c86-4001-9cf3-2c2301594774",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "6095c35d-604a-4b4f-83e8-4f171d28305e",
+      "sequence": 48137,
+      "timestamp": "2026-10-02T17:06:38.164Z",
+      "ingestedAt": "2026-10-02T17:06:38.165Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "f11ee7e5-0df6-4ff7-b06e-afd37a0af382",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "8f189355-00c4-4d9b-b498-cbbf4981ee7c",
+      "sequence": 48138,
+      "timestamp": "2026-10-02T17:06:37.477Z",
+      "ingestedAt": "2026-10-02T17:06:38.432Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "ea558584-3f80-44fa-8fb6-618ab828fa5e",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "c6568087-d75f-4cb8-99c7-ccc4de2d828d",
+      "sequence": 48139,
+      "timestamp": "2026-10-02T17:06:38.677Z",
+      "ingestedAt": "2026-10-02T17:06:38.677Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "efd9fd39-b45b-42c4-95e5-b2e1221323fc",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "09792bfb-1c12-4ab6-bbd5-9b79420f64d9",
+      "sequence": 48140,
+      "timestamp": "2026-10-02T17:06:38.904Z",
+      "ingestedAt": "2026-10-02T17:06:38.904Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "93781b9f-4ea8-4367-9e35-46fa70f2a7f6",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b4e0a811-71b0-408c-8ca2-9f9a67756721",
+      "sequence": 48141,
+      "timestamp": "2026-10-02T17:06:39.154Z",
+      "ingestedAt": "2026-10-02T17:06:39.154Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "8460538b-19df-4261-accf-93b704e0335c",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "cb3bc21c-23e9-4cbd-86ab-4d1ba38c16a8",
+      "sequence": 48142,
+      "timestamp": "2026-10-02T17:06:38.477Z",
+      "ingestedAt": "2026-10-02T17:06:39.400Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "071424da-78f0-4255-bf94-ca31a2667f6b",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "282f3fac-417e-4ad2-9177-3a8925f3ed49",
+      "sequence": 48143,
+      "timestamp": "2026-10-02T17:06:39.622Z",
+      "ingestedAt": "2026-10-02T17:06:39.622Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "20025c57-e178-40d2-8d69-38d35d1ad03e",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "05038ea9-caa8-4397-829b-b376dd6bd9f7",
+      "sequence": 48144,
+      "timestamp": "2026-10-02T17:06:39.853Z",
+      "ingestedAt": "2026-10-02T17:06:39.853Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "fa956a25-b6b0-4e45-84d8-d4c68dc378a2",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "stable-append",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "c60fcf34-2fe3-49eb-95bc-387607e48786",
+      "sequence": 48145,
+      "timestamp": "2026-10-02T17:06:39.479Z",
+      "ingestedAt": "2026-10-02T17:06:40.089Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "f6616b32-5c52-4345-b4b7-becd70692e20",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "8694cdd2-1470-4cd1-b36f-6322b7cfb39e",
+      "sequence": 48146,
+      "timestamp": "2026-10-02T17:06:40.326Z",
+      "ingestedAt": "2026-10-02T17:06:40.326Z",
+      "level": "info",
+      "category": "LIVE_CAPTION",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_CAPTION_SEGMENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "12d7551e-4765-4a9b-868d-aac4382ce33d",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962",
+        "sourceOrigin": "https://app.cloudinterpreter.com",
+        "sourceTabId": 220907006,
+        "sourceWindowId": 220906129
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "new",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "17d800a2-ca32-4ce5-ad23-784baa82f8f0",
+      "sequence": 48147,
+      "timestamp": "2026-10-02T17:06:40.537Z",
+      "ingestedAt": "2026-10-02T17:06:40.537Z",
+      "level": "info",
+      "category": "STORAGE",
+      "component": "signal-bridge",
+      "phase": "completed",
+      "action": "SIGNAL_SEGMENT_PERSISTED",
+      "outcome": "success",
+      "traceId": "8a9afb85-c3aa-47b6-8540-ff5ec88e5803",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "7341533c-abd6-420f-9fe2-aa03f12b30fc",
+      "sequence": 48148,
+      "timestamp": "2026-10-02T17:06:40.792Z",
+      "ingestedAt": "2026-10-02T17:06:40.792Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "78c93b5c-53ea-48b6-9c2e-3e769a4a2c91",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "287c76dd-1afe-4696-852e-0deb5d03ec5b",
+      "sequence": 48149,
+      "timestamp": "2026-10-02T17:06:41.030Z",
+      "ingestedAt": "2026-10-02T17:06:41.030Z",
+      "level": "info",
+      "category": "UIA",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_UIA_SCAN",
+      "outcome": "observed",
+      "traceId": "f2356ebb-39fc-4b6e-be56-952653015325",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962",
+        "sourceTabId": 220907006,
+        "sourceWindowId": 220906129
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "ca90232a-07eb-417e-9e4f-7755097072dc",
+      "sequence": 48150,
+      "timestamp": "2026-10-02T17:06:41.282Z",
+      "ingestedAt": "2026-10-02T17:06:41.282Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "3e99f810-c64b-42dd-ae96-fb45d41f32b2",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b63ce835-d9cd-4820-a4a4-67ec44e44ac0",
+      "sequence": 48151,
+      "timestamp": "2026-10-02T17:06:40.505Z",
+      "ingestedAt": "2026-10-02T17:06:41.551Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "a106a8d3-b551-44a0-84e3-653c0e81e6b0",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "cd44060f-340a-41a3-9ab1-3ee3d6707746",
+      "sequence": 48152,
+      "timestamp": "2026-10-02T17:06:40.741Z",
+      "ingestedAt": "2026-10-02T17:06:41.774Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "PAGE_LIFECYCLE",
+      "outcome": "observed",
+      "traceId": "e88ab689-ceaf-478f-9771-f2fae2387af2",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b9b8f9b2-8371-426d-9e29-2ed837a38cdb",
+      "sequence": 48153,
+      "timestamp": "2026-10-02T17:06:41.998Z",
+      "ingestedAt": "2026-10-02T17:06:41.998Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "bda8805a-f3f7-47a8-acd6-578e70a7d77d",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "stable-append",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "6fb97982-ac73-452d-80a3-c9ef55a0db07",
+      "sequence": 48154,
+      "timestamp": "2026-10-02T17:06:42.212Z",
+      "ingestedAt": "2026-10-02T17:06:42.212Z",
+      "level": "info",
+      "category": "LIVE_CAPTION",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_CAPTION_SEGMENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "13d627c5-f33d-4272-b697-ef9e7e17f5c0",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962",
+        "sourceOrigin": "https://app.cloudinterpreter.com",
+        "sourceTabId": 220907006,
+        "sourceWindowId": 220906129
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "new",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b20e6cdb-8c05-46c2-a314-fc997611f780",
+      "sequence": 48155,
+      "timestamp": "2026-10-02T17:06:42.443Z",
+      "ingestedAt": "2026-10-02T17:06:42.443Z",
+      "level": "info",
+      "category": "STORAGE",
+      "component": "signal-bridge",
+      "phase": "completed",
+      "action": "SIGNAL_SEGMENT_PERSISTED",
+      "outcome": "success",
+      "traceId": "e681f25b-3edf-42df-9ca3-caff4fd85b5b",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "455d209a-873c-4ca9-9d7c-f14c987b3108",
+      "sequence": 48156,
+      "timestamp": "2026-10-02T17:06:41.507Z",
+      "ingestedAt": "2026-10-02T17:06:42.670Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "PAGE_LIFECYCLE",
+      "outcome": "observed",
+      "traceId": "6ae02ba7-b18e-4b84-9f1f-4e69345cdbd1",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "98be7c13-1652-47a0-9ff1-1ed0ed5fc989",
+      "sequence": 48157,
+      "timestamp": "2026-10-02T17:06:41.509Z",
+      "ingestedAt": "2026-10-02T17:06:42.892Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "555dd59e-d816-4fc5-86ab-cb2ff8adfa16",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "049e9dfb-88a4-45bd-a817-8dece177039f",
+      "sequence": 48158,
+      "timestamp": "2026-10-02T17:06:42.477Z",
+      "ingestedAt": "2026-10-02T17:06:43.128Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "c871bd40-63bd-410d-81b8-98b8cccf1366",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "fc04e359-4a11-459a-a97b-381a84a378c0",
+      "sequence": 48159,
+      "timestamp": "2026-10-02T17:06:43.381Z",
+      "ingestedAt": "2026-10-02T17:06:43.381Z",
+      "level": "info",
+      "category": "STORAGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_MIC_SEGMENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "b399bdc6-1f77-4e6c-a781-ca84fe5fec7e",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "423df8f8-c06e-4e02-b54c-5abf814577df",
+      "sequence": 48160,
+      "timestamp": "2026-10-02T17:06:43.602Z",
+      "ingestedAt": "2026-10-02T17:06:43.602Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "aa0631ab-6e92-436e-8daf-38e3a9ff24d2",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b194f25b-0618-44e5-a402-2069909d3f5a",
+      "sequence": 48161,
+      "timestamp": "2026-10-02T17:06:43.820Z",
+      "ingestedAt": "2026-10-02T17:06:43.820Z",
+      "level": "info",
+      "category": "STORAGE",
+      "component": "signal-bridge",
+      "phase": "completed",
+      "action": "SIGNAL_SEGMENT_PERSISTED",
+      "outcome": "success",
+      "traceId": "0a17b094-b5ce-42e9-8c4a-6f1b81f52e9d",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "4816bdb2-dd5f-4322-afe4-f158fe54ecf4",
+      "sequence": 48162,
+      "timestamp": "2026-10-02T17:06:44.043Z",
+      "ingestedAt": "2026-10-02T17:06:44.044Z",
+      "level": "info",
+      "category": "STORAGE",
+      "component": "signal-bridge",
+      "phase": "completed",
+      "action": "SIGNAL_MIC_SEGMENT_PERSISTED",
+      "outcome": "success",
+      "traceId": "84a1dd3d-bc56-49d3-a8b5-493680dc43f5",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "cf668846-2439-416d-b319-4bf2c5787038",
+      "sequence": 48163,
+      "timestamp": "2026-10-02T17:06:43.477Z",
+      "ingestedAt": "2026-10-02T17:06:44.261Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "e9b7de63-c517-42b6-a49c-1521e866c8a4",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "abb14257-237b-4709-84d0-d5b00fa91653",
+      "sequence": 48164,
+      "timestamp": "2026-10-02T17:06:44.478Z",
+      "ingestedAt": "2026-10-02T17:06:44.520Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "7ed0277e-12a9-4648-bed8-efff0414068b",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "01e9beb6-d2a2-4dfe-9b8f-43d46be46683",
+      "sequence": 48165,
+      "timestamp": "2026-10-02T17:06:44.973Z",
+      "ingestedAt": "2026-10-02T17:06:45.018Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "PLATFORM_INTEGRITY_CHECK",
+      "outcome": "observed",
+      "traceId": "84d427fc-31de-4842-8353-13b6af5a3e22",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "heartbeat",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "8955a827-4624-45af-8020-2eb37b291405",
+      "sequence": 48166,
+      "timestamp": "2026-10-02T17:06:45.242Z",
+      "ingestedAt": "2026-10-02T17:06:45.242Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "3040a969-790d-46d4-bf7a-c925c1c353d3",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "3ce8bd3d-061c-416a-a23d-a79e013a1d0e",
+      "sequence": 48167,
+      "timestamp": "2026-10-02T17:06:45.502Z",
+      "ingestedAt": "2026-10-02T17:06:45.502Z",
+      "level": "info",
+      "category": "UIA",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_UIA_SCAN",
+      "outcome": "observed",
+      "traceId": "651ff8d4-b24c-4600-b617-612ab5d8ea99",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962",
+        "sourceTabId": 220907006,
+        "sourceWindowId": 220906129
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "429c7d4e-cd16-4c93-840a-4ea2c2453e02",
+      "sequence": 48168,
+      "timestamp": "2026-10-02T17:06:45.478Z",
+      "ingestedAt": "2026-10-02T17:06:45.710Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "711df0e0-9cb1-4356-ba11-1f4685d6e881",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "e510cc0a-05f0-4bb0-80bd-5a8dfeb57e2a",
+      "sequence": 48169,
+      "timestamp": "2026-10-02T17:06:46.293Z",
+      "ingestedAt": "2026-10-02T17:06:46.293Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "c03c7576-db9e-4428-b243-92761e16e4a6",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "fbc8159a-2d8d-4ff5-b927-849ebe6ae7c8",
+      "sequence": 48170,
+      "timestamp": "2026-10-02T17:06:46.478Z",
+      "ingestedAt": "2026-10-02T17:06:46.521Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "93f3e24c-59f6-4ff8-a7cd-8749d5ac99a1",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "7e2bcb72-b608-4c1c-a02a-1cc6abee091f",
+      "sequence": 48171,
+      "timestamp": "2026-10-02T17:06:46.728Z",
+      "ingestedAt": "2026-10-02T17:06:46.728Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "3b31710e-2f5e-4746-8cce-07f80be1fde7",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "40dd6d23-cbfe-478c-9a13-5905465269b5",
+      "sequence": 48172,
+      "timestamp": "2026-10-02T17:06:46.955Z",
+      "ingestedAt": "2026-10-02T17:06:46.955Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "376b973f-2805-4c49-ac63-a4f39d0a6fa6",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "196dd900-6218-46fb-9531-3d6c880fb8ba",
+      "sequence": 48173,
+      "timestamp": "2026-10-02T17:06:47.478Z",
+      "ingestedAt": "2026-10-02T17:06:47.528Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "65ebddd9-a1c7-4eff-ab8f-d51a4247104b",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "2cd63da8-ba21-4ed8-be3a-3556deddf238",
+      "sequence": 48174,
+      "timestamp": "2026-10-02T17:06:47.798Z",
+      "ingestedAt": "2026-10-02T17:06:47.798Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "e973e37e-b2d4-4ec5-908f-22b6c369c2b8",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "ff6e0d59-9e6b-4f75-97be-8eccc877ade1",
+      "sequence": 48175,
+      "timestamp": "2026-10-02T17:06:48.444Z",
+      "ingestedAt": "2026-10-02T17:06:48.444Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "23552505-8da3-4dc3-9710-7719d0f6b33d",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "c517b353-ddd7-41aa-8fb4-c90604b88534",
+      "sequence": 48176,
+      "timestamp": "2026-10-02T17:06:48.477Z",
+      "ingestedAt": "2026-10-02T17:06:48.666Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "8ed42246-b064-483b-bc1a-9a5b417ff99d",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "e28cd0d0-ae62-4934-a051-5417485c42ff",
+      "sequence": 48177,
+      "timestamp": "2026-10-02T17:06:48.869Z",
+      "ingestedAt": "2026-10-02T17:06:48.870Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "ea855767-4864-43e4-a47d-947a376df6e1",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "stable-append",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "a6554832-c6e9-43c8-94fb-46f791aa397d",
+      "sequence": 48178,
+      "timestamp": "2026-10-02T17:06:49.087Z",
+      "ingestedAt": "2026-10-02T17:06:49.087Z",
+      "level": "info",
+      "category": "LIVE_CAPTION",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_CAPTION_SEGMENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "e5dfe051-1e6f-464a-ad05-2a7a371f3cb1",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962",
+        "sourceOrigin": "https://app.cloudinterpreter.com",
+        "sourceTabId": 220907006,
+        "sourceWindowId": 220906129
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "new",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "5142f4a8-b089-4cd9-99c2-3eb7c5a0e2fb",
+      "sequence": 48179,
+      "timestamp": "2026-10-02T17:06:49.312Z",
+      "ingestedAt": "2026-10-02T17:06:49.312Z",
+      "level": "info",
+      "category": "STORAGE",
+      "component": "signal-bridge",
+      "phase": "completed",
+      "action": "SIGNAL_SEGMENT_PERSISTED",
+      "outcome": "success",
+      "traceId": "820421c9-a9ff-4711-a470-cf6fc30340a0",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "d349bbd0-3d50-406f-a3df-7281a4fd5358",
+      "sequence": 48180,
+      "timestamp": "2026-10-02T17:06:49.492Z",
+      "ingestedAt": "2026-10-02T17:06:49.536Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "77936256-7e23-421e-b877-f84ab0ddd623",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "d70c3500-ee14-4e98-9c6c-8e1cd82529c3",
+      "sequence": 48181,
+      "timestamp": "2026-10-02T17:06:49.877Z",
+      "ingestedAt": "2026-10-02T17:06:49.877Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "e96bd4b4-8028-4ece-9e12-636d6195e908",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "8d34acd5-fdcd-4a6c-b0f3-eaa1ddd4d1a0",
+      "sequence": 48182,
+      "timestamp": "2026-10-02T17:06:50.168Z",
+      "ingestedAt": "2026-10-02T17:06:50.168Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "bb9e4563-9591-4e91-b6ec-2c41894a4b80",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "256ccb0d-674c-4928-be9e-c45d49265b45",
+      "sequence": 48183,
+      "timestamp": "2026-10-02T17:06:50.372Z",
+      "ingestedAt": "2026-10-02T17:06:50.372Z",
+      "level": "info",
+      "category": "UIA",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_UIA_SCAN",
+      "outcome": "observed",
+      "traceId": "d4f0ba39-64c4-4fc8-899c-103268e2cd82",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962",
+        "sourceTabId": 220907006,
+        "sourceWindowId": 220906129
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "fc104968-9340-47e4-94f1-805aae75c024",
+      "sequence": 48184,
+      "timestamp": "2026-10-02T17:06:50.478Z",
+      "ingestedAt": "2026-10-02T17:06:50.609Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "66e56be0-8126-4f16-b2d4-6092a5fd912f",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "362f6500-f05f-4ac4-97da-894127d7bb79",
+      "sequence": 48185,
+      "timestamp": "2026-10-02T17:06:50.827Z",
+      "ingestedAt": "2026-10-02T17:06:50.827Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "63c97490-8ba3-451b-9972-26ec2e44a842",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "stable-revision",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b9ce12ee-4a27-4857-9860-3eb722b2e4e6",
+      "sequence": 48186,
+      "timestamp": "2026-10-02T17:06:51.041Z",
+      "ingestedAt": "2026-10-02T17:06:51.041Z",
+      "level": "info",
+      "category": "LIVE_CAPTION",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_CAPTION_DUPLICATE_SUPPRESSED",
+      "outcome": "observed",
+      "traceId": "180818b8-14ef-41b2-8b12-612cea3179db",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "revision-suppressed",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "da2cc9c3-c154-4e61-89da-ed663f322213",
+      "sequence": 48187,
+      "timestamp": "2026-10-02T17:06:51.310Z",
+      "ingestedAt": "2026-10-02T17:06:51.311Z",
+      "level": "info",
+      "category": "LIVE_CAPTION",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_CAPTION_REVISION_CURSOR_ADVANCED",
+      "outcome": "observed",
+      "traceId": "a88d65a8-c101-420e-8803-4d93813d96fe",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "011c854c-1f19-4461-9fe2-2f1e4c98b3d1",
+      "sequence": 48188,
+      "timestamp": "2026-10-02T17:06:51.353Z",
+      "ingestedAt": "2026-10-02T17:06:51.565Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "PAGE_LIFECYCLE",
+      "outcome": "observed",
+      "traceId": "2e33ae75-f1c9-4872-95fc-3dd70de9bd6f",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "dbdd103d-f2b8-422a-b9af-b095eba4e386",
+      "sequence": 48189,
+      "timestamp": "2026-10-02T17:06:51.477Z",
+      "ingestedAt": "2026-10-02T17:06:51.795Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "d963f682-8ba3-4243-9e84-6b0bf7954470",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "0f6df1f5-7279-412c-a322-72452de61f6f",
+      "sequence": 48190,
+      "timestamp": "2026-10-02T17:06:52.138Z",
+      "ingestedAt": "2026-10-02T17:06:52.138Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "230c9832-18f7-4556-ab3b-e5537d59e204",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "90d2e764-a4a3-4bdf-8fe3-a026dc83e98e",
+      "sequence": 48191,
+      "timestamp": "2026-10-02T17:06:52.202Z",
+      "ingestedAt": "2026-10-02T17:06:52.375Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "PAGE_LIFECYCLE",
+      "outcome": "observed",
+      "traceId": "46133592-eede-4ac2-ac73-f595768763e4",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "283dcbe6-1089-47e7-916b-b65bcba8571b",
+      "sequence": 48192,
+      "timestamp": "2026-10-02T17:06:52.613Z",
+      "ingestedAt": "2026-10-02T17:06:52.613Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "c5b2164d-29f4-45b9-81ae-970e171b6123",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "e844fea1-5007-43be-a81a-dbbd0b59df8d",
+      "sequence": 48193,
+      "timestamp": "2026-10-02T17:06:52.477Z",
+      "ingestedAt": "2026-10-02T17:06:52.845Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "b4cab032-4375-4f66-8b36-6fda3a96d1ad",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "d1fc64d3-2682-43b4-9c59-87fc213a2f5f",
+      "sequence": 48194,
+      "timestamp": "2026-10-02T17:06:53.071Z",
+      "ingestedAt": "2026-10-02T17:06:53.071Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "60924616-fb50-442b-91f2-9bc3ad901f26",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "a0016488-2eed-4851-9559-e1bf7512d3a4",
+      "sequence": 48195,
+      "timestamp": "2026-10-02T17:06:53.050Z",
+      "ingestedAt": "2026-10-02T17:06:53.312Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "PAGE_LIFECYCLE",
+      "outcome": "observed",
+      "traceId": "cb6cf9b1-c64d-438f-bdd4-9ebc7ea4c840",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "3aec15b2-b910-4f06-8b39-09fb2818a27a",
+      "sequence": 48196,
+      "timestamp": "2026-10-02T17:06:53.542Z",
+      "ingestedAt": "2026-10-02T17:06:53.542Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "125f29c3-7d53-41d1-9177-9288b5c4a72c",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "7a609640-b080-426b-9e7f-a13359bf4c8d",
+      "sequence": 48197,
+      "timestamp": "2026-10-02T17:06:53.834Z",
+      "ingestedAt": "2026-10-02T17:06:53.834Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "5a0c5537-318c-4398-a18b-5535b2e75633",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "0f0b656a-841d-4a3f-ac89-ec7283d8785c",
+      "sequence": 48198,
+      "timestamp": "2026-10-02T17:06:53.506Z",
+      "ingestedAt": "2026-10-02T17:06:54.076Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "2b3a9182-2c6a-4d92-95b5-82efb63f64a7",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "39beb43f-f55b-4048-a353-8ac233f965af",
+      "sequence": 48199,
+      "timestamp": "2026-10-02T17:06:53.525Z",
+      "ingestedAt": "2026-10-02T17:06:54.298Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "PAGE_LIFECYCLE",
+      "outcome": "observed",
+      "traceId": "e3d4a51c-2582-4eed-90b1-fa296615f4db",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "e05c6bf7-a9ea-471a-bd9e-60dfd9176388",
+      "sequence": 48200,
+      "timestamp": "2026-10-02T17:06:54.540Z",
+      "ingestedAt": "2026-10-02T17:06:54.540Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "99ed5257-6e8b-4948-9f42-76aff6313783",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "stable-revision",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "a47a3ff8-dd91-4d48-b84c-988df1147e7e",
+      "sequence": 48201,
+      "timestamp": "2026-10-02T17:06:54.778Z",
+      "ingestedAt": "2026-10-02T17:06:54.778Z",
+      "level": "info",
+      "category": "LIVE_CAPTION",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_CAPTION_DUPLICATE_SUPPRESSED",
+      "outcome": "observed",
+      "traceId": "eac5ef43-72f2-41ba-bc4a-b862d35a64f6",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "revision-suppressed",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "878c0ec2-c5a3-475c-a1ea-b27ec2fb4919",
+      "sequence": 48202,
+      "timestamp": "2026-10-02T17:06:55.015Z",
+      "ingestedAt": "2026-10-02T17:06:55.015Z",
+      "level": "info",
+      "category": "LIVE_CAPTION",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_CAPTION_REVISION_CURSOR_ADVANCED",
+      "outcome": "observed",
+      "traceId": "e81021b2-ccc9-4119-be58-1879869441d9",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "47ffc6da-8e46-43da-93e8-b01309802ee7",
+      "sequence": 48203,
+      "timestamp": "2026-10-02T17:06:54.507Z",
+      "ingestedAt": "2026-10-02T17:06:55.240Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "d80bf919-0509-40d6-8545-3ddeb549b3c6",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "750bb37e-08e3-4e54-b6b8-001c55931d41",
+      "sequence": 48204,
+      "timestamp": "2026-10-02T17:06:55.509Z",
+      "ingestedAt": "2026-10-02T17:06:55.509Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "7855fa2f-e29c-4cad-918d-9b5ffa20d1ac",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "01bc7c54-affb-4923-9cb9-63c52c4ba8c1",
+      "sequence": 48205,
+      "timestamp": "2026-10-02T17:06:55.753Z",
+      "ingestedAt": "2026-10-02T17:06:55.753Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "2b38c79a-67d2-4829-8688-9a388b645739",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "2af5a97f-d39d-4e0a-a0c5-a99f150db1a6",
+      "sequence": 48206,
+      "timestamp": "2026-10-02T17:06:55.477Z",
+      "ingestedAt": "2026-10-02T17:06:55.999Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "d9ec88a8-c0ef-4830-a906-976d2d427e6a",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "10b18807-701a-4de9-9ae4-40fb0f3628f0",
+      "sequence": 48207,
+      "timestamp": "2026-10-02T17:06:56.253Z",
+      "ingestedAt": "2026-10-02T17:06:56.253Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "802347ad-b59b-42c9-8862-0c1970b259b3",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "ee471b87-138f-496e-af7a-5725e3ee6471",
+      "sequence": 48208,
+      "timestamp": "2026-10-02T17:06:56.516Z",
+      "ingestedAt": "2026-10-02T17:06:56.516Z",
+      "level": "info",
+      "category": "UIA",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_UIA_SCAN",
+      "outcome": "observed",
+      "traceId": "1e69346a-1ed6-47a3-bdec-808c369b4a3b",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962",
+        "sourceTabId": 220907006,
+        "sourceWindowId": 220906129
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b5bb48db-87bb-454c-bc6e-5cab705fe54f",
+      "sequence": 48209,
+      "timestamp": "2026-10-02T17:06:56.759Z",
+      "ingestedAt": "2026-10-02T17:06:56.759Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "9bc9518d-f785-47c2-b9b2-0d9ba38a38ad",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "bf57b9f8-023b-45b0-885a-4950639e9eda",
+      "sequence": 48210,
+      "timestamp": "2026-10-02T17:06:56.962Z",
+      "ingestedAt": "2026-10-02T17:06:56.962Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "020affdb-f5ad-45f0-93d5-b500a5a218b0",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "155f1576-506c-41ff-b0d7-f658504f1388",
+      "sequence": 48211,
+      "timestamp": "2026-10-02T17:06:56.477Z",
+      "ingestedAt": "2026-10-02T17:06:57.178Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "4b244c52-1968-4762-969c-18073e9d2060",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "beeb8011-750b-4956-a21d-fa88889fc695",
+      "sequence": 48212,
+      "timestamp": "2026-10-02T17:06:57.386Z",
+      "ingestedAt": "2026-10-02T17:06:57.386Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "89e3fb6c-f9de-430b-862d-963a19891a1d",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "48d91b33-af74-47b9-be8d-6e2591977c03",
+      "sequence": 48213,
+      "timestamp": "2026-10-02T17:06:57.622Z",
+      "ingestedAt": "2026-10-02T17:06:57.622Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "7865e3d1-b0e1-4452-9e09-000a66a51381",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "8b0a512e-1db0-4fc7-9e9c-6eb25b4e87fc",
+      "sequence": 48214,
+      "timestamp": "2026-10-02T17:06:57.477Z",
+      "ingestedAt": "2026-10-02T17:06:57.850Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "cd2ff8a3-346d-4a91-a87b-4346883d7ef3",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "d2b7cc7e-80ef-45f5-bf9b-9f2edae1181b",
+      "sequence": 48215,
+      "timestamp": "2026-10-02T17:06:58.086Z",
+      "ingestedAt": "2026-10-02T17:06:58.086Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "7df632c2-2d55-490d-8a28-4a27d42c81f5",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "stable-append",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "374e2546-d35e-42a6-a5e1-a3b693c46fea",
+      "sequence": 48216,
+      "timestamp": "2026-10-02T17:06:58.327Z",
+      "ingestedAt": "2026-10-02T17:06:58.327Z",
+      "level": "info",
+      "category": "LIVE_CAPTION",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_CAPTION_SEGMENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "c70713c8-1c57-4180-9d8b-1f93e44999de",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962",
+        "sourceOrigin": "https://app.cloudinterpreter.com",
+        "sourceTabId": 220907006,
+        "sourceWindowId": 220906129
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "new",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "38f448b6-c2c6-46f2-ad1e-7492a640d66c",
+      "sequence": 48217,
+      "timestamp": "2026-10-02T17:06:58.552Z",
+      "ingestedAt": "2026-10-02T17:06:58.552Z",
+      "level": "info",
+      "category": "STORAGE",
+      "component": "signal-bridge",
+      "phase": "completed",
+      "action": "SIGNAL_SEGMENT_PERSISTED",
+      "outcome": "success",
+      "traceId": "ae12a01e-2938-497a-972c-de33c4e1e2df",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "341e7046-164c-4a68-9558-3c70ddbf2767",
+      "sequence": 48218,
+      "timestamp": "2026-10-02T17:06:58.772Z",
+      "ingestedAt": "2026-10-02T17:06:58.772Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "5244f6da-e740-40df-929d-a788da9e4753",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "2ad11042-74b2-47ee-b63c-779562f18cf3",
+      "sequence": 48219,
+      "timestamp": "2026-10-02T17:06:58.525Z",
+      "ingestedAt": "2026-10-02T17:06:58.991Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "9aef768b-6034-49a6-8562-39f5665aca8b",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "9175095f-dbd5-4865-b2d8-c979d1bc6568",
+      "sequence": 48220,
+      "timestamp": "2026-10-02T17:06:59.479Z",
+      "ingestedAt": "2026-10-02T17:06:59.526Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "2143c6f5-c5ae-45f1-bf78-3d866fb9c1be",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "f71329ff-f2ae-4189-aec0-fec4e2baa732",
+      "sequence": 48221,
+      "timestamp": "2026-10-02T17:06:59.974Z",
+      "ingestedAt": "2026-10-02T17:07:00.017Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "PLATFORM_INTEGRITY_CHECK",
+      "outcome": "observed",
+      "traceId": "850ebfd3-c302-49e5-948f-9625f8246931",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "heartbeat",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "1083e3aa-f0e7-44d9-ace6-5e2efcc1c033",
+      "sequence": 48222,
+      "timestamp": "2026-10-02T17:07:00.477Z",
+      "ingestedAt": "2026-10-02T17:07:00.528Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "96ebc287-d8e4-47e0-8a07-745ff8ae3269",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "921084a6-495f-4176-95fc-29b15a2a7a31",
+      "sequence": 48223,
+      "timestamp": "2026-10-02T17:07:00.765Z",
+      "ingestedAt": "2026-10-02T17:07:00.766Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "d428a213-1b0b-4af0-8adc-7db3b31370f1",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "f0429cc8-74dd-4652-a975-ada102a597ab",
+      "sequence": 48224,
+      "timestamp": "2026-10-02T17:07:01.005Z",
+      "ingestedAt": "2026-10-02T17:07:01.005Z",
+      "level": "info",
+      "category": "UIA",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_UIA_SCAN",
+      "outcome": "observed",
+      "traceId": "38c9139f-e74c-4436-b62d-2c2e0b589ddc",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962",
+        "sourceTabId": 220907006,
+        "sourceWindowId": 220906129
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "5468294b-30d7-49b1-a327-47dfd4fc064a",
+      "sequence": 48225,
+      "timestamp": "2026-10-02T17:07:01.477Z",
+      "ingestedAt": "2026-10-02T17:07:01.527Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "1837be0b-0df4-43b9-98ca-c56bd7a7748b",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "f3e76930-0270-4f70-9a9d-b9afdb847573",
+      "sequence": 48226,
+      "timestamp": "2026-10-02T17:07:02.477Z",
+      "ingestedAt": "2026-10-02T17:07:02.527Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "dcd8d2f5-7c1f-4539-a280-b489bf66d8be",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "72f25ede-c2da-4abb-aaca-6c2a53278269",
+      "sequence": 48227,
+      "timestamp": "2026-10-02T17:07:03.446Z",
+      "ingestedAt": "2026-10-02T17:07:03.446Z",
+      "level": "info",
+      "category": "BRIDGE",
+      "component": "signal-bridge",
+      "phase": "event",
+      "action": "SIGNAL_BRIDGE_EVENT_RECEIVED",
+      "outcome": "observed",
+      "traceId": "0e8af51d-5cd2-4336-bf46-1543b5eda024",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {
+        "sessionId": "d57d4456-9530-44b1-9ae3-cee4c8ba9962"
+      },
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "62a5910e-c911-4b44-9357-d6b9d6263261",
+      "sequence": 48228,
+      "timestamp": "2026-10-02T17:07:03.477Z",
+      "ingestedAt": "2026-10-02T17:07:03.697Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "phase": "event",
+      "action": "MEDIA_HEALTH",
+      "outcome": "observed",
+      "traceId": "36f71a86-c4b9-45ef-b69c-e523c9f547c8",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.9.3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "mutation",
+      "error": null,
+      "metrics": {},
+      "context": "[OMITTED]",
+      "privacy": {
+        "rawTextStored": "[OMITTED]",
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      }
+    }
+  ]
+}
