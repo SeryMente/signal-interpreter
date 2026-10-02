@@ -85,12 +85,21 @@
     }, 0);
     var liveSeconds = state.callStartedAt ? Math.max(0, (Date.now() - Date.parse(state.callStartedAt)) / 1000) : 0;
     var liveRate = state.callModality === "VRI" ? Number(config.vriRatePerMinute || 0.25) : Number(config.opiRatePerMinute || 0.20);
-    var earnedUsd = completedUsd + liveSeconds / 60 * liveRate;
+    var officialStats = mirror.statistics && mirror.statistics.summary || {};
+    var officialUsd = Number(officialStats.earnedUsd);
+    if (!(officialUsd > 0)) {
+      var officialMatch = String(officialStats.earned || "").match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
+      officialUsd = officialMatch ? Number(String(officialMatch[1]).replace(",", ".")) : null;
+    }
+    var localEarnedUsd = completedUsd + liveSeconds / 60 * liveRate;
+    var hasOfficial = Number.isFinite(officialUsd) && officialUsd >= 0 && officialStats.earned != null;
+    var earnedUsd = hasOfficial ? officialUsd : localEarnedUsd;
     var fx = Number(config.usdMxnRate || 0);
     var earnedUsdText = "US$" + earnedUsd.toFixed(4);
     var earnedMxnText = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
     if ($("earningSummary")) $("earningSummary").textContent = earnedUsdText + " · " + earnedMxnText;
     $("exchangeRate").textContent = fx > 0 ? "$" + fx.toFixed(4) : "No disponible";
+    if ($("earningLabel")) $("earningLabel").textContent = hasOfficial ? "Ingreso oficial hoy" : "Ingreso estimado hoy";
     $("exchangeMeta").textContent = fx > 0
       ? "Fecha de referencia: " + (config.exchangeRateDate || "última disponible")
       : ((state.exchangeRateError || "Reintentando automáticamente").slice(0, 90));
@@ -154,8 +163,10 @@
     host.innerHTML = cards.length ? cards.join("") : "<small>Aún no hay pantallas sincronizadas.</small>";
     var stats = mirror.statistics || {};
     var summary = stats.summary || {};
+    if (summary.earnedUsd == null) summary.earnedUsd = (String(summary.earned || "").match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/) || [])[1] || null;
     var official = [summary.earned ? "Ganado " + summary.earned : "", summary.callCount ? summary.callCount + " llamadas" : "", summary.callLength ? summary.callLength : ""].filter(Boolean).join(" · ");
     if ($("officialSummary")) $("officialSummary").innerHTML = official ? "<strong>" + escapeHtml(official) + "</strong>" : "<small>Aún no hay datos oficiales sincronizados.</small>";
+    if ($("officialMeta")) $("officialMeta").textContent = stats.capturedAt ? "Sincronizado " + new Date(stats.capturedAt).toLocaleTimeString() : "Cotejo con las pantallas de la plataforma";
   }
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, function (character) {

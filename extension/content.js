@@ -21,6 +21,7 @@
     usdMxnRate: null
   };
   var state = {};
+  var platformMirror = {};
   var overlayHost = null;
   var overlayRoot = null;
   var overlayTimer = null;
@@ -307,6 +308,10 @@
     if (/^\/profile\/[^/]+\/?$/.test(path)) return "profile";
     return "";
   }
+  function parseOfficialUsd(value) {
+    var match = String(value || "").match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
+    return match ? Number(String(match[1]).replace(",", ".")) : null;
+  }
   function extractSummary() {
     var definitions = [
       ["earned", /^(Totally earned|Total earned)$/i],
@@ -323,7 +328,7 @@
         var parent = elements[i].parentElement;
         var values = parent ? String(parent.innerText || "").split(/\n+/).map(normalized).filter(Boolean) : [];
         var value = values.filter(function (item) { return !definition[1].test(item); })[0] || "";
-        if (value) result[definition[0]] = mirrorText(value, 120);
+        if (value) { result[definition[0]] = mirrorText(value, 120); if (definition[0] === "earned") result.earnedUsd = parseOfficialUsd(value); }
         break;
       }
     });
@@ -516,7 +521,12 @@
     var rate = modality === "VRI" ? Number(config.vriRatePerMinute || 0.25) : Number(config.opiRatePerMinute || 0.20);
     var liveUsd = liveSeconds / 60 * rate;
     var fx = Number(config.usdMxnRate || 0);
-    return { calls: calls.length, modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd, totalUsd: completedUsd + liveUsd, fx: fx };
+    var official = platformMirror.statistics && platformMirror.statistics.summary || {};
+    var officialUsd = Number(official.earnedUsd);
+    if (!(officialUsd > 0)) officialUsd = parseOfficialUsd(official.earned);
+    var hasOfficial = Number.isFinite(officialUsd) && officialUsd >= 0 && official.earned != null;
+    var baseUsd = hasOfficial ? officialUsd : completedUsd;
+    return { calls: calls.length, modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd, totalUsd: baseUsd + (hasOfficial ? 0 : liveUsd), officialUsd: hasOfficial ? officialUsd : null, fx: fx };
   }
   function ensureOverlay() {
     if (!config.overlayEnabled || !document.documentElement) {
@@ -558,7 +568,7 @@
     var currency = mxnAvailable ? "MXN" : "USD";
     overlayRoot.querySelector(".card").classList.toggle("compact", !!config.overlayCompact);
     overlayRoot.getElementById("amount").textContent = money(total, currency, 4);
-    overlayRoot.getElementById("live").textContent = "+" + money(live, currency, 4);
+    overlayRoot.getElementById("live").textContent = info.officialUsd !== null ? "En llamada +" + money(live, currency, 4) : "+" + money(live, currency, 4);
     overlayRoot.getElementById("summary").textContent = state.callStartedAt ? info.modality + " · " + (info.liveSeconds / 60).toFixed(2) + " min" : info.calls + " llamadas hoy";
     overlayRoot.getElementById("fx").textContent = mxnAvailable
       ? "USD/MXN " + info.fx.toFixed(4) + " · " + (config.exchangeRateDate || "último disponible")
@@ -618,13 +628,14 @@
   }
 
 
-  chrome.storage.local.get(["effectifConfig", "effectifState"], function (stored) {
-    state = stored.effectifState || {};
+  chrome.storage.local.get(["effectifConfig", "effectifState", "effectifPlatformMirror"], function (stored) {
+    state = stored.effectifState || {}; platformMirror = stored.effectifPlatformMirror || {};
     apply(stored.effectifConfig);
   });
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local") return;
     if (changes.effectifState) { state = changes.effectifState.newValue || {}; renderOverlay(); }
+    if (changes.effectifPlatformMirror) { platformMirror = changes.effectifPlatformMirror.newValue || {}; renderOverlay(); }
     if (changes.effectifConfig) apply(changes.effectifConfig.newValue);
   });
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {

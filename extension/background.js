@@ -5,7 +5,6 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
 
   var GROQ_MODEL = "whisper-large-v3-turbo";
   var AUTHORIZED_ORIGIN = "https://app.cloudinterpreter.com";
-  var AUTHORIZED_ORIGIN = "https://app.cloudinterpreter.com";
   var OFFICIAL_STATS_URL = AUTHORIZED_ORIGIN + "/profile/cmu2wuz1v0uwr07adbzb9djfz/logs";
   var GROQ_USD_PER_AUDIO_HOUR = 0.04;
   var DEFAULT_CONFIG = {
@@ -79,9 +78,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   }
   async function refreshExchangeRate(reason) {
     var sources = [
-      { url: "https://api.frankfurter.app/latest?from=USD&to=MXN", name: "Frankfurter / European Central Bank", read: function (data) { return { rate: Number(data && data.rates && data.rates.MXN), date: data && data.date }; } },
-      { url: "https://api.frankfurter.dev/v1/latest?base=USD&symbols=MXN", name: "Frankfurter / European Central Bank", read: function (data) { return { rate: Number(data && data.rates && data.rates.MXN), date: data && data.date }; } },
-      { url: "https://open.er-api.com/v6/latest/USD", name: "ExchangeRate-API", read: function (data) { return { rate: Number(data && data.rates && data.rates.MXN), date: data && data.time_last_update_utc ? new Date(data.time_last_update_utc).toISOString().slice(0, 10) : null }; } }
+      { url: "https://api.exchangerate.fun/latest?base=USD", name: "ExchangeRate.fun / hourly", read: function (data) { return { rate: Number(data && data.rates && data.rates.MXN), date: data && data.timestamp ? new Date(Number(data.timestamp) * 1000).toISOString().slice(0, 10) : null, updatedAt: data && data.timestamp ? new Date(Number(data.timestamp) * 1000).toISOString() : null }; } },
+      { url: "https://api.frankfurter.dev/v2/rate/usd/mxn", name: "Frankfurter / blended daily", read: function (data) { return { rate: Number(data && data.rate), date: data && data.date, updatedAt: data && data.date || null }; } },
+      { url: "https://open.er-api.com/v6/latest/USD", name: "ExchangeRate-API / daily", read: function (data) { return { rate: Number(data && data.rates && data.rates.MXN), date: data && data.time_last_update_utc ? new Date(data.time_last_update_utc).toISOString().slice(0, 10) : null, updatedAt: data && data.time_last_update_utc || null }; } }
     ];
     var failures = [];
     for (var i = 0; i < sources.length; i += 1) {
@@ -92,7 +91,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         var stored = await chrome.storage.local.get(["effectifConfig", "effectifState"]);
         var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}, {
           usdMxnRate: result.rate, exchangeRateDate: result.date || localDay(),
-          exchangeRateUpdatedAt: iso(), exchangeRateSource: sources[i].name
+          exchangeRateUpdatedAt: result.updatedAt || iso(), exchangeRateSource: sources[i].name
         });
         var state = Object.assign(baseState(), stored.effectifState || {}, { exchangeRateError: null });
         await chrome.storage.local.set({ effectifConfig: config, effectifState: state });
@@ -453,7 +452,48 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     callLength=valueAfter(["Total call length"]);
     callCount=valueAfter(["Total number of calls"]);
     if(!earned)return null;
-    return {earned:earned,callLength:callLength,callCount:callCount,rawSource:"background-fetch"};
+    var money=String(earned).match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
+    var earnedUsd=money?Number(String(money[1]).replace(/,/g,".")):null;
+    return {earned:earned,earnedUsd:Number.isFinite(earnedUsd)?earnedUsd:null,callLength:callLength,callCount:callCount,rawSource:"background-fetch"};
+  }
+  function sendPlatformSnapshotRequest(tab, forceReload) {
+    return new Promise(async function (resolve, reject) {
+      function request() {
+        chrome.tabs.sendMessage(tab.id, {type:"EFFECTIF_REQUEST_PLATFORM_SNAPSHOT",force:true}, function () {
+          if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+          else resolve(true);
+        });
+      }
+      try { request(); } catch (error) { reject(error); return; }
+      if (!forceReload) return;
+    }).catch(async function (error) {
+      if (!forceReload) throw error;
+      await new Promise(function (resolve, reject) {
+        try {
+          chrome.tabs.reload(tab.id, {bypassCache:true}, function () {
+            if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+            else resolve(true);
+          });
+        } catch (e) { reject(e); }
+      });
+      await new Promise(function (resolve, reject) {
+        var done = false;
+        function onUpdated(tabId, info) {
+          if (tabId !== tab.id || info.status !== "complete" || done) return;
+          done = true; chrome.tabs.onUpdated.removeListener(onUpdated); resolve(true);
+        }
+        chrome.tabs.onUpdated.addListener(onUpdated);
+        setTimeout(function () {
+          if (done) return;
+          done = true; chrome.tabs.onUpdated.removeListener(onUpdated); reject(new Error("Statistics no terminó de cargar después de actualizar la pestaña."));
+        }, 8000);
+      });
+      return new Promise(function (resolve, reject) {
+        chrome.tabs.sendMessage(tab.id, {type:"EFFECTIF_REQUEST_PLATFORM_SNAPSHOT",force:true}, function () {
+          if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message)); else resolve(true);
+        });
+      });
+    });
   }
   async function syncOfficialPlatformData(){
     try{
@@ -467,7 +507,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
           mirror.statistics=Object.assign({},mirror.statistics||{},{
             schema:"signal-interpreter-official-stats/v1",key:"statistics",route:"/profile/<ID>/logs",
             url:OFFICIAL_STATS_URL,capturedAt:iso(),reason:"background-fetch",summary:{
-              earned:parsed.earned,callLength:parsed.callLength,callCount:parsed.callCount
+              earned:parsed.earned,earnedUsd:parsed.earnedUsd,callLength:parsed.callLength,callCount:parsed.callCount
             },source:"platform-background-fetch"
           });
           await chrome.storage.local.set({effectifPlatformMirror:mirror});
@@ -483,11 +523,20 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     }
     if(!statsTab)statsTab=tabs.find(function(tab){return isAuthorizedCloudUrl(tab.url);})||null;
     if(!statsTab)throw new Error("No se pudo sincronizar en segundo plano y no hay una pestaña autorizada de Cloud Interpreter abierta.");
-    try{await chrome.tabs.sendMessage(statsTab.id,{type:"EFFECTIF_REQUEST_PLATFORM_SNAPSHOT",force:true});}catch(error){throw new Error("La pestaña autorizada no respondió: "+String(error));}
-    var deadline=Date.now()+4000;
+    var isStatsTab=/^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(statsTab.url||""));
+    var beforeStore=await chrome.storage.local.get(["effectifPlatformMirror"]);
+    var previous=beforeStore.effectifPlatformMirror&&beforeStore.effectifPlatformMirror.statistics;
+    var previousCapturedAt=previous&&previous.capturedAt?String(previous.capturedAt):"";
+    try {
+      await sendPlatformSnapshotRequest(statsTab, isStatsTab);
+    } catch(error) {
+      if (isStatsTab) throw new Error("Statistics no respondió después de actualizar la pestaña: "+String(error));
+      throw new Error("La pestaña autorizada no respondió. Abre Statistics para sincronizar sin interrumpir una llamada: "+String(error));
+    }
+    var deadline=Date.now()+5000;
     while(Date.now()<deadline){
       var stored2=await chrome.storage.local.get(["effectifPlatformMirror"]),candidate=stored2.effectifPlatformMirror&&stored2.effectifPlatformMirror.statistics;
-      if(candidate&&candidate.tabId===statsTab.id)return {ok:true,method:"existing-tab",snapshot:candidate};
+      if(candidate&&candidate.tabId===statsTab.id&&String(candidate.capturedAt||"")>previousCapturedAt)return {ok:true,method:"existing-tab",snapshot:candidate};
       await new Promise(function(resolve){setTimeout(resolve,150);});
     }
     throw new Error("La plataforma no entregó un dato oficial nuevo.");
