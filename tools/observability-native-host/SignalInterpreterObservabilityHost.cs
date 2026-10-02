@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 const string Repo = "SeryMente/signal-interpreter";
 const string Path = "diagnostics/latest.json";
