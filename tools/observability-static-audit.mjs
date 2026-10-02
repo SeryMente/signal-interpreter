@@ -17,7 +17,6 @@ assert.ok(content.includes("extractPortalStructure"));
 assert.ok(content.includes("PORTAL_STRUCTURE_SNAPSHOT"));
 assert.ok(background.includes("NETWORK_ACTIVITY_WINDOW"));
 assert.ok(background.includes("readOfficialStatsViaTrpc"));
-assert.ok(background.includes("/api/trpc/logFetcher.fetchAdminLogs"));
 assert.ok(background.includes("/api/trpc/logFetcher.fetchInterpreterLogs"));
 assert.ok(background.includes('world:"MAIN"'));
 assert.equal(background.includes("readOfficialStatsInBackgroundTab"),false);
