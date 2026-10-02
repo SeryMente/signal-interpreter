@@ -44,6 +44,7 @@
   var lastScreenSignature = "";
   var lastMirrorSignature = "";
   var lastPortalStructureSignature = "";
+  var lastCallEndMeasurement = null;
   var mirrorTimer = null;
   var mediaTimer = null;
   var integrityTimer = null;
@@ -114,6 +115,10 @@
     } catch (_) {}
   }
   function parsePlatformSeconds() {
+    var endButton = Array.from(document.querySelectorAll("button,[role='button']")).filter(visibleElement).find(function (element) {
+      return /^End call$/i.test(normalized(element.getAttribute("aria-label") || element.textContent || ""));
+    });
+    var buttonRect = endButton ? endButton.getBoundingClientRect() : null;
     var candidates = Array.from(document.querySelectorAll("body *")).filter(function (element) {
       if (element.children.length > 2) return false;
       var text = normalized(element.textContent);
@@ -122,10 +127,11 @@
       return rect.width > 0 && rect.height > 0;
     }).map(function (element) {
       var rect = element.getBoundingClientRect();
-      return {
-        text: normalized(element.textContent),
-        score: Math.abs((rect.left + rect.width / 2) - innerWidth / 2) + rect.top
-      };
+      var centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
+      var score = buttonRect
+        ? Math.hypot(centerX - (buttonRect.left + buttonRect.width / 2), centerY - (buttonRect.top + buttonRect.height / 2))
+        : Math.abs(centerX - innerWidth / 2) + rect.top;
+      return { text: normalized(element.textContent), score: score };
     }).sort(function (a, b) { return a.score - b.score; });
     if (!candidates.length) return null;
     var parts = candidates[0].text.split(":").map(Number);
@@ -133,24 +139,53 @@
       ? parts[0] * 3600 + parts[1] * 60 + parts[2]
       : parts[0] * 60 + parts[1];
   }
+  function callActivationEvidence() {
+    var endButtons = Array.from(document.querySelectorAll("button,[role='button']")).filter(visibleElement).filter(function (element) {
+      return /^End call$/i.test(normalized(element.getAttribute("aria-label") || element.textContent || ""));
+    });
+    var mediaCount = document.querySelectorAll("audio,video").length;
+    var timerSeconds = parsePlatformSeconds();
+    return {
+      endCallButtonVisible: endButtons.length > 0,
+      endCallButtonCount: endButtons.length,
+      mediaElements: mediaCount,
+      platformTimerSeconds: Number.isFinite(timerSeconds) ? timerSeconds : null,
+      urlPattern: /^\/call\/[^/?#]+\/?$/.test(location.pathname)
+    };
+  }
   function trackRoute(reason) {
     var next = location.pathname;
     if (next === route && reason !== "start") return;
     var previousCallId = callRouteId;
+    var ratingMatch = next.match(/^\/call\/([^/?#]+)\/rate\/?$/);
+    var nextCallId = currentCallId();
+    var leavingCall = previousCallId && previousCallId !== nextCallId;
+    var endMeasurement = lastCallEndMeasurement && lastCallEndMeasurement.callId === previousCallId
+      ? lastCallEndMeasurement.platformSeconds : null;
     route = next;
-    callRouteId = currentCallId();
-    if (previousCallId && previousCallId !== callRouteId) {
+    callRouteId = nextCallId;
+    if (leavingCall) {
+      if (!Number.isFinite(endMeasurement)) endMeasurement = ratingMatch ? null : parsePlatformSeconds();
       emit("CALL_ROUTE_ENDED", {
-        callId: previousCallId, platformSeconds: parsePlatformSeconds(), reason: reason
+        callId: previousCallId,
+        platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
+        reason: ratingMatch ? "rating-route" : reason,
+        endSignal: ratingMatch ? "rating-stars-route" : "route-fallback"
+      });
+    }
+    if (ratingMatch && (!previousCallId || previousCallId === ratingMatch[1])) {
+      emit("RATING_ROUTE_ENTERED", {
+        callId: ratingMatch[1],
+        previousCallId: previousCallId || null,
+        platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
+        confirmation: "rating-stars-route"
       });
     }
     if (callRouteId && callRouteId !== previousCallId) {
-      emit("CALL_ROUTE_ENTERED", { callId: callRouteId, reason: reason });
+      emit("CALL_ROUTE_ENTERED", { callId: callRouteId, reason: reason, evidence: callActivationEvidence() });
       emitIntegrity("call-entered");
     }
-    if (/^\/call\/[^/]+\/rate\/?$/.test(next)) {
-      emit("RATING_ROUTE_ENTERED", { previousCallId: previousCallId || null });
-    }
+    if (!callRouteId) lastCallEndMeasurement = null;
     schedulePlatformMirror("route:" + reason);
     portalStructureSnapshot("route:" + reason, true);
     updateDiagnosticTimers();
@@ -645,8 +680,19 @@
   });
   document.addEventListener("click", function (event) {
     var button = event.target && event.target.closest ? event.target.closest("button") : null;
-    if (button && /^End call$/i.test(normalized(button.textContent))) {
-      emit("CALL_END_CLICKED", { callId: currentCallId(), platformSeconds: parsePlatformSeconds() });
+    if (button && /^End call$/i.test(normalized(button.getAttribute("aria-label") || button.textContent))) {
+      var callId = currentCallId();
+      var platformSeconds = parsePlatformSeconds();
+      lastCallEndMeasurement = {
+        callId: callId,
+        clickedAt: iso(),
+        platformSeconds: Number.isFinite(platformSeconds) ? platformSeconds : null
+      };
+      emit("CALL_END_CLICKED", {
+        callId: callId,
+        platformSeconds: Number.isFinite(platformSeconds) ? platformSeconds : null,
+        signal: "platform-end-call"
+      });
     }
   }, true);
   window.addEventListener("popstate", function () { trackRoute("popstate"); });
@@ -660,7 +706,7 @@
     var activeCallId = currentCallId();
     if (activeCallId) {
       emit("CALL_ROUTE_ENDED", {
-        callId: activeCallId, platformSeconds: parsePlatformSeconds(), reason: "pagehide"
+        callId: activeCallId, platformSeconds: null, reason: "pagehide", endSignal: "pagehide-fallback"
       });
     }
     emitIntegrity("pagehide");
