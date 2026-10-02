@@ -42,6 +42,7 @@
   var lastMediaAt = 0;
   var lastScreenSignature = "";
   var lastMirrorSignature = "";
+  var lastPortalStructureSignature = "";
   var mirrorTimer = null;
   var mediaTimer = null;
   var integrityTimer = null;
@@ -150,6 +151,7 @@
       emit("RATING_ROUTE_ENTERED", { previousCallId: previousCallId || null });
     }
     schedulePlatformMirror("route:" + reason);
+    portalStructureSnapshot("route:" + reason, true);
     updateDiagnosticTimers();
   }
   function cleanupFingerprints() {
@@ -340,6 +342,13 @@
         return { rows: rows };
       }).filter(function (table) { return table.rows.length; });
   }
+  function portalStructureSnapshot(reason, force) {
+    if (!isTarget() || !config.observationEnabled) return;
+    var portal = extractPortalStructure(), signature = JSON.stringify(portal);
+    if (signature === lastPortalStructureSignature && !force) return;
+    lastPortalStructureSignature = signature;
+    emit("PORTAL_STRUCTURE_SNAPSHOT", {reason:reason || "heartbeat", portal:portal});
+  }
   function capturePlatformMirror(reason, force) {
     var key = mirrorKey();
     if (!key || !config.observationEnabled || location.hostname !== config.targetHost) return;
@@ -432,6 +441,7 @@
       controls: { buttons: document.querySelectorAll("button").length, inputs: document.querySelectorAll("input").length, selects: document.querySelectorAll("select").length, dialogs: document.querySelectorAll('[role="dialog"]').length, media: document.querySelectorAll("audio,video").length, iframes: document.querySelectorAll("iframe").length }
     };
     mutationAggregate = { batches: 0, addedNodes: 0, removedNodes: 0, attributes: 0, textChanges: 0 };
+    portalStructureSnapshot("heartbeat", false);
     emit("PERFORMANCE_HEARTBEAT", payload);
   }
   function startRichTelemetry() {
