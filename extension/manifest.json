@@ -2,13 +2,12 @@
   "manifest_version": 3,
   "minimum_chrome_version": "116",
   "name": "Signal Interpreter",
-  "version": "0.9.11",
+  "version": "0.9.12",
   "description": "Asistente independiente para interpretación médica en tiempo real; Auto-Answer, observabilidad y métricas para Cloud Interpreter.",
   "permissions": [
     "storage",
     "tabs",
     "activeTab",
-    "scripting",
     "tabCapture",
     "offscreen",
     "alarms",
@@ -20,8 +19,7 @@
     "https://api.frankfurter.app/*",
     "https://api.frankfurter.dev/*",
     "https://open.er-api.com/*",
-    "http://127.0.0.1:8787/*",
-    "http://127.0.0.1:8788/*"
+    "https://api.groq.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -61,6 +59,6 @@
     "128": "icons/icon128.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src ws://127.0.0.1:8787 http://127.0.0.1:8787 http://127.0.0.1:8788 https://api.frankfurter.app https://api.frankfurter.dev https://open.er-api.com"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src https://api.groq.com https://api.frankfurter.app https://api.frankfurter.dev https://open.er-api.com"
   }
 }

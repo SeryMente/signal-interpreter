@@ -52,7 +52,7 @@
     permittedConnectClicks: 0,
     forbiddenPlatformActions: 0
   };
-  var signalMicSessionId = null;
+
 
   function iso() { return new Date().toISOString(); }
   function normalized(value) { return String(value || "").replace(/\s+/g, " ").trim(); }
@@ -587,19 +587,6 @@
     }
   }
 
-  function forwardMainMicEvent(message) {
-    if (!message || message.source !== "signal-interpreter-mic" || !message.sessionId) return;
-    if (message.type === "status") {
-      signalMicSessionId = message.sessionId;
-      try { chrome.runtime.sendMessage({type:"SIGNAL_MIC_STATUS",sessionId:message.sessionId,status:message.status||"unknown",error:message.error||null,lang:"es-MX",source:"main-world-microphone"}).catch(function(){}); } catch (_) {}
-      return;
-    }
-    if (message.type === "result") {
-      var text=String(message.text||"").trim();if(!text)return;
-      try { chrome.runtime.sendMessage({type:"ADD_SIGNAL_MIC_SEGMENT",sessionId:message.sessionId,text:text,timestamp:message.timestamp||iso()}).catch(function(){}); } catch (_) {}
-    }
-  }
-  window.addEventListener("message",function(event){if(event.source!==window)return;forwardMainMicEvent(event.data||{})});
 
   chrome.storage.local.get(["effectifConfig", "effectifState"], function (stored) {
     state = stored.effectifState || {};
@@ -611,16 +598,6 @@
     if (changes.effectifConfig) apply(changes.effectifConfig.newValue);
   });
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-    if (message && message.type === "SIGNAL_MIC_CONTROL") {
-      var action = String(message.action || "start");
-      if (action === "probe") {
-        Promise.resolve({ok:true,context:"content",speechCtor:typeof (globalThis.SpeechRecognition||globalThis.webkitSpeechRecognition),mediaDevices:!!(navigator.mediaDevices),getUserMedia:!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)}).then(sendResponse);
-        return true;
-      }
-      signalMicSessionId=message.sessionId||signalMicSessionId||null;
-      sendResponse({ok:true,forwarded:false,world:"main",action:action,sessionId:signalMicSessionId});
-      return false;
-    }
     if (message && message.type === "EFFECTIF_REQUEST_PLATFORM_SNAPSHOT") {
       capturePlatformMirror("popup-refresh");
     }
@@ -653,6 +630,5 @@
     if (telemetryTimer) clearInterval(telemetryTimer);
     performanceSnapshot("pagehide");
     stop("pagehide");
-    signalMicSessionId = null;
   });
 })();

@@ -12,8 +12,10 @@
     telemetryHeartbeatSeconds: 30,
     soundEnabled: true,
     volume: 0.8,
-    transcriptionAvailable: false,
-    transcriptionEnabled: false,
+    transcriptionAvailable: true,
+    transcriptionEnabled: true,
+    groqApiKey: "",
+    groqModel: "whisper-large-v3-turbo",
     opiRatePerMinute: 0.20,
     vriRatePerMinute: 0.25,
     currency: "USD",
@@ -64,6 +66,9 @@
     $("overlayEnabled").checked = !!config.overlayEnabled;
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
+    $("groqApiKey").value = config.groqApiKey || "";
+    $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
+    $("groqStatus").textContent = config.groqApiKey ? "CONFIGURADO" : "SIN CONFIGURAR";
     $("sessionTimer").textContent = duration(state.sessionStartedAt);
     $("onlineTimer").textContent = duration(state.onlineStartedAt);
     $("callTimer").textContent = duration(state.callStartedAt);
@@ -93,7 +98,9 @@
     renderOfficial();
   }
   var openTranscript=$("openTranscript");
-  if(openTranscript)openTranscript.addEventListener("click",function(){chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:tab&&tab.id,sourceUrl:tab&&tab.url||"",sourceTitle:tab&&tab.title||""};if(!tab||tab.id==null){return chrome.runtime.sendMessage(payload)}return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){payload.audioStreamId=streamId;return chrome.runtime.sendMessage(payload)}).catch(function(){return chrome.runtime.sendMessage(payload)});}).then(function(response){status(response&&response.ok?"Consola abierta":"No se pudo abrir la consola",!(response&&response.ok));}).catch(function(error){status("No se pudo abrir la consola: "+String(error),true);});});
+  if(openTranscript)openTranscript.addEventListener("click",function(){openTranscript.disabled=true;status("Preparando captura de audio…");chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab||tab.id==null)throw new Error("No hay pestaña activa.");return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){return{tab:tab,streamId:streamId}})}).then(function(x){var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:x.tab.id,audioStreamId:x.streamId,sourceUrl:x.tab.url||"",sourceTitle:x.tab.title||""};return chrome.runtime.sendMessage(payload)}).then(function(response){status(response&&response.ok?"Groq: consola abierta y captura iniciada":"No se pudo iniciar: "+String(response&&response.error||"desconocido"),!(response&&response.ok));}).catch(function(error){status("No se pudo iniciar la captura: "+String(error),true);}).finally(function(){openTranscript.disabled=false;});});
+  $("groqApiKey").addEventListener("change",function(){save({groqApiKey:String(this.value||"").trim()});});
+  $("groqModel").addEventListener("change",function(){save({groqModel:this.value});});
   $("enabled").addEventListener("change", function () {
     save({ autoAnswerEnabled: this.checked });
   });
@@ -226,11 +233,11 @@
       var payload = {
         schema: "signal-interpreter-diagnostic/v3", exportedAt: new Date().toISOString(),
         report: {
-          purpose: "Diagnóstico reproducible de captura, bridge, Live Caption y persistencia por sesión",
+          purpose: "Diagnóstico reproducible de captura de audio Groq, transcripción y persistencia por sesión",
           eventsCount: results[0].length, snapshotsCount: results[1].length, signalSegmentsCount: results[2].length,
           eventSummary: eventSummary
         },
-        bridgeState: stored.effectifState && stored.effectifState.signalInterpreterBridge || null,
+        groqCapture: stored.effectifState && stored.effectifState.groqCapture || null,
         telemetryHealth: stored.effectifTelemetryHealth || null, lastEvent: stored.effectifLastEvent || null,
         config: safeConfig, state: stored.effectifState || {},
         activeSessionId: stored.signalInterpreterActiveSessionId || null, sessions: sessions,

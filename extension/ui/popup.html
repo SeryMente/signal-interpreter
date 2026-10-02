@@ -11,7 +11,16 @@
   <body>
     <main>
       <header><span>SIGNAL INTERPRETER · CLOUD</span><h1>Auto-Answer</h1></header>
-      <section class="transcription-control"><div><strong>Consola de transcripción</strong><small>Chrome Live Caption · cualquier pestaña</small></div><button id="openTranscript" class="secondary compact">Abrir consola</button></section>
+      <section class="transcription-control"><div><strong>Consola de transcripción</strong><small>Groq Whisper · audio de pestaña + micrófono</small></div><button id="openTranscript" class="secondary compact">Abrir consola</button></section>
+      <section class="telemetry-control">
+        <div class="telemetry-head"><div><strong>Groq Speech-to-Text</strong><small>Transcripción directa de audio; la clave nunca se exporta en diagnósticos.</small></div><b id="groqStatus">SIN CONFIGURAR</b></div>
+        <label class="label">Groq API Key
+          <input id="groqApiKey" type="password" autocomplete="off" spellcheck="false" placeholder="gsk_…">
+        </label>
+        <label class="label">Modelo
+          <select id="groqModel"><option value="whisper-large-v3-turbo">whisper-large-v3-turbo</option><option value="whisper-large-v3">whisper-large-v3</option></select>
+        </label>
+      </section>
       <section class="switch-row">
         <div><strong>Contestador</strong><small>OPI · detector validado</small></div>
         <label class="switch"><input id="enabled" type="checkbox"><i></i></label>

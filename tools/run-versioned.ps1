@@ -34,10 +34,14 @@ if ([string]$deployParsed.version -ne $version) { throw "La copia desplegable no
 
 node --check (Join-Path $root "extension\background.js")
 node --check (Join-Path $root "extension\content.js")
+node --check (Join-Path $root "extension\offscreen.js")
+node --check (Join-Path $root "extension\groq-transcriber.js")
+node --check (Join-Path $root "extension\ui\popup.js")
 node --check (Join-Path $root "extension\ui\live.js")
+node --check (Join-Path $root "extension\dialogue-engine.js")
 if (-not $SkipTests) {
   Push-Location $root
-  try { node tools\live-dialogue-tests.mjs }
+  try { node tools\groq-transcriber-tests.mjs }
   finally { Pop-Location }
 }
 

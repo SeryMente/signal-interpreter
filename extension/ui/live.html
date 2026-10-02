@@ -13,13 +13,14 @@
       <span>SIGNAL INTERPRETER</span>
       <strong>LIVE</strong>
     </div>
-    <div class="live-state"><i id="bridgeDot"></i><span id="bridgeStatus">DESCONECTADO</span><span class="sep">·</span><span id="participantSummary">2 PARTICIPANTES</span></div>
+    <div class="live-state"><i id="groqDot"></i><span id="groqStatus">GROQ · DESCONECTADO</span><span class="sep">·</span><span id="participantSummary">2 PARTICIPANTES</span></div>
     <div class="toolbar">
       <button id="sizeMenu" class="tool" title="Tamaño">TAMAÑO</button>
       <button data-view="timeline" class="tool active">TIMELINE</button>
       <button data-view="triptych" class="tool">TRÍPTICO</button>
       <button id="focusBtn" class="tool">FOCO</button>
       <button id="exportDiagnostic" class="tool">DESCARGAR LOG</button><button id="syncDiagnostic" class="tool">SINCRONIZAR LOG</button>
+      <button id="captureToggle" class="tool">INICIAR CAPTURA</button>
       <button id="clear" class="tool danger">LIMPIAR</button>
     </div>
   </header>
@@ -61,21 +62,21 @@
     </section>
 
     <aside class="controls">
-      <section class="status-card"><div><span>MICRÓFONO</span><b id="micText">Iniciando…</b></div><div><span>ACÚSTICA</span><b id="audioText">Esperando</b></div>
-        <div><span>BRIDGE</span><b id="bridgeText">Desconectado</b></div>
-        <div><span>FUENTE</span><b>Chrome Live Caption</b></div>
-        <div><span>CAPTION</span><b id="captionText">Esperando</b></div><div><span>ENTRADA</span><b>Live Caption + Micrófono</b></div>
+      <section class="status-card"><div><span>MICRÓFONO</span><b id="micText">Esperando</b></div><div><span>AUDIO DE PESTAÑA</span><b id="audioText">Esperando</b></div>
+        <div><span>GROQ</span><b id="groqText">Desconectado</b></div>
+        <div><span>FUENTE</span><b>Whisper vía Groq</b></div>
+        <div><span>ENTRADA</span><b>Audio de pestaña + micrófono</b></div>
         <div><span>SEGMENTOS</span><b id="segmentCount">0</b></div>
       </section>
 
       <section class="speaker-card">
         <span class="eyebrow">ASIGNACIÓN RÁPIDA</span>
-        <p>Live Caption entra como <strong>CLIENTE</strong> y tu micrófono como <strong>YO</strong>.</p>
+        <p>El audio de la pestaña entra como <strong>CLIENTE</strong> y el micrófono como <strong>YO</strong>; ambos pasan por Groq.</p>
         <div class="hotkeys"><kbd>1</kbd> CLIENTE <kbd>2</kbd> YO</div>
-        <div id="participantDetection" class="detection">Esperando diálogo…</div>
+        <div id="participantDetection" class="detection">Esperando audio…</div>
       </section>
 
-      <section class="composer"><div class="mic-head"><span class="eyebrow">MICRÓFONO</span><button id="micToggle" class="send" type="button">MIC AUTO</button></div>
+      <section class="composer"><div class="mic-head"><span class="eyebrow">GROQ</span><span class="eyebrow">CHUNK AUDIO · 18 s</span></div>
         <div class="composer-head"><span class="eyebrow">YO</span><button id="sendYo" class="send">INSERTAR</button></div>
         <textarea id="yo" placeholder="Escribe tu interpretación…"></textarea>
       </section>
