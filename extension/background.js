@@ -497,21 +497,96 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if(!result)throw new Error("Statistics aún no mostró el resumen oficial.");
     return {ok:true,method:"page-dom",summary:result};
   }
-  async function readOfficialStatsInBackgroundTab() {
-    var tab=await chrome.tabs.create({url:OFFICIAL_STATS_URL,active:false});
-    try{
-      var deadline=Date.now()+15000,lastError="Statistics aún no mostró el resumen oficial.";
-      while(Date.now()<deadline){
-        try{
-          var read=await readOfficialStatsInPage(tab.id);
-          if(read&&read.summary&&read.summary.earned)return {tab:tab,read:read};
-        }catch(error){lastError=String(error);}
-        await new Promise(function(resolve){setTimeout(resolve,400);});
-      }
-      throw new Error(lastError);
-    }finally{
-      try{await chrome.tabs.remove(tab.id);}catch(_){}
-    }
+  async function readOfficialStatsViaTrpc(tabId) {
+    var results=await chrome.scripting.executeScript({
+      target:{tabId:tabId},
+      world:"MAIN",
+      func:async function(profileId,statsUrl) {
+        function serializeDateInput(start,end,payload) {
+          return {
+            json:Object.assign({},payload,{dateSince:start.toISOString(),dateTill:end.toISOString()}),
+            meta:{values:{dateSince:["Date"],dateTill:["Date"]}}
+          };
+        }
+        function unwrap(body) {
+          var data=body&&body.result&&body.result.data;
+          return data&&data.json!=null?data.json:(data&&data.data!=null?data.data:null);
+        }
+        function normalizeSummary(data) {
+          var summary=data&&data.summary||{};
+          var earned=Number(summary.totalInterpreterPay!=null?summary.totalInterpreterPay:summary.totalPay);
+          var callCount=Number(summary.totalNumberOfCalls!=null?summary.totalNumberOfCalls:summary.totalCalls);
+          var callLength=summary.totalCallLengthInterpreter||summary.totalCallLength||null;
+          return {
+            earnedUsd:Number.isFinite(earned)?earned:null,
+            earned:Number.isFinite(earned)?"$"+earned.toFixed(2):null,
+            callCount:Number.isFinite(callCount)?String(callCount):null,
+            callLength:callLength?String(callLength):null,
+            formattedLogs:Array.isArray(data&&data.formattedLogs)?data.formattedLogs.slice(0,100):[],
+            source:"trpc"
+          };
+        }
+        function findProfile(root,id,seen,depth) {
+          if(!root||depth>7||typeof root!=="object"||seen.has(root))return null;
+          seen.add(root);
+          if(Array.isArray(root)){for(var i=0;i<root.length;i+=1){var hit=findProfile(root[i],id,seen,depth+1);if(hit)return hit;}return null;}
+          if(String(root.id||"")===String(id)&&(root.organisationId!=null||root.timezone!=null||root.userNumericId!=null))return root;
+          var keys=Object.keys(root);
+          for(var j=0;j<keys.length;j+=1){var value=root[keys[j]];if(value&&typeof value==="object"){var found=findProfile(value,id,seen,depth+1);if(found)return found;}}
+          return null;
+        }
+        var now=new Date(),start=new Date(now),end=new Date(now);
+        start.setHours(0,0,0,0);end.setHours(23,59,59,999);
+        var tz=Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Mexico_City";
+        var profile=findProfile(window.__NEXT_DATA__||{},profileId,new WeakSet(),0)||{};
+        tz=profile.timezone||tz;
+        var base={
+          isScheduled:false,
+          hiddenFields:["deleted","intakeFormInput"],
+          organisationId:profile.organisationId||"",
+          outputTimeZone:tz,
+          filter:{fields:[],tags:[{column:"interpreterUserProfileId",values:['"'+String(profileId)+'"']}]},
+          pagination:{pageSize:100,pageNumber:1}
+        };
+        var attempts=[];
+        async function tryAdmin() {
+          var input=serializeDateInput(start,end,base);
+          var url=statsUrl.replace(/\/profile\/[^/]+\/logs.*$/,"")+"/api/trpc/logFetcher.fetchAdminLogs?input="+encodeURIComponent(JSON.stringify(input));
+          var res=await fetch(url,{method:"GET",credentials:"include",cache:"no-store",headers:{Accept:"application/json"}});
+          var text=await res.text(),body=null;
+          try{body=JSON.parse(text);}catch(_){}
+          if(!res.ok)throw new Error("fetchAdminLogs HTTP "+res.status);
+          var data=unwrap(body),summary=normalizeSummary(data);
+          if(!summary.earned)return null;
+          return summary;
+        }
+        async function tryInterpreter() {
+          var inputBase={
+            isScheduled:false,
+            interpreterUserProfileId:profileId,
+            outputTimeZone:tz,
+            filter:{fields:[],tags:[]},
+            pagination:{pageSize:100,pageNumber:1}
+          };
+          var input=serializeDateInput(start,end,inputBase);
+          var url=statsUrl.replace(/\/profile\/[^/]+\/logs.*$/,"")+"/api/trpc/logFetcher.fetchInterpreterLogs";
+          var res=await fetch(url,{method:"POST",credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(input)});
+          var text=await res.text(),body=null;
+          try{body=JSON.parse(text);}catch(_){}
+          if(!res.ok)throw new Error("fetchInterpreterLogs HTTP "+res.status);
+          var data=unwrap(body),summary=normalizeSummary(data);
+          if(!summary.earned)return null;
+          return summary;
+        }
+        try{var admin=await tryAdmin();if(admin)return admin;}catch(error){attempts.push(String(error));}
+        try{var interpreter=await tryInterpreter();if(interpreter)return interpreter;}catch(error){attempts.push(String(error));}
+        return {error:attempts.join(" | ")||"Las consultas autenticadas no devolvieron resumen oficial."};
+      },
+      args:["cmu2wuz1v0uwr07adbzb9djfz",OFFICIAL_STATS_URL]
+    });
+    var result=results&&results[0]&&results[0].result;
+    if(!result||result.error)throw new Error(result&&result.error||"Cloud Interpreter no devolvió el resumen tRPC.");
+    return {ok:true,method:"page-trpc",summary:result};
   }
   async function persistOfficialStats(tab,readResult,method){
     var parsed=readResult.summary||{};
@@ -548,30 +623,28 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         }
         record("PLATFORM_OFFICIAL_BACKGROUND_FETCH_EMPTY",{url:OFFICIAL_STATS_URL},"info","popup");
       }
-    }catch(error){
-      record("PLATFORM_OFFICIAL_BACKGROUND_FETCH_ERROR",{url:OFFICIAL_STATS_URL,error:String(error)},"warn","popup");
-    }
+    }catch(error){record("PLATFORM_OFFICIAL_BACKGROUND_FETCH_ERROR",{url:OFFICIAL_STATS_URL,error:String(error)},"warn","popup");}
     var tabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"});
     var statsTab=null;
     for(var i=0;i<tabs.length;i+=1){
       if(/^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(tabs[i].url||""))){statsTab=tabs[i];break;}
     }
     if(!statsTab)statsTab=tabs.find(function(tab){return isAuthorizedCloudUrl(tab.url);})||null;
-    if(statsTab){
-      try{
-        var direct=await readOfficialStatsInPage(statsTab.id);
-        if(direct&&direct.summary&&direct.summary.earned)return await persistOfficialStats(statsTab,direct,"existing-page-dom");
-      }catch(error){
-        record("PLATFORM_OFFICIAL_BACKGROUND_PAGE_ERROR",{url:OFFICIAL_STATS_URL,tabId:statsTab.id,error:String(error)},"warn","popup");
-      }
+    if(!statsTab)throw new Error("Sincronización silenciosa no disponible: no hay una pestaña de Cloud Interpreter abierta.");
+    try{
+      var direct=await readOfficialStatsInPage(statsTab.id);
+      if(direct&&direct.summary&&direct.summary.earned)return await persistOfficialStats(statsTab,direct,"existing-page-dom");
+    }catch(error){
+      record("PLATFORM_OFFICIAL_BACKGROUND_PAGE_ERROR",{url:OFFICIAL_STATS_URL,tabId:statsTab.id,error:String(error)},"info","popup");
     }
     try{
-      var background=await readOfficialStatsInBackgroundTab();
-      return await persistOfficialStats(background.tab,background.read,"background-statistics-tab");
+      var trpc=await readOfficialStatsViaTrpc(statsTab.id);
+      if(trpc&&trpc.summary&&trpc.summary.earned)return await persistOfficialStats(statsTab,trpc,"page-trpc");
     }catch(error){
-      record("PLATFORM_OFFICIAL_BACKGROUND_TAB_ERROR",{url:OFFICIAL_STATS_URL,error:String(error)},"error","popup");
-      throw new Error("Statistics no entregó el dato oficial en segundo plano: "+String(error));
+      record("PLATFORM_OFFICIAL_PAGE_TRPC_ERROR",{url:OFFICIAL_STATS_URL,tabId:statsTab.id,error:String(error)},"warn","popup");
+      throw new Error("No se pudo leer el dato oficial desde la sesión autenticada de Cloud Interpreter: "+String(error));
     }
+    throw new Error("La sesión autenticada no devolvió el resumen oficial.");
   }
   function updateGroqUsage(message) {
     chrome.storage.local.get(["effectifState", "effectifConfig"], function (stored) {
