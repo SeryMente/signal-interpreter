@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Signal Interpreter · Auto-Answer</title>
+    <title>Signal Interpreter · Cloud</title>
     <link rel="icon" type="image/png" sizes="16x16" href="../icons/icon16.png">
     <link rel="icon" type="image/png" sizes="48x48" href="../icons/icon48.png">
     <link rel="stylesheet" href="popup.css">
@@ -11,74 +11,56 @@
   <body>
     <main>
       <header><span>SIGNAL INTERPRETER · CLOUD</span><h1>Auto-Answer</h1></header>
-      <section class="transcription-control"><div><strong>Consola de transcripción</strong><small>Groq Whisper · audio de pestaña + micrófono</small></div><button id="openTranscript" class="secondary compact">Abrir consola</button></section>
-      <section class="telemetry-control">
-        <div class="telemetry-head"><div><strong>Groq Speech-to-Text</strong><small>Transcripción directa de audio; la clave nunca se exporta en diagnósticos.</small></div><b id="groqStatus">SIN CONFIGURAR</b></div>
-        <label class="label">Modelo
-          <select id="groqModel"><option value="whisper-large-v3-turbo">whisper-large-v3-turbo</option><option value="whisper-large-v3">whisper-large-v3</option></select>
-        </label>
+      <section class="hero transcription-control">
+        <div><strong>Transcripción</strong><small>CLIENTE + YO · Groq Whisper</small><small id="groqStatus">Clave local ✓ · whisper-large-v3-turbo</small></div>
+        <button id="openTranscript" class="secondary compact">Abrir consola</button>
       </section>
-      <section class="switch-row">
-        <div><strong>Contestador</strong><small>OPI · detector validado</small></div>
-        <label class="switch"><input id="enabled" type="checkbox"><i></i></label>
+      <section class="switch-grid">
+        <div class="switch-row"><div><strong>Contestador</strong><small>OPI · detector validado</small></div><label class="switch"><input id="enabled" type="checkbox"><i></i></label></div>
+        <div class="switch-row"><div><strong>Observador</strong><small>Señales del sitio</small></div><label class="switch"><input id="observation" type="checkbox"><i></i></label></div>
       </section>
-      <section class="switch-row">
-        <div><strong>Observador</strong><small>Recolecta señales del sitio</small></div>
-        <label class="switch"><input id="observation" type="checkbox"><i></i></label>
-      </section>
-      <section class="telemetry-control">
-        <div class="telemetry-head"><div><strong>Observabilidad persistente</strong><small>IndexedDB · sobrevive reinicios y actualizaciones</small></div><b id="telemetryCount">Calculando…</b></div>
-        <label class="mini-switch"><span>Red: ruta, estado y duración; nunca cuerpos</span><input id="networkTelemetryEnabled" type="checkbox"></label>
-        <label class="mini-switch"><span>Rendimiento, recursos y salud de interfaz</span><input id="performanceTelemetryEnabled" type="checkbox"></label>
-        <label class="mini-switch"><span>Interacciones sin valores escritos</span><input id="interactionTelemetryEnabled" type="checkbox"></label>
-        <div class="telemetry-grid">
-          <label>RETENCIÓN (DÍAS)<input id="telemetryRetentionDays" type="number" min="7" max="730" step="1"></label>
-          <label>MÁX. EVENTOS<input id="telemetryMaxEvents" type="number" min="1000" max="1000000" step="1000"></label>
-          <label>HEARTBEAT (S)<input id="telemetryHeartbeatSeconds" type="number" min="10" max="300" step="5"></label>
-        </div>
-        <small id="telemetryMeta">Preparando base persistente…</small>
-      </section>
-      <section class="switch-row earnings-toggle">
-        <div><strong>Overlay de ganancias</strong><small>Estimado local en pesos · actualización a 50 ms</small></div>
-        <label class="switch"><input id="overlayEnabled" type="checkbox"><i></i></label>
-      </section>
-      <section class="timers">
-        <div><span>Sesión observada</span><b id="sessionTimer">00:00:00</b></div>
-        <div><span>Tiempo Online</span><b id="onlineTimer">00:00:00</b></div>
-        <div><span>Llamada actual</span><b id="callTimer">00:00:00</b></div>
-      </section>
+      <section class="timers"><div><span>Sesión</span><b id="sessionTimer">00:00:00</b></div><div><span>Online</span><b id="onlineTimer">00:00:00</b></div><div><span>Llamada</span><b id="callTimer">00:00:00</b></div></section>
       <section class="metrics calls">
-        <div><span>Llamadas hoy</span><b id="callsToday">0</b></div>
-        <div><span>Perdidas</span><b id="missedToday">0</b></div>
-        <div><span>Minutos</span><b id="minutesToday">0.0</b></div>
-        <div><span>Ingreso USD</span><b id="earnedToday">US$0.00</b></div>
-        <div><span>Ingreso MXN</span><b id="earnedTodayMxn">MX$0.0000</b></div>
+        <div><span>Llamadas</span><b id="callsToday">0</b></div><div><span>Perdidas</span><b id="missedToday">0</b></div><div><span>Minutos</span><b id="minutesToday">0.0</b></div><div><span>Ingreso USD</span><b id="earnedToday">US$0.0000</b></div><div><span>Ingreso MXN</span><b id="earnedTodayMxn">MX$0.0000</b></div>
       </section>
-      <button id="endCall" class="danger" disabled>Finalizar cronómetro de llamada</button>
-      <label class="label">Volumen <output id="volumeValue">80%</output>
-        <input id="volume" type="range" min="0" max="1" step="0.05">
-      </label>
-      <button id="sound">Probar sonido</button>
-      <div class="rates"><span>OPI <b>US$0.20/min</b></span><span>VRI <b>US$0.25/min</b></span></div>
-      <section class="exchange"><div><span>USD → MXN</span><b id="exchangeRate">Consultando…</b><small id="exchangeMeta">Tipo de cambio automático</small></div><button id="refreshExchange" class="secondary compact">Actualizar</button></section>
-      <small>Estimación local: prorrateo por segundo. El monto oficial puede variar por reglas de redondeo de la plataforma.</small>
-      <section class="last"><span>Último evento</span><b id="last">Sin eventos</b></section>
+      <section class="earnings-panel">
+        <div class="earnings-line"><span>Ingreso estimado hoy</span><strong id="earningSummary">US$0.0000 · MX$0.0000</strong></div>
+        <div class="rate-line"><span>OPI US$0.20/min · VRI US$0.25/min</span><span>USD/MXN <b id="exchangeRate">—</b></span></div>
+        <small id="exchangeMeta">Tipo de cambio automático</small>
+      </section>
+      <div class="inline-control switch-row">
+        <div><strong>Overlay de ganancias</strong><small>Visible sobre Cloud Interpreter</small></div>
+        <label class="switch"><input id="overlayEnabled" type="checkbox"><i></i></label>
+      </div>
+      <div class="action-row"><button id="endCall" class="danger" disabled>Finalizar llamada</button><button id="sound" class="secondary">Probar sonido</button></div>
+      <label class="volume-row">Volumen <output id="volumeValue">80%</output><input id="volume" type="range" min="0" max="1" step="0.05"></label>
       <section class="official">
-        <div class="official-head">
-          <div><span class="label">DATOS OFICIALES VISIBLES</span><small>Solo para cotejo cuando visites esas pantallas; el cálculo local no requiere abrir Statistics.</small></div>
-          <div class="official-actions"><button id="syncOfficial" class="compact">Sincroniza</button><button id="refresh" class="secondary compact">Actualizar</button></div>
-        </div>
-        <nav class="quick">
-          <button data-open="logs" class="secondary">Statistics</button>
-          <button data-open="logs/scheduled" class="secondary">Pre-Scheduled</button>
-          <button data-open="appointments" class="secondary">Appointments</button>
-        </nav>
-        <div id="officialData"><small>Aún no hay pantallas sincronizadas.</small></div>
+        <div class="official-head"><div><span class="label">DATOS OFICIALES</span><small id="officialMeta">Cotejo con las pantallas de la plataforma</small></div><button id="syncOfficial" class="compact">Sincroniza</button></div>
+        <div id="officialSummary"><small>Aún no hay datos oficiales sincronizados.</small></div>
+        <details class="official-details"><summary><span>Ver detalle oficial</span><span>Statistics · Pre-Scheduled · Appointments</span></summary>
+          <nav class="quick"><button data-open="logs" class="secondary">Statistics</button><button data-open="logs/scheduled" class="secondary">Pre-Scheduled</button><button data-open="appointments" class="secondary">Appointments</button></nav>
+          <button id="refresh" class="secondary compact refresh-pages">Actualizar pantallas abiertas</button>
+          <div id="officialData"><small>Aún no hay pantallas sincronizadas.</small></div>
+        </details>
       </section>
-      <button id="export" class="secondary">Exportar diagnóstico completo (eventos + Signal)</button>
+      <details class="development">
+        <summary><span>Desarrollo</span><span id="telemetryCount">—</span></summary>
+        <div class="development-body">
+          <section class="telemetry-control">
+            <div class="telemetry-head"><div><strong>Observabilidad persistente</strong><small>Diagnóstico incremental · IndexedDB</small></div><b id="telemetryVersion">0.9.12</b></div>
+            <label class="mini-switch"><span>Red: ruta, estado y duración</span><input id="networkTelemetryEnabled" type="checkbox"></label>
+            <label class="mini-switch"><span>Rendimiento y salud de interfaz</span><input id="performanceTelemetryEnabled" type="checkbox"></label>
+            <label class="mini-switch"><span>Interacciones sin valores escritos</span><input id="interactionTelemetryEnabled" type="checkbox"></label>
+            <label class="model-row">MODELO<select id="groqModel"><option value="whisper-large-v3-turbo">whisper-large-v3-turbo</option><option value="whisper-large-v3">whisper-large-v3</option></select></label>
+            <div class="telemetry-grid"><label>RETENCIÓN (DÍAS)<input id="telemetryRetentionDays" type="number" min="7" max="730" step="1"></label><label>MÁX. EVENTOS<input id="telemetryMaxEvents" type="number" min="1000" max="1000000" step="1000"></label><label>HEARTBEAT (S)<input id="telemetryHeartbeatSeconds" type="number" min="10" max="300" step="5"></label></div>
+            <small id="telemetryMeta">Preparando base persistente…</small>
+          </section>
+          <small id="last">Sin eventos</small>
+          <button id="export" class="secondary">Exportar diagnóstico completo</button>
+        </div>
+      </details>
       <p id="status" role="status"></p>
     </main>
-    <script src="../telemetry-db.js"></script>
-    <script src="popup.js"></script>
+    <script src="../telemetry-db.js"></script><script src="popup.js"></script>
   </body>
 </html>
