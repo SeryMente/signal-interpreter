@@ -209,18 +209,44 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
   function record(action, payload, level, source) {
     appendEvent({ action: action, payload: payload || {}, level: level || "info", source: source || "background" });
   }
-  function mutateState(mutator) {
+  function cloneStateForStorage(state) {
+    var normalized = normalizeStateShape(state);
+    try { return JSON.parse(JSON.stringify(normalized)); } catch (_) {
+      return normalizeStateShape(baseState());
+    }
+  }
+  function mutateState(mutator, operation) {
     stateQueue = stateQueue.then(async function () {
-      var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
-      var state = normalizeStateShape(Object.assign(baseState(), stored.effectifState || {}));
-      var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+      var before = cloneStateForStorage(baseState());
       try {
+        var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
+        before = cloneStateForStorage(Object.assign(baseState(), stored.effectifState || {}));
+        var state = cloneStateForStorage(before);
+        var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
         await mutator(state, config);
+        state = cloneStateForStorage(state);
         await chrome.storage.local.set({ effectifState: state });
         return state;
       } catch (error) {
-        record("STATE_MUTATION_ERROR", { message: String(error), name: error && error.name || null, stack: error && error.stack ? String(error.stack).slice(0, 2000) : null }, "error", "background");
-        return state;
+        record("STATE_MUTATION_ERROR", {
+          operation: operation || mutator.name || "anonymous",
+          message: String(error),
+          name: error && error.name || null,
+          stack: error && error.stack ? String(error.stack).slice(0, 2000) : null,
+          recovered: true
+        }, "warn", "background");
+        try {
+          await chrome.storage.local.set({ effectifState: before });
+          return before;
+        } catch (repairError) {
+          record("STATE_REPAIR_ERROR", {
+            operation: operation || mutator.name || "anonymous",
+            message: String(repairError),
+            name: repairError && repairError.name || null,
+            stack: repairError && repairError.stack ? String(repairError.stack).slice(0, 2000) : null
+          }, "error", "background");
+          return before;
+        }
       }
     });
     return stateQueue;
@@ -229,12 +255,12 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
     var stored = await chrome.storage.local.get(["effectifConfig", "effectifState", "effectifEvents", "effectifTelemetryMigrated"]);
     var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}, { transcriptionAvailable: false, transcriptionEnabled: false });
     cachedConfig = config;
-    var state = Object.assign(baseState(), stored.effectifState || {}, {
+    var state = normalizeStateShape(Object.assign(baseState(), stored.effectifState || {}, {
       transcriptionActive: false,
       transcriptionTabId: null,
       transcriptionStatus: { phase: "dormant", connected: false, engine: null }
-    });
-    await chrome.storage.local.set({ effectifConfig: config, effectifState: state });
+    }));
+    await chrome.storage.local.set({ effectifConfig: config, effectifState: cloneStateForStorage(state) });
     try {
       if (!stored.effectifTelemetryMigrated && Array.isArray(stored.effectifEvents) && stored.effectifEvents.length) {
         await KhoraTelemetryDB.putEvents(stored.effectifEvents);
@@ -262,6 +288,12 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
       }).finally(function(){offscreenCreation=null});
     }
     await offscreenCreation;
+  }
+  async function playSound(volume){
+    await ensureOffscreen();
+    var response=await chrome.runtime.sendMessage({target:"offscreen",type:"EFFECTIF_PLAY_SOUND",volume:Math.max(0,Math.min(1,Number(volume)||0))});
+    if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo reproducir la alerta sonora");
+    return response;
   }
   async function startSignalAudioAnalysis(streamId,tabId){
     if(!streamId)return{ok:false,error:"Falta streamId"};
@@ -717,7 +749,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
       sendResponse(r);
     }).catch(function(e){recordSignalDiagnostic("SIGNAL_MIC_SEGMENT_ERROR",{sessionId:message.sessionId||signalActiveSessionId,error:String(e)},"error");sendResponse({ok:false,error:String(e)})})
   }
-  function updateSignalBridgeState(patch){chrome.storage.local.get(["effectifState"]).then(function(stored){var state=Object.assign(baseState(),stored.effectifState||{});state.signalInterpreterBridge=Object.assign({},state.signalInterpreterBridge||{},patch||{});return chrome.storage.local.set({effectifState:state})}).catch(function(error){recordSignalDiagnostic("SIGNAL_BRIDGE_STATE_ERROR",{message:String(error)},"warn")})}
+  function updateSignalBridgeState(patch){chrome.storage.local.get(["effectifState"]).then(function(stored){var state=normalizeStateShape(Object.assign(baseState(),stored.effectifState||{}));state.signalInterpreterBridge=Object.assign({},state.signalInterpreterBridge||{},patch||{});return chrome.storage.local.set({effectifState:cloneStateForStorage(state)})}).catch(function(error){recordSignalDiagnostic("SIGNAL_BRIDGE_STATE_ERROR",{message:String(error)},"warn")})}
   function broadcastSignalEvent(event){chrome.runtime.sendMessage({type:"SIGNAL_INTERPRETER_EVENT",event:event}).catch(function(error){if(signalLiveConsoleOpen)recordSignalDiagnostic("SIGNAL_LIVE_BROADCAST_ERROR",{eventType:event&&event.type,error:String(error)},"warn")})}
   function queuePendingCaptionEvent(event){
     if(!event)return;
@@ -789,10 +821,22 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js");
     }
     broadcastSignalEvent(Object.assign({},event,{sessionId:sessionId}))
   }
-  function scheduleSignalBridgeReconnect(){if(!signalLiveConsoleOpen)return;var delay=signalBridgeReconnectDelay;clearTimeout(signalBridgeReconnectTimer);recordSignalDiagnostic("SIGNAL_BRIDGE_RECONNECT_SCHEDULED",{delayMs:delay},"warn");signalBridgeReconnectTimer=setTimeout(connectSignalBridge,delay);signalBridgeReconnectDelay=Math.min(signalBridgeReconnectDelay*2,15000);}
-  function connectSignalBridge(){
+  function scheduleSignalBridgeReconnect(){if(!signalLiveConsoleOpen)return;var delay=signalBridgeReconnectDelay;clearTimeout(signalBridgeReconnectTimer);recordSignalDiagnostic("SIGNAL_BRIDGE_RECONNECT_SCHEDULED",{delayMs:delay}, "warn");signalBridgeReconnectTimer=setTimeout(connectSignalBridge,delay);signalBridgeReconnectDelay=Math.min(signalBridgeReconnectDelay*2,15000);}
+  async function probeSignalBridge(){
+    if(!signalLiveConsoleOpen)return false;
+    try{
+      var controller=new AbortController(),timer=setTimeout(function(){controller.abort();},900);
+      var response=await fetch("http://127.0.0.1:8787/health",{cache:"no-store",signal:controller.signal});
+      clearTimeout(timer);
+      if(!response.ok)return false;
+      var data=await response.json().catch(function(){return null;});
+      return !!data;
+    }catch(_){return false;}
+  }
+  async function connectSignalBridge(){
     if(!signalLiveConsoleOpen)return;
     if(signalBridgeSocket&&(signalBridgeSocket.readyState===WebSocket.OPEN||signalBridgeSocket.readyState===WebSocket.CONNECTING))return;
+    if(!await probeSignalBridge()){updateSignalBridgeState({status:"disconnected",url:SIGNAL_BRIDGE_URL,error:null});scheduleSignalBridgeReconnect();return;}
     clearTimeout(signalBridgeReconnectTimer);updateSignalBridgeState({status:"connecting",url:SIGNAL_BRIDGE_URL,error:null});
     try{signalBridgeSocket=new WebSocket(SIGNAL_BRIDGE_URL);}catch(error){updateSignalBridgeState({status:"error",error:String(error)});scheduleSignalBridgeReconnect();return;}
      signalBridgeSocket.addEventListener("open",function(){signalBridgeReconnectDelay=500;updateSignalBridgeState({status:"connected",url:SIGNAL_BRIDGE_URL,connectedAt:iso(),error:null});recordSignalDiagnostic("SIGNAL_BRIDGE_CONNECTED",{url:SIGNAL_BRIDGE_URL});try{signalBridgeSocket.send(JSON.stringify({type:"signal.caption.controller.hello",runtimeId:signalRuntimeId,extensionVersion:chrome.runtime.getManifest().version,timestamp:iso()}));recordSignalDiagnostic("SIGNAL_BRIDGE_CONTROLLER_HELLO_SENT",{runtimeId:signalRuntimeId})}catch(error){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTROLLER_HELLO_ERROR",{error:String(error)},"warn")}loadSignalSessions().then(function(data){var wantedId=signalBridgeContextSessionId||data.activeSessionId,active=data.sessions.find(function(s){return s.id===wantedId})||data.sessions.find(function(s){return s.id===data.activeSessionId});if(active)sendSignalBridgeContextForSession(active)}).catch(function(error){recordSignalDiagnostic("SIGNAL_BRIDGE_CONTEXT_RESTORE_ERROR",{error:String(error)},"warn")})});
