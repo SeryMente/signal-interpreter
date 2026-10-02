@@ -189,12 +189,6 @@
       });
     });
   });
-  $("refreshExchange").addEventListener("click", function () {
-    status("Actualizando tipo de cambio…");
-    chrome.runtime.sendMessage({ type: "EFFECTIF_REFRESH_EXCHANGE_RATE" }, function (response) {
-      status(response && response.ok ? "Tipo de cambio actualizado" : ((response && response.error) || "No se pudo actualizar"), !(response && response.ok));
-    });
-  });
   $("sound").addEventListener("click", function () {
     chrome.runtime.sendMessage({ type: "EFFECTIF_TEST_SOUND", volume: config.volume }, function (response) {
       status(response && response.ok ? "Sonido reproducido" : "No se pudo reproducir el sonido", !(response && response.ok));
