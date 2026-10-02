@@ -89,8 +89,8 @@
     var fx = Number(config.usdMxnRate || 0);
     var earnedUsdText = "US$" + earnedUsd.toFixed(4);
     var earnedMxnText = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
-    $("earnedToday").textContent = earnedUsdText;
-    $("earnedTodayMxn").textContent = earnedMxnText;
+    if ($("earnedToday")) $("earnedToday").textContent = earnedUsdText;
+    if ($("earnedTodayMxn")) $("earnedTodayMxn").textContent = earnedMxnText;
     if ($("earningSummary")) $("earningSummary").textContent = earnedUsdText + " · " + earnedMxnText;
     $("exchangeRate").textContent = fx > 0 ? "$" + fx.toFixed(4) : "No disponible";
     $("exchangeMeta").textContent = fx > 0
@@ -310,7 +310,8 @@
     var earnedUsd = completedUsd + liveSeconds / 60 * liveRate;
     var fx = Number(config.usdMxnRate || 0);
     var usdText = "US$" + earnedUsd.toFixed(4); var mxnText = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
-    $("earnedToday").textContent = usdText; $("earnedTodayMxn").textContent = mxnText;
+    if ($("earnedToday")) $("earnedToday").textContent = usdText;
+    if ($("earnedTodayMxn")) $("earnedTodayMxn").textContent = mxnText;
     if ($("earningSummary")) $("earningSummary").textContent = usdText + " · " + mxnText;
   }
   chrome.storage.local.get(["effectifConfig", "effectifState", "effectifLastEvent", "effectifPlatformMirror"], function (stored) {
