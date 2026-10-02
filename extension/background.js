@@ -1,9 +1,8 @@
+try{importScripts("groq-secret.local.js");}catch(_){/* Se genera localmente; no se versiona. */}
 importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq-transcriber.js");
 (function () {
   "use strict";
 
-  /* Paquete preliminar privado por instrucción expresa del operador. */
-  var GROQ_API_KEY = ""; /* Nunca incrustar credenciales en el paquete. */
   var GROQ_MODEL = "whisper-large-v3-turbo";
   var GROQ_USD_PER_AUDIO_HOUR = 0.04;
   var DEFAULT_CONFIG = {
@@ -32,7 +31,6 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     exchangeRateDate: null,
     exchangeRateUpdatedAt: null,
     exchangeRateSource: "Frankfurter / European Central Bank",
-    groqApiKey: "",
     groqModel: GROQ_MODEL,
     groqEstimatedUsdPerAudioHour: GROQ_USD_PER_AUDIO_HOUR
   };
@@ -504,7 +502,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   async function startGroqCapture(sessionId,audioStreamId,sendResponse){
     try{
       var data=await loadSignalSessions(),session=data.sessions.find(function(s){return s.id===sessionId||s.id===data.activeSessionId});var stored=await chrome.storage.local.get(["effectifConfig"]),config=Object.assign({},DEFAULT_CONFIG,stored.effectifConfig||{});
-      if(!session)throw new Error("Sesión no encontrada");if(!String(config.groqApiKey||GROQ_API_KEY||"").trim())throw new Error("Configura la Groq API Key antes de iniciar.");if(!audioStreamId)throw new Error("No se recibió el audio de la pestaña.");
+      if(!session)throw new Error("Sesión no encontrada");if(!(await SignalGroqTranscriber.ready()))throw new Error("Configura la Groq API Key una sola vez en este equipo.");if(!audioStreamId)throw new Error("No se recibió el audio de la pestaña.");
       await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
       signalActiveSessionId=session.id;await updateGroqCaptureState({status:"connected",tabAudio:true,microphone:true,startedAt:iso(),lastChunkAt:null,error:null});
       recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_STARTED",{sessionId:session.id,sourceTabId:session.sourceTabId,model:config.groqModel||GROQ_MODEL});broadcastSignalEvent({type:"signal.groq.status",sessionId:session.id,status:"connected",tabAudio:true,microphone:true,timestamp:iso()});
@@ -520,9 +518,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     signalGroqQueue=signalGroqQueue.then(async function(){
       var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId,session=data.sessions.find(function(s){return s.id===id});if(!session)return;
       var seq=Number(message.sequence||0),key=id+"|"+String(message.source||"")+"|"+seq;if(signalGroqSeen.has(key))return;signalGroqSeen.set(key,Date.now());if(signalGroqSeen.size>500)signalGroqSeen.delete(signalGroqSeen.keys().next().value);
-      var stored=await chrome.storage.local.get(["effectifConfig"]),config=Object.assign({},DEFAULT_CONFIG,stored.effectifConfig||{}),keyValue=String(config.groqApiKey||GROQ_API_KEY||"").trim();if(!keyValue){recordSignalDiagnostic("SIGNAL_GROQ_TRANSCRIPTION_ERROR",{sessionId:id,reason:"missing-api-key",source:message.source},"error");return;}
+      if(!(await SignalGroqTranscriber.ready())){recordSignalDiagnostic("SIGNAL_GROQ_TRANSCRIPTION_ERROR",{sessionId:id,reason:"missing-api-key",source:message.source},"error");return;}
       var raw=atob(String(message.base64||"")),bytes=new Uint8Array(raw.length);for(var bi=0;bi<raw.length;bi++)bytes[bi]=raw.charCodeAt(bi);var blob=new Blob([bytes],{type:"audio/webm"}),speaker=message.source==="yo"?"YO":"CLIENTE",audioSource=message.source==="yo"?"microphone":"tab";
-      var result=await SignalGroqTranscriber.transcribe(blob,{apiKey:keyValue,model:config.groqModel||GROQ_MODEL,language:"es",filename:"signal-"+audioSource+"-"+(seq||Date.now())+".webm",prompt:"Interpretación médica en español; conserva nombres propios y términos clínicos.",timeoutMs:30000});
+      var result=await SignalGroqTranscriber.transcribe(blob,{model:config.groqModel||GROQ_MODEL,language:"es",filename:"signal-"+audioSource+"-"+(seq||Date.now())+".webm",prompt:"Interpretación médica en español; conserva nombres propios y términos clínicos.",timeoutMs:30000});
       updateGroqUsage({ok:result.ok,speaker:speaker,audioSeconds:Math.max(0,(Number(message.endedAt||Date.now())-Number(message.startedAt||Date.now()))/1000),bytesSent:blob.size,latencyMs:result.latencyMs||0,characters:String(result.text||"").length,httpStatus:result.httpStatus||null,error:result.error});
       if(!result.ok){recordSignalDiagnostic("SIGNAL_GROQ_TRANSCRIPTION_ERROR",{sessionId:id,speaker:speaker,error:result.error,source:audioSource,sequence:seq},"error");return;}
       var parts=result.segments&&result.segments.length?result.segments:[{start:0,end:0,text:result.text}],emitted=0;
@@ -613,9 +611,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if(message.type==="EFFECTIF_START_TRANSCRIPTION"){sendResponse({ok:true,engine:"groq-whisper",global:true});return false;}
     if(message.type==="EFFECTIF_STOP_TRANSCRIPTION"){stopGroqCapture("effectif-control").then(sendResponse);return true;}
     if (message.type === "EFFECTIF_WORKER_PROBE" || message.type === "EFFECTIF_TEST_TRANSCRIPTION") {
-      chrome.storage.local.get(["effectifConfig"]).then(function (stored) {
-        var c = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-        sendResponse({ ok: true, engine: "groq-whisper", configured: !!String(c.groqApiKey || "").trim(), model: c.groqModel || GROQ_MODEL });
+      SignalGroqTranscriber.ready().then(function (configured) {
+        sendResponse({ ok: true, engine: "groq-whisper", configured: !!configured, model: GROQ_MODEL });
+      }).catch(function () {
+        sendResponse({ ok: true, engine: "groq-whisper", configured: false, model: GROQ_MODEL });
       });
       return true;
     }

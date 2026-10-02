@@ -6,6 +6,8 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $manifest = Join-Path $root "extension\manifest.json"
 $deploy = "C:\Users\fila4\Desktop\Signal-Interpreter-Extension"
+$groqSetup = Join-Path $PSScriptRoot "setup-groq-key.ps1"
+if (Test-Path -LiteralPath $groqSetup) { & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $groqSetup }
 if (-not (Test-Path -LiteralPath $manifest)) { throw "No se encontró el manifest: $manifest" }
 
 $text = [System.IO.File]::ReadAllText($manifest)
