@@ -1,7 +1,7 @@
 (function () {
   "use strict";
-  if (window.__SIGNAL_INTERPRETER_CLOUD_V090__) return;
-  window.__SIGNAL_INTERPRETER_CLOUD_V090__ = true;
+  if (window.__SIGNAL_INTERPRETER_CLOUD_V0913__) return;
+  window.__SIGNAL_INTERPRETER_CLOUD_V0913__ = true;
 
   var DIALOG = 'div[role="dialog"][aria-modal="true"]';
   var CONNECT = 'button[aria-label="Connect"]';
@@ -45,6 +45,8 @@
   var lastMirrorSignature = "";
   var lastPortalStructureSignature = "";
   var lastCallEndMeasurement = null;
+  var answerWatchdog = null;
+  var answerFlow = { flowId: null, clickAt: null, modality: null, fingerprint: null, routeConfirmed: false };
   var mirrorTimer = null;
   var mediaTimer = null;
   var integrityTimer = null;
@@ -182,7 +184,19 @@
       });
     }
     if (callRouteId && callRouteId !== previousCallId) {
-      emit("CALL_ROUTE_ENTERED", { callId: callRouteId, reason: reason, evidence: callActivationEvidence() });
+      var evidence = callActivationEvidence();
+      emit("CALL_ROUTE_ENTERED", { callId: callRouteId, reason: reason, evidence: evidence });
+      if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; }
+      if (answerFlow.clickAt && !answerFlow.routeConfirmed) {
+        answerFlow.routeConfirmed = true;
+        emit("ANSWER_FLOW_ROUTE_CONFIRMED", {
+          flowId: answerFlow.flowId,
+          callId: callRouteId,
+          modality: answerFlow.modality,
+          latencyMs: Math.max(0, Date.parse(iso()) - Date.parse(answerFlow.clickAt)),
+          evidence: evidence
+        });
+      }
       emitIntegrity("call-entered");
     }
     if (!callRouteId) lastCallEndMeasurement = null;
@@ -242,16 +256,39 @@
       fingerprints.set(fingerprint, Date.now());
       try {
         var started = performance.now();
+        var flowId = crypto.randomUUID();
+        answerFlow = {
+          flowId: flowId,
+          clickAt: iso(),
+          modality: modality,
+          fingerprint: fingerprint,
+          routeConfirmed: false
+        };
         button.click();
         integrity.permittedConnectClicks += 1;
         emit("CONNECT_CLICKED", {
           modality: modality,
+          flowId: flowId,
+          expectedRoute: "/call/<ID>",
           clickLatencyMs: Math.round((performance.now() - started) * 1000) / 1000,
           platformInteraction: "permitted-connect-only"
         });
         emitIntegrity("after-connect");
+        if (answerWatchdog) clearTimeout(answerWatchdog);
+        answerWatchdog = setTimeout(function () {
+          answerWatchdog = null;
+          if (answerFlow.flowId !== flowId || answerFlow.routeConfirmed || currentCallId()) return;
+          emit("CONNECT_ROUTE_TIMEOUT", {
+            flowId: flowId,
+            modality: modality,
+            elapsedMs: Date.now() - Date.parse(answerFlow.clickAt),
+            expectedRoute: "/call/<ID>",
+            action: "no-second-click"
+          }, "error");
+        }, 7000);
       } catch (error) {
-        emit("CONNECT_ERROR", { message: String(error) }, "error");
+        if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; }
+        emit("CONNECT_ERROR", { message: String(error), flowId: answerFlow.flowId || null }, "error");
       }
     });
   }
@@ -656,6 +693,7 @@
     else stop("disabled-or-host-mismatch");
     autoAnswer();
     renderOverlay();
+    if (!isTarget() || !config.autoAnswerEnabled || currentCallId()) { if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; } }
     if (telemetryStarted && telemetryTimer) {
       clearInterval(telemetryTimer);
       telemetryTimer = setInterval(function () { performanceSnapshot("heartbeat"); }, Math.max(10, Number(config.telemetryHeartbeatSeconds || 30)) * 1000);
