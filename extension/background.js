@@ -360,34 +360,55 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     }).then(function (state) {
       if (!state || state.callId !== callId) return;
       record("TRANSCRIPTION_MODULE_READY", { callId: callId, engine: "groq-whisper" }, "info", "background");
-      requestCallAlert(callId, "call-route-entered");
+      requestCallAlert(callId, "call-route-confirmed");
     });
   }
   function requestCallAlert(callId, trigger) {
     chrome.storage.local.get(["effectifConfig", "effectifCallAlert"], function (stored) {
       var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-      if (!config.soundEnabled) return;
+      if (!config.soundEnabled || !callId) return;
       var now = Date.now();
       var previous = stored.effectifCallAlert || {};
-      if (previous.playedAt && now - Number(previous.playedAt) < 5000 && (!callId || !previous.callId || previous.callId === callId)) return;
-      if (previous.requestedAt && now - Number(previous.requestedAt) < 2500 && !previous.failedAt) return;
-      var marker = { callId: callId || previous.callId || null, requestedAt: now, playedAt: null, failedAt: null, trigger: trigger || "call" };
+      if (previous.callId === callId && previous.playedAt) return;
+      if (previous.callId === callId && previous.requestedAt && now - Number(previous.requestedAt) < 4000 && !previous.failedAt) return;
+      var marker = {
+        callId: callId,
+        requestedAt: now,
+        playedAt: null,
+        failedAt: null,
+        attempts: 0,
+        trigger: trigger || "call-route-confirmed"
+      };
       chrome.storage.local.set({ effectifCallAlert: marker });
       record("CALL_ALERT_SOUND_REQUESTED", {
         callId: marker.callId, trigger: marker.trigger, requestedAt: now
       }, "info", "background");
-      playSound(Math.max(0.95, Number(config.volume || 0))).then(function () {
-        var playedAt = Date.now();
-        chrome.storage.local.set({ effectifCallAlert: Object.assign({}, marker, { playedAt: playedAt }) });
-        record("CALL_ALERT_SOUND_PLAYED", {
-          callId: marker.callId, trigger: marker.trigger, latencyMs: playedAt - now, prominent: true
-        }, "info", "offscreen");
-      }).catch(function (error) {
-        chrome.storage.local.set({ effectifCallAlert: Object.assign({}, marker, { failedAt: Date.now(), error: String(error) }) });
-        record("CALL_ALERT_SOUND_ERROR", {
-          callId: marker.callId, trigger: marker.trigger, latencyMs: Date.now() - now, message: String(error)
-        }, "error", "offscreen");
-      });
+      function attemptSound(attempt) {
+        marker.attempts = attempt;
+        playSound(Math.max(0.95, Number(config.volume || 0))).then(function () {
+          var playedAt = Date.now();
+          chrome.storage.local.set({
+            effectifCallAlert: Object.assign({}, marker, { playedAt: playedAt, failedAt: null })
+          });
+          record("CALL_ALERT_SOUND_PLAYED", {
+            callId: marker.callId, trigger: marker.trigger,
+            latencyMs: playedAt - now, attempts: attempt, prominent: true
+          }, "info", "offscreen");
+        }).catch(function (error) {
+          if (attempt < 3) {
+            setTimeout(function () { attemptSound(attempt + 1); }, attempt === 1 ? 250 : 600);
+            return;
+          }
+          chrome.storage.local.set({
+            effectifCallAlert: Object.assign({}, marker, { failedAt: Date.now(), error: String(error) })
+          });
+          record("CALL_ALERT_SOUND_ERROR", {
+            callId: marker.callId, trigger: marker.trigger,
+            latencyMs: Date.now() - now, attempts: attempt, message: String(error)
+          }, "error", "offscreen");
+        });
+      }
+      attemptSound(1);
     });
   }
 
@@ -405,10 +426,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       chrome.alarms.create("effectif-pending-call", { when: Date.now() + 15000 });
       record("CONNECT_ACCEPTED_PENDING", {
         modality: event.payload && event.payload.modality || "OPI",
+        flowId: event.payload && event.payload.flowId || null,
         reason: "await-call-route"
       }, "info", "background");
     });
-    requestCallAlert(null, "connect-click");
   }
   function rememberCallEnd(event) {
     mutateState(async function (state) {
