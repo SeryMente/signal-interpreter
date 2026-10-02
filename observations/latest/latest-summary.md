@@ -1,33 +1,24 @@
 # Signal Interpreter · latest observation
 
-- Batch: `batch-ffb334be-0df9-4775-8856-6b6918bf9643`
-- Recibido: `2026-10-02T17:02:55.401Z`
+- Batch: `batch-e7aca8bd-8c52-42bf-b0b5-deae86da28cf`
+- Recibido: `2026-10-02T17:04:00.782Z`
 - Trigger: critical
 - Extensión: 0.9.3
-- Eventos: 9
+- Eventos: 1
 - Errores: 0
 - Warnings: 1
-- Secuencia: 47353 → 47361
+- Secuencia: 47681 → 47681
 
 ## Categorías
 ```json
 {
-  "BRIDGE": 2,
-  "RUNTIME": 2,
-  "UI": 2,
-  "SIGNAL": 3
+  "BILLING": 1
 }
 ```
 
 ## Acciones
 ```json
 {
-  "SIGNAL_BRIDGE_CONTEXT_SENT": 2,
-  "PAGE_LIFECYCLE": 1,
-  "SIGNAL_LIVE_PORT_DISCONNECTED": 1,
-  "SIGNAL_LIVE_CONSOLE_CLOSED": 1,
-  "SIGNAL_MIC_CONTROL": 2,
-  "PAGE_VISIBILITY_CHANGED": 1,
-  "SIGNAL_MIC_CONTROL_ERROR": 1
+  "NETWORK_REQUEST_ERROR": 1
 }
 ```
