@@ -174,7 +174,18 @@
     });
   }
   var syncOfficial = $("syncOfficial");
-  if (syncOfficial) syncOfficial.addEventListener("click", function () { var button=this; button.disabled=true; status("Sincronizando con la plataforma…"); chrome.runtime.sendMessage({type:"SYNC_OFFICIAL_PLATFORM_DATA"}, function(response){ if(response&&response.ok){ var earned=response.snapshot&&response.snapshot.summary&&response.snapshot.summary.earned; status(earned ? "Sincronizado: "+earned+" · "+(response.method==="background-fetch"?"segundo plano":"pestaña existente") : "Sincronizado"); } else { status("No se pudo sincronizar: "+String(response&&response.error||"desconocido"),true); } button.disabled=false; }); });
+  if (syncOfficial) syncOfficial.addEventListener("click", function () {
+    var button=this; button.disabled=true; status("Sincronizando Statistics…");
+    chrome.runtime.sendMessage({type:"SYNC_OFFICIAL_PLATFORM_DATA"}, function(response){
+      if(response&&response.ok){
+        var earned=response.snapshot&&response.snapshot.summary&&response.snapshot.summary.earned;
+        status(earned ? "Sincronizado · "+earned : "Sincronizado");
+      } else {
+        status("No se pudo sincronizar: "+String(response&&response.error||"desconocido"),true);
+      }
+      button.disabled=false;
+    });
+  });
   $("refresh").addEventListener("click", function () {
     chrome.tabs.query({ url: "https://app.cloudinterpreter.com/*" }, function (tabs) {
       var pending = tabs.length;
