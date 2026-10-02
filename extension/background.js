@@ -473,172 +473,28 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     });
   }
   function isAuthorizedCloudUrl(raw){try{return new URL(String(raw||"")).origin===AUTHORIZED_ORIGIN}catch(_){return false;}}
-  function stripHtml(raw){return String(raw||"").replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/&nbsp;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/\s+/g," ").trim();}
-  function extractOfficialStatsFromHtml(raw){
-    var text=stripHtml(raw),earned=null,callLength=null,callCount=null;
-    function valueAfter(labels){
-      for(var i=0;i<labels.length;i+=1){
-        var rx=new RegExp(labels[i]+"\\s*(?:[:\\-]|)\\s*([^\\n]{1,160})","i"),m=text.match(rx);
-        if(m&&m[1])return String(m[1]).trim();
-      }
-      return null;
-    }
-    earned=valueAfter(["Totally earned","Total earned","Today's earnings","Earned today","Ganado hoy"]);
-    callLength=valueAfter(["Total call length"]);
-    callCount=valueAfter(["Total number of calls"]);
-    if(!earned)return null;
-    var money=String(earned).match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
-    var earnedUsd=money?Number(String(money[1]).replace(/,/g,".")):null;
-    return {earned:earned,earnedUsd:Number.isFinite(earnedUsd)?earnedUsd:null,callLength:callLength,callCount:callCount,rawSource:"background-fetch"};
-  }
-  function readVisibleOfficialSummaryFromPage() {
-    function normalize(value){return String(value||"").replace(/\s+/g," ").trim();}
-    function parseMoney(value){
-      var match=String(value||"").match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
-      return match?Number(String(match[1]).replace(/,/g,".")):null;
-    }
-    var text=normalize(document.body&&document.body.innerText);
-    if(!text)return null;
-    var result={};
-    var earned=text.match(/(?:Totally earned|Total earned|Today's earnings|Earned today|Ganado hoy)[\s\S]{0,180}?(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/i);
-    var length=text.match(/Total call length\s*[:\-]?\s*([0-9]{1,3}:[0-9]{2}(?::[0-9]{2})?)/i);
-    var count=text.match(/Total number of calls\s*[:\-]?\s*([0-9]+)/i);
-    if(earned){result.earned="$"+earned[1];result.earnedUsd=parseMoney(result.earned);}
-    if(length)result.callLength=length[1];
-    if(count)result.callCount=count[1];
-    if(!result.earned){
-      var nodes=Array.from(document.querySelectorAll("body *")).filter(function(el){return el.children.length<=2;});
-      for(var i=0;i<nodes.length;i+=1){
-        var label=normalize(nodes[i].textContent);
-        if(!/^(Totally earned|Total earned|Today's earnings|Earned today|Ganado hoy)$/i.test(label))continue;
-        var parent=nodes[i].parentElement;
-        var values=parent?String(parent.innerText||"").split(/\n+/).map(normalize).filter(Boolean):[];
-        for(var j=0;j<values.length;j+=1){
-          var value=values[j].match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
-          if(value){result.earned="$"+value[1];result.earnedUsd=parseMoney(result.earned);break;}
-        }
-        if(result.earned)break;
-      }
-    }
-    return result.earned?result:null;
-  }
-  async function readOfficialStatsInPage(tabId) {
-    var results=await chrome.scripting.executeScript({
-      target:{tabId:tabId},
-      world:"MAIN",
-      func:readVisibleOfficialSummaryFromPage
-    });
-    var result=results&&results[0]&&results[0].result;
-    if(!result)throw new Error("Statistics aún no mostró el resumen oficial.");
-    return {ok:true,method:"page-dom",summary:result};
-  }
-  async function readOfficialStatsViaTrpc(tabId) {
-    var results=await chrome.scripting.executeScript({
-      target:{tabId:tabId},
-      world:"MAIN",
-      func:async function(profileId,statsUrl) {
-        function serializeDateInput(start,end,payload) {
-          return {json:Object.assign({},payload,{dateSince:start.toISOString(),dateTill:end.toISOString()}),meta:{values:{dateSince:["Date"],dateTill:["Date"]}}};
-        }
-        function unwrap(body) {
-          var data=body&&body.result&&body.result.data;
-          return data&&data.json!=null?data.json:(data&&data.data!=null?data.data:null);
-        }
-        function normalizeSummary(data) {
-          var summary=data&&data.summary||{};
-          var earned=Number(summary.totalInterpreterPay);
-          var callCount=Number(summary.totalNumberOfCalls);
-          var callLength=summary.totalCallLengthInterpreter||null;
-          return {earnedUsd:Number.isFinite(earned)?earned:null,earned:Number.isFinite(earned)?"$"+earned.toFixed(2):null,callCount:Number.isFinite(callCount)?String(callCount):null,callLength:callLength?String(callLength):null,source:"fetchInterpreterLogs"};
-        }
-        async function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
-        async function readOnce(url,payload){
-          var res=await fetch(url,{method:"POST",credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload)});
-          var text=await res.text(),body=null;
-          try{body=JSON.parse(text);}catch(_){}
-          if(!res.ok){
-            var detail=String(text||"").replace(/\s+/g," ").slice(0,240);
-            throw new Error("fetchInterpreterLogs HTTP "+res.status+(detail?" · "+detail:""));
-          }
-          var data=unwrap(body),summary=normalizeSummary(data);
-          if(!summary.earned)throw new Error("La respuesta autenticada no contiene totalInterpreterPay.");
-          return summary;
-        }
-        var now=new Date(),start=new Date(now),end=new Date(now);
-        start.setHours(0,0,0,0);end.setHours(23,59,59,999);
-        var payload={isScheduled:false,interpreterUserProfileId:String(profileId),outputTimeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,filter:{fields:[],tags:[]},pagination:{pageSize:100,pageNumber:1}};
-        var input=serializeDateInput(start,end,payload),lastError=null,url=statsUrl.replace(/\/profile\/[^/]+\/logs.*$/,"")+"/api/trpc/logFetcher.fetchInterpreterLogs";
-        for(var attempt=1;attempt<=3;attempt+=1){
-          try{return await readOnce(url,input);}catch(error){lastError=error;if(attempt<3)await sleep(350*attempt);}
-        }
-        throw lastError||new Error("Cloud Interpreter no devolvió el resumen tRPC.");
-      },
-      args:[(String(OFFICIAL_STATS_URL).match(/\/profile\/([^/]+)\/logs/)||[])[1]||"",OFFICIAL_STATS_URL]
-    });
-    var result=results&&results[0]&&results[0].result;
-    if(!result||result.error)throw new Error(result&&result.error||"Cloud Interpreter no devolvió el resumen tRPC.");
-    return {ok:true,method:"page-trpc",summary:result};
-  }
-  async function persistOfficialStats(tab,readResult,method){
-    var parsed=readResult.summary||{};
-    var earningsState=await chrome.storage.local.get(["effectifPlatformMirror","effectifState","effectifConfig"]);
-    var currentState=Object.assign(baseState(),earningsState.effectifState||{});
-    var currentConfig=Object.assign({},DEFAULT_CONFIG,earningsState.effectifConfig||{});
-    var today=localDay(),calls=Array.isArray(currentState.completedCalls)?currentState.completedCalls.filter(function(call){return localDay(call.startedAt||call.endedAt)===today;}):[];
-    var localCompletedUsd=calls.reduce(function(sum,call){return sum+Number(call.estimatedRevenue||0);},0);
-    var liveSeconds=currentState.callStartedAt?Math.max(0,(Date.now()-Date.parse(currentState.callStartedAt))/1000):0;
-    var localRate=currentState.callModality==="VRI"?Number(currentConfig.vriRatePerMinute||0.25):Number(currentConfig.opiRatePerMinute||0.20);
-    var localEstimateUsd=localCompletedUsd+liveSeconds/60*localRate;
-    var officialUsd=Number(parsed.earnedUsd);
-    var deltaUsd=Number.isFinite(officialUsd)?Math.round((officialUsd-localEstimateUsd)*10000)/10000:null;
-    var storedMirror=earningsState.effectifPlatformMirror;
-    var mirror=Object.assign({},storedMirror||{});
-    mirror.statistics=Object.assign({},mirror.statistics||{},{
-      schema:"signal-interpreter-official-stats/v1",key:"statistics",route:"/profile/<ID>/logs",
-      url:OFFICIAL_STATS_URL,capturedAt:iso(),reason:"background-page-context",
-      summary:{earned:parsed.earned,earnedUsd:parsed.earnedUsd,callLength:parsed.callLength,callCount:parsed.callCount,localEstimateUsd:Math.round(localEstimateUsd*10000)/10000,deltaUsd:deltaUsd},
-      source:"platform-page-context",tabId:tab.id
-    });
-    await chrome.storage.local.set({effectifPlatformMirror:mirror});
-    record("PLATFORM_OFFICIAL_SYNC_COMPLETED",{method:method,url:OFFICIAL_STATS_URL,earned:parsed.earned,callLength:parsed.callLength,callCount:parsed.callCount,localEstimateUsd:Math.round(localEstimateUsd*10000)/10000,deltaUsd:deltaUsd},"info","popup");
-    return {ok:true,method:method,snapshot:mirror.statistics};
-  }
   async function syncOfficialPlatformData(){
-    try{
-      var response=await fetch(OFFICIAL_STATS_URL,{method:"GET",credentials:"include",cache:"no-store",redirect:"follow"});
-      var raw=await response.text();
-      if(response.ok){
-        var parsed=extractOfficialStatsFromHtml(raw);
-        if(parsed){
-          var stored=await chrome.storage.local.get(["effectifPlatformMirror"]);
-          var mirror=Object.assign({},stored.effectifPlatformMirror||{});
-          mirror.statistics=Object.assign({},mirror.statistics||{},{
-            schema:"signal-interpreter-official-stats/v1",key:"statistics",route:"/profile/<ID>/logs",
-            url:OFFICIAL_STATS_URL,capturedAt:iso(),reason:"background-fetch",
-            summary:{earned:parsed.earned,earnedUsd:parsed.earnedUsd,callLength:parsed.callLength,callCount:parsed.callCount},
-            source:"platform-background-fetch"
-          });
-          await chrome.storage.local.set({effectifPlatformMirror:mirror});
-          record("PLATFORM_OFFICIAL_SYNC_COMPLETED",{method:"background-fetch",url:OFFICIAL_STATS_URL,earned:parsed.earned,callLength:parsed.callLength,callCount:parsed.callCount},"info","popup");
-          return {ok:true,method:"background-fetch",snapshot:mirror.statistics};
-        }
-        record("PLATFORM_OFFICIAL_BACKGROUND_FETCH_EMPTY",{url:OFFICIAL_STATS_URL},"info","popup");
-      }
-    }catch(error){record("PLATFORM_OFFICIAL_BACKGROUND_FETCH_ERROR",{url:OFFICIAL_STATS_URL,error:String(error)},"warn","popup");}
     var tabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"});
     var cloudTabs=tabs.filter(function(tab){return isAuthorizedCloudUrl(tab.url);});
-    var statsTab=cloudTabs.find(function(tab){return /^https:\/\/app\.cloudinterpreter\.com\/call\/[^/?#]+/.test(String(tab.url||""));})
-      ||cloudTabs.find(function(tab){return /^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(tab.url||""));})
-      ||cloudTabs[0];
-    if(!statsTab)throw new Error("Sincronización silenciosa no disponible: no hay una pestaña de Cloud Interpreter abierta.");
-    try{
-      var trpc=await readOfficialStatsViaTrpc(statsTab.id);
-      if(trpc&&trpc.summary&&trpc.summary.earned)return await persistOfficialStats(statsTab,trpc,"page-trpc");
-    }catch(error){
-      record("PLATFORM_OFFICIAL_PAGE_TRPC_ERROR",{url:OFFICIAL_STATS_URL,tabId:statsTab.id,error:String(error)},"warn","popup");
-      throw new Error("No se pudo leer el dato oficial desde la sesión autenticada de Cloud Interpreter: "+String(error));
+    var callTab=cloudTabs.find(function(tab){return /^https:\/\/app\.cloudinterpreter\.com\/call\/[^/?#]+(?:[?#].*)?$/.test(String(tab.url||""));});
+    var statsTab=cloudTabs.find(function(tab){return /^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(tab.url||""));});
+    var targetTab=callTab||statsTab||cloudTabs[0];
+    if(!targetTab){
+      throw new Error("Sincronización silenciosa no disponible: abre Cloud Interpreter primero.");
     }
-    throw new Error("La sesión autenticada no devolvió el resumen oficial.");
+    try{
+      var trpc=await readOfficialStatsViaTrpc(targetTab.id);
+      if(trpc&&trpc.summary&&trpc.summary.earned){
+        return await persistOfficialStats(targetTab,trpc,"page-trpc-silent");
+      }
+      throw new Error("La sesión autenticada no devolvió el resumen oficial.");
+    }catch(error){
+      record("PLATFORM_OFFICIAL_PAGE_TRPC_ERROR",{
+        url:OFFICIAL_STATS_URL,tabId:targetTab.id,route:String(targetTab.url||""),
+        error:String(error)
+      },"warn","popup");
+      throw new Error("No se pudo sincronizar sin navegar ni abrir pestañas: "+String(error));
+    }
   }
   function updateGroqUsage(message) {
     chrome.storage.local.get(["effectifState", "effectifConfig"], function (stored) {
