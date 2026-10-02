@@ -4,6 +4,8 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   "use strict";
 
   var GROQ_MODEL = "whisper-large-v3-turbo";
+  var AUTHORIZED_ORIGIN = "https://app.cloudinterpreter.com";
+  var OFFICIAL_STATS_URL = AUTHORIZED_ORIGIN + "/profile/cmu2wuz1v0uwr07adbzb9djfz/logs";
   var GROQ_USD_PER_AUDIO_HOUR = 0.04;
   var DEFAULT_CONFIG = {
     targetHost: "app.cloudinterpreter.com",
@@ -435,6 +437,60 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       });
     });
   }
+  function isAuthorizedCloudUrl(raw){try{return new URL(String(raw||"")).origin===AUTHORIZED_ORIGIN}catch(_){return false;}}
+  function stripHtml(raw){return String(raw||"").replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/&nbsp;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/\s+/g," ").trim();}
+  function extractOfficialStatsFromHtml(raw){
+    var text=stripHtml(raw),earned=null,callLength=null,callCount=null;
+    function valueAfter(labels){
+      for(var i=0;i<labels.length;i+=1){
+        var rx=new RegExp(labels[i]+"\\s*(?:[:\\-]|)\\s*([^\\n]{1,120})","i"),m=text.match(rx);
+        if(m&&m[1])return String(m[1]).trim();
+      }
+      return null;
+    }
+    earned=valueAfter(["Totally earned","Total earned","Today's earnings","Earned today","Ganado hoy"]);
+    callLength=valueAfter(["Total call length"]);
+    callCount=valueAfter(["Total number of calls"]);
+    if(!earned)return null;
+    return {earned:earned,callLength:callLength,callCount:callCount,rawSource:"background-fetch"};
+  }
+  async function syncOfficialPlatformData(){
+    try{
+      var response=await fetch(OFFICIAL_STATS_URL,{method:"GET",credentials:"include",cache:"no-store",redirect:"follow"});
+      var raw=await response.text();
+      if(response.ok){
+        var parsed=extractOfficialStatsFromHtml(raw);
+        if(parsed){
+          var stored=await chrome.storage.local.get(["effectifPlatformMirror"]);
+          var mirror=Object.assign({},stored.effectifPlatformMirror||{});
+          mirror.statistics=Object.assign({},mirror.statistics||{},{
+            schema:"signal-interpreter-official-stats/v1",key:"statistics",route:"/profile/<ID>/logs",
+            url:OFFICIAL_STATS_URL,capturedAt:iso(),reason:"background-fetch",summary:{
+              earned:parsed.earned,callLength:parsed.callLength,callCount:parsed.callCount
+            },source:"platform-background-fetch"
+          });
+          await chrome.storage.local.set({effectifPlatformMirror:mirror});
+          record("PLATFORM_OFFICIAL_SYNC_COMPLETED",{method:"background-fetch",url:OFFICIAL_STATS_URL,earned:parsed.earned,callLength:parsed.callLength,callCount:parsed.callCount},"info","popup");
+          return {ok:true,method:"background-fetch",snapshot:mirror.statistics};
+        }
+      }
+    }catch(error){record("PLATFORM_OFFICIAL_BACKGROUND_FETCH_ERROR",{url:OFFICIAL_STATS_URL,error:String(error)},"warn","popup");}
+    var tabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"});
+    var statsTab=null;
+    for(var i=0;i<tabs.length;i+=1){
+      if(/^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(tabs[i].url||""))){statsTab=tabs[i];break;}
+    }
+    if(!statsTab)statsTab=tabs.find(function(tab){return isAuthorizedCloudUrl(tab.url);})||null;
+    if(!statsTab)throw new Error("No se pudo sincronizar en segundo plano y no hay una pestaña autorizada de Cloud Interpreter abierta.");
+    try{await chrome.tabs.sendMessage(statsTab.id,{type:"EFFECTIF_REQUEST_PLATFORM_SNAPSHOT",force:true});}catch(error){throw new Error("La pestaña autorizada no respondió: "+String(error));}
+    var deadline=Date.now()+4000;
+    while(Date.now()<deadline){
+      var stored2=await chrome.storage.local.get(["effectifPlatformMirror"]),candidate=stored2.effectifPlatformMirror&&stored2.effectifPlatformMirror.statistics;
+      if(candidate&&candidate.tabId===statsTab.id)return {ok:true,method:"existing-tab",snapshot:candidate};
+      await new Promise(function(resolve){setTimeout(resolve,150);});
+    }
+    throw new Error("La plataforma no entregó un dato oficial nuevo.");
+  }
   function updateGroqUsage(message) {
     chrome.storage.local.get(["effectifState", "effectifConfig"], function (stored) {
       var state = Object.assign(baseState(), stored.effectifState || {});
@@ -594,6 +650,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if (message.type === "EFFECTIF_PLATFORM_SNAPSHOT") {
       savePlatformSnapshot(message, sender, sendResponse); return true;
     }
+    if (message.type === "SYNC_OFFICIAL_PLATFORM_DATA") { syncOfficialPlatformData().then(sendResponse).catch(function(error){record("PLATFORM_OFFICIAL_SYNC_ERROR",{url:OFFICIAL_STATS_URL,error:String(error)},"error","popup");sendResponse({ok:false,error:String(error)});}); return true; }
     if (message.type === "EFFECTIF_END_CALL") {
       closeCall("manual", NaN, sendResponse); return true;
     }
