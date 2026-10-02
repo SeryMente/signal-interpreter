@@ -1,0 +1,29 @@
+name: signal-observability-audit
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: JavaScript syntax
+        run: |
+          node --check extension/background.js
+          node --check extension/content.js
+          node --check extension/offscreen.js
+          node --check extension/groq-transcriber.js
+          node --check extension/ui/popup.js
+      - name: Native host build
+        run: dotnet build tools/observability-native-host/SignalInterpreterObservabilityHost.csproj -c Release
+      - name: Observability static audit
+        run: node tools/observability-static-audit.mjs
