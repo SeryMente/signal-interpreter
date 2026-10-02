@@ -1,24 +1,44 @@
 # Signal Interpreter · latest observation
 
-- Batch: `batch-fdcb034b-3f9d-446a-b187-cc97a32a2808`
-- Recibido: `2026-10-02T17:02:30.324Z`
+- Batch: `batch-0620a6fa-77ec-4200-a125-f6ae1a0c526e`
+- Recibido: `2026-10-02T17:02:40.632Z`
 - Trigger: critical
 - Extensión: 0.9.3
-- Eventos: 1
+- Eventos: 38
 - Errores: 0
 - Warnings: 1
-- Secuencia: 47251 → 47251
+- Secuencia: 47252 → 47289
 
 ## Categorías
 ```json
 {
-  "BILLING": 1
+  "BRIDGE": 12,
+  "UIA": 2,
+  "SIGNAL": 1,
+  "BILLING": 16,
+  "RUNTIME": 7
 }
 ```
 
 ## Acciones
 ```json
 {
+  "SIGNAL_BRIDGE_CONNECTED": 1,
+  "SIGNAL_BRIDGE_CONTROLLER_HELLO_SENT": 1,
+  "SIGNAL_BRIDGE_EVENT_RECEIVED": 6,
+  "SIGNAL_BRIDGE_CONNECTED_EVENT": 1,
+  "SIGNAL_BRIDGE_CONTROLLER_ACCEPTED": 1,
+  "SIGNAL_BRIDGE_CONTEXT_SENT": 1,
+  "SIGNAL_BRIDGE_CONTEXT_ACCEPTED": 1,
+  "SIGNAL_UIA_SCAN": 2,
+  "SIGNAL_SOURCE_TAB_DEACTIVATED": 1,
+  "NETWORK_REQUEST_COMPLETED": 15,
+  "TAB_LIFECYCLE": 1,
+  "PERFORMANCE_HEARTBEAT": 1,
+  "PLATFORM_SESSION_STARTED": 1,
+  "OBSERVER_STARTED": 1,
+  "PLATFORM_INTEGRITY_CHECK": 1,
+  "SCREEN_MAP": 2,
   "EXCHANGE_RATE_ERROR": 1
 }
 ```
