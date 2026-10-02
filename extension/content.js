@@ -25,6 +25,7 @@
   var overlayHost = null;
   var overlayRoot = null;
   var overlayTimer = null;
+  var callDisplayStartedAt = null;
   var observer = null;
   var telemetryStarted = false;
   var telemetryTimer = null;
@@ -184,6 +185,7 @@
       });
     }
     if (callRouteId && callRouteId !== previousCallId) {
+      callDisplayStartedAt = Date.now();
       var evidence = callActivationEvidence();
       emit("CALL_ROUTE_ENTERED", { callId: callRouteId, reason: reason, evidence: evidence });
       if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; }
@@ -199,10 +201,14 @@
       }
       emitIntegrity("call-entered");
     }
-    if (!callRouteId) lastCallEndMeasurement = null;
+    if (!callRouteId) {
+      callDisplayStartedAt = null;
+      lastCallEndMeasurement = null;
+    }
     schedulePlatformMirror("route:" + reason);
     portalStructureSnapshot("route:" + reason, true);
     updateDiagnosticTimers();
+    renderOverlay();
   }
   function cleanupFingerprints() {
     var cutoff = Date.now() - 15000;
@@ -588,7 +594,7 @@
       return localDay(call.startedAt || call.endedAt) === today;
     }) : [];
     var completedUsd = calls.reduce(function (sum, call) { return sum + Number(call.estimatedRevenue || 0); }, 0);
-    var liveSeconds = state.callStartedAt ? Math.max(0, (Date.now() - Date.parse(state.callStartedAt)) / 1000) : 0;
+    var liveSeconds = state.callStartedAt ? Math.max(0, (Date.now() - Date.parse(state.callStartedAt)) / 1000) : (callDisplayStartedAt ? Math.max(0, (Date.now() - callDisplayStartedAt) / 1000) : 0);
     var modality = state.callModality || "OPI";
     var rate = modality === "VRI" ? Number(config.vriRatePerMinute || 0.25) : Number(config.opiRatePerMinute || 0.20);
     var liveUsd = liveSeconds / 60 * rate;
@@ -600,12 +606,16 @@
     var baseUsd = hasOfficial ? officialUsd : completedUsd;
     return { calls: calls.length, modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd, totalUsd: baseUsd + (hasOfficial ? 0 : liveUsd), officialUsd: hasOfficial ? officialUsd : null, fx: fx };
   }
+  function stopOverlay() {
+    if (overlayTimer) clearInterval(overlayTimer);
+    overlayTimer = null;
+    if (overlayHost) overlayHost.remove();
+    overlayHost = null;
+    overlayRoot = null;
+  }
   function ensureOverlay() {
-    if (!config.overlayEnabled || !document.documentElement) {
-      if (overlayHost) overlayHost.remove();
-      overlayHost = null; overlayRoot = null;
-      if (overlayTimer) clearInterval(overlayTimer);
-      overlayTimer = null;
+    if (!config.overlayEnabled || !document.documentElement || !currentCallId()) {
+      stopOverlay();
       return;
     }
     if (overlayHost && overlayHost.isConnected) return;
@@ -628,9 +638,13 @@
         chrome.storage.local.set({ effectifConfig: current });
       });
     });
-    overlayTimer = setInterval(renderOverlay, 50);
+    overlayTimer = setInterval(renderOverlay, 100);
   }
   function renderOverlay() {
+    if (!currentCallId()) {
+      stopOverlay();
+      return;
+    }
     ensureOverlay();
     if (!overlayRoot) return;
     var info = earningsNow();
@@ -665,6 +679,7 @@
       mediaSnapshot("mutation");
       mapScreen("mutation");
       schedulePlatformMirror("mutation");
+      if (currentCallId()) renderOverlay();
     });
     observer.observe(document.documentElement, {
       subtree: true, childList: true, characterData: true, attributes: true,
@@ -751,7 +766,7 @@
     emit("PLATFORM_SESSION_ENDED", { reason: "pagehide" });
     if (mediaTimer) clearInterval(mediaTimer);
     if (integrityTimer) clearInterval(integrityTimer);
-    if (overlayTimer) clearInterval(overlayTimer);
+    stopOverlay();
     if (telemetryTimer) clearInterval(telemetryTimer);
     performanceSnapshot("pagehide");
     stop("pagehide");
