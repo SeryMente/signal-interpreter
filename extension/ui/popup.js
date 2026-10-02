@@ -92,8 +92,8 @@
       officialUsd = officialMatch ? Number(String(officialMatch[1]).replace(",", ".")) : null;
     }
     var localEarnedUsd = completedUsd + liveSeconds / 60 * liveRate;
-    var hasOfficial = Number.isFinite(officialUsd) && officialUsd > 0;
-    var earnedUsd = hasOfficial ? officialUsd + liveSeconds / 60 * liveRate : localEarnedUsd;
+    var hasOfficial = Number.isFinite(officialUsd) && officialUsd >= 0 && officialStats.earned != null;
+    var earnedUsd = hasOfficial ? officialUsd : localEarnedUsd;
     var fx = Number(config.usdMxnRate || 0);
     var earnedUsdText = "US$" + earnedUsd.toFixed(4);
     var earnedMxnText = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
