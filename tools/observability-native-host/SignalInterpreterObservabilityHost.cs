@@ -8,6 +8,7 @@ using System.Text.Json;
 
 const string Repo = "SeryMente/signal-interpreter";
 const string Path = "diagnostics/latest.json";
+const string DiagnosticsBranch = "observability";
 const long MaxInputBytes = 64L * 1024 * 1024;
 const long MaxDiagnosticBytes = 12L * 1024 * 1024;
 
@@ -42,7 +43,8 @@ try
         var request = new Dictionary<string, object?>
         {
             ["message"] = "chore: update latest development observability",
-            ["content"] = Convert.ToBase64String(diagnosticBytes)
+            ["content"] = Convert.ToBase64String(diagnosticBytes),
+            ["branch"] = DiagnosticsBranch
         };
         if (!string.IsNullOrWhiteSpace(sha)) request["sha"] = sha;
         await File.WriteAllTextAsync(tempPayload, JsonSerializer.Serialize(request), new UTF8Encoding(false));
@@ -69,7 +71,7 @@ static async Task<string> TryGetCurrentShaAsync()
 {
     try
     {
-        var output = await RunGhAsync("api", $"repos/{Repo}/contents/{Path}", "--jq", ".sha");
+        var output = await RunGhAsync("api", $"repos/{Repo}/contents/{Path}", "--field", $"ref={DiagnosticsBranch}", "--jq", ".sha");
         var sha = output.Trim();
         return sha.Length > 0 ? sha : "";
     }
