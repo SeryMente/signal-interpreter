@@ -2,7 +2,20 @@
 "use strict";
 var tabStream=null,micStream=null,tabRecorder=null,micRecorder=null,tabTimer=null,micTimer=null,audioContext=null,running=false,chunkSeq=0,captureSessionId=null;
 function send(message){try{var p=chrome.runtime.sendMessage(Object.assign({target:"offscreen"},message));if(p&&p.catch)p.catch(function(){});}catch(_){} }
-function playTone(volume){var c=new AudioContext(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime;o.frequency.setValueAtTime(880,t);o.frequency.setValueAtTime(1174.66,t+.12);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0001,volume*.38),t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+.35);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.37);o.onended=function(){c.close()};}
+async function playTone(volume){
+  if(!audioContext || audioContext.state==="closed") audioContext=new AudioContext();
+  if(audioContext.state==="suspended") await audioContext.resume();
+  var c=audioContext,o=c.createOscillator(),g=c.createGain(),t=c.currentTime;
+  o.frequency.setValueAtTime(880,t);o.frequency.setValueAtTime(1174.66,t+.12);
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(Math.max(.0001,volume*.45),t+.015);
+  g.gain.exponentialRampToValueAtTime(.0001,t+.35);
+  o.connect(g);g.connect(c.destination);
+  return new Promise(function(resolve,reject){
+    o.onended=function(){resolve(true)};
+    try{o.start(t);o.stop(t+.37)}catch(error){reject(error)}
+  });
+}
 function stopStream(s){try{if(s)s.getTracks().forEach(function(t){t.stop()})}catch(_){} }
 function arm(source,stream){
   if(!stream)return null;
@@ -31,8 +44,8 @@ async function stopCapture(){running=false;try{if(tabTimer)clearTimeout(tabTimer
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
   if(!message||message.target!=="offscreen")return false;
   if(message.type==="EFFECTIF_PLAY_SOUND"){
-    try{playTone(Math.max(0,Math.min(1,Number(message.volume)||0)));sendResponse({ok:true})}
-    catch(error){sendResponse({ok:false,error:String(error)})}
+    playTone(Math.max(0,Math.min(1,Number(message.volume)||0))).then(function(){sendResponse({ok:true})}).catch(function(error){sendResponse({ok:false,error:String(error)})});
+
     return false;
   }
   if(message.type==="SIGNAL_START_GROQ_CAPTURE"){
