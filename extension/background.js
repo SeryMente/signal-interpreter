@@ -514,73 +514,36 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         }
         function normalizeSummary(data) {
           var summary=data&&data.summary||{};
-          var earned=Number(summary.totalInterpreterPay!=null?summary.totalInterpreterPay:summary.totalPay);
-          var callCount=Number(summary.totalNumberOfCalls!=null?summary.totalNumberOfCalls:summary.totalCalls);
-          var callLength=summary.totalCallLengthInterpreter||summary.totalCallLength||null;
+          var earned=Number(summary.totalInterpreterPay);
+          var callCount=Number(summary.totalNumberOfCalls);
+          var callLength=summary.totalCallLengthInterpreter||null;
           return {
             earnedUsd:Number.isFinite(earned)?earned:null,
             earned:Number.isFinite(earned)?"$"+earned.toFixed(2):null,
             callCount:Number.isFinite(callCount)?String(callCount):null,
             callLength:callLength?String(callLength):null,
-            formattedLogs:Array.isArray(data&&data.formattedLogs)?data.formattedLogs.slice(0,100):[],
-            source:"trpc"
+            source:"fetchInterpreterLogs"
           };
-        }
-        function findProfile(root,id,seen,depth) {
-          if(!root||depth>7||typeof root!=="object"||seen.has(root))return null;
-          seen.add(root);
-          if(Array.isArray(root)){for(var i=0;i<root.length;i+=1){var hit=findProfile(root[i],id,seen,depth+1);if(hit)return hit;}return null;}
-          if(String(root.id||"")===String(id)&&(root.organisationId!=null||root.timezone!=null||root.userNumericId!=null))return root;
-          var keys=Object.keys(root);
-          for(var j=0;j<keys.length;j+=1){var value=root[keys[j]];if(value&&typeof value==="object"){var found=findProfile(value,id,seen,depth+1);if(found)return found;}}
-          return null;
         }
         var now=new Date(),start=new Date(now),end=new Date(now);
         start.setHours(0,0,0,0);end.setHours(23,59,59,999);
-        var tz=Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Mexico_City";
-        var profile=findProfile(window.__NEXT_DATA__||{},profileId,new WeakSet(),0)||{};
-        tz=profile.timezone||tz;
-        var base={
+        var payload={
           isScheduled:false,
-          hiddenFields:["deleted","intakeFormInput"],
-          organisationId:profile.organisationId||"",
-          outputTimeZone:tz,
-          filter:{fields:[],tags:[{column:"interpreterUserProfileId",values:['"'+String(profileId)+'"']}]},
+          interpreterUserProfileId:String(profileId),
+          outputTimeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,
+          filter:{fields:[],tags:[]},
           pagination:{pageSize:100,pageNumber:1}
         };
-        var attempts=[];
-        async function tryAdmin() {
-          var input=serializeDateInput(start,end,base);
-          var url=statsUrl.replace(/\/profile\/[^/]+\/logs.*$/,"")+"/api/trpc/logFetcher.fetchAdminLogs?input="+encodeURIComponent(JSON.stringify(input));
-          var res=await fetch(url,{method:"GET",credentials:"include",cache:"no-store",headers:{Accept:"application/json"}});
-          var text=await res.text(),body=null;
-          try{body=JSON.parse(text);}catch(_){}
-          if(!res.ok)throw new Error("fetchAdminLogs HTTP "+res.status);
-          var data=unwrap(body),summary=normalizeSummary(data);
-          if(!summary.earned)return null;
-          return summary;
-        }
-        async function tryInterpreter() {
-          var inputBase={
-            isScheduled:false,
-            interpreterUserProfileId:profileId,
-            outputTimeZone:tz,
-            filter:{fields:[],tags:[]},
-            pagination:{pageSize:100,pageNumber:1}
-          };
-          var input=serializeDateInput(start,end,inputBase);
-          var url=statsUrl.replace(/\/profile\/[^/]+\/logs.*$/,"")+"/api/trpc/logFetcher.fetchInterpreterLogs";
-          var res=await fetch(url,{method:"POST",credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(input)});
-          var text=await res.text(),body=null;
-          try{body=JSON.parse(text);}catch(_){}
-          if(!res.ok)throw new Error("fetchInterpreterLogs HTTP "+res.status);
-          var data=unwrap(body),summary=normalizeSummary(data);
-          if(!summary.earned)return null;
-          return summary;
-        }
-        try{var admin=await tryAdmin();if(admin)return admin;}catch(error){attempts.push(String(error));}
-        try{var interpreter=await tryInterpreter();if(interpreter)return interpreter;}catch(error){attempts.push(String(error));}
-        return {error:attempts.join(" | ")||"Las consultas autenticadas no devolvieron resumen oficial."};
+        var input=serializeDateInput(start,end,payload);
+        var base=statsUrl.replace(/\/profile\/[^/]+\/logs.*$/,"");
+        var url=base+"/api/trpc/logFetcher.fetchInterpreterLogs";
+        var res=await fetch(url,{method:"POST",credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(input)});
+        var text=await res.text(),body=null;
+        try{body=JSON.parse(text);}catch(_){}
+        if(!res.ok)throw new Error("fetchInterpreterLogs HTTP "+res.status);
+        var data=unwrap(body),summary=normalizeSummary(data);
+        if(!summary.earned)throw new Error("La respuesta autenticada no contiene totalInterpreterPay.");
+        return summary;
       },
       args:["cmu2wuz1v0uwr07adbzb9djfz",OFFICIAL_STATS_URL]
     });
@@ -625,18 +588,11 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       }
     }catch(error){record("PLATFORM_OFFICIAL_BACKGROUND_FETCH_ERROR",{url:OFFICIAL_STATS_URL,error:String(error)},"warn","popup");}
     var tabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"});
-    var statsTab=null;
-    for(var i=0;i<tabs.length;i+=1){
-      if(/^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(tabs[i].url||""))){statsTab=tabs[i];break;}
-    }
-    if(!statsTab)statsTab=tabs.find(function(tab){return isAuthorizedCloudUrl(tab.url);})||null;
+    var cloudTabs=tabs.filter(function(tab){return isAuthorizedCloudUrl(tab.url);});
+    var statsTab=cloudTabs.find(function(tab){return /^https:\/\/app\.cloudinterpreter\.com\/call\/[^/?#]+/.test(String(tab.url||""));})
+      ||cloudTabs.find(function(tab){return /^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(tab.url||""));})
+      ||cloudTabs[0];
     if(!statsTab)throw new Error("Sincronización silenciosa no disponible: no hay una pestaña de Cloud Interpreter abierta.");
-    try{
-      var direct=await readOfficialStatsInPage(statsTab.id);
-      if(direct&&direct.summary&&direct.summary.earned)return await persistOfficialStats(statsTab,direct,"existing-page-dom");
-    }catch(error){
-      record("PLATFORM_OFFICIAL_BACKGROUND_PAGE_ERROR",{url:OFFICIAL_STATS_URL,tabId:statsTab.id,error:String(error)},"info","popup");
-    }
     try{
       var trpc=await readOfficialStatsViaTrpc(statsTab.id);
       if(trpc&&trpc.summary&&trpc.summary.earned)return await persistOfficialStats(statsTab,trpc,"page-trpc");
