@@ -687,7 +687,6 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   });
   var networkRequests = new Map();
   var networkWindow = new Map();
-  var networkFlushTimer = null;
   function networkKey(item){return [item.method||"GET",item.type||"other",item.url||"",String(item.statusCode||0)].join("|");}
   function noteNetworkActivity(item){
     var key=networkKey(item),current=networkWindow.get(key)||{method:item.method||"GET",type:item.type||"other",url:item.url||"",statusCode:Number(item.statusCode||0),count:0,totalDurationMs:0,maxDurationMs:0};
@@ -699,7 +698,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     networkWindow.clear();
     record("NETWORK_ACTIVITY_WINDOW",{windowSeconds:15,endpointCount:entries.length,endpoints:entries},"info","webRequest");
   }
-  networkFlushTimer=setInterval(flushNetworkActivity,15000);
+
   chrome.runtime.onInstalled.addListener(function(details){
     chrome.offscreen.closeDocument().catch(function(){});
     initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
@@ -707,6 +706,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
     chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
     chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5,periodInMinutes:2});
+    chrome.alarms.create("signal-network-window",{delayInMinutes:0.25,periodInMinutes:0.25});
     refreshExchangeRate("installed").catch(function(){});
     if(details&&details.reason==="update"&&/^0\.4\./.test(String(details.previousVersion||"")))record("V050_TRANSCRIPTION_MIGRATION_ENABLED",{previousVersion:details.previousVersion,platformAudioAccess:true}, "info","background");
   });
@@ -718,6 +718,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   refreshExchangeRate("startup").catch(function(){});
   chrome.alarms.onAlarm.addListener(function(alarm){
     if(!alarm)return;
+    if(alarm.name==="signal-network-window"){flushNetworkActivity();return;}
     if(alarm.name==="effectif-exchange-rate"){refreshExchangeRate("alarm").catch(function(){});return;}
     if(alarm.name==="effectif-telemetry-maintenance"){
       chrome.storage.local.get(["effectifConfig"],async function(stored){
