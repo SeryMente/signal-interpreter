@@ -369,8 +369,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       if (!config.soundEnabled) return;
       var now = Date.now();
       var previous = stored.effectifCallAlert || {};
-      if (previous.playedAt && now - Number(previous.playedAt) < 3000 && (!callId || !previous.callId || previous.callId === callId)) return;
-      var marker = { callId: callId || previous.callId || null, requestedAt: now, playedAt: null, trigger: trigger || "call" };
+      if (previous.playedAt && now - Number(previous.playedAt) < 5000 && (!callId || !previous.callId || previous.callId === callId)) return;
+      if (previous.requestedAt && now - Number(previous.requestedAt) < 2500 && !previous.failedAt) return;
+      var marker = { callId: callId || previous.callId || null, requestedAt: now, playedAt: null, failedAt: null, trigger: trigger || "call" };
       chrome.storage.local.set({ effectifCallAlert: marker });
       record("CALL_ALERT_SOUND_REQUESTED", {
         callId: marker.callId, trigger: marker.trigger, requestedAt: now
@@ -382,6 +383,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
           callId: marker.callId, trigger: marker.trigger, latencyMs: playedAt - now, prominent: true
         }, "info", "offscreen");
       }).catch(function (error) {
+        chrome.storage.local.set({ effectifCallAlert: Object.assign({}, marker, { failedAt: Date.now(), error: String(error) }) });
         record("CALL_ALERT_SOUND_ERROR", {
           callId: marker.callId, trigger: marker.trigger, latencyMs: Date.now() - now, message: String(error)
         }, "error", "offscreen");
