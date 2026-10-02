@@ -634,14 +634,19 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     return /^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(raw || ""));
   }
   async function syncOfficialPlatformData(){
+    var storedState=await chrome.storage.local.get(["effectifState"]);
+    var activeCallState=!!(storedState.effectifState && storedState.effectifState.callStartedAt);
     var tabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"});
     var cloudTabs=tabs.filter(function(tab){return isAuthorizedCloudUrl(tab.url);});
     var callTab=cloudTabs.find(function(tab){return isCloudCallUrl(tab.url);});
     var statsTab=cloudTabs.find(function(tab){return isCloudStatisticsUrl(tab.url);});
-    var targetTab=callTab||statsTab||cloudTabs[0]||null;
+    var callSafe=activeCallState||!!callTab;
+    var targetTab=callSafe ? callTab : (statsTab||cloudTabs[0]||null);
+    if(callSafe && !callTab){
+      record("PLATFORM_OFFICIAL_SYNC_CALL_SAFE_BLOCKED",{reason:"active-call-without-call-tab"},"warn","popup");
+      throw new Error("Sincronización protegida: no se encontró la pestaña de llamada activa. No se abrirá ni recargará ninguna pestaña.");
+    }
     if(!targetTab) throw new Error("Sincronización silenciosa no disponible: abre Cloud Interpreter primero.");
-
-    var callSafe=!!callTab;
     record("PLATFORM_OFFICIAL_SYNC_REQUESTED",{
       targetTabId:targetTab.id,
       route:String(targetTab.url||"").replace(/\/call\/[^/]+/,"/call/<ID>").replace(/\/profile\/[^/]+/,"/profile/<ID>"),
