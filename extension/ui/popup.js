@@ -214,42 +214,91 @@
       $("telemetryMeta").textContent = String(error);
     }
   }
+  function scrubDiagnostic(value, depth) {
+    if (depth > 8) return "[MAX_DEPTH]";
+    if (typeof value === "string") return value
+      .replace(/Bearer\\s+[A-Za-z0-9._~+/=-]+/gi, "Bearer [REDACTED]")
+      .replace(/gsk_[A-Za-z0-9_-]+/gi, "[REDACTED_KEY]")
+      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi, "[EMAIL]")
+      .replace(/\\b(?:\\+?52)?\\d{10,}\\b/g, "[PHONE]")
+      .replace(/\\b\\d{7,}\\b/g, "[NUMBER]")
+      .slice(0, 5000);
+    if (Array.isArray(value)) return value.slice(0, 1000).map(function (x) { return scrubDiagnostic(x, depth + 1); });
+    if (!value || typeof value !== "object") return value;
+    var out = {};
+    Object.keys(value).slice(0, 500).forEach(function (key) {
+      if (/api.?key|authorization|cookie|password|secret|token/i.test(key)) out[key] = "[REDACTED]";
+      else if (key === "text" && /signal|segment/i.test(String(value.source||""))) out.text = "[TRANSCRIPT_OMITTED]";
+      else out[key] = scrubDiagnostic(value[key], depth + 1);
+    });
+    return out;
+  }
+  function compactSignalSegments(segments) {
+    return (segments || []).map(function (s) {
+      return {id:s.id||null,speaker:s.speaker||null,timestamp:s.timestamp||null,source:s.source||null,reason:s.reason||null,
+        start:s.start==null?null:Number(s.start),end:s.end==null?null:Number(s.end),
+        textLength:String(s.text||"").length};
+    });
+  }
+  async function buildDevelopmentDiagnostic() {
+    var checkpoints=await new Promise(function(resolve){chrome.storage.local.get(["effectifObservabilityUpdate","effectifObservabilityExport"],function(s){resolve(s);});});
+    var last=checkpoints.effectifObservabilityExport||{},update=checkpoints.effectifObservabilityUpdate||{};
+    var sinceSequence=Number(last.sequence!=null?last.sequence:update.eventSequence||0),sinceAt=last.at||update.updatedAt||new Date(0).toISOString();
+    var results=await Promise.all([
+      KhoraTelemetryDB.getEventsAfter(sinceSequence,5000),
+      KhoraTelemetryDB.getSnapshots(),
+      KhoraTelemetryDB.getAllSignalSegments(),
+      chrome.storage.local.get(["effectifConfig","effectifState","effectifPlatformMirror","effectifLastEvent","effectifTelemetryHealth","effectifEventSequence"])
+    ]);
+    var events=results[0]||[], snapshots=(results[1]||[]).filter(function(x){return String(x.capturedAt||"")>String(sinceAt)}).slice(-100);
+    var segments=(results[2]||[]).filter(function(x){return String(x.timestamp||"")>String(sinceAt)}).slice(-500);
+    var stored=results[3]||{}, cfg=Object.assign({},stored.effectifConfig||{});delete cfg.groqApiKey;
+    var safeSessions=[];
+    try{var sessions=Array.isArray(stored.signalInterpreterSessions)?stored.signalInterpreterSessions:[];safeSessions=sessions.map(function(s){var c=Object.assign({},s);delete c.segments;return scrubDiagnostic(c,0)});}catch(_){}
+    var summary={};events.forEach(function(e){var k=String(e.action||"UNKNOWN");summary[k]=Number(summary[k]||0)+1;});
+    var bundle={
+      schema:"signal-interpreter-development-observability/v1",generatedAt:new Date().toISOString(),
+      baseline:{sinceAt:sinceAt,sinceSequence:sinceSequence,update:update,lastExport:last},
+      runtime:{extensionVersion:chrome.runtime.getManifest().version,host:"app.cloudinterpreter.com",currentEventSequence:Number(stored.effectifEventSequence||0)},
+      counts:{events:events.length,snapshots:snapshots.length,signalSegments:segments.length,eventTypes:Object.keys(summary).length},
+      eventSummary:summary,
+      state:scrubDiagnostic(stored.effectifState||{},0),config:cfg,
+      telemetryHealth:scrubDiagnostic(stored.effectifTelemetryHealth||{},0),lastEvent:scrubDiagnostic(stored.effectifLastEvent||null,0),
+      sessions:safeSessions,
+      events:scrubDiagnostic(events,0),
+      platformSnapshots:scrubDiagnostic(snapshots,0),
+      platformMirror:scrubDiagnostic(stored.effectifPlatformMirror||{},0),
+      signalSegments:compactSignalSegments(segments),
+      portalObservation:{source:"visible-portal-structure-and-network-metadata",rawAudio:false,rawTranscript:false,
+        routes:Object.keys(stored.effectifPlatformMirror||{}).map(function(k){return k}),
+        snapshots:(snapshots||[]).map(function(s){return{key:s.key||null,route:s.route||null,capturedAt:s.capturedAt||null,portal:s.portal||null,summary:s.summary||null,tablesCount:Array.isArray(s.tables)?s.tables.length:0};})}
+    };
+    return {bundle:bundle,sequence:Number(stored.effectifEventSequence||sinceSequence),at:bundle.generatedAt};
+  }
+  async function localDownloadDiagnostic(payload){
+    var blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),link=document.createElement("a");
+    link.href=url;link.download="signal-interpreter-diagnostico-"+new Date().toISOString().replace(/[:.]/g,"-")+".json";
+    document.body.appendChild(link);link.click();link.remove();setTimeout(function(){URL.revokeObjectURL(url)},2000);
+  }
   $("export").addEventListener("click", async function () {
-    var button = this; button.disabled = true; status("Leyendo historial persistente…");
-    try {
-      var stored = await chrome.storage.local.get(["effectifConfig", "effectifState", "effectifPlatformMirror", "signalInterpreterSessions", "signalInterpreterActiveSessionId", "effectifLastEvent", "effectifTelemetryHealth"]);
-      var results = await Promise.all([KhoraTelemetryDB.getEvents(), KhoraTelemetryDB.getSnapshots(), KhoraTelemetryDB.getAllSignalSegments(), KhoraTelemetryDB.stats()]);
-      var eventSummary = {};
-      results[0].forEach(function (event) {
-        var key = String(event.action || "UNKNOWN");
-        eventSummary[key] = Number(eventSummary[key] || 0) + 1;
-      });
-      var safeConfig = Object.assign({}, stored.effectifConfig || {});
-      if (safeConfig.groqApiKey) safeConfig.groqApiKey = "[REDACTED]";
-      var sessions = (Array.isArray(stored.signalInterpreterSessions) ? stored.signalInterpreterSessions : []).map(function (session) {
-        var copy = Object.assign({}, session); delete copy.segments; return copy;
-      });
-      var payload = {
-        schema: "signal-interpreter-diagnostic/v3", exportedAt: new Date().toISOString(),
-        report: {
-          purpose: "Diagnóstico reproducible de captura de audio Groq, transcripción y persistencia por sesión",
-          eventsCount: results[0].length, snapshotsCount: results[1].length, signalSegmentsCount: results[2].length,
-          eventSummary: eventSummary
-        },
-        groqCapture: stored.effectifState && stored.effectifState.groqCapture || null,
-        telemetryHealth: stored.effectifTelemetryHealth || null, lastEvent: stored.effectifLastEvent || null,
-        config: safeConfig, state: stored.effectifState || {},
-        activeSessionId: stored.signalInterpreterActiveSessionId || null, sessions: sessions,
-        events: results[0], platformSnapshots: results[1], signalSegments: results[2],
-        platformMirror: stored.effectifPlatformMirror || {}, telemetry: results[3]
-      };
-      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      var url = URL.createObjectURL(blob), link = document.createElement("a");
-      link.href = url; link.download = "signal-interpreter-diagnostico-" + new Date().toISOString().replace(/[:.]/g, "-") + ".json";
-      document.body.appendChild(link); link.click(); link.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
-      status("Diagnóstico: " + results[0].length.toLocaleString("es-MX") + " eventos · " + results[2].length.toLocaleString("es-MX") + " segmentos · " + results[1].length.toLocaleString("es-MX") + " snapshots");
-    } catch (error) { status("No se pudo exportar: " + String(error), true); }
-    finally { button.disabled = false; }
+    var button=this;button.disabled=true;status("Preparando observabilidad desde el último checkpoint…");
+    try{
+      var built=await buildDevelopmentDiagnostic(),payload=built.bundle,response=null;
+      try{
+        response=await new Promise(function(resolve,reject){
+          chrome.runtime.sendNativeMessage("com.serymente.signal_interpreter.observability",{repository:"SeryMente/signal-interpreter",path:"diagnostics/latest.json",message:"chore: update latest development observability",diagnostic:payload},function(r){
+            if(chrome.runtime.lastError)return reject(new Error(chrome.runtime.lastError.message));resolve(r);
+          });
+        });
+      }catch(nativeError){
+        await localDownloadDiagnostic(payload);
+        status("Diagnóstico guardado localmente. Falta instalar el puente GitHub una sola vez.",true);return;
+      }
+      if(!response||!response.ok)throw new Error(response&&response.error||"El puente GitHub no confirmó la publicación.");
+      await new Promise(function(resolve){chrome.storage.local.set({effectifObservabilityExport:{at:built.at,sequence:built.sequence,commit:response.commit||null}},resolve);});
+      status("Observabilidad enviada a GitHub · "+payload.counts.events+" eventos · "+payload.counts.snapshots+" snapshots");
+    }catch(error){status("No se pudo publicar la observabilidad: "+String(error),true);}
+    finally{button.disabled=false;}
   });
   chrome.storage.local.get(["effectifConfig", "effectifState", "effectifLastEvent", "effectifPlatformMirror"], function (stored) {
     config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}); delete config.groqApiKey;
