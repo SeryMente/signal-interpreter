@@ -327,10 +327,20 @@
     var completedUsd = completed.reduce(function (sum, call) { return sum + Number(call.estimatedRevenue || call.estimatedAmount || 0); }, 0);
     var liveSeconds = state.callStartedAt ? Math.max(0, (Date.now() - Date.parse(state.callStartedAt)) / 1000) : 0;
     var liveRate = state.callModality === "VRI" ? Number(config.vriRatePerMinute || 0.25) : Number(config.opiRatePerMinute || 0.20);
-    var earnedUsd = completedUsd + liveSeconds / 60 * liveRate;
+    var localEarnedUsd = completedUsd + liveSeconds / 60 * liveRate;
+    var officialStats = mirror.statistics && mirror.statistics.summary || {};
+    var officialUsd = Number(officialStats.earnedUsd);
+    if (!(officialUsd > 0)) {
+      var officialMatch = String(officialStats.earned || "").match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
+      officialUsd = officialMatch ? Number(String(officialMatch[1]).replace(",", ".")) : null;
+    }
+    var hasOfficial = Number.isFinite(officialUsd) && officialUsd >= 0 && officialStats.earned != null;
+    var earnedUsd = hasOfficial ? officialUsd : localEarnedUsd;
     var fx = Number(config.usdMxnRate || 0);
-    var usdText = "US$" + earnedUsd.toFixed(4); var mxnText = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
+    var usdText = "US$" + earnedUsd.toFixed(4);
+    var mxnText = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
     if ($("earningSummary")) $("earningSummary").textContent = usdText + " · " + mxnText;
+    if ($("earningLabel")) $("earningLabel").textContent = hasOfficial ? "Ingreso oficial hoy" : "Ingreso estimado hoy";
   }
   chrome.storage.local.get(["effectifConfig", "effectifState", "effectifLastEvent", "effectifPlatformMirror"], function (stored) {
     config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}); delete config.groqApiKey;
