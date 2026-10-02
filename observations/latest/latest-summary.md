@@ -1,19 +1,19 @@
 # Signal Interpreter · latest observation
 
-- Batch: `batch-c08efd78-be7a-434c-adb2-0a0f0823122b`
-- Recibido: `2026-10-02T12:32:54.009Z`
+- Batch: `batch-93b6d1ad-c49d-4941-855f-e3f4c6994637`
+- Recibido: `2026-10-02T13:32:53.992Z`
 - Trigger: critical
 - Extensión: 0.9.3
-- Eventos: 15
+- Eventos: 13
 - Errores: 0
 - Warnings: 1
-- Secuencia: 37697 → 37711
+- Secuencia: 39821 → 39833
 
 ## Categorías
 ```json
 {
-  "BRIDGE": 9,
-  "UIA": 5,
+  "BRIDGE": 8,
+  "UIA": 4,
   "BILLING": 1
 }
 ```
@@ -21,8 +21,8 @@
 ## Acciones
 ```json
 {
-  "SIGNAL_BRIDGE_EVENT_RECEIVED": 9,
-  "SIGNAL_UIA_SCAN": 5,
+  "SIGNAL_BRIDGE_EVENT_RECEIVED": 8,
+  "SIGNAL_UIA_SCAN": 4,
   "EXCHANGE_RATE_ERROR": 1
 }
 ```
