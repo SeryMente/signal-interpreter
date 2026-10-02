@@ -456,44 +456,84 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     var earnedUsd=money?Number(String(money[1]).replace(/,/g,".")):null;
     return {earned:earned,earnedUsd:Number.isFinite(earnedUsd)?earnedUsd:null,callLength:callLength,callCount:callCount,rawSource:"background-fetch"};
   }
-  function sendPlatformSnapshotRequest(tab, forceReload) {
-    return new Promise(async function (resolve, reject) {
-      function request() {
-        chrome.tabs.sendMessage(tab.id, {type:"EFFECTIF_REQUEST_PLATFORM_SNAPSHOT",force:true}, function () {
-          if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
-          else resolve(true);
-        });
-      }
-      try { request(); } catch (error) { reject(error); return; }
-      if (!forceReload) return;
-    }).catch(async function (error) {
-      if (!forceReload) throw error;
-      await new Promise(function (resolve, reject) {
-        try {
-          chrome.tabs.reload(tab.id, {bypassCache:true}, function () {
-            if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
-            else resolve(true);
-          });
-        } catch (e) { reject(e); }
-      });
-      await new Promise(function (resolve, reject) {
-        var done = false;
-        function onUpdated(tabId, info) {
-          if (tabId !== tab.id || info.status !== "complete" || done) return;
-          done = true; chrome.tabs.onUpdated.removeListener(onUpdated); resolve(true);
+  async function readOfficialStatsInPage(tabId) {
+    var results = await chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      world: "MAIN",
+      func: async function (statsUrl) {
+        function normalized(value) { return String(value || "").replace(/\s+/g, " ").trim(); }
+        function parseMoney(value) {
+          var match = String(value || "").match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
+          return match ? Number(String(match[1]).replace(",", ".")) : null;
         }
-        chrome.tabs.onUpdated.addListener(onUpdated);
-        setTimeout(function () {
-          if (done) return;
-          done = true; chrome.tabs.onUpdated.removeListener(onUpdated); reject(new Error("Statistics no terminó de cargar después de actualizar la pestaña."));
-        }, 8000);
-      });
-      return new Promise(function (resolve, reject) {
-        chrome.tabs.sendMessage(tab.id, {type:"EFFECTIF_REQUEST_PLATFORM_SNAPSHOT",force:true}, function () {
-          if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message)); else resolve(true);
-        });
-      });
+        function fromDocument(doc) {
+          var definitions = [
+            ["earned", /^(Totally earned|Total earned)$/i],
+            ["callLength", /^Total call length$/i],
+            ["callCount", /^Total number of calls$/i]
+          ];
+          var result = {};
+          var elements = Array.from(doc.querySelectorAll("main *,body *")).filter(function (el) {
+            return el.children.length <= 2;
+          });
+          definitions.forEach(function (definition) {
+            for (var i = 0; i < elements.length; i += 1) {
+              if (!definition[1].test(normalized(elements[i].textContent))) continue;
+              var parent = elements[i].parentElement;
+              var values = parent ? String(parent.innerText || "").split(/\n+/).map(normalized).filter(Boolean) : [];
+              var value = values.filter(function (item) { return !definition[1].test(item); })[0] || "";
+              if (value) result[definition[0]] = value;
+              break;
+            }
+          });
+          if (!result.earned) {
+            var text = normalized(doc.body && doc.body.innerText);
+            var earned = text.match(/Totally earned\s*\$\s*([0-9]+(?:[.,][0-9]+)?)/i);
+            var length = text.match(/Total call length\s*([0-9]{1,2}:?[0-9]{2}:?[0-9]{2})/i);
+            var count = text.match(/Total number of calls\s*([0-9]+)/i);
+            if (earned) result.earned = "$" + earned[1];
+            if (length) result.callLength = length[1];
+            if (count) result.callCount = count[1];
+          }
+          if (!result.earned) return null;
+          result.earnedUsd = parseMoney(result.earned);
+          return result;
+        }
+        try {
+          if (location.origin !== "https://app.cloudinterpreter.com") throw new Error("Pestaña fuera del dominio autorizado.");
+          if (/\/logs\/?$/.test(location.pathname)) {
+            var current = fromDocument(document);
+            if (current) return {ok:true,method:"page-dom",summary:current};
+          }
+          var response = await fetch(statsUrl, {method:"GET",credentials:"include",cache:"no-store",redirect:"follow"});
+          if (!response.ok) throw new Error("HTTP " + response.status);
+          var html = await response.text();
+          var parsed = fromDocument(new DOMParser().parseFromString(html,"text/html"));
+          if (parsed) return {ok:true,method:"page-fetch",summary:parsed};
+          return {ok:false,error:"Statistics respondió pero no incluyó el resumen en HTML."};
+        } catch (error) {
+          return {ok:false,error:String(error)};
+        }
+      },
+      args: [OFFICIAL_STATS_URL]
     });
+    var result=results&&results[0]&&results[0].result;
+    if(!result||!result.ok) throw new Error(result&&result.error||"No se pudo leer Statistics desde el contexto autenticado.");
+    return result;
+  }
+  async function persistOfficialStats(tab, readResult, method) {
+    var parsed=readResult.summary||{};
+    var stored=await chrome.storage.local.get(["effectifPlatformMirror"]);
+    var mirror=Object.assign({},stored.effectifPlatformMirror||{});
+    mirror.statistics=Object.assign({},mirror.statistics||{},{
+      schema:"signal-interpreter-official-stats/v1",key:"statistics",route:"/profile/<ID>/logs",
+      url:OFFICIAL_STATS_URL,capturedAt:iso(),reason:"background-page-context",
+      summary:{earned:parsed.earned,earnedUsd:parsed.earnedUsd,callLength:parsed.callLength,callCount:parsed.callCount},
+      source:"platform-page-context",tabId:tab.id
+    });
+    await chrome.storage.local.set({effectifPlatformMirror:mirror});
+    record("PLATFORM_OFFICIAL_SYNC_COMPLETED",{method:method,url:OFFICIAL_STATS_URL,earned:parsed.earned,callLength:parsed.callLength,callCount:parsed.callCount},"info","popup");
+    return {ok:true,method:method,snapshot:mirror.statistics};
   }
   async function syncOfficialPlatformData(){
     var tabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"});
@@ -501,61 +541,34 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     for(var i=0;i<tabs.length;i+=1){
       if(/^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(tabs[i].url||""))){statsTab=tabs[i];break;}
     }
-    if(!statsTab){
-      throw new Error("Abre Statistics en Cloud Interpreter y vuelve a pulsar Sincroniza.");
+    if(!statsTab) statsTab=tabs.find(function(tab){return isAuthorizedCloudUrl(tab.url);})||null;
+    if(!statsTab) throw new Error("No hay una pestaña de Cloud Interpreter abierta.");
+    try {
+      var direct=await readOfficialStatsInPage(statsTab.id);
+      return await persistOfficialStats(statsTab,direct,direct.method);
+    } catch(error) {
+      record("PLATFORM_OFFICIAL_BACKGROUND_PAGE_ERROR",{url:OFFICIAL_STATS_URL,tabId:statsTab.id,error:String(error)},"warn","popup");
     }
-    var beforeCapturedAt=null;
-    try{
-      var before=await chrome.storage.local.get(["effectifPlatformMirror"]);
-      var beforeStats=before.effectifPlatformMirror&&before.effectifPlatformMirror.statistics;
-      if(beforeStats&&beforeStats.tabId===statsTab.id) beforeCapturedAt=String(beforeStats.capturedAt||"");
-    }catch(_){}
-    async function requestSnapshot(){
-      await new Promise(function(resolve,reject){
-        chrome.tabs.sendMessage(statsTab.id,{type:"EFFECTIF_REQUEST_PLATFORM_SNAPSHOT",force:true},function(){
-          if(chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message)); else resolve(true);
-        });
-      });
-    }
-    try{
-      await requestSnapshot();
-    }catch(firstError){
-      try{
+    var isStats=/^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(statsTab.url||""));
+    if(isStats) {
+      try {
         await new Promise(function(resolve,reject){
-          chrome.tabs.reload(statsTab.id,{bypassCache:true},function(){
+          chrome.tabs.sendMessage(statsTab.id,{type:"EFFECTIF_REQUEST_PLATFORM_SNAPSHOT",force:true},function(){
             if(chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message)); else resolve(true);
           });
         });
-        await new Promise(function(resolve,reject){
-          var done=false;
-          function onUpdated(tabId,info){
-            if(tabId!==statsTab.id||info.status!=="complete"||done)return;
-            done=true;chrome.tabs.onUpdated.removeListener(onUpdated);resolve(true);
-          }
-          chrome.tabs.onUpdated.addListener(onUpdated);
-          setTimeout(function(){
-            if(done)return;
-            done=true;chrome.tabs.onUpdated.removeListener(onUpdated);
-            reject(new Error("Statistics no terminó de cargar."));
-          },8000);
-        });
-        await requestSnapshot();
-      }catch(reloadError){
-        throw new Error("Statistics no respondió. Se actualizó la pestaña y volvió a fallar: "+String(reloadError));
+        var deadline=Date.now()+5000;
+        while(Date.now()<deadline){
+          var stored=await chrome.storage.local.get(["effectifPlatformMirror"]);
+          var candidate=stored.effectifPlatformMirror&&stored.effectifPlatformMirror.statistics;
+          if(candidate&&candidate.tabId===statsTab.id) return {ok:true,method:"existing-statistics-tab",snapshot:candidate};
+          await new Promise(function(resolve){setTimeout(resolve,150);});
+        }
+      } catch(error) {
+        record("PLATFORM_OFFICIAL_SYNC_FALLBACK_ERROR",{url:OFFICIAL_STATS_URL,tabId:statsTab.id,error:String(error)},"warn","popup");
       }
     }
-    var deadline=Date.now()+6000;
-    while(Date.now()<deadline){
-      var stored=await chrome.storage.local.get(["effectifPlatformMirror"]);
-      var candidate=stored.effectifPlatformMirror&&stored.effectifPlatformMirror.statistics;
-      var capturedAt=String(candidate&&candidate.capturedAt||"");
-      if(candidate&&candidate.tabId===statsTab.id&&(!beforeCapturedAt||capturedAt>beforeCapturedAt)){
-        record("PLATFORM_OFFICIAL_SYNC_COMPLETED",{method:"existing-statistics-tab",url:OFFICIAL_STATS_URL,earned:candidate.summary&&candidate.summary.earned,callLength:candidate.summary&&candidate.summary.callLength,callCount:candidate.summary&&candidate.summary.callCount},"info","popup");
-        return {ok:true,method:"existing-statistics-tab",snapshot:candidate};
-      }
-      await new Promise(function(resolve){setTimeout(resolve,150);});
-    }
-    throw new Error("Statistics no entregó un dato oficial nuevo.");
+    throw new Error("No se pudo leer el dato oficial desde la sesión autenticada de Cloud Interpreter.");
   }
   function updateGroqUsage(message) {
     chrome.storage.local.get(["effectifState", "effectifConfig"], function (stored) {
