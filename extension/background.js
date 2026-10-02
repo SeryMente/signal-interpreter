@@ -452,7 +452,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     callLength=valueAfter(["Total call length"]);
     callCount=valueAfter(["Total number of calls"]);
     if(!earned)return null;
-    var money=String(earned).match(/(?:US\\$|\\$)\\s*([0-9]+(?:[.,][0-9]+)?)/);\n    var earnedUsd=money?Number(String(money[1]).replace(/,/g,".")):null;\n    return {earned:earned,earnedUsd:Number.isFinite(earnedUsd)?earnedUsd:null,callLength:callLength,callCount:callCount,rawSource:"background-fetch"};
+    var money=String(earned).match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
+    var earnedUsd=money?Number(String(money[1]).replace(/,/g,".")):null;
+    return {earned:earned,earnedUsd:Number.isFinite(earnedUsd)?earnedUsd:null,callLength:callLength,callCount:callCount,rawSource:"background-fetch"};
   }
   function sendPlatformSnapshotRequest(tab, forceReload) {
     return new Promise(async function (resolve, reject) {
