@@ -29,6 +29,8 @@
   var state = {};
   var mirror = {};
   var $ = function (id) { return document.getElementById(id); };
+  var BUILD_VERSION = chrome.runtime.getManifest().version;
+  var BUILD_LABEL = "v" + BUILD_VERSION;
   function status(text, error) {
     $("status").textContent = text;
     $("status").style.color = error ? "#ff8b8b" : "#76d7a5";
@@ -67,6 +69,7 @@
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
     $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
     $("groqStatus").textContent = "Clave local ✓ · " + (config.groqModel || "whisper-large-v3-turbo");
+    if ($("telemetryVersion")) $("telemetryVersion").textContent = BUILD_LABEL;
     $("sessionTimer").textContent = duration(state.sessionStartedAt);
     $("onlineTimer").textContent = duration(state.onlineStartedAt);
     $("callTimer").textContent = duration(state.callStartedAt);
