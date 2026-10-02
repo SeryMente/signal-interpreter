@@ -715,6 +715,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
   chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
   chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
+  chrome.alarms.create("signal-network-window",{delayInMinutes:0.25,periodInMinutes:0.25});
   refreshExchangeRate("startup").catch(function(){});
   chrome.alarms.onAlarm.addListener(function(alarm){
     if(!alarm)return;
