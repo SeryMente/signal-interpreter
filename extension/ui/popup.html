@@ -46,6 +46,7 @@
             <label class="mini-switch"><span>Red: ruta, estado y duración</span><input id="networkTelemetryEnabled" type="checkbox"></label>
             <label class="mini-switch"><span>Rendimiento y salud de interfaz</span><input id="performanceTelemetryEnabled" type="checkbox"></label>
             <label class="mini-switch"><span>Interacciones sin valores escritos</span><input id="interactionTelemetryEnabled" type="checkbox"></label>
+            <label class="model-row">MODELO<select id="groqModel"><option value="whisper-large-v3-turbo">whisper-large-v3-turbo</option><option value="whisper-large-v3">whisper-large-v3</option></select></label>
             <div class="telemetry-grid"><label>RETENCIÓN (DÍAS)<input id="telemetryRetentionDays" type="number" min="7" max="730" step="1"></label><label>MÁX. EVENTOS<input id="telemetryMaxEvents" type="number" min="1000" max="1000000" step="1000"></label><label>HEARTBEAT (S)<input id="telemetryHeartbeatSeconds" type="number" min="10" max="300" step="5"></label></div>
             <small id="telemetryMeta">Preparando base persistente…</small>
           </section>
