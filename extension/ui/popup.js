@@ -200,12 +200,18 @@
   });
   document.querySelectorAll("[data-open]").forEach(function (button) {
     button.addEventListener("click", function () {
-      chrome.tabs.query({ url: "https://app.cloudinterpreter.com/profile/*" }, function (tabs) {
+      chrome.storage.local.get(["effectifState"], function (stored) {
+        if (stored.effectifState && stored.effectifState.callStartedAt) {
+          status("Durante una llamada no se abre Statistics ni se cambia de pestaña.", true);
+          return;
+        }
+        chrome.tabs.query({ url: "https://app.cloudinterpreter.com/profile/*" }, function (tabs) {
         var profile = tabs.find(function (tab) { return /\/profile\/[^/]+/.test(tab.url || ""); });
         if (!profile) { status("Abre primero My Profile", true); return; }
         var match = profile.url.match(/^(https:\/\/app\.cloudinterpreter\.com\/profile\/[^/?#]+)/);
         if (!match) return;
         chrome.tabs.create({ url: match[1] + "/" + button.dataset.open });
+        });
       });
     });
   });
