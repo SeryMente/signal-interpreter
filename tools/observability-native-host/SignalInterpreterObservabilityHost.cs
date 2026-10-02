@@ -105,7 +105,6 @@ static void ValidateCaller(string origin)
         throw new InvalidOperationException("El ID de extensión no coincide con el host instalado.");
 }
 
-static string Quote(string value) => "\"" + value.Replace("\"", "\\\\"") + "\"";
 
 static async Task ReadExactAsync(Stream stream, byte[] buffer)
 {
