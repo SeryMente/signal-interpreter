@@ -42,7 +42,7 @@ try
         };
         if (!string.IsNullOrWhiteSpace(sha)) request["sha"] = sha;
         await File.WriteAllTextAsync(tempPayload, JsonSerializer.Serialize(request), new UTF8Encoding(false));
-        var output = await RunGhAsync($"api repos/{Repo}/contents/{Path} --method PUT --input {tempPayload}");
+        var output = await RunGhAsync("api", $"repos/{Repo}/contents/{Path}", "--method", "PUT", "--input", tempPayload);
         using var responseDoc = JsonDocument.Parse(output);
         string? commitUrl = null;
         if (responseDoc.RootElement.TryGetProperty("commit", out var commit) &&
@@ -65,14 +65,14 @@ static async Task<string> TryGetCurrentShaAsync()
 {
     try
     {
-        var output = await RunGhAsync($"api repos/{Repo}/contents/{Path} --jq .sha");
+        var output = await RunGhAsync("api", $"repos/{Repo}/contents/{Path}", "--jq", ".sha");
         var sha = output.Trim();
         return sha.Length > 0 ? sha : "";
     }
     catch { return ""; }
 }
 
-static async Task<string> RunGhAsync(string arguments)
+static async Task<string> RunGhAsync(params string[] arguments)
 {
     var psi = new ProcessStartInfo
     {
@@ -82,7 +82,7 @@ static async Task<string> RunGhAsync(string arguments)
         RedirectStandardError = true,
         CreateNoWindow = true
     };
-    foreach (var argument in ParseArgs(arguments)) psi.ArgumentList.Add(argument);
+    foreach (var argument in arguments) psi.ArgumentList.Add(argument);
     using var process = Process.Start(psi) ?? throw new InvalidOperationException("No se pudo iniciar gh.exe.");
     var stdout = await process.StandardOutput.ReadToEndAsync();
     var stderr = await process.StandardError.ReadToEndAsync();
