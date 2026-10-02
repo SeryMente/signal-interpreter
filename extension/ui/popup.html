@@ -28,6 +28,10 @@
         <div class="rate-line"><span>OPI US$0.20/min · VRI US$0.25/min</span><span>USD/MXN <b id="exchangeRate">—</b></span></div>
         <small id="exchangeMeta">Tipo de cambio automático</small>
       </section>
+      <div class="inline-control switch-row">
+        <div><strong>Overlay de ganancias</strong><small>Visible sobre Cloud Interpreter</small></div>
+        <label class="switch"><input id="overlayEnabled" type="checkbox"><i></i></label>
+      </div>
       <div class="action-row"><button id="endCall" class="danger" disabled>Finalizar llamada</button><button id="sound" class="secondary">Probar sonido</button></div>
       <label class="volume-row">Volumen <output id="volumeValue">80%</output><input id="volume" type="range" min="0" max="1" step="0.05"></label>
       <section class="official">
@@ -35,6 +39,7 @@
         <div id="officialSummary"><small>Aún no hay datos oficiales sincronizados.</small></div>
         <details class="official-details"><summary><span>Ver detalle oficial</span><span>Statistics · Pre-Scheduled · Appointments</span></summary>
           <nav class="quick"><button data-open="logs" class="secondary">Statistics</button><button data-open="logs/scheduled" class="secondary">Pre-Scheduled</button><button data-open="appointments" class="secondary">Appointments</button></nav>
+          <button id="refresh" class="secondary compact refresh-pages">Actualizar pantallas abiertas</button>
           <div id="officialData"><small>Aún no hay pantallas sincronizadas.</small></div>
         </details>
       </section>
@@ -50,6 +55,7 @@
             <div class="telemetry-grid"><label>RETENCIÓN (DÍAS)<input id="telemetryRetentionDays" type="number" min="7" max="730" step="1"></label><label>MÁX. EVENTOS<input id="telemetryMaxEvents" type="number" min="1000" max="1000000" step="1000"></label><label>HEARTBEAT (S)<input id="telemetryHeartbeatSeconds" type="number" min="10" max="300" step="5"></label></div>
             <small id="telemetryMeta">Preparando base persistente…</small>
           </section>
+          <small id="last">Sin eventos</small>
           <button id="export" class="secondary">Exportar diagnóstico completo</button>
         </div>
       </details>
