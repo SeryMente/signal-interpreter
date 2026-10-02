@@ -108,7 +108,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   }
   function baseState() {
     return {
-      sessionStartedAt: null, sessionSegments: [], pendingCall: null,
+      sessionStartedAt: null, sessionSegments: [], pendingCall: null, pendingCallEnd: null,
       onlineStartedAt: null, onlineSegments: [],
       callStartedAt: null, callId: null, callModality: null,
       completedCalls: [], totalCalls: 0, dailyCalls: {},
@@ -346,20 +346,33 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       state.callStartedAt = event.timestamp;
       state.callModality = state.pendingCall && state.pendingCall.modality || "OPI";
       state.pendingCall = null;
+      state.pendingCallEnd = null;
       chrome.alarms.clear("effectif-pending-call");
       state.totalCalls = Number(state.totalCalls || 0) + 1;
       var day = localDay(event.timestamp);
       state.dailyCalls = Object.assign({}, state.dailyCalls || {});
       state.dailyCalls[day] = Number(state.dailyCalls[day] || 0) + 1;
-      record("CALL_TIMER_STARTED", { callId: callId, modality: state.callModality }, "info", "background");
+      record("CALL_TIMER_STARTED", {
+        callId: callId, modality: state.callModality,
+        trigger: "call-route-entered", route: event.payload && event.payload.route || "/call/<ID>",
+        evidence: event.payload && event.payload.evidence || null
+      }, "info", "background");
     }).then(function (state) {
-      if (state && state.callId === callId) {
-        record("TRANSCRIPTION_MODULE_READY", { callId: callId, engine: "groq-whisper" }, "info", "background");
-      }
+      if (!state || state.callId !== callId) return;
+      record("TRANSCRIPTION_MODULE_READY", { callId: callId, engine: "groq-whisper" }, "info", "background");
+      chrome.storage.local.get(["effectifConfig"], function (stored) {
+        var current = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+        if (!current.soundEnabled) return;
+        playSound(Math.max(0.95, Number(current.volume || 0))).then(function () {
+          record("CALL_ALERT_SOUND_PLAYED", { callId: callId, trigger: "call-route-entered", prominent: true }, "info", "offscreen");
+        }).catch(function (error) {
+          record("CALL_ALERT_SOUND_ERROR", { callId: callId, trigger: "call-route-entered", message: String(error) }, "error", "offscreen");
+        });
+      });
     });
   }
   function alertOnConnect(event) {
-    mutateState(async function (state, config) {
+    mutateState(async function (state) {
       state.lastConnectAt = event.timestamp;
       if (state.pendingCall) {
         state.pendingCall.clickedAt = event.timestamp;
@@ -370,12 +383,28 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         };
       }
       chrome.alarms.create("effectif-pending-call", { when: Date.now() + 15000 });
-      if (!config.soundEnabled) return;
-      playSound(config.volume).then(function () {
-        record("ALERT_SOUND_PLAYED", { detectedAt: event.timestamp }, "info", "offscreen");
-      }).catch(function (error) {
-        record("ALERT_SOUND_ERROR", { message: String(error) }, "error", "offscreen");
-      });
+      record("CONNECT_ACCEPTED_PENDING", {
+        modality: event.payload && event.payload.modality || "OPI",
+        reason: "await-call-route"
+      }, "info", "background");
+    });
+  }
+  function rememberCallEnd(event) {
+    mutateState(async function (state) {
+      if (!state.callId) return;
+      var payload = event.payload || {};
+      if (payload.callId && payload.callId !== state.callId) return;
+      var platformSeconds = Number(payload.platformSeconds);
+      state.pendingCallEnd = {
+        callId: state.callId,
+        clickedAt: event.timestamp,
+        platformSeconds: Number.isFinite(platformSeconds) && platformSeconds >= 0 ? platformSeconds : null,
+        signal: "end-button"
+      };
+      record("CALL_END_SIGNAL_PREPARED", {
+        callId: state.callId, platformSeconds: state.pendingCallEnd.platformSeconds,
+        trigger: "end-button", confirmation: "await-rating-route"
+      }, "info", "background");
     });
   }
   function closeCall(source, platformSeconds, sendResponse) {
@@ -386,6 +415,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       }
       var endedAt = iso();
       var observedSeconds = Math.max(0, (Date.parse(endedAt) - Date.parse(state.callStartedAt)) / 1000);
+      var pendingEnd = state.pendingCallEnd && state.pendingCallEnd.callId === state.callId ? state.pendingCallEnd : null;
+      var pendingSeconds = pendingEnd ? Number(pendingEnd.platformSeconds) : NaN;
+      if (!Number.isFinite(platformSeconds) && Number.isFinite(pendingSeconds) && pendingSeconds >= 0) platformSeconds = pendingSeconds;
       var hasPlatformSeconds = Number.isFinite(platformSeconds) && platformSeconds >= 0;
       var billableSeconds = hasPlatformSeconds ? platformSeconds : observedSeconds;
       var modality = state.callModality || "OPI";
@@ -405,8 +437,11 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         state.transcriptionTabId = null;
         state.transcriptionStatus = { phase: "stopped", connected: false, engine: "groq" };
       }
-      state.callStartedAt = null; state.callId = null; state.callModality = null;
-      record("CALL_TIMER_STOPPED", call, "info", source);
+      state.callStartedAt = null; state.callId = null; state.callModality = null; state.pendingCallEnd = null;
+      record("CALL_TIMER_STOPPED", Object.assign({}, call, {
+        confirmation: source === "rating-route" ? "rating-route" : "fallback-route",
+        observedVsPlatformDeltaSeconds: hasPlatformSeconds ? Math.round((observedSeconds - billableSeconds) * 1000) / 1000 : null
+      }), "info", source);
       if (sendResponse) sendResponse({ ok: true, call: call });
     });
   }
@@ -503,10 +538,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       world:"MAIN",
       func:async function(profileId,statsUrl) {
         function serializeDateInput(start,end,payload) {
-          return {
-            json:Object.assign({},payload,{dateSince:start.toISOString(),dateTill:end.toISOString()}),
-            meta:{values:{dateSince:["Date"],dateTill:["Date"]}}
-          };
+          return {json:Object.assign({},payload,{dateSince:start.toISOString(),dateTill:end.toISOString()}),meta:{values:{dateSince:["Date"],dateTill:["Date"]}}};
         }
         function unwrap(body) {
           var data=body&&body.result&&body.result.data;
@@ -517,35 +549,31 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
           var earned=Number(summary.totalInterpreterPay);
           var callCount=Number(summary.totalNumberOfCalls);
           var callLength=summary.totalCallLengthInterpreter||null;
-          return {
-            earnedUsd:Number.isFinite(earned)?earned:null,
-            earned:Number.isFinite(earned)?"$"+earned.toFixed(2):null,
-            callCount:Number.isFinite(callCount)?String(callCount):null,
-            callLength:callLength?String(callLength):null,
-            source:"fetchInterpreterLogs"
-          };
+          return {earnedUsd:Number.isFinite(earned)?earned:null,earned:Number.isFinite(earned)?"$"+earned.toFixed(2):null,callCount:Number.isFinite(callCount)?String(callCount):null,callLength:callLength?String(callLength):null,source:"fetchInterpreterLogs"};
+        }
+        async function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
+        async function readOnce(url,payload){
+          var res=await fetch(url,{method:"POST",credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload)});
+          var text=await res.text(),body=null;
+          try{body=JSON.parse(text);}catch(_){}
+          if(!res.ok){
+            var detail=String(text||"").replace(/\s+/g," ").slice(0,240);
+            throw new Error("fetchInterpreterLogs HTTP "+res.status+(detail?" · "+detail:""));
+          }
+          var data=unwrap(body),summary=normalizeSummary(data);
+          if(!summary.earned)throw new Error("La respuesta autenticada no contiene totalInterpreterPay.");
+          return summary;
         }
         var now=new Date(),start=new Date(now),end=new Date(now);
         start.setHours(0,0,0,0);end.setHours(23,59,59,999);
-        var payload={
-          isScheduled:false,
-          interpreterUserProfileId:String(profileId),
-          outputTimeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,
-          filter:{fields:[],tags:[]},
-          pagination:{pageSize:100,pageNumber:1}
-        };
-        var input=serializeDateInput(start,end,payload);
-        var base=statsUrl.replace(/\/profile\/[^/]+\/logs.*$/,"");
-        var url=base+"/api/trpc/logFetcher.fetchInterpreterLogs";
-        var res=await fetch(url,{method:"POST",credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(input)});
-        var text=await res.text(),body=null;
-        try{body=JSON.parse(text);}catch(_){}
-        if(!res.ok)throw new Error("fetchInterpreterLogs HTTP "+res.status);
-        var data=unwrap(body),summary=normalizeSummary(data);
-        if(!summary.earned)throw new Error("La respuesta autenticada no contiene totalInterpreterPay.");
-        return summary;
+        var payload={isScheduled:false,interpreterUserProfileId:String(profileId),outputTimeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,filter:{fields:[],tags:[]},pagination:{pageSize:100,pageNumber:1}};
+        var input=serializeDateInput(start,end,payload),lastError=null,url=statsUrl.replace(/\/profile\/[^/]+\/logs.*$/,"")+"/api/trpc/logFetcher.fetchInterpreterLogs";
+        for(var attempt=1;attempt<=3;attempt+=1){
+          try{return await readOnce(url,input);}catch(error){lastError=error;if(attempt<3)await sleep(350*attempt);}
+        }
+        throw lastError||new Error("Cloud Interpreter no devolvió el resumen tRPC.");
       },
-      args:["cmu2wuz1v0uwr07adbzb9djfz",OFFICIAL_STATS_URL]
+      args:[(String(OFFICIAL_STATS_URL).match(/\/profile\/([^/]+)\/logs/)||[])[1]||"",OFFICIAL_STATS_URL]
     });
     var result=results&&results[0]&&results[0].result;
     if(!result||result.error)throw new Error(result&&result.error||"Cloud Interpreter no devolvió el resumen tRPC.");
@@ -553,16 +581,26 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   }
   async function persistOfficialStats(tab,readResult,method){
     var parsed=readResult.summary||{};
-    var stored=await chrome.storage.local.get(["effectifPlatformMirror"]);
-    var mirror=Object.assign({},stored.effectifPlatformMirror||{});
+    var earningsState=await chrome.storage.local.get(["effectifPlatformMirror","effectifState","effectifConfig"]);
+    var currentState=Object.assign(baseState(),earningsState.effectifState||{});
+    var currentConfig=Object.assign({},DEFAULT_CONFIG,earningsState.effectifConfig||{});
+    var today=localDay(),calls=Array.isArray(currentState.completedCalls)?currentState.completedCalls.filter(function(call){return localDay(call.startedAt||call.endedAt)===today;}):[];
+    var localCompletedUsd=calls.reduce(function(sum,call){return sum+Number(call.estimatedRevenue||0);},0);
+    var liveSeconds=currentState.callStartedAt?Math.max(0,(Date.now()-Date.parse(currentState.callStartedAt))/1000):0;
+    var localRate=currentState.callModality==="VRI"?Number(currentConfig.vriRatePerMinute||0.25):Number(currentConfig.opiRatePerMinute||0.20);
+    var localEstimateUsd=localCompletedUsd+liveSeconds/60*localRate;
+    var officialUsd=Number(parsed.earnedUsd);
+    var deltaUsd=Number.isFinite(officialUsd)?Math.round((officialUsd-localEstimateUsd)*10000)/10000:null;
+    var storedMirror=earningsState.effectifPlatformMirror;
+    var mirror=Object.assign({},storedMirror||{});
     mirror.statistics=Object.assign({},mirror.statistics||{},{
       schema:"signal-interpreter-official-stats/v1",key:"statistics",route:"/profile/<ID>/logs",
       url:OFFICIAL_STATS_URL,capturedAt:iso(),reason:"background-page-context",
-      summary:{earned:parsed.earned,earnedUsd:parsed.earnedUsd,callLength:parsed.callLength,callCount:parsed.callCount},
+      summary:{earned:parsed.earned,earnedUsd:parsed.earnedUsd,callLength:parsed.callLength,callCount:parsed.callCount,localEstimateUsd:Math.round(localEstimateUsd*10000)/10000,deltaUsd:deltaUsd},
       source:"platform-page-context",tabId:tab.id
     });
     await chrome.storage.local.set({effectifPlatformMirror:mirror});
-    record("PLATFORM_OFFICIAL_SYNC_COMPLETED",{method:method,url:OFFICIAL_STATS_URL,earned:parsed.earned,callLength:parsed.callLength,callCount:parsed.callCount},"info","popup");
+    record("PLATFORM_OFFICIAL_SYNC_COMPLETED",{method:method,url:OFFICIAL_STATS_URL,earned:parsed.earned,callLength:parsed.callLength,callCount:parsed.callCount,localEstimateUsd:Math.round(localEstimateUsd*10000)/10000,deltaUsd:deltaUsd},"info","popup");
     return {ok:true,method:method,snapshot:mirror.statistics};
   }
   async function syncOfficialPlatformData(){
@@ -732,13 +770,12 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event);
       if (event.action === "CONNECT_CLICKED") alertOnConnect(event);
       if (event.action === "CALL_ROUTE_ENTERED") startCall(event);
-      if (event.action === "CALL_END_CLICKED") {
-        var clickedSeconds = event.payload && event.payload.platformSeconds;
-        closeCall("end-button", typeof clickedSeconds === "number" ? clickedSeconds : NaN, null);
-      }
+      if (event.action === "CALL_END_CLICKED") rememberCallEnd(event);
       if (event.action === "CALL_ROUTE_ENDED") {
         var seconds = event.payload && event.payload.platformSeconds;
-        closeCall("route", typeof seconds === "number" ? seconds : NaN, null);
+        var source = event.payload && event.payload.endSignal === "rating-stars-route" ? "rating-route" :
+          (event.payload && event.payload.endSignal === "pagehide-fallback" ? "pagehide" : "route");
+        closeCall(source, typeof seconds === "number" ? seconds : NaN, null);
       }
       return true;
     }
@@ -830,6 +867,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
     markObservabilityBuildCheckpoint(details&&details.reason||"installed",details&&details.previousVersion).catch(function(){});
     chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
+    chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
     chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
     chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5,periodInMinutes:2});
     chrome.alarms.create("signal-network-window",{delayInMinutes:0.25,periodInMinutes:0.25});
@@ -841,6 +879,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
   markObservabilityBuildCheckpoint("runtime-start").catch(function(){});
   chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
+  chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
   chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
   chrome.alarms.create("signal-network-window",{delayInMinutes:0.25,periodInMinutes:0.25});
   refreshExchangeRate("startup").catch(function(){});
@@ -848,6 +887,18 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if(!alarm)return;
     if(alarm.name==="signal-network-window"){flushNetworkActivity();return;}
     if(alarm.name==="effectif-exchange-rate"){refreshExchangeRate("alarm").catch(function(){});return;}
+    if(alarm.name==="effectif-official-sync"){
+      record("PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",{trigger:"hourly"}, "info","background");
+      syncOfficialPlatformData().then(function(result){
+        var summary=result&&result.snapshot&&result.snapshot.summary||{};
+        record("PLATFORM_OFFICIAL_HOURLY_SYNC_COMPLETED",{
+          trigger:"hourly",method:result&&result.method||null,earned:summary.earned||null,callCount:summary.callCount||null,callLength:summary.callLength||null
+        },"info","background");
+      }).catch(function(error){
+        record("PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",{trigger:"hourly",error:String(error)},"warn","background");
+      });
+      return;
+    }
     if(alarm.name==="effectif-telemetry-maintenance"){
       chrome.storage.local.get(["effectifConfig"],async function(stored){
         var config=Object.assign({},DEFAULT_CONFIG,stored.effectifConfig||{});
