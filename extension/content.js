@@ -234,7 +234,7 @@
     if (signature === lastMediaSignature && now - lastMediaAt < 15000) return;
     lastMediaSignature = signature;
     lastMediaAt = now;
-    emit("MEDIA_HEALTH", { reason: reason, callId: currentCallId(), media: media }, media.length ? "info" : "warn");
+    emit("MEDIA_HEALTH", { reason: reason, callId: currentCallId(), media: media, mediaElementsFound: media.length, interpretation: media.length ? "media-elements-present" : "no-media-elements-observed-in-dom" }, "info");
   }
   function emitIntegrity(reason) {
     emit("PLATFORM_INTEGRITY_CHECK", {
