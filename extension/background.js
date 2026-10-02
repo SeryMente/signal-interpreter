@@ -699,9 +699,6 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     record("NETWORK_ACTIVITY_WINDOW",{windowSeconds:15,endpointCount:entries.length,endpoints:entries},"info","webRequest");
   }
 
-  chrome.runtime.onInstalled.addListener(function(details){
-    chrome.offscreen.closeDocument().catch(function(){});
-    initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
   async function markObservabilityBuildCheckpoint(reason, previousVersion) {
     try {
       var files=["manifest.json","background.js","content.js","offscreen.js","groq-transcriber.js","ui/popup.js"];
@@ -719,6 +716,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     }catch(error){record("OBSERVABILITY_CHECKPOINT_ERROR",{message:String(error)},"warn","runtime");}
   }
     markObservabilityBuildCheckpoint(details&&details.reason||"installed",details&&details.previousVersion).catch(function(){});
+
+  chrome.runtime.onInstalled.addListener(function(details){
+    chrome.offscreen.closeDocument().catch(function(){});
+    initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
     chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
     chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
     chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5,periodInMinutes:2});
