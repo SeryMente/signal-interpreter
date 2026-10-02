@@ -702,7 +702,23 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   chrome.runtime.onInstalled.addListener(function(details){
     chrome.offscreen.closeDocument().catch(function(){});
     initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
-  (async function(){try{var s=await chrome.storage.local.get(["effectifObservabilityUpdate"]),current=chrome.runtime.getManifest().version;if(!s.effectifObservabilityUpdate||s.effectifObservabilityUpdate.version!==current){var seqStore=await chrome.storage.local.get(["effectifEventSequence"]);await chrome.storage.local.set({effectifObservabilityUpdate:{version:current,updatedAt:iso(),previousVersion:s.effectifObservabilityUpdate&&s.effectifObservabilityUpdate.version||null,eventSequence:Number(seqStore.effectifEventSequence||0)}});}}catch(_){}})();
+  async function markObservabilityBuildCheckpoint(reason, previousVersion) {
+    try {
+      var files=["manifest.json","background.js","content.js","offscreen.js","groq-transcriber.js","ui/popup.js"];
+      var texts=await Promise.all(files.map(function(file){return fetch(chrome.runtime.getURL(file),{cache:"no-store"}).then(function(response){if(!response.ok)throw new Error("No se pudo leer "+file);return response.text();});}));
+      var bytes=new TextEncoder().encode(texts.join("\n/* SIGNAL OBSERVABILITY BUILD BOUNDARY */\n"));
+      var digest=await crypto.subtle.digest("SHA-256",bytes);
+      var fingerprint=Array.from(new Uint8Array(digest)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");
+      var stored=await chrome.storage.local.get(["effectifObservabilityUpdate","effectifEventSequence"]),current=stored.effectifObservabilityUpdate||null;
+      if(!current||current.codeFingerprint!==fingerprint||(reason==="update"&&current.updatedAt)){
+        await chrome.storage.local.set({effectifObservabilityUpdate:{
+          version:chrome.runtime.getManifest().version,updatedAt:iso(),previousVersion:previousVersion||current&&current.version||null,
+          reason:reason||"code-fingerprint-change",eventSequence:Number(stored.effectifEventSequence||0),codeFingerprint:fingerprint
+        }});
+      }
+    }catch(error){record("OBSERVABILITY_CHECKPOINT_ERROR",{message:String(error)},"warn","runtime");}
+  }
+    markObservabilityBuildCheckpoint(details&&details.reason||"installed",details&&details.previousVersion).catch(function(){});
     chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
     chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
     chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5,periodInMinutes:2});
@@ -710,9 +726,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     refreshExchangeRate("installed").catch(function(){});
     if(details&&details.reason==="update"&&/^0\.4\./.test(String(details.previousVersion||"")))record("V050_TRANSCRIPTION_MIGRATION_ENABLED",{previousVersion:details.previousVersion,platformAudioAccess:true}, "info","background");
   });
-  chrome.runtime.onStartup.addListener(function(){record("EXTENSION_RUNTIME_STARTED",{manifestVersion:chrome.runtime.getManifest().version},"info","runtime");});
+  chrome.runtime.onStartup.addListener(function(){record("EXTENSION_RUNTIME_STARTED",{manifestVersion:chrome.runtime.getManifest().version},"info","runtime");markObservabilityBuildCheckpoint("startup").catch(function(){});});
   chrome.runtime.onSuspend.addListener(function(){log("info","EXTENSION_RUNTIME_SUSPENDING",{pendingNetworkRequests:networkRequests?networkRequests.size:0});});
   initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+  markObservabilityBuildCheckpoint("runtime-start").catch(function(){});
   chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
   chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
   chrome.alarms.create("signal-network-window",{delayInMinutes:0.25,periodInMinutes:0.25});
