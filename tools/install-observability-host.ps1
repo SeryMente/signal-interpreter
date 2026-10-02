@@ -21,7 +21,7 @@ if(-not $ExtensionId){
 }
 if($ExtensionId -notmatch '^[a-p]{32}$'){throw "ExtensionId inválido: $ExtensionId"}
 Write-Host "EXTENSION_ID=$ExtensionId"
-dotnet publish (Join-Path $sourceRoot "SignalInterpreterObservabilityHost.csproj") -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o $installRoot | Out-Host
+dotnet publish (Join-Path $sourceRoot "SignalInterpreterObservabilityHost.csproj") -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o $installRoot | Out-Host
 $binary=Join-Path $installRoot "SignalInterpreterObservabilityHost.exe"
 if(-not(Test-Path -LiteralPath $binary)){throw "No se generó el host nativo."}
 $manifestPath=Join-Path $installRoot "$hostName.json"
