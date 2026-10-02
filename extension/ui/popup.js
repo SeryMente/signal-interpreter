@@ -14,7 +14,6 @@
     volume: 0.8,
     transcriptionAvailable: true,
     transcriptionEnabled: true,
-    groqApiKey: "",
     groqModel: "whisper-large-v3-turbo",
     opiRatePerMinute: 0.20,
     vriRatePerMinute: 0.25,
@@ -66,9 +65,8 @@
     $("overlayEnabled").checked = !!config.overlayEnabled;
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
-    $("groqApiKey").value = config.groqApiKey || "";
     $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
-    $("groqStatus").textContent = config.groqApiKey ? "CONFIGURADO" : "SIN CONFIGURAR";
+    $("groqStatus").textContent = "CLAVE LOCAL";
     $("sessionTimer").textContent = duration(state.sessionStartedAt);
     $("onlineTimer").textContent = duration(state.onlineStartedAt);
     $("callTimer").textContent = duration(state.callStartedAt);
@@ -99,7 +97,6 @@
   }
   var openTranscript=$("openTranscript");
   if(openTranscript)openTranscript.addEventListener("click",function(){openTranscript.disabled=true;status("Preparando captura de audio…");chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab||tab.id==null)throw new Error("No hay pestaña activa.");return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){return{tab:tab,streamId:streamId}})}).then(function(x){var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:x.tab.id,audioStreamId:x.streamId,sourceUrl:x.tab.url||"",sourceTitle:x.tab.title||""};return chrome.runtime.sendMessage(payload)}).then(function(response){status(response&&response.ok?"Groq: consola abierta y captura iniciada":"No se pudo iniciar: "+String(response&&response.error||"desconocido"),!(response&&response.ok));}).catch(function(error){status("No se pudo iniciar la captura: "+String(error),true);}).finally(function(){openTranscript.disabled=false;});});
-  $("groqApiKey").addEventListener("change",function(){save({groqApiKey:String(this.value||"").trim()});});
   $("groqModel").addEventListener("change",function(){save({groqModel:this.value});});
   $("enabled").addEventListener("change", function () {
     save({ autoAnswerEnabled: this.checked });
@@ -160,6 +157,8 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character];
     });
   }
+  var syncOfficial = $("syncOfficial");
+  if (syncOfficial) syncOfficial.addEventListener("click", function () { var button=this; button.disabled=true; status("Sincronizando con la plataforma…"); chrome.runtime.sendMessage({type:"SYNC_OFFICIAL_PLATFORM_DATA"}, function(response){ if(response&&response.ok){ var earned=response.snapshot&&response.snapshot.summary&&response.snapshot.summary.earned; status(earned ? "Sincronizado: "+earned+" · "+(response.method==="background-fetch"?"segundo plano":"pestaña existente") : "Sincronizado"); } else { status("No se pudo sincronizar: "+String(response&&response.error||"desconocido"),true); } button.disabled=false; }); });
   $("refresh").addEventListener("click", function () {
     chrome.tabs.query({ url: "https://app.cloudinterpreter.com/*" }, function (tabs) {
       var pending = tabs.length;
@@ -253,7 +252,7 @@
     finally { button.disabled = false; }
   });
   chrome.storage.local.get(["effectifConfig", "effectifState", "effectifLastEvent", "effectifPlatformMirror"], function (stored) {
-    config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+    config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}); delete config.groqApiKey;
     state = stored.effectifState || {};
     mirror = stored.effectifPlatformMirror || {};
     var last = stored.effectifLastEvent;
