@@ -538,10 +538,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       world:"MAIN",
       func:async function(profileId,statsUrl) {
         function serializeDateInput(start,end,payload) {
-          return {
-            json:Object.assign({},payload,{dateSince:start.toISOString(),dateTill:end.toISOString()}),
-            meta:{values:{dateSince:["Date"],dateTill:["Date"]}}
-          };
+          return {json:Object.assign({},payload,{dateSince:start.toISOString(),dateTill:end.toISOString()}),meta:{values:{dateSince:["Date"],dateTill:["Date"]}}};
         }
         function unwrap(body) {
           var data=body&&body.result&&body.result.data;
@@ -552,35 +549,31 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
           var earned=Number(summary.totalInterpreterPay);
           var callCount=Number(summary.totalNumberOfCalls);
           var callLength=summary.totalCallLengthInterpreter||null;
-          return {
-            earnedUsd:Number.isFinite(earned)?earned:null,
-            earned:Number.isFinite(earned)?"$"+earned.toFixed(2):null,
-            callCount:Number.isFinite(callCount)?String(callCount):null,
-            callLength:callLength?String(callLength):null,
-            source:"fetchInterpreterLogs"
-          };
+          return {earnedUsd:Number.isFinite(earned)?earned:null,earned:Number.isFinite(earned)?"$"+earned.toFixed(2):null,callCount:Number.isFinite(callCount)?String(callCount):null,callLength:callLength?String(callLength):null,source:"fetchInterpreterLogs"};
+        }
+        async function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
+        async function readOnce(url,payload){
+          var res=await fetch(url,{method:"POST",credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload)});
+          var text=await res.text(),body=null;
+          try{body=JSON.parse(text);}catch(_){}
+          if(!res.ok){
+            var detail=String(text||"").replace(/\s+/g," ").slice(0,240);
+            throw new Error("fetchInterpreterLogs HTTP "+res.status+(detail?" · "+detail:""));
+          }
+          var data=unwrap(body),summary=normalizeSummary(data);
+          if(!summary.earned)throw new Error("La respuesta autenticada no contiene totalInterpreterPay.");
+          return summary;
         }
         var now=new Date(),start=new Date(now),end=new Date(now);
         start.setHours(0,0,0,0);end.setHours(23,59,59,999);
-        var payload={
-          isScheduled:false,
-          interpreterUserProfileId:String(profileId),
-          outputTimeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,
-          filter:{fields:[],tags:[]},
-          pagination:{pageSize:100,pageNumber:1}
-        };
-        var input=serializeDateInput(start,end,payload);
-        var base=statsUrl.replace(/\/profile\/[^/]+\/logs.*$/,"");
-        var url=base+"/api/trpc/logFetcher.fetchInterpreterLogs";
-        var res=await fetch(url,{method:"POST",credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(input)});
-        var text=await res.text(),body=null;
-        try{body=JSON.parse(text);}catch(_){}
-        if(!res.ok)throw new Error("fetchInterpreterLogs HTTP "+res.status);
-        var data=unwrap(body),summary=normalizeSummary(data);
-        if(!summary.earned)throw new Error("La respuesta autenticada no contiene totalInterpreterPay.");
-        return summary;
+        var payload={isScheduled:false,interpreterUserProfileId:String(profileId),outputTimeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,filter:{fields:[],tags:[]},pagination:{pageSize:100,pageNumber:1}};
+        var input=serializeDateInput(start,end,payload),lastError=null,url=statsUrl.replace(/\/profile\/[^/]+\/logs.*$/,"")+"/api/trpc/logFetcher.fetchInterpreterLogs";
+        for(var attempt=1;attempt<=3;attempt+=1){
+          try{return await readOnce(url,input);}catch(error){lastError=error;if(attempt<3)await sleep(350*attempt);}
+        }
+        throw lastError||new Error("Cloud Interpreter no devolvió el resumen tRPC.");
       },
-      args:["cmu2wuz1v0uwr07adbzb9djfz",OFFICIAL_STATS_URL]
+      args:[(String(OFFICIAL_STATS_URL).match(/\/profile\/([^/]+)\/logs/)||[])[1]||"",OFFICIAL_STATS_URL]
     });
     var result=results&&results[0]&&results[0].result;
     if(!result||result.error)throw new Error(result&&result.error||"Cloud Interpreter no devolvió el resumen tRPC.");
