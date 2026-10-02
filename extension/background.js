@@ -473,24 +473,6 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     });
   }
   function isAuthorizedCloudUrl(raw){try{return new URL(String(raw||"")).origin===AUTHORIZED_ORIGIN}catch(_){return false;}}
-  function stripHtml(raw){return String(raw||"").replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/&nbsp;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/\s+/g," ").trim();}
-  function extractOfficialStatsFromHtml(raw){
-    var text=stripHtml(raw),earned=null,callLength=null,callCount=null;
-    function valueAfter(labels){
-      for(var i=0;i<labels.length;i+=1){
-        var rx=new RegExp(labels[i]+"\\s*(?:[:\\-]|)\\s*([^\\n]{1,160})","i"),m=text.match(rx);
-        if(m&&m[1])return String(m[1]).trim();
-      }
-      return null;
-    }
-    earned=valueAfter(["Totally earned","Total earned","Today's earnings","Earned today","Ganado hoy"]);
-    callLength=valueAfter(["Total call length"]);
-    callCount=valueAfter(["Total number of calls"]);
-    if(!earned)return null;
-    var money=String(earned).match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
-    var earnedUsd=money?Number(String(money[1]).replace(/,/g,".")):null;
-    return {earned:earned,earnedUsd:Number.isFinite(earnedUsd)?earnedUsd:null,callLength:callLength,callCount:callCount,rawSource:"background-fetch"};
-  }
   function readVisibleOfficialSummaryFromPage() {
     function normalize(value){return String(value||"").replace(/\s+/g," ").trim();}
     function parseMoney(value){
@@ -604,41 +586,20 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     return {ok:true,method:method,snapshot:mirror.statistics};
   }
   async function syncOfficialPlatformData(){
-    try{
-      var response=await fetch(OFFICIAL_STATS_URL,{method:"GET",credentials:"include",cache:"no-store",redirect:"follow"});
-      var raw=await response.text();
-      if(response.ok){
-        var parsed=extractOfficialStatsFromHtml(raw);
-        if(parsed){
-          var stored=await chrome.storage.local.get(["effectifPlatformMirror"]);
-          var mirror=Object.assign({},stored.effectifPlatformMirror||{});
-          mirror.statistics=Object.assign({},mirror.statistics||{},{
-            schema:"signal-interpreter-official-stats/v1",key:"statistics",route:"/profile/<ID>/logs",
-            url:OFFICIAL_STATS_URL,capturedAt:iso(),reason:"background-fetch",
-            summary:{earned:parsed.earned,earnedUsd:parsed.earnedUsd,callLength:parsed.callLength,callCount:parsed.callCount},
-            source:"platform-background-fetch"
-          });
-          await chrome.storage.local.set({effectifPlatformMirror:mirror});
-          record("PLATFORM_OFFICIAL_SYNC_COMPLETED",{method:"background-fetch",url:OFFICIAL_STATS_URL,earned:parsed.earned,callLength:parsed.callLength,callCount:parsed.callCount},"info","popup");
-          return {ok:true,method:"background-fetch",snapshot:mirror.statistics};
-        }
-        record("PLATFORM_OFFICIAL_BACKGROUND_FETCH_EMPTY",{url:OFFICIAL_STATS_URL},"info","popup");
-      }
-    }catch(error){record("PLATFORM_OFFICIAL_BACKGROUND_FETCH_ERROR",{url:OFFICIAL_STATS_URL,error:String(error)},"warn","popup");}
     var tabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"});
     var cloudTabs=tabs.filter(function(tab){return isAuthorizedCloudUrl(tab.url);});
-    var statsTab=cloudTabs.find(function(tab){return /^https:\/\/app\.cloudinterpreter\.com\/call\/[^/?#]+/.test(String(tab.url||""));})
-      ||cloudTabs.find(function(tab){return /^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(tab.url||""));})
-      ||cloudTabs[0];
-    if(!statsTab)throw new Error("Sincronización silenciosa no disponible: no hay una pestaña de Cloud Interpreter abierta.");
+    var callTab=cloudTabs.find(function(tab){return /^https:\/\/app\.cloudinterpreter\.com\/call\/[^/?#]+(?:[?#].*)?$/.test(String(tab.url||""));});
+    var statsTab=cloudTabs.find(function(tab){return /^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(tab.url||""));});
+    var targetTab=callTab||statsTab||cloudTabs[0];
+    if(!targetTab) throw new Error("Sincronización silenciosa no disponible: abre Cloud Interpreter primero.");
     try{
-      var trpc=await readOfficialStatsViaTrpc(statsTab.id);
-      if(trpc&&trpc.summary&&trpc.summary.earned)return await persistOfficialStats(statsTab,trpc,"page-trpc");
+      var trpc=await readOfficialStatsViaTrpc(targetTab.id);
+      if(trpc&&trpc.summary&&trpc.summary.earned) return await persistOfficialStats(targetTab,trpc,"page-trpc-silent");
+      throw new Error("La sesión autenticada no devolvió el resumen oficial.");
     }catch(error){
-      record("PLATFORM_OFFICIAL_PAGE_TRPC_ERROR",{url:OFFICIAL_STATS_URL,tabId:statsTab.id,error:String(error)},"warn","popup");
-      throw new Error("No se pudo leer el dato oficial desde la sesión autenticada de Cloud Interpreter: "+String(error));
+      record("PLATFORM_OFFICIAL_PAGE_TRPC_ERROR",{url:OFFICIAL_STATS_URL,tabId:targetTab.id,route:String(targetTab.url||""),error:String(error)},"warn","popup");
+      throw new Error("No se pudo sincronizar sin navegar ni abrir pestañas: "+String(error));
     }
-    throw new Error("La sesión autenticada no devolvió el resumen oficial.");
   }
   function updateGroqUsage(message) {
     chrome.storage.local.get(["effectifState", "effectifConfig"], function (stored) {

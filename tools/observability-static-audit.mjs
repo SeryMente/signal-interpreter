@@ -10,6 +10,7 @@ const host=read("tools/observability-native-host/SignalInterpreterObservabilityH
 
 assert.equal(manifest.version,"0.9.12");
 assert.ok(manifest.permissions.includes("nativeMessaging"));
+assert.ok(manifest.permissions.includes("scripting"));
 assert.deepEqual(manifest.content_scripts[0].matches,["https://app.cloudinterpreter.com/*"]);
 assert.ok(popup.includes("getEventsAfter"));
 assert.ok(popup.includes("sendNativeMessage"));
@@ -21,6 +22,8 @@ assert.ok(background.includes("/api/trpc/logFetcher.fetchInterpreterLogs"));
 assert.ok(background.includes('world:"MAIN"'));
 assert.equal(background.includes("readOfficialStatsInBackgroundTab"),false);
 assert.equal(background.includes("chrome.tabs.create({url:OFFICIAL_STATS_URL"),false);
+assert.equal(background.includes("chrome.tabs.reload("),false);
+assert.equal(background.includes("fetch(OFFICIAL_STATS_URL"),false);
 assert.ok(host.includes('Repo = "SeryMente/signal-interpreter"'));
 assert.ok(host.includes('Path = "diagnostics/latest.json"'));
 const csproj=read("tools/observability-native-host/SignalInterpreterObservabilityHost.csproj");
