@@ -568,7 +568,7 @@
     var currency = mxnAvailable ? "MXN" : "USD";
     overlayRoot.querySelector(".card").classList.toggle("compact", !!config.overlayCompact);
     overlayRoot.getElementById("amount").textContent = money(total, currency, 4);
-    overlayRoot.getElementById("live").textContent = "+" + money(live, currency, 4);
+    overlayRoot.getElementById("live").textContent = info.officialUsd !== null ? "En llamada +" + money(live, currency, 4) : "+" + money(live, currency, 4);
     overlayRoot.getElementById("summary").textContent = state.callStartedAt ? info.modality + " · " + (info.liveSeconds / 60).toFixed(2) + " min" : info.calls + " llamadas hoy";
     overlayRoot.getElementById("fx").textContent = mxnAvailable
       ? "USD/MXN " + info.fx.toFixed(4) + " · " + (config.exchangeRateDate || "último disponible")
