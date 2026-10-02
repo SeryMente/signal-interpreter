@@ -231,6 +231,11 @@
       quotaBytes: estimate && estimate.quota || null
     };
   }
+  async function getLatest(storeName, indexName) {
+    var db=await open(),tx=db.transaction(storeName,"readonly"),done=transactionDone(tx),store=tx.objectStore(storeName),result=null;
+    var request=indexName?store.index(indexName).openCursor(null,"prev"):store.openCursor(null,"prev");
+    await new Promise(function(resolve,reject){request.onsuccess=function(){result=request.result?request.result.value:null;resolve()};request.onerror=function(){reject(request.error)}});await done;return result;
+  }
   async function clear() {
     var db = await open();
     var tx = db.transaction(["events", "snapshots", "signalSegments", "metadata"], "readwrite");
@@ -255,6 +260,7 @@
     clearSignalSession: deleteSignalSession,
     putMetadata: function (key, value) { return put("metadata", { key: key, value: value, updatedAt: new Date().toISOString() }); },
     stats: stats,
+    getLatest: getLatest,
     prune: prune,
     clear: clear
   };

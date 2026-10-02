@@ -42,6 +42,7 @@
   var lastMediaAt = 0;
   var lastScreenSignature = "";
   var lastMirrorSignature = "";
+  var lastPortalStructureSignature = "";
   var mirrorTimer = null;
   var mediaTimer = null;
   var integrityTimer = null;
@@ -62,7 +63,27 @@
       .replace(/\b\d{7,}\b/g, "[NUMBER]")
       .slice(0, 1000);
   }
-  function mirrorText(value, limit) { return normalized(value).slice(0, limit || 500); }
+  function mirrorText(value, limit) { return safe(normalized(value)).slice(0, limit || 500); }
+  function extractPortalStructure() {
+    function labelOf(element) {
+      return safe(element.getAttribute && (element.getAttribute("aria-label") || element.getAttribute("title") || "") || element.textContent || "").slice(0, 120);
+    }
+    var buttons = Array.from(document.querySelectorAll("button,[role='button']")).filter(visibleElement).slice(0, 160).map(function (element) {
+      return {tag: String(element.tagName || "").toLowerCase(), role: safe(element.getAttribute && element.getAttribute("role") || ""), label: labelOf(element), disabled: !!element.disabled};
+    }).filter(function (x) { return x.label || x.role; });
+    var links = Array.from(document.querySelectorAll("a[href]")).filter(visibleElement).slice(0, 120).map(function (element) {
+      var href = "";
+      try { var u = new URL(element.getAttribute("href"), location.href); href = u.origin === location.origin ? u.pathname : u.origin; } catch (_) {}
+      return {label: labelOf(element), path: href};
+    }).filter(function (x) { return x.label || x.path; });
+    var fields = Array.from(document.querySelectorAll("input,select,textarea")).filter(visibleElement).slice(0, 80).map(function (element) {
+      return {tag: String(element.tagName || "").toLowerCase(), type: safe(element.getAttribute("type") || ""), name: safe(element.getAttribute("name") || ""), aria: safe(element.getAttribute("aria-label") || element.getAttribute("placeholder") || "")};
+    });
+    var headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,[role='heading']")).filter(visibleElement).slice(0, 80).map(function (element) {
+      return safe(element.textContent).slice(0, 160);
+    }).filter(Boolean);
+    return {route: routeTemplate(), title: safe(document.title), buttons: buttons, links: links, fields: fields, headings: headings};
+  }
   function isTarget() { return location.hostname === config.targetHost; }
   function currentCallId() {
     var match = location.pathname.match(/^\/call\/([^/?#]+)\/?$/);
@@ -130,6 +151,7 @@
       emit("RATING_ROUTE_ENTERED", { previousCallId: previousCallId || null });
     }
     schedulePlatformMirror("route:" + reason);
+    portalStructureSnapshot("route:" + reason, true);
     updateDiagnosticTimers();
   }
   function cleanupFingerprints() {
@@ -320,9 +342,16 @@
         return { rows: rows };
       }).filter(function (table) { return table.rows.length; });
   }
+  function portalStructureSnapshot(reason, force) {
+    if (!isTarget() || !config.observationEnabled) return;
+    var portal = extractPortalStructure(), signature = JSON.stringify(portal);
+    if (signature === lastPortalStructureSignature && !force) return;
+    lastPortalStructureSignature = signature;
+    emit("PORTAL_STRUCTURE_SNAPSHOT", {reason:reason || "heartbeat", portal:portal});
+  }
   function capturePlatformMirror(reason, force) {
     var key = mirrorKey();
-    if (!key || !config.observationEnabled) return;
+    if (!key || !config.observationEnabled || location.hostname !== config.targetHost) return;
     var root = document.querySelector("main") || document.body;
     var seen = new Set();
     var lines = String(root && root.innerText || "").split(/\n+/).map(normalized).filter(function (line) {
@@ -333,7 +362,7 @@
     var snapshot = {
       schema: "signal-interpreter-visible-page/v1", key: key,
       route: routeTemplate(), title: safe(document.title), capturedAt: iso(),
-      reason: reason, summary: extractSummary(), tables: extractTables(), lines: lines
+      reason: reason, summary: extractSummary(), tables: extractTables(), lines: lines, portal: extractPortalStructure()
     };
     var signature = JSON.stringify({
       key: key, summary: snapshot.summary, tables: snapshot.tables, lines: lines
@@ -412,6 +441,7 @@
       controls: { buttons: document.querySelectorAll("button").length, inputs: document.querySelectorAll("input").length, selects: document.querySelectorAll("select").length, dialogs: document.querySelectorAll('[role="dialog"]').length, media: document.querySelectorAll("audio,video").length, iframes: document.querySelectorAll("iframe").length }
     };
     mutationAggregate = { batches: 0, addedNodes: 0, removedNodes: 0, attributes: 0, textChanges: 0 };
+    portalStructureSnapshot("heartbeat", false);
     emit("PERFORMANCE_HEARTBEAT", payload);
   }
   function startRichTelemetry() {

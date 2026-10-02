@@ -5,6 +5,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
 
   var GROQ_MODEL = "whisper-large-v3-turbo";
   var AUTHORIZED_ORIGIN = "https://app.cloudinterpreter.com";
+  var AUTHORIZED_ORIGIN = "https://app.cloudinterpreter.com";
   var OFFICIAL_STATS_URL = AUTHORIZED_ORIGIN + "/profile/cmu2wuz1v0uwr07adbzb9djfz/logs";
   var GROQ_USD_PER_AUDIO_HOUR = 0.04;
   var DEFAULT_CONFIG = {
@@ -156,7 +157,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   }
   function inferEventPhase(action){var a=String(action||"");if(/_REQUESTED$|_QUEUED$/.test(a))return"start";if(/_STARTED$|_CONNECTED$|_SENT$/.test(a))return"started";if(/_COMPLETED$|_UPDATED$|_PERSISTED$|_ACCEPTED$/.test(a))return"completed";if(/_ERROR$|_FAILED$/.test(a))return"error";if(/_REJECTED$|_BLOCKED$/.test(a))return"blocked";if(/_TIMEOUT$/.test(a))return"timeout";if(/_ABORTED$/.test(a))return"aborted";return"event"}
   function inferEventOutcome(action,level){var a=String(action||"");if(level==="error"||/_ERROR$|_FAILED$/.test(a))return"error";if(/_REJECTED$|_BLOCKED$/.test(a))return"blocked";if(/_TIMEOUT$/.test(a))return"timeout";if(/_ACCEPTED$|_COMPLETED$|_PERSISTED$|_UPDATED$|_STARTED$|_CONNECTED$/.test(a))return"success";return"observed"}
-  function inferEventCategory(action){var a=String(action||"");if(/^SIGNAL_/.test(a)){if(/CAPTION/.test(a))return"LIVE_CAPTION";if(/UIA/.test(a))return"UIA";if(/BRIDGE/.test(a))return"BRIDGE";if(/SESSION/.test(a))return"SESSION";if(/DIALOGUE/.test(a))return"DIALOGUE";if(/AUDIO/.test(a))return"CAPTURE";if(/PERSIST|SEGMENT/.test(a))return"STORAGE";if(/CONSOLE|LIVE_/.test(a))return"UI";return"SIGNAL"}if(/NETWORK|EXCHANGE/.test(a))return"BILLING";if(/TRANSCRIPTION/.test(a))return"TRANSCRIPT";if(/CALL|MISSED/.test(a))return"SESSION";if(/SOUND/.test(a))return"SOUND";return"RUNTIME"}
+  function inferEventCategory(action){var a=String(action||"");if(/^SIGNAL_/.test(a)){if(/CAPTION/.test(a))return"LIVE_CAPTION";if(/UIA/.test(a))return"UIA";if(/BRIDGE/.test(a))return"BRIDGE";if(/SESSION/.test(a))return"SESSION";if(/DIALOGUE/.test(a))return"DIALOGUE";if(/AUDIO/.test(a))return"CAPTURE";if(/PERSIST|SEGMENT/.test(a))return"STORAGE";if(/CONSOLE|LIVE_/.test(a))return"UI";return"SIGNAL"}if(/NETWORK|PORTAL|PLATFORM_OFFICIAL_SYNC|PLATFORM_MIRROR/.test(a))return"PORTAL";if(/EXCHANGE/.test(a))return"BILLING";if(/TRANSCRIPTION/.test(a))return"TRANSCRIPT";if(/CALL|MISSED/.test(a))return"SESSION";if(/SOUND/.test(a))return"SOUND";return"RUNTIME"}
   function appendEvent(input, callback) {
     eventQueue = eventQueue.then(async function () {
       var stored = await chrome.storage.local.get(["effectifEvents", "effectifEventSequence", "effectifTelemetryHealth"]);
@@ -678,29 +679,64 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if (message.type === "EFFECTIF_OPEN_SIDE_PANEL") {
       sendResponse({ ok: false, error: "Módulo reservado: no disponible en esta versión" }); return false;
     }
+    if(message.type==="GET_OBSERVABILITY_CHECKPOINT"){chrome.storage.local.get(["effectifObservabilityUpdate","effectifObservabilityExport"],function(s){sendResponse({ok:true,update:s.effectifObservabilityUpdate||null,lastExport:s.effectifObservabilityExport||null,currentSequence:Number(s.effectifEventSequence||0)});});return true;}
     if (message.type === "EFFECTIF_GROQ_USAGE") {
       updateGroqUsage(message); sendResponse({ ok: true }); return false;
     }
     return false;
   });
   var networkRequests = new Map();
+  var networkWindow = new Map();
+  function networkKey(item){return [item.method||"GET",item.type||"other",item.url||"",String(item.statusCode||0)].join("|");}
+  function noteNetworkActivity(item){
+    var key=networkKey(item),current=networkWindow.get(key)||{method:item.method||"GET",type:item.type||"other",url:item.url||"",statusCode:Number(item.statusCode||0),count:0,totalDurationMs:0,maxDurationMs:0};
+    current.count+=1; current.totalDurationMs+=Number(item.durationMs||0); current.maxDurationMs=Math.max(current.maxDurationMs,Number(item.durationMs||0)); networkWindow.set(key,current);
+  }
+  function flushNetworkActivity(){
+    if(!networkWindow.size)return;
+    var entries=Array.from(networkWindow.values()).map(function(x){return Object.assign({},x,{avgDurationMs:x.count?Math.round(x.totalDurationMs/x.count):0});}).sort(function(a,b){return b.count-a.count||b.maxDurationMs-a.maxDurationMs;}).slice(0,120);
+    networkWindow.clear();
+    record("NETWORK_ACTIVITY_WINDOW",{windowSeconds:15,endpointCount:entries.length,endpoints:entries},"info","webRequest");
+  }
+
+  async function markObservabilityBuildCheckpoint(reason, previousVersion) {
+    try {
+      var files=["manifest.json","background.js","content.js","offscreen.js","groq-transcriber.js","ui/popup.js"];
+      var texts=await Promise.all(files.map(function(file){return fetch(chrome.runtime.getURL(file),{cache:"no-store"}).then(function(response){if(!response.ok)throw new Error("No se pudo leer "+file);return response.text();});}));
+      var bytes=new TextEncoder().encode(texts.join("\n/* SIGNAL OBSERVABILITY BUILD BOUNDARY */\n"));
+      var digest=await crypto.subtle.digest("SHA-256",bytes);
+      var fingerprint=Array.from(new Uint8Array(digest)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");
+      var stored=await chrome.storage.local.get(["effectifObservabilityUpdate","effectifEventSequence"]),current=stored.effectifObservabilityUpdate||null;
+      if(!current||current.codeFingerprint!==fingerprint||(reason==="update"&&current.updatedAt)){
+        await chrome.storage.local.set({effectifObservabilityUpdate:{
+          version:chrome.runtime.getManifest().version,updatedAt:iso(),previousVersion:previousVersion||current&&current.version||null,
+          reason:reason||"code-fingerprint-change",eventSequence:Number(stored.effectifEventSequence||0),codeFingerprint:fingerprint
+        }});
+      }
+    }catch(error){record("OBSERVABILITY_CHECKPOINT_ERROR",{message:String(error)},"warn","runtime");}
+  }
   chrome.runtime.onInstalled.addListener(function(details){
     chrome.offscreen.closeDocument().catch(function(){});
     initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+    markObservabilityBuildCheckpoint(details&&details.reason||"installed",details&&details.previousVersion).catch(function(){});
     chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
     chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
     chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5,periodInMinutes:2});
+    chrome.alarms.create("signal-network-window",{delayInMinutes:0.25,periodInMinutes:0.25});
     refreshExchangeRate("installed").catch(function(){});
     if(details&&details.reason==="update"&&/^0\.4\./.test(String(details.previousVersion||"")))record("V050_TRANSCRIPTION_MIGRATION_ENABLED",{previousVersion:details.previousVersion,platformAudioAccess:true}, "info","background");
   });
-  chrome.runtime.onStartup.addListener(function(){record("EXTENSION_RUNTIME_STARTED",{manifestVersion:chrome.runtime.getManifest().version},"info","runtime");});
+  chrome.runtime.onStartup.addListener(function(){record("EXTENSION_RUNTIME_STARTED",{manifestVersion:chrome.runtime.getManifest().version},"info","runtime");markObservabilityBuildCheckpoint("startup").catch(function(){});});
   chrome.runtime.onSuspend.addListener(function(){log("info","EXTENSION_RUNTIME_SUSPENDING",{pendingNetworkRequests:networkRequests?networkRequests.size:0});});
   initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+  markObservabilityBuildCheckpoint("runtime-start").catch(function(){});
   chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
   chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
+  chrome.alarms.create("signal-network-window",{delayInMinutes:0.25,periodInMinutes:0.25});
   refreshExchangeRate("startup").catch(function(){});
   chrome.alarms.onAlarm.addListener(function(alarm){
     if(!alarm)return;
+    if(alarm.name==="signal-network-window"){flushNetworkActivity();return;}
     if(alarm.name==="effectif-exchange-rate"){refreshExchangeRate("alarm").catch(function(){});return;}
     if(alarm.name==="effectif-telemetry-maintenance"){
       chrome.storage.local.get(["effectifConfig"],async function(stored){
@@ -734,16 +770,13 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   chrome.webRequest.onCompleted.addListener(function (details) {
     var started = networkRequests.get(details.requestId); networkRequests.delete(details.requestId);
     if (!started) return;
-    record("NETWORK_REQUEST_COMPLETED", {
-      method: started.method, type: started.type, url: started.url, tabId: started.tabId,
-      statusCode: details.statusCode, fromCache: !!details.fromCache,
-      durationMs: Math.max(0, Date.now() - started.at)
-    }, details.statusCode >= 400 ? "warn" : "info", "webRequest");
+    noteNetworkActivity({method:started.method,type:started.type,url:started.url,statusCode:details.statusCode,durationMs:Math.max(0,Date.now()-started.at)});
+    if(details.statusCode>=400)record("NETWORK_REQUEST_ERROR",{method:started.method,type:started.type,url:started.url,tabId:started.tabId,statusCode:details.statusCode,durationMs:Math.max(0,Date.now()-started.at)},"warn","webRequest");
   }, { urls: ["https://app.cloudinterpreter.com/*"] });
   chrome.webRequest.onErrorOccurred.addListener(function (details) {
     var started = networkRequests.get(details.requestId); networkRequests.delete(details.requestId);
     if (!started) return;
-    record("NETWORK_REQUEST_ERROR", { method: started.method, type: started.type, url: started.url, tabId: started.tabId, error: details.error, durationMs: Math.max(0, Date.now() - started.at) }, "warn", "webRequest");
+    record("NETWORK_REQUEST_ERROR",{method:started.method,type:started.type,url:started.url,tabId:started.tabId,error:details.error,durationMs:Math.max(0,Date.now()-started.at)},"warn","webRequest");
   }, { urls: ["https://app.cloudinterpreter.com/*"] });
   chrome.windows.onRemoved.addListener(function () {});
   chrome.storage.onChanged.addListener(function (changes, area) {
