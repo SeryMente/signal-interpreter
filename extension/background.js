@@ -41,6 +41,136 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   var stateQueue = Promise.resolve();
   var cachedConfig = Object.assign({}, DEFAULT_CONFIG);
   var signalGroqQueue = Promise.resolve();
+  var HOTLOAD_SCHEMA = "signal-hotload/v1";
+  var HOTLOAD_HEARTBEAT_MIN_MS = 15000;
+  var hotloadLastHeartbeatAt = 0;
+  var hotloadLastRecoveryAt = 0;
+  var hotloadReloadScheduled = false;
+
+  function hasActiveCall(state) {
+    return !!(state && state.callId && state.callStartedAt);
+  }
+  function normalizeHotloadState(state) {
+    if (!state || typeof state !== "object") state = baseState();
+    if (!state.hotLoadLease || typeof state.hotLoadLease !== "object" || Array.isArray(state.hotLoadLease)) {
+      state.hotLoadLease = baseState().hotLoadLease;
+    }
+    if (!state.hotLoadUpdate || typeof state.hotLoadUpdate !== "object" || Array.isArray(state.hotLoadUpdate)) {
+      state.hotLoadUpdate = baseState().hotLoadUpdate;
+    }
+    return state;
+  }
+  async function scheduleSafeRuntimeReload(trigger) {
+    if (hotloadReloadScheduled) return false;
+    var stored = await chrome.storage.local.get(["effectifState"]);
+    var state = normalizeStateShape(Object.assign(baseState(), stored.effectifState || {}));
+    if (hasActiveCall(state)) {
+      record("HOTLOAD_RELOAD_BLOCKED_ACTIVE_CALL", { trigger: trigger || "unknown", callId: state.callId }, "warn", "runtime");
+      return false;
+    }
+    hotloadReloadScheduled = true;
+    state.hotLoadUpdate = Object.assign({}, state.hotLoadUpdate || baseState().hotLoadUpdate, {
+      schema: HOTLOAD_SCHEMA, phase: "applying", applyingAt: iso(), applyTrigger: trigger || "safe-boundary"
+    });
+    await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
+    record("HOTLOAD_UPDATE_APPLYING_SAFE", {
+      trigger: trigger || "safe-boundary", availableVersion: state.hotLoadUpdate.availableVersion || null,
+      currentVersion: chrome.runtime.getManifest().version
+    }, "info", "runtime");
+    setTimeout(function () {
+      try { chrome.runtime.reload(); } catch (error) {
+        hotloadReloadScheduled = false;
+        record("HOTLOAD_RELOAD_ERROR", { trigger: trigger || "safe-boundary", error: String(error) }, "error", "runtime");
+      }
+    }, 50);
+    return true;
+  }
+  async function coordinateUpdateAvailability(details) {
+    var availableVersion = String(details && details.version || "");
+    if (!availableVersion) return;
+    try { await reconcilePlatformTelemetry("hotload-update-available"); } catch (_) {}
+    var stored = await chrome.storage.local.get(["effectifState"]);
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    var active = hasActiveCall(state);
+    state.hotLoadUpdate = Object.assign({}, state.hotLoadUpdate, {
+      schema: HOTLOAD_SCHEMA, availableVersion: availableVersion, detectedAt: iso(),
+      phase: active ? "deferred-active-call" : "ready-safe",
+      deferredForCallId: active ? state.callId : null,
+      currentVersion: chrome.runtime.getManifest().version
+    });
+    await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
+    record(active ? "HOTLOAD_UPDATE_DEFERRED_ACTIVE_CALL" : "HOTLOAD_UPDATE_READY_SAFE", {
+      availableVersion: availableVersion, currentVersion: chrome.runtime.getManifest().version,
+      callId: state.callId || null, callActive: active, policy: "no-runtime-reload-during-active-call"
+    }, active ? "info" : "info", "runtime");
+    if (!active) await scheduleSafeRuntimeReload("update-available-no-call");
+  }
+  async function hotloadHeartbeat(trigger) {
+    var now = Date.now();
+    if (now - hotloadLastHeartbeatAt < HOTLOAD_HEARTBEAT_MIN_MS) return;
+    hotloadLastHeartbeatAt = now;
+    var stored = await chrome.storage.local.get(["effectifState"]);
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    if (!hasActiveCall(state)) return;
+    state.hotLoadLease = Object.assign({}, state.hotLoadLease || baseState().hotLoadLease, {
+      schema: HOTLOAD_SCHEMA, phase: "active-call", lastHeartbeatAt: iso(), runtimeVersion: chrome.runtime.getManifest().version
+    });
+    await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
+    record("HOTLOAD_CALL_LEASE_HEARTBEAT", {
+      callId: state.callId, leaseId: state.hotLoadLease.leaseId || null,
+      trigger: trigger || "alarm", runtimeVersion: chrome.runtime.getManifest().version,
+      transcriptionActive: !!state.transcriptionActive, captureStatus: state.groqCapture && state.groqCapture.status || "idle",
+      updatePhase: state.hotLoadUpdate && state.hotLoadUpdate.phase || "steady"
+    }, "info", "runtime");
+  }
+  async function recoverAfterRuntimeBoundary(trigger) {
+    if (Date.now() - hotloadLastRecoveryAt < 5000) {
+      record("HOTLOAD_RUNTIME_BOUNDARY_RECOVERY_DEDUPED", { trigger: trigger || "runtime-boundary" }, "info", "runtime");
+      return;
+    }
+    hotloadLastRecoveryAt = Date.now();
+    var stored = await chrome.storage.local.get(["effectifState"]);
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    if (!hasActiveCall(state)) return;
+    var callTabId = Number(state.callSourceTabId || state.hotLoadLease && state.hotLoadLease.callSourceTabId);
+    record("HOTLOAD_RUNTIME_BOUNDARY_RECOVERY_STARTED", {
+      trigger: trigger || "runtime-boundary", callId: state.callId, callSourceTabId: callTabId || null,
+      captureExpected: !!(state.hotLoadLease && state.hotLoadLease.captureExpected),
+      sessionId: state.hotLoadLease && state.hotLoadLease.transcriptionSessionId || null,
+      runtimeVersion: chrome.runtime.getManifest().version
+    }, "warn", "runtime");
+    if (Number.isFinite(callTabId)) {
+      try {
+        var tab = await chrome.tabs.get(callTabId);
+        if (tab && isAuthorizedCloudUrl(tab.url) && isCloudCallUrl(tab.url)) {
+          await chrome.scripting.executeScript({ target: { tabId: callTabId }, files: ["content.js"], world: "ISOLATED" });
+          record("HOTLOAD_CONTENT_RUNTIME_REHYDRATED", { callId: state.callId, tabId: callTabId }, "info", "runtime");
+        }
+      } catch (error) {
+        record("HOTLOAD_CONTENT_RUNTIME_REHYDRATE_ERROR", { callId: state.callId, tabId: callTabId || null, error: String(error) }, "error", "runtime");
+      }
+    }
+    var expectedCapture = !!(state.hotLoadLease && state.hotLoadLease.captureExpected && state.hotLoadLease.transcriptionSessionId);
+    if (!expectedCapture || !Number.isFinite(callTabId)) return;
+    try {
+      var captured = await chrome.tabCapture.getCapturedTabs();
+      var existing = captured.find(function (entry) { return Number(entry.tabId) === callTabId && entry.status === "active"; });
+      if (existing) {
+        record("HOTLOAD_CAPTURE_REUSE_EXISTING", { callId: state.callId, tabId: callTabId, status: existing.status }, "info", "runtime");
+        return;
+      }
+      var streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: callTabId });
+      record("HOTLOAD_CAPTURE_STREAM_REACQUIRE_OK", { callId: state.callId, tabId: callTabId }, "info", "runtime");
+      await startGroqCapture(state.hotLoadLease.transcriptionSessionId, streamId);
+      record("HOTLOAD_CAPTURE_RECOVERY_COMPLETED", { callId: state.callId, tabId: callTabId, sessionId: state.hotLoadLease.transcriptionSessionId }, "info", "runtime");
+    } catch (error) {
+      await updateGroqCaptureState({ status: "degraded", tabAudio: false, microphone: false, error: "runtime-boundary: " + String(error) }).catch(function () {});
+      record("HOTLOAD_CAPTURE_RECOVERY_ERROR", {
+        callId: state.callId, tabId: callTabId, sessionId: state.hotLoadLease.transcriptionSessionId,
+        error: String(error), policy: "never-create-second-call-or-navigate"
+      }, "error", "runtime");
+    }
+  }
 
   function uid() { return crypto.randomUUID(); }
   function iso() { return new Date().toISOString(); }
@@ -115,6 +245,15 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       completedCalls: [], totalCalls: 0, dailyCalls: {},
       missedCalls: 0, dailyMissedCalls: {}, missedCallRecords: [],
       transcriptionActive: false, transcriptionTabId: null,
+      hotLoadLease: {
+        schema: HOTLOAD_SCHEMA, phase: "idle", leaseId: null, callId: null, callStartedAt: null,
+        callSourceTabId: null, modality: null, transcriptionSessionId: null, captureExpected: false,
+        captureStatus: "idle", runtimeVersion: null, acquiredAt: null, lastHeartbeatAt: null, closedAt: null
+      },
+      hotLoadUpdate: {
+        schema: HOTLOAD_SCHEMA, phase: "steady", availableVersion: null, detectedAt: null,
+        deferredForCallId: null, applyingAt: null, applyTrigger: null, currentVersion: null
+      },
       autoAnswerTelemetry: {
         detections: 0, connectFound: 0, clicks: 0, confirmations: 0,
         skipped: 0, disabled: 0, timeouts: 0, errors: 0,
@@ -159,6 +298,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if (!state.transcriptionStatus || typeof state.transcriptionStatus !== "object" || Array.isArray(state.transcriptionStatus)) state.transcriptionStatus = {phase:"idle",connected:false,engine:null};
     if (!state.transcriptionMetrics || typeof state.transcriptionMetrics !== "object" || Array.isArray(state.transcriptionMetrics)) state.transcriptionMetrics = {segments:0,localSegments:0,groqSegments:0,queueDepth:0,averageLatencyMs:0,groqEstimatedUsd:0};
     if (!state.autoAnswerTelemetry || typeof state.autoAnswerTelemetry !== "object" || Array.isArray(state.autoAnswerTelemetry)) state.autoAnswerTelemetry = baseState().autoAnswerTelemetry;
+    normalizeHotloadState(state);
     if (!state.groqUsage || typeof state.groqUsage !== "object" || Array.isArray(state.groqUsage)) state.groqUsage = {requests:0,successes:0,errors:0,audioSeconds:0,bytesSent:0,charactersReturned:0,totalLatencyMs:0,estimatedUsd:0};
     return state;
   }
@@ -258,11 +398,30 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     var stored = await chrome.storage.local.get(["effectifConfig", "effectifState", "effectifEvents", "effectifTelemetryMigrated"]);
     var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}, { transcriptionAvailable: true, transcriptionEnabled: true });
     cachedConfig = config;
-    var state = normalizeStateShape(Object.assign(baseState(), stored.effectifState || {}, {
-      transcriptionActive: false,
-      transcriptionTabId: null,
-      transcriptionStatus: { phase: "idle", connected: false, engine: "groq" }
-    }));
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    var activeCall = hasActiveCall(state);
+    var captureConnected = !!(state.groqCapture && state.groqCapture.status === "connected");
+    if (activeCall) {
+      state.hotLoadLease = Object.assign({}, state.hotLoadLease, {
+        schema: HOTLOAD_SCHEMA, phase: "active-call", callId: state.callId,
+        callStartedAt: state.callStartedAt, callSourceTabId: state.callSourceTabId,
+        modality: state.callModality, runtimeVersion: chrome.runtime.getManifest().version,
+        lastHeartbeatAt: iso()
+      });
+      state.transcriptionActive = captureConnected;
+      state.transcriptionTabId = captureConnected ? (state.transcriptionTabId || state.hotLoadLease.transcriptionSessionId || null) : state.transcriptionTabId || null;
+      state.transcriptionStatus = captureConnected
+        ? { phase: "connected", connected: true, engine: "groq" }
+        : Object.assign({}, state.transcriptionStatus || {}, { phase: "recovering", connected: false, engine: "groq" });
+    } else {
+      state.transcriptionActive = captureConnected;
+      state.transcriptionTabId = captureConnected ? (state.transcriptionTabId || null) : null;
+      if (!captureConnected) state.transcriptionStatus = { phase: "idle", connected: false, engine: "groq" };
+        if (state.hotLoadLease && state.hotLoadLease.phase === "active-call") state.hotLoadLease.phase = "closed";
+    }
+    if (state.hotLoadUpdate && state.hotLoadUpdate.availableVersion === chrome.runtime.getManifest().version) {
+      state.hotLoadUpdate = Object.assign({}, state.hotLoadUpdate, { phase: "steady", availableVersion: null, deferredForCallId: null, applyingAt: null, applyTrigger: null, currentVersion: chrome.runtime.getManifest().version });
+    }
     await chrome.storage.local.set({ effectifConfig: config, effectifState: cloneStateForStorage(state) });
     try {
       if (!stored.effectifTelemetryMigrated && Array.isArray(stored.effectifEvents) && stored.effectifEvents.length) {
@@ -553,6 +712,20 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       chrome.alarms.create("effectif-pending-call", { when: Date.now() + 15000 });
     });
   }
+  async function applyPendingHotloadAfterCall(trigger) {
+    var stored = await chrome.storage.local.get(["effectifState"]);
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    if (hasActiveCall(state)) return false;
+    if (!state.hotLoadUpdate || !state.hotLoadUpdate.availableVersion) return false;
+    var deferredCallId = state.hotLoadUpdate.deferredForCallId || null;
+    state.hotLoadUpdate = Object.assign({}, state.hotLoadUpdate, { phase: "ready-safe", deferredForCallId: null });
+    await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
+    record("HOTLOAD_UPDATE_RELEASED_AT_SAFE_BOUNDARY", {
+      trigger: trigger || "call-ended", availableVersion: state.hotLoadUpdate.availableVersion,
+      lastDeferredCallId: deferredCallId
+    }, "info", "runtime");
+    return scheduleSafeRuntimeReload(trigger || "call-ended");
+  }
   function startCall(event) {
     var callId = event.callId || event.payload && event.payload.callId;
     mutateState(async function (state) {
@@ -571,6 +744,15 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       state.callMissingSinceAt = null;
       state.callModality = event.payload && event.payload.modality ||
         state.pendingCall && state.pendingCall.modality || "OPI";
+      state.hotLoadLease = {
+        schema: HOTLOAD_SCHEMA, phase: "active-call", leaseId: uid(), callId: callId,
+        callStartedAt: measuredStartAt, callSourceTabId: state.callSourceTabId,
+        modality: state.callModality, transcriptionSessionId: signalActiveSessionId || null,
+        captureExpected: !!(state.groqCapture && state.groqCapture.status === "connected"),
+        captureStatus: state.groqCapture && state.groqCapture.status || "idle",
+        runtimeVersion: chrome.runtime.getManifest().version, acquiredAt: event.timestamp,
+        lastHeartbeatAt: event.timestamp, closedAt: null
+      };
       state.pendingCall = null;
       state.pendingCallEnd = null;
       chrome.alarms.clear("effectif-pending-call");
@@ -596,7 +778,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   function requestCallAlert(callId, trigger) {
     if (!callId || callAlertInFlight.has(callId)) return;
     callAlertInFlight.set(callId, Date.now());
-    chrome.storage.local.get(["effectifConfig", "effectifCallAlert"], function (stored) {
+    chrome.storage.local.get(["effectifConfig", "effectifCallAlert", "effectifPageBeep"], function (stored) {
       var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
       if (!config.soundEnabled || !callId) {
         callAlertInFlight.delete(callId);
@@ -604,6 +786,12 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       }
       var now = Date.now();
       var previous = stored.effectifCallAlert || {};
+      var pageBeep = stored.effectifPageBeep || {};
+      if (pageBeep.callId === callId && pageBeep.playedAt && now - Number(pageBeep.playedAt) < 5000) {
+        callAlertInFlight.delete(callId);
+        record("CALL_ALERT_SOUND_SUPPRESSED_PAGE_BEEP", { callId: callId, trigger: trigger || "call-route-confirmed", pageBeepAt: pageBeep.playedAt }, "info", "runtime");
+        return;
+      }
       if (previous.callId === callId && previous.playedAt) {
         callAlertInFlight.delete(callId);
         return;
@@ -719,19 +907,22 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         currency: config.currency, billingRule: config.billingRule, endSource: source
       };
       state.completedCalls = (state.completedCalls || []).concat(call).slice(-1000);
+      state.hotLoadLease = Object.assign({}, state.hotLoadLease || {}, {
+        schema: HOTLOAD_SCHEMA, phase: "closed", closedAt: endedAt, lastHeartbeatAt: endedAt
+      });
       if (state.transcriptionActive) {
         stopGroqCapture("call-ended").catch(function () {});
         state.transcriptionActive = false;
         state.transcriptionTabId = null;
         state.transcriptionStatus = { phase: "stopped", connected: false, engine: "groq" };
       }
-      state.callStartedAt = null; state.callId = null; state.callModality = null; state.pendingCallEnd = null;
+      state.callStartedAt = null; state.callId = null; state.callModality = null; state.callSourceTabId = null; state.pendingCallEnd = null;
       record("CALL_TIMER_STOPPED", Object.assign({}, call, {
         confirmation: source === "rating-route" ? "rating-route" : "fallback-route",
         observedVsPlatformDeltaSeconds: hasPlatformSeconds ? Math.round((observedSeconds - billableSeconds) * 1000) / 1000 : null
       }), "info", source);
       if (sendResponse) sendResponse({ ok: true, call: call });
-    });
+    }).then(function () { applyPendingHotloadAfterCall("call-ended").catch(function () {}); });
   }
   function savePlatformSnapshot(message, sender, sendResponse) {
     var snapshot = message.snapshot || {};
@@ -978,14 +1169,20 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     return{ok:dbOk||cacheOk,dbOk:dbOk,cacheOk:cacheOk,dbError:dbError,cacheError:cacheError,session:signalSessionCopy(session,true)};
   }
   async function updateGroqCaptureState(patch){
-    var stored=await chrome.storage.local.get(["effectifState"]),state=normalizeStateShape(Object.assign(baseState(),stored.effectifState||{}));state.groqCapture=Object.assign({},state.groqCapture||{},patch||{});
+    var stored=await chrome.storage.local.get(["effectifState"]),state=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));state.groqCapture=Object.assign({},state.groqCapture||{},patch||{});
     state.transcriptionStatus={phase:state.groqCapture.status||"idle",connected:state.groqCapture.status==="connected",engine:"groq"};state.transcriptionActive=state.groqCapture.status==="connected";state.transcriptionTabId=state.transcriptionActive?(signalActiveSessionId||null):null;
+    if(state.hotLoadLease&&state.hotLoadLease.phase==="active-call") state.hotLoadLease=Object.assign({},state.hotLoadLease,{captureExpected:state.groqCapture.status!=="idle"&&state.groqCapture.status!=="stopped",captureStatus:state.groqCapture.status,transcriptionSessionId:signalActiveSessionId||state.hotLoadLease.transcriptionSessionId||null,lastHeartbeatAt:iso()});
     await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
   }
   async function startGroqCapture(sessionId,audioStreamId,sendResponse){
     try{
-      var data=await loadSignalSessions(),session=data.sessions.find(function(s){return s.id===sessionId||s.id===data.activeSessionId});var stored=await chrome.storage.local.get(["effectifConfig"]),config=Object.assign({},DEFAULT_CONFIG,stored.effectifConfig||{});
+      var data=await loadSignalSessions(),session=data.sessions.find(function(s){return s.id===sessionId||s.id===data.activeSessionId});var stored=await chrome.storage.local.get(["effectifConfig","effectifState"]),config=Object.assign({},DEFAULT_CONFIG,stored.effectifConfig||{}),state=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
       if(!session)throw new Error("Sesión no encontrada");if(!(await SignalGroqTranscriber.ready()))throw new Error("Configura la Groq API Key una sola vez en este equipo.");if(!audioStreamId)throw new Error("No se recibió el audio de la pestaña.");
+      if(hasActiveCall(state)){
+        state.hotLoadLease=Object.assign({},state.hotLoadLease||baseState().hotLoadLease,{schema:HOTLOAD_SCHEMA,phase:"active-call",leaseId:state.hotLoadLease&&state.hotLoadLease.leaseId||uid(),callId:state.callId,callStartedAt:state.callStartedAt,callSourceTabId:state.callSourceTabId,modality:state.callModality,transcriptionSessionId:session.id,captureExpected:true,captureStatus:"starting",runtimeVersion:chrome.runtime.getManifest().version,acquiredAt:state.hotLoadLease&&state.hotLoadLease.acquiredAt||iso(),lastHeartbeatAt:iso(),closedAt:null});
+        await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+        record("HOTLOAD_CAPTURE_LEASE_PREPARED",{callId:state.callId,tabId:state.callSourceTabId||null,sessionId:session.id,runtimeVersion:chrome.runtime.getManifest().version}, "info","runtime");
+      }
       await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
       signalActiveSessionId=session.id;await updateGroqCaptureState({status:"connected",tabAudio:true,microphone:true,startedAt:iso(),lastChunkAt:null,error:null});
       recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_STARTED",{sessionId:session.id,sourceTabId:session.sourceTabId,model:config.groqModel||GROQ_MODEL});broadcastSignalEvent({type:"signal.groq.status",sessionId:session.id,status:"connected",tabAudio:true,microphone:true,timestamp:iso()});
@@ -1077,6 +1274,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       if (event.action === "CALL_ROUTE_ENTERED") {
         startCall(event);
         requestCallAlert(event.payload && event.payload.callId || event.callId || null, "call-route-entered-immediate");
+      }
+      if (event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
+        hotloadHeartbeat("answer-route-confirmed").catch(function() {});
       }
       if (event.action === "CALL_END_CLICKED") rememberCallEnd(event);
       if (event.action === "CALL_ROUTE_ENDED") {
@@ -1189,15 +1389,33 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       }
     }catch(error){record("OBSERVABILITY_CHECKPOINT_ERROR",{message:String(error)},"warn","runtime");}
   }
+  chrome.runtime.onUpdateAvailable.addListener(function(details){
+    coordinateUpdateAvailability(details).catch(function(error){
+      record("HOTLOAD_UPDATE_COORDINATOR_ERROR", { availableVersion: details && details.version || null, error: String(error) }, "error", "runtime");
+    });
+  });
   chrome.runtime.onInstalled.addListener(function(details){
-    record("EXTENSION_VERSION_BOUNDARY", {
-      currentVersion: chrome.runtime.getManifest().version,
-      previousVersion: details && details.previousVersion || null,
-      reason: details && details.reason || "installed",
-      contract: "version-changes-with-development"
-    }, "info", "runtime");
-    chrome.offscreen.closeDocument().catch(function(){});
-    initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+    chrome.storage.local.get(["effectifState"]).then(function (stored) {
+      var priorState = normalizeStateShape(Object.assign(baseState(), stored.effectifState || {}));
+      var activeCall = hasActiveCall(priorState);
+      record("EXTENSION_VERSION_BOUNDARY", Object.assign({
+        currentVersion: chrome.runtime.getManifest().version,
+        previousVersion: details && details.previousVersion || null,
+        reason: details && details.reason || "installed",
+        contract: "version-changes-with-development",
+        hotLoadTransaction: activeCall ? "preserve-call-and-defer-destructive-runtime-boundary" : "safe-boundary"
+      }, activeCall ? { activeCallId: priorState.callId, activeCallSourceTabId: priorState.callSourceTabId } : {}), "info", "runtime");
+      if (activeCall) {
+        priorState.hotLoadLease = Object.assign({}, priorState.hotLoadLease || {}, { schema: HOTLOAD_SCHEMA, phase: "active-call", callId: priorState.callId, runtimeVersion: chrome.runtime.getManifest().version, lastHeartbeatAt: iso() });
+        priorState.hotLoadUpdate = Object.assign({}, priorState.hotLoadUpdate || {}, { schema: HOTLOAD_SCHEMA, phase: "post-install-active-call", currentVersion: chrome.runtime.getManifest().version });
+        return chrome.storage.local.set({ effectifState: cloneStateForStorage(priorState) }).then(function () {
+          record("HOTLOAD_INSTALL_BOUNDARY_ACTIVE_CALL", { callId: priorState.callId, currentVersion: chrome.runtime.getManifest().version, action: "no-offscreen-close-no-transcription-reset" }, "warn", "runtime");
+          return initialize().then(function () { return recoverAfterRuntimeBoundary("onInstalled-active-call"); });
+        });
+      }
+      chrome.offscreen.closeDocument().catch(function(){});
+      return initialize();
+    }).then(function () { try { SignalObservationSync.start(); } catch (_) {} }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
     markObservabilityBuildCheckpoint(details&&details.reason||"installed",details&&details.previousVersion).catch(function(){});
     chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
     chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
@@ -1216,7 +1434,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     });
   });
   chrome.runtime.onSuspend.addListener(function(){log("info","EXTENSION_RUNTIME_SUSPENDING",{pendingNetworkRequests:networkRequests?networkRequests.size:0});});
-  initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+  initialize().then(function(){try{SignalObservationSync.start()}catch(_){};return recoverAfterRuntimeBoundary("runtime-start").catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");});}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
   markObservabilityBuildCheckpoint("runtime-start").catch(function(){});
   chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
   chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
@@ -1226,7 +1444,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   refreshExchangeRate("startup").catch(function(){});
   chrome.alarms.onAlarm.addListener(function(alarm){
     if(!alarm)return;
-    if(alarm.name==="signal-network-window"){flushNetworkActivity();return;}
+    if(alarm.name==="signal-network-window"){flushNetworkActivity();hotloadHeartbeat("alarm").catch(function(error){record("HOTLOAD_HEARTBEAT_ERROR",{error:String(error)}, "warn","runtime");});return;}
     if(alarm.name==="effectif-exchange-rate"){refreshExchangeRate("alarm").catch(function(){});return;}
     if(alarm.name==="effectif-official-sync"){
       record("PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",{trigger:"hourly"}, "info","background");

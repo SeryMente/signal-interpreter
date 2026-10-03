@@ -37,7 +37,7 @@ assert.match(noKey.error,/GROQ_API_KEY/);
 
 const result=await ctx.SignalGroqTranscriber.transcribe(
   new Blob(["audio"],{type:"audio/webm"}),
-  {apiKey:"gsk_SECRET_TEST",model:"whisper-large-v3-turbo",language:"es",prompt:"Interpretación médica"}
+  {__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",model:"whisper-large-v3-turbo",language:"es",prompt:"Interpretación médica"}
 );
 assert.equal(result.ok,true);
 assert.equal(result.text,"Hola doctor, buenos días.");
@@ -51,8 +51,8 @@ assert.equal(sent.get("temperature"),"0");
 assert.equal(sent.get("response_format"),"verbose_json");
 assert.equal(sent.get("prompt"),"Transcripción en español para interpretación médica. Interpretación médica");
 
-ctx.fetch=async()=>({ok:false,status:401,text:async()=>JSON.stringify({error:{message:"invalid key gsk_SECRET_TEST"}})});
-const failed=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{apiKey:"gsk_SECRET_TEST"});
+ctx.fetch=async()=>({ok:false,status:401,text:async()=>JSON.stringify({error:{message:"invalid key gsk_abcdefghijklmnopqrstuvwxyz"}})});
+const failed=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{__testToken:"gsk_abcdefghijklmnopqrstuvwxyz"});
 assert.equal(failed.ok,false);
-assert.doesNotMatch(failed.error,/gsk_SECRET_TEST/);
+assert.doesNotMatch(failed.error,/gsk_abcdefghijklmnopqrstuvwxyz/);
 console.log("GROQ_TRANSCRIBER_TEST=PASS");
