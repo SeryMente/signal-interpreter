@@ -641,17 +641,17 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     var callTab=cloudTabs.find(function(tab){return isCloudCallUrl(tab.url);});
     var statsTab=cloudTabs.find(function(tab){return isCloudStatisticsUrl(tab.url);});
     var callSafe=activeCallState||!!callTab;
-    var targetTab=callSafe ? callTab : (statsTab||cloudTabs[0]||null);
+    var targetTab=callSafe ? callTab : (statsTab||cloudTabs.find(function(tab){return !!tab.active;})||cloudTabs[0]||null);
     if(callSafe && !callTab){
       record("PLATFORM_OFFICIAL_SYNC_CALL_SAFE_BLOCKED",{reason:"active-call-without-call-tab"},"warn","popup");
-      throw new Error("Sincronización protegida: no se encontró la pestaña de llamada activa. No se abrirá ni recargará ninguna pestaña.");
+      throw new Error("No se pudo sincronizar sin afectar la llamada: no se identificó la pestaña activa de la llamada.");
     }
-    if(!targetTab) throw new Error("Sincronización silenciosa no disponible: abre Cloud Interpreter primero.");
+    if(!targetTab) throw new Error("No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.");
     record("PLATFORM_OFFICIAL_SYNC_REQUESTED",{
       targetTabId:targetTab.id,
       route:String(targetTab.url||"").replace(/\/call\/[^/]+/,"/call/<ID>").replace(/\/profile\/[^/]+/,"/profile/<ID>"),
       callSafe:callSafe,
-      policy:"no-tab-create-no-navigation-no-reload"
+      policy:"page-context-authenticated-no-tab-create-no-navigation-no-reload"
     },"info","popup");
 
     try{

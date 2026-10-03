@@ -8,7 +8,7 @@ const content=read("extension/content.js");
 const popup=read("extension/ui/popup.js");
 const host=read("tools/observability-native-host/SignalInterpreterObservabilityHost.cs");
 
-assert.equal(manifest.version,"0.9.14");
+assert.equal(manifest.version,"0.9.12");
 assert.ok(manifest.permissions.includes("nativeMessaging"));
 assert.ok(manifest.permissions.includes("scripting"));
 assert.deepEqual(manifest.content_scripts[0].matches,["https://app.cloudinterpreter.com/*"]);
