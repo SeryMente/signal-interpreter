@@ -6,6 +6,10 @@ Cada evento marca el registro como pendiente; la extensión coalescea el envío 
 
 La sincronización manual está disponible en la consola Live con SINCRONIZAR LOG.
 
+El endpoint GET `/health` expone el último envío automático confirmado a GitHub y el último registro local de revisión por IA, con sus marcas temporales; no contiene credenciales ni contenido conversacional.
+
+El estado persistente del reporter se guarda fuera del repositorio en `%USERPROFILE%\\.signal-interpreter\\observation-reporter-status.json`, evitando generar commits adicionales sólo para observabilidad de observabilidad.
+
 No se exporta texto de conversación, captions, snapshots ni credenciales al repositorio.
 
 Ejecución manual: .\tools\observation-reporter\run.ps1

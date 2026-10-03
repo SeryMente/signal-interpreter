@@ -273,6 +273,43 @@
       else status((response && response.error) || "No se pudo cerrar", true);
     });
   });
+  function relativeAge(timestamp) {
+    var parsed = Date.parse(timestamp || "");
+    if (!Number.isFinite(parsed)) return "Sin registro";
+    var age = Math.max(0, Date.now() - parsed);
+    if (age < 60000) return "ahora";
+    var minutes = Math.floor(age / 60000);
+    if (minutes < 120) return "hace " + String(minutes) + " min";
+    var hours = Math.floor(minutes / 60);
+    if (hours < 48) return "hace " + String(hours) + " h";
+    var days = Math.floor(hours / 24);
+    return "hace " + String(days) + " d";
+  }
+  function renderObservabilityStamp(id, timestamp, title, stateClass) {
+    var node = $(id);
+    if (!node) return;
+    node.textContent = relativeAge(timestamp);
+    node.className = stateClass || "";
+    node.title = timestamp && Number.isFinite(Date.parse(timestamp))
+      ? new Date(timestamp).toLocaleString("es-MX")
+      : "Sin registro";
+  }
+  async function refreshObservabilityStatus() {
+    var github = $("obsGithub"), ai = $("obsAi");
+    if (github) { github.textContent = "Comprobando…"; github.className = ""; }
+    if (ai) { ai.textContent = "Comprobando…"; ai.className = ""; }
+    try {
+      var response = await fetch("http://127.0.0.1:8788/health?ts=" + Date.now(), { cache: "no-store" });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      var data = await response.json();
+      renderObservabilityStamp("obsGithub", data.lastGitSyncAt, data.lastGitSyncCommit ? "Commit " + data.lastGitSyncCommit : "", data.lastGitSyncStatus === "error" ? "error" : data.lastGitSyncAt ? "ok" : "warn");
+      renderObservabilityStamp("obsAi", data.lastAiReviewedAt, "", data.lastAiReviewedAt ? "ok" : "warn");
+      if (data.lastGitSyncStatus === "error" && github) github.title = String(data.lastGitSyncError || "Último envío automático con error");
+    } catch (error) {
+      if (github) { github.textContent = "Reporter no disponible"; github.className = "warn"; github.title = String(error); }
+      if (ai) { ai.textContent = "Sin conexión al registro"; ai.className = "warn"; ai.title = "El estado de revisión IA se sirve por el reporter local."; }
+    }
+  }
   function formatBytes(bytes) {
     if (!Number(bytes)) return "0 B";
     var units = ["B", "KB", "MB", "GB"]; var index = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
@@ -424,6 +461,8 @@
     }
     render();
   });
+  refreshObservabilityStatus();
+  setInterval(refreshObservabilityStatus, 30000);
   setInterval(function () {
     var activity = activityMetrics();
     $("sessionTimer").textContent = formatSeconds(activity.session);
