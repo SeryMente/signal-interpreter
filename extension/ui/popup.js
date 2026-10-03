@@ -335,7 +335,11 @@
             generatedAt:built.at
           }},resolve);
         });
-        status("Diagnóstico guardado localmente. Falta instalar el puente GitHub una sola vez.",true);return;
+        var nativeMessage=String(nativeError&&nativeError.message||nativeError);
+        var hint=/Specified native messaging host not found|native messaging host.*not found|host.*not found/i.test(nativeMessage)
+          ? "El puente GitHub no está instalado o registrado."
+          : "El puente GitHub no pudo iniciarse: " + nativeMessage;
+        status("Diagnóstico guardado localmente. " + hint,true);return;
       }
       if(!response||!response.ok){
         var publishError=String(response&&response.error||"El puente GitHub no confirmó la publicación.");
