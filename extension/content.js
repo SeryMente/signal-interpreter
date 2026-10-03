@@ -11,6 +11,9 @@
 
   var DIALOG = '[role="dialog"]';
   var CONNECT = 'button[aria-label="Connect"]';
+  var AUTHORIZED_PROFILE_PATH = "/profile/cmu2wuz1v0uwr07adbzb9djfz";
+  var AUTHORIZED_PROFILE_ORIGIN = "https://app.cloudinterpreter.com";
+  var PAGE_FAVICON_MARKER = "data-signal-interpreter-favicon";
   var config = {
     targetHost: "app.cloudinterpreter.com",
     autoAnswerEnabled: true,
@@ -108,6 +111,42 @@
     return {route: routeTemplate(), title: safe(document.title), buttons: buttons, links: links, fields: fields, headings: headings};
   }
   function isTarget() { return location.hostname === config.targetHost; }
+  function isAuthorizedProfilePage() {
+    return location.origin === AUTHORIZED_PROFILE_ORIGIN &&
+      (location.pathname === AUTHORIZED_PROFILE_PATH || location.pathname === AUTHORIZED_PROFILE_PATH + "/");
+  }
+  function readAvailabilityState() {
+    var text = Array.from(document.querySelectorAll("button,[role='button'],[aria-label]")).slice(0, 240)
+      .map(function (element) {
+        return normalized((element.getAttribute("aria-label") || "") + " " + (element.textContent || ""));
+      }).join(" ");
+    if (/Click to go Offline|You are Online/i.test(text)) return "online";
+    if (/Click to go Online|You are Offline/i.test(text)) return "offline";
+    return "unknown";
+  }
+  function syncPageFavicon() {
+    var existing = document.querySelector("link[" + PAGE_FAVICON_MARKER + "]");
+    if (!isAuthorizedProfilePage()) {
+      if (existing) existing.remove();
+      return;
+    }
+    var availability = readAvailabilityState();
+    var status = !config.autoAnswerEnabled ? "disabled" : availability === "online" ? "active" : availability === "offline" ? "offline" : "waiting";
+    var colors = { active: "#22c55e", waiting: "#f59e0b", offline: "#6b7280", disabled: "#ef4444" };
+    var color = colors[status];
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#111827"/><circle cx="32" cy="32" r="22" fill="' + color + '"/><circle cx="32" cy="32" r="9" fill="#fff"/></svg>';
+    var href = "data:image/svg+xml," + encodeURIComponent(svg);
+    if (!existing) {
+      existing = document.createElement("link");
+      existing.rel = "icon";
+      existing.setAttribute(PAGE_FAVICON_MARKER, "1");
+      (document.head || document.documentElement).appendChild(existing);
+    }
+    existing.href = href;
+  }
+  function isAutoAnswerReady() {
+    return isAuthorizedProfilePage() && config.autoAnswerEnabled && readAvailabilityState() === "online";
+  }
   function currentCallId() {
     var match = location.pathname.match(/^\/call\/([^/?#]+)\/?$/);
     return match ? match[1] : null;
@@ -271,7 +310,8 @@
     });
   }
   function autoAnswer() {
-    if (!isTarget() || currentCallId()) return;
+    syncPageFavicon();
+    if (!isAutoAnswerReady() || currentCallId()) return;
     var dialogs = document.querySelectorAll(DIALOG);
     if (!dialogs.length) {
       if (lastIncomingSignature) {
@@ -375,16 +415,13 @@
     });
   }
   function detectAvailability() {
-    var text = Array.from(document.querySelectorAll("button,[role='button'],[aria-label]")).slice(0, 160)
-      .map(function (element) {
-        return normalized((element.getAttribute("aria-label") || "") + " " + (element.textContent || ""));
-      }).join(" ");
-    var next = /Click to go Offline|You are Online/i.test(text) ? "online" :
-      /Click to go Online|You are Offline/i.test(text) ? "offline" : "unknown";
+    var next = readAvailabilityState();
+    syncPageFavicon();
     if (next !== "unknown" && next !== lastAvailability) {
       lastAvailability = next;
       emit("AVAILABILITY_STATE", { state: next });
     }
+    return next;
   }
   function mediaSnapshot(reason) {
     if (!currentCallId()) return;
@@ -794,8 +831,9 @@
         else if (record.type === "characterData") mutationAggregate.textChanges += 1;
       });
       trackRoute("mutation");
-      autoAnswer();
       detectAvailability();
+      syncPageFavicon();
+      autoAnswer();
       mediaSnapshot("mutation");
       mapScreen("mutation");
       schedulePlatformMirror("mutation");
@@ -810,8 +848,9 @@
     emit("OBSERVER_STARTED", { autoAnswerEnabled: config.autoAnswerEnabled });
     emitIntegrity("startup");
     trackRoute("start");
-    autoAnswer();
     detectAvailability();
+    syncPageFavicon();
+    autoAnswer();
     mapScreen("start");
     schedulePlatformMirror("start");
     renderOverlay();
@@ -826,6 +865,8 @@
     config = Object.assign({}, config, next || {});
     if (isTarget() && (config.autoAnswerEnabled || config.observationEnabled)) start();
     else stop("disabled-or-host-mismatch");
+    detectAvailability();
+    syncPageFavicon();
     autoAnswer();
     renderOverlay();
     if (!isTarget() || !config.autoAnswerEnabled || currentCallId()) { if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; } }
