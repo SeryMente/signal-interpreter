@@ -1,14 +1,21 @@
 [CmdletBinding()]
 param(
-  [string]$ExtensionPath = (Join-Path $env:USERPROFILE "Desktop\Signal-Interpreter-Extension"),
+  [string]$ExtensionPath,
   [string]$ExtensionId
 )
 $ErrorActionPreference="Stop"
-if(-not(Test-Path -LiteralPath $ExtensionPath)){throw "No existe ExtensionPath: $ExtensionPath"}
+if(-not $ExtensionPath){
+  $candidates=@(
+    (Join-Path $env:USERPROFILE "Desktop\Signal Interpreter"),
+    (Join-Path $env:USERPROFILE "Desktop\Signal-Interpreter-Extension"),
+    (Join-Path (Split-Path $PSScriptRoot -Parent) "extension")
+  )
+  $ExtensionPath=$candidates | Where-Object { Test-Path -LiteralPath (Join-Path $_ "manifest.json") } | Select-Object -First 1
+}
+if(-not $ExtensionPath -or -not(Test-Path -LiteralPath (Join-Path $ExtensionPath "manifest.json"))){throw "No se encontró una extensión válida. Use -ExtensionPath con la carpeta que contiene manifest.json."}
 $dotnet=(Get-Command dotnet -ErrorAction SilentlyContinue).Source
 if(-not $dotnet -and (Test-Path "$env:USERPROFILE\.dotnet\dotnet.exe")){$dotnet="$env:USERPROFILE\.dotnet\dotnet.exe"}
 if(-not $dotnet){throw "Se necesita .NET SDK (dotnet)."}
-
 if(-not(Get-Command gh -ErrorAction SilentlyContinue)){throw "Se necesita GitHub CLI (gh)."}
 $hostName="com.serymente.signal_interpreter.observability"
 $sourceRoot=Join-Path $PSScriptRoot "observability-native-host"
@@ -23,18 +30,13 @@ if(-not $ExtensionId){
   $ExtensionId=(-join ($hash[0..15] | ForEach-Object { $chars[$_ -shr 4]; $chars[$_ -band 15] }))
 }
 if($ExtensionId -notmatch '^[a-p]{32}$'){throw "ExtensionId inválido: $ExtensionId"}
+Write-Host "EXTENSION_PATH=$ExtensionPath"
 Write-Host "EXTENSION_ID=$ExtensionId"
 & $dotnet publish (Join-Path $sourceRoot "SignalInterpreterObservabilityHost.csproj") -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o $installRoot | Out-Host
 $binary=Join-Path $installRoot "SignalInterpreterObservabilityHost.exe"
 if(-not(Test-Path -LiteralPath $binary)){throw "No se generó el host nativo."}
 $manifestPath=Join-Path $installRoot "$hostName.json"
-$manifest=@{
-  name=$hostName
-  description="Signal Interpreter development observability publisher"
-  path=$binary
-  type="stdio"
-  allowed_origins=@("chrome-extension://$ExtensionId/")
-} | ConvertTo-Json -Depth 5
+$manifest=@{name=$hostName;description="Signal Interpreter development observability publisher";path=$binary;type="stdio";allowed_origins=@("chrome-extension://$ExtensionId/")} | ConvertTo-Json -Depth 5
 [IO.File]::WriteAllText($manifestPath,$manifest,(New-Object Text.UTF8Encoding($false)))
 $reg="HKCU:\Software\Google\Chrome\NativeMessagingHosts\$hostName"
 New-Item -Path $reg -Force | Out-Null
