@@ -19,9 +19,9 @@
         <div class="switch-row"><div><strong>Contestador</strong><small>OPI · detector validado</small></div><label class="switch"><input id="enabled" type="checkbox"><i></i></label></div>
         <div class="switch-row"><div><strong>Observador</strong><small>Señales del sitio</small></div><label class="switch"><input id="observation" type="checkbox"><i></i></label></div>
       </section>
-      <section class="timers"><div><span>Sesión</span><b id="sessionTimer">00:00:00</b></div><div><span>Online</span><b id="onlineTimer">00:00:00</b></div><div><span>Llamada</span><b id="callTimer">00:00:00</b></div></section>
+      <section class="timers"><div><span>Sesión</span><b id="sessionTimer">00:00:00</b></div><div><span>Activo</span><b id="activeTimer">00:00:00</b></div><div><span>Llamada</span><b id="callTimer">00:00:00</b></div></section>
       <section class="metrics calls">
-        <div><span>Llamadas</span><b id="callsToday">0</b></div><div><span>Perdidas</span><b id="missedToday">0</b></div><div><span>Minutos</span><b id="minutesToday">0.0</b></div>
+        <div><span>Llamadas hoy</span><b id="callsToday">0</b></div><div><span>Perdidas hoy</span><b id="missedToday">0</b></div><div><span>Tiempo llamadas</span><b id="minutesToday">0.0 min</b></div>
       </section>
       <section class="earnings-panel">
         <div class="earnings-line"><span id="earningLabel">Ingreso estimado hoy</span><strong id="earningSummary">US$0.0000 · MX$0.0000</strong></div>
@@ -54,6 +54,7 @@
             <label class="model-row">MODELO<select id="groqModel"><option value="whisper-large-v3-turbo">whisper-large-v3-turbo</option><option value="whisper-large-v3">whisper-large-v3</option></select></label>
             <div class="telemetry-grid"><label>RETENCIÓN (DÍAS)<input id="telemetryRetentionDays" type="number" min="7" max="730" step="1"></label><label>MÁX. EVENTOS<input id="telemetryMaxEvents" type="number" min="1000" max="1000000" step="1000"></label><label>HEARTBEAT (S)<input id="telemetryHeartbeatSeconds" type="number" min="10" max="300" step="5"></label></div>
             <small id="telemetryMeta">Preparando base persistente…</small>
+            <small id="activityMeta">Calculando actividad acumulada…</small>
           </section>
           <small id="last">Sin eventos</small>
           <button id="export" class="secondary">Exportar diagnóstico completo</button>

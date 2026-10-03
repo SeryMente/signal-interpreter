@@ -241,6 +241,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       sessionStartedAt: null, sessionSegments: [], sessionSourceTabId: null, sessionLastObservedAt: null,
       pendingCall: null, pendingCallEnd: null,
       onlineStartedAt: null, onlineSegments: [], onlineSourceTabId: null, onlineLastObservedAt: null,
+      activeStartedAt: null, activeSegments: [], activeSourceTabId: null, activeLastObservedAt: null,
       callStartedAt: null, callId: null, callModality: null, callSourceTabId: null, callLastObservedAt: null, callMissingSinceAt: null,
       completedCalls: [], totalCalls: 0, dailyCalls: {},
       missedCalls: 0, dailyMissedCalls: {}, missedCallRecords: [],
@@ -291,6 +292,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if (!state || typeof state !== "object") state = baseState();
     if (!Array.isArray(state.sessionSegments)) state.sessionSegments = [];
     if (!Array.isArray(state.onlineSegments)) state.onlineSegments = [];
+    if (!Array.isArray(state.activeSegments)) state.activeSegments = [];
+    if (state.activeStartedAt !== null && typeof state.activeStartedAt !== "string") state.activeStartedAt = null;
+    if (state.activeSourceTabId !== null && !Number.isFinite(Number(state.activeSourceTabId))) state.activeSourceTabId = null;
     if (!Array.isArray(state.completedCalls)) state.completedCalls = [];
     if (!Array.isArray(state.missedCallRecords)) state.missedCallRecords = [];
     if (!state.dailyCalls || typeof state.dailyCalls !== "object" || Array.isArray(state.dailyCalls)) state.dailyCalls = {};
@@ -534,6 +538,53 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     }
   }
 
+  function segmentSeconds(segments) {
+    return (Array.isArray(segments) ? segments : []).reduce(function (sum, segment) {
+      var value = Number(segment && segment.durationSeconds);
+      return sum + (Number.isFinite(value) && value > 0 ? value : 0);
+    }, 0);
+  }
+  function activeElapsedSeconds(startedAt, now) {
+    if (!startedAt) return 0;
+    var start = Date.parse(startedAt);
+    var end = now == null ? Date.now() : (typeof now === "number" ? now : Date.parse(now));
+    return Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, (end - start) / 1000) : 0;
+  }
+  function parseClockDuration(raw) {
+    var parts = String(raw || "").trim().split(":").map(Number);
+    if (parts.some(function (value) { return !Number.isFinite(value); }) || (parts.length !== 2 && parts.length !== 3)) return null;
+    return parts.length === 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] : parts[0] * 60 + parts[1];
+  }
+  function completedCallSecondsForDay(state, day) {
+    return (Array.isArray(state && state.completedCalls) ? state.completedCalls : []).filter(function (call) {
+      return localDay(call.startedAt || call.endedAt) === day;
+    }).reduce(function (sum, call) {
+      var value = Number(call && call.platformSeconds);
+      if (!Number.isFinite(value) || value < 0) value = Number(call && call.observedSeconds || 0);
+      return sum + (Number.isFinite(value) && value > 0 ? value : 0);
+    }, 0);
+  }
+  function currentMetricsFromState(state) {
+    state = normalizeStateShape(Object.assign(baseState(), state || {}));
+    var now = Date.now();
+    var sessionCurrent = activeElapsedSeconds(state.sessionStartedAt, now);
+    var activeCurrent = activeElapsedSeconds(state.activeStartedAt, now);
+    var callCurrent = activeElapsedSeconds(state.callStartedAt, now);
+    var completedCallSeconds = (state.completedCalls || []).reduce(function (sum, call) {
+      var value = Number(call && call.platformSeconds);
+      if (!Number.isFinite(value) || value < 0) value = Number(call && call.observedSeconds || 0);
+      return sum + (Number.isFinite(value) && value > 0 ? value : 0);
+    }, 0);
+    return {
+      sessionSeconds: segmentSeconds(state.sessionSegments) + sessionCurrent,
+      onlineSeconds: segmentSeconds(state.sessionSegments) + sessionCurrent,
+      activeSeconds: segmentSeconds(state.activeSegments) + activeCurrent,
+      totalCallSeconds: completedCallSeconds + callCurrent,
+      currentCallSeconds: callCurrent,
+      totalCalls: Number(state.totalCalls || 0),
+      missedCalls: Number(state.missedCalls || 0)
+    };
+  }
   async function reconcilePlatformTelemetry(trigger) {
     var observedAt = iso();
     var tabs = await chrome.tabs.query({ url: AUTHORIZED_ORIGIN + "/*" });
@@ -550,26 +601,26 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     var shouldCloseCall = false;
     await mutateState(async function (state) {
       var now = observedAt;
-      if (authenticated.length) {
+      var sessionSourceTabPresent = state.sessionSourceTabId != null && tabs.some(function (tab) {
+        return Number(tab.id) === Number(state.sessionSourceTabId);
+      });
+      var sessionSourceExplicitlyUnauthenticated = probes.some(function (probe) {
+        return Number(probe.tabId) === Number(state.sessionSourceTabId) && !probe.probeError && !probe.authenticated;
+      });
+      if (authenticated.length && (!state.sessionStartedAt || (sessionSourceTabPresent && !sessionSourceExplicitlyUnauthenticated))) {
         if (!state.sessionStartedAt) {
-          var sessionOriginCandidates = authenticated
-            .map(function (probe) { return Number(probe.pageTimeOrigin); })
-            .filter(function (value) { return Number.isFinite(value) && value > 0 && value <= Date.now(); })
-            .sort(function (a, b) { return a - b; });
-          var inferredSessionStart = sessionOriginCandidates.length
-            ? new Date(sessionOriginCandidates[0]).toISOString()
-            : now;
+          var inferredSessionStart = now;
           state.sessionStartedAt = inferredSessionStart;
           state.sessionSourceTabId = authenticated[0].tabId;
           record("PLATFORM_SESSION_RECONCILED_STARTED", {
             trigger: trigger || "reconcile", tabId: authenticated[0].tabId,
             route: authenticated[0].route || "/<ROOT>",
-            startMeasurement: inferredSessionStart === now ? "first-authenticated-observation" : "page-time-origin",
+            startMeasurement: "first-authenticated-observation",
             inferredStartAt: inferredSessionStart
           }, "info", "background");
         }
         state.sessionLastObservedAt = now;
-      } else if (state.sessionStartedAt && (tabs.length === 0 || readable.length > 0)) {
+      } else if (state.sessionStartedAt && (!sessionSourceTabPresent || sessionSourceExplicitlyUnauthenticated)) {
         state.sessionSegments = (state.sessionSegments || []).concat({
           startedAt: state.sessionStartedAt, endedAt: now,
           durationSeconds: Math.max(0, (Date.parse(now) - Date.parse(state.sessionStartedAt)) / 1000),
@@ -586,48 +637,47 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         state.sessionLastObservedAt = now;
       }
 
-      if (onlineTabs.length) {
-        if (!state.onlineStartedAt) {
-          state.onlineStartedAt = now;
-          state.onlineSourceTabId = onlineTabs[0].tabId;
-          record("PLATFORM_ONLINE_RECONCILED_STARTED", {
+      var activeSourceStillAvailable = state.activeSourceTabId != null && onlineTabs.some(function (probe) {
+        return Number(probe.tabId) === Number(state.activeSourceTabId);
+      });
+      if (onlineTabs.length && (!state.activeStartedAt || activeSourceStillAvailable)) {
+        if (!state.activeStartedAt) {
+          state.activeStartedAt = now;
+          state.activeSourceTabId = onlineTabs[0].tabId;
+          record("PLATFORM_ACTIVE_TIME_STARTED", {
             trigger: trigger || "reconcile", tabId: onlineTabs[0].tabId,
-            route: onlineTabs[0].route || "/<ROOT>"
+            route: onlineTabs[0].route || "/<ROOT>",
+            definition: "available-to-take-calls"
           }, "info", "background");
         }
-        state.onlineLastObservedAt = now;
-        state.onlineSourceTabId = onlineTabs[0].tabId;
-      } else if (state.onlineStartedAt && tabs.length === 0) {
-        state.onlineSegments = (state.onlineSegments || []).concat({
-          startedAt: state.onlineStartedAt, endedAt: now,
-          durationSeconds: Math.max(0, (Date.parse(now) - Date.parse(state.onlineStartedAt)) / 1000),
-          reason: "no-cloud-tabs",
-          sourceTabId: state.onlineSourceTabId || null
+        state.activeLastObservedAt = now;
+        state.activeSourceTabId = onlineTabs[0].tabId;
+      } else if (state.activeStartedAt && (
+        tabs.length === 0 ||
+        !authenticated.some(function (probe) { return Number(probe.tabId) === Number(state.activeSourceTabId); }) ||
+        probes.some(function (probe) {
+          return Number(probe.tabId) === Number(state.activeSourceTabId) && probe.availability === "offline";
+        })
+      )) {
+        var activeReason = tabs.length === 0 ? "no-cloud-tabs"
+          : probes.some(function (probe) {
+              return Number(probe.tabId) === Number(state.activeSourceTabId) && probe.availability === "offline";
+            }) ? "explicit-offline-observation" : "source-tab-no-longer-authenticated";
+        var activeDuration = Math.max(0, (Date.parse(now) - Date.parse(state.activeStartedAt)) / 1000);
+        state.activeSegments = (state.activeSegments || []).concat({
+          startedAt: state.activeStartedAt, endedAt: now,
+          durationSeconds: activeDuration,
+          reason: activeReason,
+          sourceTabId: state.activeSourceTabId || null
         }).slice(-1000);
-        record("PLATFORM_ONLINE_RECONCILED_ENDED", {
-          trigger: trigger || "reconcile",
-          reason: "no-cloud-tabs",
-          durationSeconds: Math.max(0, (Date.parse(now) - Date.parse(state.onlineStartedAt)) / 1000)
+        record("PLATFORM_ACTIVE_TIME_ENDED", {
+          trigger: trigger || "reconcile", reason: activeReason,
+          durationSeconds: activeDuration,
+          sourceTabId: state.activeSourceTabId || null
         }, "info", "background");
-        state.onlineStartedAt = null;
-        state.onlineSourceTabId = null;
-        state.onlineLastObservedAt = now;
-      } else if (state.onlineStartedAt && authenticated.length > 0 &&
-                 onlineTabs.length === 0 && probes.some(function (probe) { return probe.availability === "offline"; })) {
-        state.onlineSegments = (state.onlineSegments || []).concat({
-          startedAt: state.onlineStartedAt, endedAt: now,
-          durationSeconds: Math.max(0, (Date.parse(now) - Date.parse(state.onlineStartedAt)) / 1000),
-          reason: "explicit-offline-observation",
-          sourceTabId: state.onlineSourceTabId || null
-        }).slice(-1000);
-        record("PLATFORM_ONLINE_RECONCILED_ENDED", {
-          trigger: trigger || "reconcile",
-          reason: "explicit-offline-observation",
-          durationSeconds: Math.max(0, (Date.parse(now) - Date.parse(state.onlineStartedAt)) / 1000)
-        }, "info", "background");
-        state.onlineStartedAt = null;
-        state.onlineSourceTabId = null;
-        state.onlineLastObservedAt = now;
+        state.activeStartedAt = null;
+        state.activeSourceTabId = null;
+        state.activeLastObservedAt = now;
       }
 
       if (selectedCall) {
@@ -1052,12 +1102,20 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     var localEstimateUsd=localCompletedUsd+liveSeconds/60*localRate;
     var officialUsd=Number(parsed.earnedUsd);
     var deltaUsd=Number.isFinite(officialUsd)?Math.round((officialUsd-localEstimateUsd)*10000)/10000:null;
+    var localMetrics=currentMetricsFromState(currentState);
+    var localCallSecondsToday=completedCallSecondsForDay(currentState,today)+liveSeconds;
+    var officialCallSeconds=parseClockDuration(parsed.callLength);
+    var deltaCallSeconds=officialCallSeconds!=null?Math.round((officialCallSeconds-localCallSeconds)*1000)/1000:null;
     var storedMirror=earningsState.effectifPlatformMirror;
     var mirror=Object.assign({},storedMirror||{});
     mirror.statistics=Object.assign({},mirror.statistics||{},{
       schema:"signal-interpreter-official-stats/v1",key:"statistics",route:"/profile/<ID>/logs",
       url:OFFICIAL_STATS_URL,capturedAt:iso(),reason:"background-page-context",
-      summary:{earned:parsed.earned,earnedUsd:parsed.earnedUsd,callLength:parsed.callLength,callCount:parsed.callCount,localEstimateUsd:Math.round(localEstimateUsd*10000)/10000,deltaUsd:deltaUsd},
+      summary:{earned:parsed.earned,earnedUsd:parsed.earnedUsd,callLength:parsed.callLength,callCount:parsed.callCount,localEstimateUsd:Math.round(localEstimateUsd*10000)/10000,deltaUsd:deltaUsd,
+        localCallsToday:Number(currentState.dailyCalls&&currentState.dailyCalls[today]||0),localMissedCallsToday:Number(currentState.dailyMissedCalls&&currentState.dailyMissedCalls[today]||0),
+        localCallSecondsToday:Math.round(localCallSecondsToday*1000)/1000,officialCallSeconds:officialCallSeconds,deltaCallSeconds:deltaCallSeconds,
+        localTotalCalls:localMetrics.totalCalls,localTotalMissedCalls:localMetrics.missedCalls,
+        localOnlineSeconds:Math.round(localMetrics.onlineSeconds*1000)/1000,localActiveSeconds:Math.round(localMetrics.activeSeconds*1000)/1000},
       source:"platform-page-context",tabId:tab.id
     });
     await chrome.storage.local.set({effectifPlatformMirror:mirror});
@@ -1243,6 +1301,24 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       if (event.action === "PLATFORM_SESSION_STARTED" || event.action === "PLATFORM_SESSION_ENDED") handleSession(event);
       if (event.action === "AVAILABILITY_STATE") handleAvailability(event);
       if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event);
+      if (event.action === "MISSED_CALL_DIALOG_DETECTED") {
+        mutateState(async function (state) {
+          var day = localDay(event.timestamp || iso());
+          state.missedCalls = Number(state.missedCalls || 0) + 1;
+          state.dailyMissedCalls = Object.assign({}, state.dailyMissedCalls || {});
+          state.dailyMissedCalls[day] = Number(state.dailyMissedCalls[day] || 0) + 1;
+          state.missedCallRecords = (state.missedCallRecords || []).concat({
+            id: uid(), detectedAt: event.timestamp || iso(), clickedAt: null,
+            classifiedAt: iso(), modality: state.pendingCall && state.pendingCall.modality || "UNKNOWN",
+            reason: "missed-call-dialog", evidence: "portal-dialog-visible"
+          }).slice(-1000);
+          state.pendingCall = null;
+          chrome.alarms.clear("effectif-pending-call");
+          record("MISSED_CALL_CLASSIFIED", {
+            detectedAt: event.timestamp || iso(), reason: "portal-dialog-visible"
+          }, "info", "content");
+        }, "missed-call-dialog").catch(function () {});
+      }
       if (event.action === "CONNECT_CLICKED") alertOnConnect(event);
       if (event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
         mutateState(async function (state) {
@@ -1489,8 +1565,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         chrome.alarms.create("effectif-pending-call", { when: Date.now() + 5000 });
         return;
       }
-      var missed={id:state.pendingCall.id||uid(),detectedAt:state.pendingCall.detectedAt,clickedAt:null,classifiedAt:iso(),modality:state.pendingCall.modality||"OPI",reason:state.pendingCall.closedAt?"dialog_closed_without_connect":"dialog_timeout"};
-      state.missedCalls=Number(state.missedCalls||0)+1;state.dailyMissedCalls=Object.assign({},state.dailyMissedCalls||{});var day=localDay(missed.detectedAt||iso());state.dailyMissedCalls[day]=Number(state.dailyMissedCalls[day]||0)+1;state.missedCallRecords=(state.missedCallRecords||[]).concat(missed).slice(-1000);state.pendingCall=null;record("MISSED_CALL_CLASSIFIED",missed,"warn","alarm");
+      var notConnected={id:state.pendingCall.id||uid(),detectedAt:state.pendingCall.detectedAt,clickedAt:clickedAt||null,classifiedAt:iso(),modality:state.pendingCall.modality||"OPI",reason:state.pendingCall.closedAt?"dialog_closed_without_missed_call":"pending_call_timeout_without_missed_dialog"};
+      state.pendingCall=null;
+      record("CALL_NOT_CONNECTED_WITHOUT_MISSED_DIALOG",notConnected,"info","alarm");
     });
   });
   function sanitizedRequestUrl(raw) {
@@ -1595,6 +1672,31 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     });
   });
   chrome.tabs.onRemoved.addListener(function(tabId){
+    mutateState(async function(state){
+      var endedAt=iso();
+      if(state.sessionStartedAt&&Number(state.sessionSourceTabId)===Number(tabId)){
+        var sessionDuration=activeElapsedSeconds(state.sessionStartedAt,endedAt);
+        state.sessionSegments=(state.sessionSegments||[]).concat({
+          startedAt:state.sessionStartedAt,endedAt:endedAt,durationSeconds:sessionDuration,
+          reason:"source-tab-closed",sourceTabId:tabId
+        }).slice(-1000);
+        record("PLATFORM_SESSION_RECONCILED_ENDED",{trigger:"tab-removed",reason:"source-tab-closed",tabId:tabId,durationSeconds:sessionDuration},"info","tabs");
+        state.sessionStartedAt=null;state.sessionSourceTabId=null;state.sessionLastObservedAt=endedAt;
+      }
+      if(state.activeStartedAt&&Number(state.activeSourceTabId)===Number(tabId)){
+        var activeDuration=activeElapsedSeconds(state.activeStartedAt,endedAt);
+        state.activeSegments=(state.activeSegments||[]).concat({
+          startedAt:state.activeStartedAt,endedAt:endedAt,durationSeconds:activeDuration,
+          reason:"source-tab-closed",sourceTabId:tabId
+        }).slice(-1000);
+        record("PLATFORM_ACTIVE_TIME_ENDED",{trigger:"tab-removed",reason:"source-tab-closed",tabId:tabId,durationSeconds:activeDuration},"info","tabs");
+        state.activeStartedAt=null;state.activeSourceTabId=null;state.activeLastObservedAt=endedAt;
+      }
+    },"tab-removed-metrics").then(function(state){
+      if(state&&state.callId&&Number(state.callSourceTabId)===Number(tabId)) closeCall("source-tab-closed",NaN,null);
+    }).catch(function(error){
+      record("PLATFORM_TAB_REMOVAL_METRICS_ERROR",{tabId:tabId,error:String(error)},"warn","tabs");
+    });
     reconcilePlatformTelemetry("tab-removed").catch(function(error){
       record("PLATFORM_TELEMETRY_RECONCILE_ERROR",{trigger:"tab-removed",tabId:tabId,error:String(error)},"warn","background");
     });

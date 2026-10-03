@@ -51,11 +51,48 @@
     if (!start) return "00:00:00";
     var parsed = Date.parse(start);
     if (!Number.isFinite(parsed)) return "00:00:00";
-    var seconds = Math.max(0, Math.floor((Date.now() - parsed) / 1000));
+    return formatSeconds(Math.max(0, (Date.now() - parsed) / 1000));
+  }
+  function formatSeconds(rawSeconds) {
+    var seconds = Math.max(0, Math.floor(Number(rawSeconds) || 0));
     var hours = Math.floor(seconds / 3600);
     var minutes = Math.floor((seconds % 3600) / 60);
     var rest = seconds % 60;
     return [hours, minutes, rest].map(function (value) { return String(value).padStart(2, "0"); }).join(":");
+  }
+  function segmentTotal(segments) {
+    return (Array.isArray(segments) ? segments : []).reduce(function (sum, item) {
+      var value = Number(item && item.durationSeconds);
+      return sum + (Number.isFinite(value) && value > 0 ? value : 0);
+    }, 0);
+  }
+  function elapsed(start) {
+    if (!start) return 0;
+    var parsed = Date.parse(start);
+    return Number.isFinite(parsed) ? Math.max(0, (Date.now() - parsed) / 1000) : 0;
+  }
+  function callSeconds(call) {
+    var value = Number(call && call.platformSeconds);
+    if (!Number.isFinite(value) || value < 0) value = Number(call && call.observedSeconds || 0);
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  }
+  function activityMetrics() {
+    var completed = Array.isArray(state.completedCalls) ? state.completedCalls : [];
+    var today = localDay();
+    var callsToday = completed.filter(function (call) {
+      return localDay(call.startedAt || call.endedAt) === today;
+    });
+    return {
+      session: elapsed(state.sessionStartedAt),
+      online: segmentTotal(state.sessionSegments) + elapsed(state.sessionStartedAt),
+      active: segmentTotal(state.activeSegments) + elapsed(state.activeStartedAt),
+      currentCall: elapsed(state.callStartedAt),
+      totalCalls: Number(state.totalCalls || 0),
+      missedCalls: Number(state.missedCalls || 0),
+      callsToday: Number(state.dailyCalls && state.dailyCalls[today] || 0),
+      missedToday: Number(state.dailyMissedCalls && state.dailyMissedCalls[today] || 0),
+      callSecondsToday: callsToday.reduce(function (sum, call) { return sum + callSeconds(call); }, 0) + elapsed(state.callStartedAt)
+    };
   }
   function render() {
     $("enabled").checked = !!config.autoAnswerEnabled;
@@ -72,27 +109,27 @@
     $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
     $("groqStatus").textContent = "Clave local ✓ · " + (config.groqModel || "whisper-large-v3-turbo");
     if ($("telemetryVersion")) $("telemetryVersion").textContent = BUILD_LABEL;
-    $("sessionTimer").textContent = duration(state.sessionStartedAt);
-    $("onlineTimer").textContent = duration(state.onlineStartedAt);
-    $("callTimer").textContent = duration(state.callStartedAt);
-    $("endCall").disabled = !state.callStartedAt;
+    var activity = activityMetrics();
     var today = localDay();
     var completed = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) {
       return localDay(call.startedAt || call.endedAt) === today;
     }) : [];
-    $("callsToday").textContent = String(state.dailyCalls && state.dailyCalls[today] || 0);
-    $("missedToday").textContent = String(state.dailyMissedCalls && state.dailyMissedCalls[today] || 0);
-    var observedCompletedSeconds = completed.reduce(function (sum, call) {
-      var seconds = Number(call.platformSeconds);
-      if (!Number.isFinite(seconds) || seconds < 0) seconds = Number(call.observedSeconds || 0);
-      return sum + Math.max(0, seconds);
-    }, 0);
-    var liveSecondsForMinutes = state.callStartedAt ? Math.max(0, (Date.now() - Date.parse(state.callStartedAt)) / 1000) : 0;
-    $("minutesToday").textContent = ((observedCompletedSeconds + liveSecondsForMinutes) / 60).toFixed(1);
+    $("sessionTimer").textContent = formatSeconds(activity.session);
+    $("activeTimer").textContent = formatSeconds(activity.active);
+    $("callTimer").textContent = state.callStartedAt ? formatSeconds(activity.currentCall) : "00:00:00";
+    $("endCall").disabled = !state.callStartedAt;
+    $("callsToday").textContent = String(activity.callsToday);
+    $("missedToday").textContent = String(activity.missedToday);
+    $("minutesToday").textContent = (activity.callSecondsToday / 60).toFixed(1) + " min";
+    if ($("activityMeta")) {
+      $("activityMeta").textContent = "Online acumulado " + formatSeconds(activity.online) +
+        " · Total llamadas " + String(activity.totalCalls) +
+        " · Perdidas " + String(activity.missedCalls);
+    }
     var completedUsd = completed.reduce(function (sum, call) {
       return sum + Number(call.estimatedRevenue || call.estimatedAmount || 0);
     }, 0);
-    var liveSeconds = state.callStartedAt ? Math.max(0, (Date.now() - Date.parse(state.callStartedAt)) / 1000) : 0;
+    var liveSeconds = activity.currentCall;
     var liveRate = state.callModality === "VRI" ? Number(config.vriRatePerMinute || 0.25) : Number(config.opiRatePerMinute || 0.20);
     var officialStats = mirror.statistics && mirror.statistics.summary || {};
     var officialUsd = Number(officialStats.earnedUsd);
@@ -387,7 +424,18 @@
     render();
   });
   setInterval(function () {
-    $("sessionTimer").textContent = duration(state.sessionStartedAt); $("onlineTimer").textContent = duration(state.onlineStartedAt); $("callTimer").textContent = duration(state.callStartedAt); renderEarningsOnly();
+    var activity = activityMetrics();
+    $("sessionTimer").textContent = formatSeconds(activity.session);
+    $("activeTimer").textContent = formatSeconds(activity.active);
+    $("callTimer").textContent = state.callStartedAt ? formatSeconds(activity.currentCall) : "00:00:00";
+    $("callsToday").textContent = String(activity.callsToday);
+    $("missedToday").textContent = String(activity.missedToday);
+    $("minutesToday").textContent = (activity.callSecondsToday / 60).toFixed(1) + " min";
+    if ($("activityMeta")) $("activityMeta").textContent =
+      "Online acumulado " + formatSeconds(activity.online) +
+      " · Total llamadas " + String(activity.totalCalls) +
+      " · Perdidas " + String(activity.missedCalls);
+    renderEarningsOnly();
   }, 1000);
   setInterval(refreshTelemetryStats, 30000);
 })();

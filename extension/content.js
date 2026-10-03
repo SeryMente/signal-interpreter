@@ -10,6 +10,7 @@
   try { delete window.__SIGNAL_INTERPRETER_CLOUD_V0913__; } catch (_) {}
 
   var DIALOG = '[role="dialog"]';
+  var MISSED_CALL_DIALOG_SELECTOR = '[role="dialog"],[role="alertdialog"],[aria-modal="true"]';
   var CONNECT = 'button[aria-label="Connect"]';
   var config = {
     targetHost: "app.cloudinterpreter.com",
@@ -50,6 +51,7 @@
   var route = location.pathname;
   var callRouteId = null;
   var lastIncomingSignature = "";
+  var lastMissedCallSignature = "";
   var lastAvailability = "";
   var lastMediaSignature = "";
   var lastMediaAt = 0;
@@ -373,6 +375,29 @@
         emit("CONNECT_ERROR", { message: String(error), flowId: answerFlow.flowId || null }, "error");
       }
     });
+  }
+  function detectMissedCallDialog() {
+    var dialogs = Array.from(document.querySelectorAll(MISSED_CALL_DIALOG_SELECTOR)).filter(visibleElement);
+    var missed = dialogs.find(function (dialog) {
+      var text = normalized(dialog.innerText || dialog.textContent || "");
+      return /\bmissed\s+call\b/i.test(text);
+    }) || null;
+    if (missed) {
+      var text = normalized(missed.innerText || missed.textContent || "");
+      var signature = text.slice(0, 240) + "|" + missed.querySelectorAll("button,[role='button']").length;
+      if (signature !== lastMissedCallSignature) {
+        lastMissedCallSignature = signature;
+        emit("MISSED_CALL_DIALOG_DETECTED", {
+          textFingerprint: safe(text).slice(0, 240),
+          buttons: missed.querySelectorAll("button,[role='button']").length
+        });
+      }
+      return;
+    }
+    if (lastMissedCallSignature) {
+      emit("MISSED_CALL_DIALOG_CLOSED", { textFingerprint: lastMissedCallSignature.slice(0, 240) });
+      lastMissedCallSignature = "";
+    }
   }
   function detectAvailability() {
     var text = Array.from(document.querySelectorAll("button,[role='button'],[aria-label]")).slice(0, 160)
@@ -796,6 +821,7 @@
       trackRoute("mutation");
       autoAnswer();
       detectAvailability();
+      detectMissedCallDialog();
       mediaSnapshot("mutation");
       mapScreen("mutation");
       schedulePlatformMirror("mutation");
@@ -812,6 +838,7 @@
     trackRoute("start");
     autoAnswer();
     detectAvailability();
+    detectMissedCallDialog();
     mapScreen("start");
     schedulePlatformMirror("start");
     renderOverlay();
