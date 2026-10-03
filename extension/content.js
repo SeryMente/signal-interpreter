@@ -118,12 +118,19 @@
       (location.pathname === AUTHORIZED_PROFILE_PATH || location.pathname === AUTHORIZED_PROFILE_PATH + "/");
   }
   function readAvailabilityState() {
-    var text = Array.from(document.querySelectorAll("button,[role='button'],[aria-label]")).slice(0, 240)
-      .map(function (element) {
-        return normalized((element.getAttribute("aria-label") || "") + " " + (element.textContent || ""));
-      }).join(" ");
-    if (/Click to go Offline|You are Online/i.test(text)) return "online";
-    if (/Click to go Online|You are Offline/i.test(text)) return "offline";
+    var controls = Array.from(document.querySelectorAll("button,[role='button'],[aria-label],[title],[data-testid]"))
+      .filter(visibleElement).slice(0, 320);
+    var signals = controls.map(function (element) {
+      return normalized([
+        element.getAttribute("aria-label") || "",
+        element.getAttribute("title") || "",
+        element.getAttribute("data-testid") || "",
+        element.textContent || ""
+      ].join(" "));
+    }).filter(Boolean);
+    var text = signals.join(" ");
+    if (/(?:click to go offline|you are online|go offline|status[:\\s]+online|online status)/i.test(text)) return "online";
+    if (/(?:click to go online|you are offline|go online|status[:\\s]+offline|offline status)/i.test(text)) return "offline";
     return "unknown";
   }
   function syncPageFavicon() {
