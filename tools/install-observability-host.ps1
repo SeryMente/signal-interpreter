@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-  [string]$ExtensionPath = "C:\Users\fila4\Desktop\Signal-Interpreter-Extension",
+  [string]$ExtensionPath = (Join-Path $env:USERPROFILE "Desktop\Signal-Interpreter-Extension"),
   [string]$ExtensionId
 )
 $ErrorActionPreference="Stop"
