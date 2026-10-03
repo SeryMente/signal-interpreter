@@ -115,6 +115,12 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       completedCalls: [], totalCalls: 0, dailyCalls: {},
       missedCalls: 0, dailyMissedCalls: {}, missedCallRecords: [],
       transcriptionActive: false, transcriptionTabId: null,
+      autoAnswerTelemetry: {
+        detections: 0, connectFound: 0, clicks: 0, confirmations: 0,
+        skipped: 0, disabled: 0, timeouts: 0, errors: 0,
+        lastDetectedAt: null, lastClickedAt: null, lastConfirmedAt: null,
+        lastError: null
+      },
       transcriptionStatus: { phase: "idle", connected: false, engine: null },
       transcriptionMetrics: {
         segments: 0, localSegments: 0, groqSegments: 0,
@@ -152,6 +158,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if (!state.dailyMissedCalls || typeof state.dailyMissedCalls !== "object" || Array.isArray(state.dailyMissedCalls)) state.dailyMissedCalls = {};
     if (!state.transcriptionStatus || typeof state.transcriptionStatus !== "object" || Array.isArray(state.transcriptionStatus)) state.transcriptionStatus = {phase:"idle",connected:false,engine:null};
     if (!state.transcriptionMetrics || typeof state.transcriptionMetrics !== "object" || Array.isArray(state.transcriptionMetrics)) state.transcriptionMetrics = {segments:0,localSegments:0,groqSegments:0,queueDepth:0,averageLatencyMs:0,groqEstimatedUsd:0};
+    if (!state.autoAnswerTelemetry || typeof state.autoAnswerTelemetry !== "object" || Array.isArray(state.autoAnswerTelemetry)) state.autoAnswerTelemetry = baseState().autoAnswerTelemetry;
     if (!state.groqUsage || typeof state.groqUsage !== "object" || Array.isArray(state.groqUsage)) state.groqUsage = {requests:0,successes:0,errors:0,audioSeconds:0,bytesSent:0,charactersReturned:0,totalLatencyMs:0,estimatedUsd:0};
     return state;
   }
@@ -538,6 +545,11 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
           clickedAt: null
         };
       }
+      state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
+      state.autoAnswerTelemetry.detections = Number(state.autoAnswerTelemetry.detections || 0) + 1;
+      state.autoAnswerTelemetry.connectFound = Number(state.autoAnswerTelemetry.connectFound || 0) + (event.payload && event.payload.connectFound ? 1 : 0);
+      state.autoAnswerTelemetry.disabled = Number(state.autoAnswerTelemetry.disabled || 0) + (event.payload && event.payload.connectDisabled ? 1 : 0);
+      state.autoAnswerTelemetry.lastDetectedAt = event.timestamp;
       chrome.alarms.create("effectif-pending-call", { when: Date.now() + 15000 });
     });
   }
@@ -580,14 +592,26 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       requestCallAlert(callId, "call-route-confirmed");
     });
   }
+  var callAlertInFlight = new Map();
   function requestCallAlert(callId, trigger) {
+    if (!callId || callAlertInFlight.has(callId)) return;
+    callAlertInFlight.set(callId, Date.now());
     chrome.storage.local.get(["effectifConfig", "effectifCallAlert"], function (stored) {
       var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-      if (!config.soundEnabled || !callId) return;
+      if (!config.soundEnabled || !callId) {
+        callAlertInFlight.delete(callId);
+        return;
+      }
       var now = Date.now();
       var previous = stored.effectifCallAlert || {};
-      if (previous.callId === callId && previous.playedAt) return;
-      if (previous.callId === callId && previous.requestedAt && now - Number(previous.requestedAt) < 4000 && !previous.failedAt) return;
+      if (previous.callId === callId && previous.playedAt) {
+        callAlertInFlight.delete(callId);
+        return;
+      }
+      if (previous.callId === callId && previous.requestedAt && now - Number(previous.requestedAt) < 4000 && !previous.failedAt) {
+        callAlertInFlight.delete(callId);
+        return;
+      }
       var marker = {
         callId: callId,
         requestedAt: now,
@@ -607,6 +631,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
           chrome.storage.local.set({
             effectifCallAlert: Object.assign({}, marker, { playedAt: playedAt, failedAt: null })
           });
+          callAlertInFlight.delete(callId);
           record("CALL_ALERT_SOUND_PLAYED", {
             callId: marker.callId, trigger: marker.trigger,
             latencyMs: playedAt - now, attempts: attempt, prominent: true
@@ -619,6 +644,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
           chrome.storage.local.set({
             effectifCallAlert: Object.assign({}, marker, { failedAt: Date.now(), error: String(error) })
           });
+          callAlertInFlight.delete(callId);
           record("CALL_ALERT_SOUND_ERROR", {
             callId: marker.callId, trigger: marker.trigger,
             latencyMs: Date.now() - now, attempts: attempt, message: String(error)
@@ -632,6 +658,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   function alertOnConnect(event) {
     mutateState(async function (state) {
       state.lastConnectAt = event.timestamp;
+      state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
+      state.autoAnswerTelemetry.clicks = Number(state.autoAnswerTelemetry.clicks || 0) + 1;
+      state.autoAnswerTelemetry.lastClickedAt = event.timestamp;
       if (state.pendingCall) {
         state.pendingCall.clickedAt = event.timestamp;
       } else if (!state.callId) {
@@ -1018,7 +1047,37 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       if (event.action === "AVAILABILITY_STATE") handleAvailability(event);
       if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event);
       if (event.action === "CONNECT_CLICKED") alertOnConnect(event);
-      if (event.action === "CALL_ROUTE_ENTERED") startCall(event);
+      if (event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
+        mutateState(async function (state) {
+          state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
+          state.autoAnswerTelemetry.confirmations = Number(state.autoAnswerTelemetry.confirmations || 0) + 1;
+          state.autoAnswerTelemetry.lastConfirmedAt = event.timestamp;
+        }, "answer-flow-confirmed").catch(function () {});
+        requestCallAlert(event.payload && event.payload.callId || null, "answer-flow-confirmed");
+      }
+      if (event.action === "CONNECT_ROUTE_TIMEOUT") {
+        mutateState(async function (state) {
+          state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
+          state.autoAnswerTelemetry.timeouts = Number(state.autoAnswerTelemetry.timeouts || 0) + 1;
+        }, "connect-route-timeout").catch(function () {});
+      }
+      if (event.action === "CONNECT_ERROR") {
+        mutateState(async function (state) {
+          state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
+          state.autoAnswerTelemetry.errors = Number(state.autoAnswerTelemetry.errors || 0) + 1;
+          state.autoAnswerTelemetry.lastError = event.payload && event.payload.message || "CONNECT_ERROR";
+        }, "connect-error").catch(function () {});
+      }
+      if (event.action === "AUTO_ANSWER_SKIPPED_UNVERIFIED_MODALITY") {
+        mutateState(async function (state) {
+          state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
+          state.autoAnswerTelemetry.skipped = Number(state.autoAnswerTelemetry.skipped || 0) + 1;
+        }, "auto-answer-skipped").catch(function () {});
+      }
+      if (event.action === "CALL_ROUTE_ENTERED") {
+        startCall(event);
+        requestCallAlert(event.payload && event.payload.callId || event.callId || null, "call-route-entered-immediate");
+      }
       if (event.action === "CALL_END_CLICKED") rememberCallEnd(event);
       if (event.action === "CALL_ROUTE_ENDED") {
         var seconds = event.payload && event.payload.platformSeconds;
@@ -1131,6 +1190,12 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     }catch(error){record("OBSERVABILITY_CHECKPOINT_ERROR",{message:String(error)},"warn","runtime");}
   }
   chrome.runtime.onInstalled.addListener(function(details){
+    record("EXTENSION_VERSION_BOUNDARY", {
+      currentVersion: chrome.runtime.getManifest().version,
+      previousVersion: details && details.previousVersion || null,
+      reason: details && details.reason || "installed",
+      contract: "version-changes-with-development"
+    }, "info", "runtime");
     chrome.offscreen.closeDocument().catch(function(){});
     initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
     markObservabilityBuildCheckpoint(details&&details.reason||"installed",details&&details.previousVersion).catch(function(){});
@@ -1224,6 +1289,28 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     networkRequests.set(details.requestId, { at: Date.now(), method: details.method, type: details.type, url: sanitizedRequestUrl(details.url), tabId: details.tabId });
     if (networkRequests.size > 5000) networkRequests.delete(networkRequests.keys().next().value);
   }, { urls: ["https://app.cloudinterpreter.com/*"] });
+  var autoAnswerBootstrapAt = new Map();
+  function bootstrapAutoAnswerForTab(tabId, trigger) {
+    if (!cachedConfig.autoAnswerEnabled || !Number.isInteger(tabId) || tabId < 0) return;
+    var now = Date.now();
+    var previous = Number(autoAnswerBootstrapAt.get(tabId) || 0);
+    if (now - previous < 3000) return;
+    autoAnswerBootstrapAt.set(tabId, now);
+    record("AUTO_ANSWER_BOOTSTRAP_REQUESTED", { tabId: tabId, trigger: trigger || "unknown" }, "info", "background");
+    chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED" }).then(function () {
+      record("AUTO_ANSWER_BOOTSTRAP_INJECTED", { tabId: tabId, trigger: trigger || "unknown" }, "info", "background");
+    }).catch(function (error) {
+      record("AUTO_ANSWER_BOOTSTRAP_INJECTION_ERROR", { tabId: tabId, trigger: trigger || "unknown", error: String(error) }, "warn", "background");
+    });
+  }
+  chrome.webRequest.onBeforeRequest.addListener(function (details) {
+    try {
+      var ringPath = new URL(details.url).pathname;
+      if (/\/ring\.mp3$/i.test(ringPath) && cachedConfig.autoAnswerEnabled) {
+        bootstrapAutoAnswerForTab(Number(details.tabId), "ring.mp3-start");
+      }
+    } catch (_) {}
+  }, { urls: ["https://app.cloudinterpreter.com/*"] });
   chrome.webRequest.onCompleted.addListener(function (details) {
     var started = networkRequests.get(details.requestId); networkRequests.delete(details.requestId);
     if (!started) return;
@@ -1233,13 +1320,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       var requestPath = new URL(details.url).pathname;
       if (/\/ring\.mp3$/i.test(requestPath) && (details.statusCode === 200 || details.statusCode === 206)) {
         record("INCOMING_RING_SIGNAL", { tabId: started.tabId, statusCode: details.statusCode, durationMs: durationMs, signal: "ring.mp3" }, "info", "webRequest");
-        if (Number.isInteger(started.tabId) && started.tabId >= 0) {
-          chrome.scripting.executeScript({ target: { tabId: started.tabId }, files: ["content.js"], world: "ISOLATED" }).then(function () {
-            record("AUTO_ANSWER_BOOTSTRAP_INJECTED", { tabId: started.tabId, trigger: "ring.mp3" }, "info", "background");
-          }).catch(function (error) {
-            record("AUTO_ANSWER_BOOTSTRAP_INJECTION_ERROR", { tabId: started.tabId, trigger: "ring.mp3", error: String(error) }, "warn", "background");
-          });
-        }
+        bootstrapAutoAnswerForTab(Number(started.tabId), "ring.mp3-completed");
       }
     } catch (error) {
       record("INCOMING_RING_SIGNAL_ERROR", { error: String(error) }, "warn", "background");

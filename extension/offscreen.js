@@ -46,7 +46,7 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
   if(message.type==="EFFECTIF_PLAY_SOUND"){
     playTone(Math.max(0,Math.min(1,Number(message.volume)||0))).then(function(){sendResponse({ok:true})}).catch(function(error){sendResponse({ok:false,error:String(error)})});
 
-    return false;
+    return true;
   }
   if(message.type==="SIGNAL_START_GROQ_CAPTURE"){
     startCapture(message.streamId,message.sessionId).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)})});

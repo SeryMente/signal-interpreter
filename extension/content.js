@@ -240,7 +240,7 @@
     }
     dialogs.forEach(function (dialog) {
       var text = normalized(dialog.innerText || dialog.textContent);
-      if (!/Is requesting interpretation/i.test(text)) return;
+      if (!/(?:is\s+requesting\s+interpretation|requesting\s+interpretation)/i.test(text)) return;
       var modality = /Audio interpreting/i.test(text) ? "OPI" :
         /Video interpreting/i.test(text) ? "VRI" : "UNKNOWN";
       var button = Array.from(dialog.querySelectorAll("button,[role='button']")).filter(visibleElement).find(function (element) {
@@ -270,15 +270,21 @@
           modality: modality, disabled: !!button.disabled,
           label: safe(button.getAttribute("aria-label") || button.textContent).slice(0, 120)
         });
+        else emit("CONNECT_BUTTON_NOT_FOUND", { modality: modality, dialogButtons: dialog.querySelectorAll("button,[role='button']").length }, "warn");
+        if (button && button.disabled) emit("CONNECT_BUTTON_DISABLED", { modality: modality }, "warn");
       }
       if (!config.autoAnswerEnabled || !button || button.disabled || clickedNodes.has(button)) return;
       if (modality !== "OPI") {
-        emit("AUTO_ANSWER_SKIPPED_UNVERIFIED_MODALITY", { modality: modality }, "warn");
+        emit("AUTO_ANSWER_SKIPPED_UNVERIFIED_MODALITY", { modality: modality, decision: "blocked", reason: "only-verified-OPI" }, "warn");
         return;
       }
       cleanupFingerprints();
       var fingerprint = safe(text) + "|" + modality;
       if (fingerprints.has(fingerprint)) return;
+      emit("AUTO_ANSWER_ELIGIBLE", {
+        modality: modality, decision: "click-connect",
+        buttonLabel: safe(button.getAttribute("aria-label") || button.textContent).slice(0, 120)
+      });
       clickedNodes.add(button);
       fingerprints.set(fingerprint, Date.now());
       try {
@@ -298,6 +304,8 @@
           flowId: flowId,
           expectedRoute: "/call/<ID>",
           clickLatencyMs: Math.round((performance.now() - started) * 1000) / 1000,
+          buttonLabel: safe(button.getAttribute("aria-label") || button.textContent).slice(0, 120),
+          buttonDisabledAtClick: !!button.disabled,
           platformInteraction: "permitted-connect-only"
         });
         emitIntegrity("after-connect");
