@@ -274,6 +274,7 @@
       ? lastCallEndMeasurement.platformSeconds : null;
     route = next;
     callRouteId = nextCallId;
+    emitAutoAnswerReadiness("route:" + reason);
     if (leavingCall) {
       if (!Number.isFinite(endMeasurement)) endMeasurement = ratingMatch ? null : parsePlatformSeconds();
       emit("CALL_ROUTE_ENDED", {
