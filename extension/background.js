@@ -42,6 +42,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   var cachedConfig = Object.assign({}, DEFAULT_CONFIG);
   var signalGroqQueue = Promise.resolve();
   var HOTLOAD_SCHEMA = "signal-hotload/v1";
+  var METRICS_SCHEMA = "signal-operational-metrics/v2";
   var HOTLOAD_HEARTBEAT_MIN_MS = 15000;
   var hotloadLastHeartbeatAt = 0;
   var hotloadLastRecoveryAt = 0;
@@ -238,8 +239,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   }
   function baseState() {
     return {
+      metricsSchema: METRICS_SCHEMA,
       sessionStartedAt: null, sessionSegments: [], sessionSourceTabId: null, sessionLastObservedAt: null,
       pendingCall: null, pendingCallEnd: null,
+      lastMissedCallFingerprint: null, lastMissedCallDetectedAt: null, lastMissedCallDialogActive: false,
       onlineStartedAt: null, onlineSegments: [], onlineSourceTabId: null, onlineLastObservedAt: null,
       activeStartedAt: null, activeSegments: [], activeSourceTabId: null, activeLastObservedAt: null,
       callStartedAt: null, callId: null, callModality: null, callSourceTabId: null, callLastObservedAt: null, callMissingSinceAt: null,
@@ -290,6 +293,8 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   }
   function normalizeStateShape(state) {
     if (!state || typeof state !== "object") state = baseState();
+    if (state.metricsSchema !== METRICS_SCHEMA) state.metricsSchema = METRICS_SCHEMA;
+    if (state.lastMissedCallDetectedAt !== null && !Number.isFinite(Date.parse(state.lastMissedCallDetectedAt))) state.lastMissedCallDetectedAt = null;
     if (!Array.isArray(state.sessionSegments)) state.sessionSegments = [];
     if (!Array.isArray(state.onlineSegments)) state.onlineSegments = [];
     if (!Array.isArray(state.activeSegments)) state.activeSegments = [];
@@ -297,6 +302,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if (state.activeSourceTabId !== null && !Number.isFinite(Number(state.activeSourceTabId))) state.activeSourceTabId = null;
     if (!Array.isArray(state.completedCalls)) state.completedCalls = [];
     if (!Array.isArray(state.missedCallRecords)) state.missedCallRecords = [];
+    var minimumCallCount = state.completedCalls.length + (state.callId ? 1 : 0);
+    state.totalCalls = Math.max(Number(state.totalCalls || 0), minimumCallCount);
+    state.missedCalls = Math.max(Number(state.missedCalls || 0), state.missedCallRecords.length);
     if (!state.dailyCalls || typeof state.dailyCalls !== "object" || Array.isArray(state.dailyCalls)) state.dailyCalls = {};
     if (!state.dailyMissedCalls || typeof state.dailyMissedCalls !== "object" || Array.isArray(state.dailyMissedCalls)) state.dailyMissedCalls = {};
     if (!state.transcriptionStatus || typeof state.transcriptionStatus !== "object" || Array.isArray(state.transcriptionStatus)) state.transcriptionStatus = {phase:"idle",connected:false,engine:null};
@@ -640,7 +648,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       var activeSourceStillAvailable = state.activeSourceTabId != null && onlineTabs.some(function (probe) {
         return Number(probe.tabId) === Number(state.activeSourceTabId);
       });
-      if (onlineTabs.length && (!state.activeStartedAt || activeSourceStillAvailable)) {
+      if (onlineTabs.length && (!state.activeStartedAt || !activeSourceStillAvailable)) {
         if (!state.activeStartedAt) {
           state.activeStartedAt = now;
           state.activeSourceTabId = onlineTabs[0].tabId;
@@ -1105,14 +1113,18 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     var localMetrics=currentMetricsFromState(currentState);
     var localCallSecondsToday=completedCallSecondsForDay(currentState,today)+liveSeconds;
     var officialCallSeconds=parseClockDuration(parsed.callLength);
-    var deltaCallSeconds=officialCallSeconds!=null?Math.round((officialCallSeconds-localCallSeconds)*1000)/1000:null;
+    var officialCallCount=Number(parsed.callCount);
+    var localCallsToday=Number(currentState.dailyCalls&&currentState.dailyCalls[today]||0);
+    var deltaCallCount=Number.isFinite(officialCallCount)?officialCallCount-localCallsToday:null;
+    var deltaCallSeconds=officialCallSeconds!=null?Math.round((officialCallSeconds-localCallSecondsToday)*1000)/1000:null;
     var storedMirror=earningsState.effectifPlatformMirror;
     var mirror=Object.assign({},storedMirror||{});
     mirror.statistics=Object.assign({},mirror.statistics||{},{
       schema:"signal-interpreter-official-stats/v1",key:"statistics",route:"/profile/<ID>/logs",
       url:OFFICIAL_STATS_URL,capturedAt:iso(),reason:"background-page-context",
       summary:{earned:parsed.earned,earnedUsd:parsed.earnedUsd,callLength:parsed.callLength,callCount:parsed.callCount,localEstimateUsd:Math.round(localEstimateUsd*10000)/10000,deltaUsd:deltaUsd,
-        localCallsToday:Number(currentState.dailyCalls&&currentState.dailyCalls[today]||0),localMissedCallsToday:Number(currentState.dailyMissedCalls&&currentState.dailyMissedCalls[today]||0),
+        localCallsToday:localCallsToday,localMissedCallsToday:Number(currentState.dailyMissedCalls&&currentState.dailyMissedCalls[today]||0),
+        officialCallCount:Number.isFinite(officialCallCount)?officialCallCount:null,deltaCallCount:deltaCallCount,
         localCallSecondsToday:Math.round(localCallSecondsToday*1000)/1000,officialCallSeconds:officialCallSeconds,deltaCallSeconds:deltaCallSeconds,
         localTotalCalls:localMetrics.totalCalls,localTotalMissedCalls:localMetrics.missedCalls,
         localOnlineSeconds:Math.round(localMetrics.onlineSeconds*1000)/1000,localActiveSeconds:Math.round(localMetrics.activeSeconds*1000)/1000},
@@ -1303,21 +1315,36 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event);
       if (event.action === "MISSED_CALL_DIALOG_DETECTED") {
         mutateState(async function (state) {
-          var day = localDay(event.timestamp || iso());
+          var detectedAt = event.timestamp || iso();
+          var fingerprint = String(event.payload && event.payload.textFingerprint || "missed-call").toLowerCase().replace(/\s+/g, " ").slice(0, 180);
+          var duplicate = !!state.lastMissedCallDialogActive && state.lastMissedCallFingerprint === fingerprint;
+          if (duplicate) {
+            record("MISSED_CALL_DUPLICATE_IGNORED", { detectedAt: detectedAt, reason: "same-dialog-reappeared-after-worker-restart" }, "info", "content");
+            return;
+          }
+          var day = localDay(detectedAt);
+          state.lastMissedCallFingerprint = fingerprint;
+          state.lastMissedCallDetectedAt = detectedAt;
+          state.lastMissedCallDialogActive = true;
           state.missedCalls = Number(state.missedCalls || 0) + 1;
           state.dailyMissedCalls = Object.assign({}, state.dailyMissedCalls || {});
           state.dailyMissedCalls[day] = Number(state.dailyMissedCalls[day] || 0) + 1;
           state.missedCallRecords = (state.missedCallRecords || []).concat({
-            id: uid(), detectedAt: event.timestamp || iso(), clickedAt: null,
+            id: uid(), detectedAt: detectedAt, clickedAt: null,
             classifiedAt: iso(), modality: state.pendingCall && state.pendingCall.modality || "UNKNOWN",
-            reason: "missed-call-dialog", evidence: "portal-dialog-visible"
+            reason: "missed-call-dialog", evidence: "portal-dialog-visible", fingerprint: fingerprint
           }).slice(-1000);
           state.pendingCall = null;
           chrome.alarms.clear("effectif-pending-call");
           record("MISSED_CALL_CLASSIFIED", {
-            detectedAt: event.timestamp || iso(), reason: "portal-dialog-visible"
+            detectedAt: detectedAt, reason: "portal-dialog-visible"
           }, "info", "content");
         }, "missed-call-dialog").catch(function () {});
+      }
+      if (event.action === "MISSED_CALL_DIALOG_CLOSED") {
+        mutateState(async function (state) {
+          state.lastMissedCallDialogActive = false;
+        }, "missed-call-dialog-closed").catch(function () {});
       }
       if (event.action === "CONNECT_CLICKED") alertOnConnect(event);
       if (event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {

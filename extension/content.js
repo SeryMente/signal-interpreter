@@ -52,6 +52,7 @@
   var callRouteId = null;
   var lastIncomingSignature = "";
   var lastMissedCallSignature = "";
+  var missedCallDialogVisible = false;
   var lastAvailability = "";
   var lastMediaSignature = "";
   var lastMediaAt = 0;
@@ -385,7 +386,8 @@
     if (missed) {
       var text = normalized(missed.innerText || missed.textContent || "");
       var signature = text.slice(0, 240) + "|" + missed.querySelectorAll("button,[role='button']").length;
-      if (signature !== lastMissedCallSignature) {
+      if (!missedCallDialogVisible) {
+        missedCallDialogVisible = true;
         lastMissedCallSignature = signature;
         emit("MISSED_CALL_DIALOG_DETECTED", {
           textFingerprint: safe(text).slice(0, 240),
@@ -394,9 +396,10 @@
       }
       return;
     }
-    if (lastMissedCallSignature) {
+    if (missedCallDialogVisible) {
       emit("MISSED_CALL_DIALOG_CLOSED", { textFingerprint: lastMissedCallSignature.slice(0, 240) });
       lastMissedCallSignature = "";
+      missedCallDialogVisible = false;
     }
   }
   function detectAvailability() {

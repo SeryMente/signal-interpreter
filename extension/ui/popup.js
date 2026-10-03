@@ -91,7 +91,8 @@
       missedCalls: Number(state.missedCalls || 0),
       callsToday: Number(state.dailyCalls && state.dailyCalls[today] || 0),
       missedToday: Number(state.dailyMissedCalls && state.dailyMissedCalls[today] || 0),
-      callSecondsToday: callsToday.reduce(function (sum, call) { return sum + callSeconds(call); }, 0) + elapsed(state.callStartedAt)
+      callSecondsToday: callsToday.reduce(function (sum, call) { return sum + callSeconds(call); }, 0) + elapsed(state.callStartedAt),
+      totalCallSeconds: completed.reduce(function (sum, call) { return sum + callSeconds(call); }, 0) + elapsed(state.callStartedAt)
     };
   }
   function render() {
@@ -118,13 +119,13 @@
     $("activeTimer").textContent = formatSeconds(activity.active);
     $("callTimer").textContent = state.callStartedAt ? formatSeconds(activity.currentCall) : "00:00:00";
     $("endCall").disabled = !state.callStartedAt;
-    $("callsToday").textContent = String(activity.callsToday);
-    $("missedToday").textContent = String(activity.missedToday);
-    $("minutesToday").textContent = (activity.callSecondsToday / 60).toFixed(1) + " min";
+    $("callsToday").textContent = String(activity.totalCalls);
+    $("missedToday").textContent = String(activity.missedCalls);
+    $("minutesToday").textContent = (activity.totalCallSeconds / 60).toFixed(1) + " min";
     if ($("activityMeta")) {
-      $("activityMeta").textContent = "Online acumulado " + formatSeconds(activity.online) +
-        " · Total llamadas " + String(activity.totalCalls) +
-        " · Perdidas " + String(activity.missedCalls);
+      $("activityMeta").textContent = "Hoy: " + String(activity.callsToday) + " llamadas · " +
+        String(activity.missedToday) + " perdidas · " + (activity.callSecondsToday / 60).toFixed(1) + " min" +
+        " · Online acumulado " + formatSeconds(activity.online);
     }
     var completedUsd = completed.reduce(function (sum, call) {
       return sum + Number(call.estimatedRevenue || call.estimatedAmount || 0);
@@ -428,9 +429,9 @@
     $("sessionTimer").textContent = formatSeconds(activity.session);
     $("activeTimer").textContent = formatSeconds(activity.active);
     $("callTimer").textContent = state.callStartedAt ? formatSeconds(activity.currentCall) : "00:00:00";
-    $("callsToday").textContent = String(activity.callsToday);
-    $("missedToday").textContent = String(activity.missedToday);
-    $("minutesToday").textContent = (activity.callSecondsToday / 60).toFixed(1) + " min";
+    $("callsToday").textContent = String(activity.totalCalls);
+    $("missedToday").textContent = String(activity.missedCalls);
+    $("minutesToday").textContent = (activity.totalCallSeconds / 60).toFixed(1) + " min";
     if ($("activityMeta")) $("activityMeta").textContent =
       "Online acumulado " + formatSeconds(activity.online) +
       " · Total llamadas " + String(activity.totalCalls) +
