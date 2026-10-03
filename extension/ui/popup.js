@@ -49,7 +49,9 @@
   }
   function duration(start) {
     if (!start) return "00:00:00";
-    var seconds = Math.max(0, Math.floor((Date.now() - Date.parse(start)) / 1000));
+    var parsed = Date.parse(start);
+    if (!Number.isFinite(parsed)) return "00:00:00";
+    var seconds = Math.max(0, Math.floor((Date.now() - parsed) / 1000));
     var hours = Math.floor(seconds / 3600);
     var minutes = Math.floor((seconds % 3600) / 60);
     var rest = seconds % 60;
@@ -80,9 +82,13 @@
     }) : [];
     $("callsToday").textContent = String(state.dailyCalls && state.dailyCalls[today] || 0);
     $("missedToday").textContent = String(state.dailyMissedCalls && state.dailyMissedCalls[today] || 0);
-    $("minutesToday").textContent = (completed.reduce(function (sum, call) {
-      return sum + Number(call.billableSecondsAssumed || call.observedSeconds || 0);
-    }, 0) / 60).toFixed(1);
+    var observedCompletedSeconds = completed.reduce(function (sum, call) {
+      var seconds = Number(call.platformSeconds);
+      if (!Number.isFinite(seconds) || seconds < 0) seconds = Number(call.observedSeconds || 0);
+      return sum + Math.max(0, seconds);
+    }, 0);
+    var liveSecondsForMinutes = state.callStartedAt ? Math.max(0, (Date.now() - Date.parse(state.callStartedAt)) / 1000) : 0;
+    $("minutesToday").textContent = ((observedCompletedSeconds + liveSecondsForMinutes) / 60).toFixed(1);
     var completedUsd = completed.reduce(function (sum, call) {
       return sum + Number(call.estimatedRevenue || call.estimatedAmount || 0);
     }, 0);
@@ -351,15 +357,24 @@
     if ($("earningSummary")) $("earningSummary").textContent = usdText + " · " + mxnText;
     if ($("earningLabel")) $("earningLabel").textContent = hasOfficial ? "Ingreso oficial hoy" : "Ingreso estimado hoy";
   }
-  chrome.storage.local.get(["effectifConfig", "effectifState", "effectifLastEvent", "effectifPlatformMirror"], function (stored) {
-    config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}); delete config.groqApiKey;
-    state = stored.effectifState || {};
-    mirror = stored.effectifPlatformMirror || {};
-    var last = stored.effectifLastEvent;
-    $("last").textContent = last ? new Date(last.timestamp).toLocaleTimeString() + " — " + last.action : "Sin eventos";
-    render();
-    refreshTelemetryStats();
-  });
+  var popupStateLoaded = false;
+  function loadPopupState() {
+    if (popupStateLoaded) return;
+    popupStateLoaded = true;
+    chrome.storage.local.get(["effectifConfig", "effectifState", "effectifLastEvent", "effectifPlatformMirror"], function (stored) {
+      config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}); delete config.groqApiKey;
+      state = stored.effectifState || {};
+      mirror = stored.effectifPlatformMirror || {};
+      var last = stored.effectifLastEvent;
+      $("last").textContent = last ? new Date(last.timestamp).toLocaleTimeString() + " — " + last.action : "Sin eventos";
+      render();
+      refreshTelemetryStats();
+    });
+  }
+  try {
+    chrome.runtime.sendMessage({type:"RECONCILE_PLATFORM_TELEMETRY",trigger:"popup-open"}, function(){ loadPopupState(); });
+  } catch (_) { loadPopupState(); }
+  setTimeout(loadPopupState, 750);
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local") return;
     if (changes.effectifConfig) config = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.newValue || {});

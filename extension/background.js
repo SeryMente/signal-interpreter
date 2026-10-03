@@ -108,9 +108,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   }
   function baseState() {
     return {
-      sessionStartedAt: null, sessionSegments: [], pendingCall: null, pendingCallEnd: null,
-      onlineStartedAt: null, onlineSegments: [],
-      callStartedAt: null, callId: null, callModality: null,
+      sessionStartedAt: null, sessionSegments: [], sessionSourceTabId: null, sessionLastObservedAt: null,
+      pendingCall: null, pendingCallEnd: null,
+      onlineStartedAt: null, onlineSegments: [], onlineSourceTabId: null, onlineLastObservedAt: null,
+      callStartedAt: null, callId: null, callModality: null, callSourceTabId: null, callLastObservedAt: null, callMissingSinceAt: null,
       completedCalls: [], totalCalls: 0, dailyCalls: {},
       missedCalls: 0, dailyMissedCalls: {}, missedCallRecords: [],
       transcriptionActive: false, transcriptionTabId: null,
@@ -290,37 +291,240 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo reproducir la alerta sonora");
     return response;
   }
-  function handleSession(event) {
-    chrome.storage.local.get(["effectifState"], function (stored) {
-      var state = Object.assign(baseState(), stored.effectifState || {});
-      if (event.action === "PLATFORM_SESSION_STARTED" && !state.sessionStartedAt) {
-        state.sessionStartedAt = event.timestamp;
-      } else if (event.action === "PLATFORM_SESSION_ENDED" && state.sessionStartedAt) {
+  async function probeCloudTabTelemetry(tab) {
+    try {
+      var execution = await chrome.scripting.executeScript({
+        target: { tabId: tab.id, frameIds: [0] },
+        world: "ISOLATED",
+        func: function () {
+          function visible(element) {
+            if (!element) return false;
+            var style = getComputedStyle(element);
+            var rect = element.getBoundingClientRect();
+            return style.display !== "none" && style.visibility !== "hidden" && !element.hidden &&
+              rect.width > 0 && rect.height > 0;
+          }
+          function textOf(element) {
+            return String(
+              element && (
+                element.getAttribute("aria-label") ||
+                element.textContent ||
+                ""
+              ) || ""
+            ).replace(/\s+/g, " ").trim();
+          }
+          var path = location.pathname;
+          var body = String(document.body && document.body.innerText || "").replace(/\s+/g, " ").trim();
+          var controls = Array.from(document.querySelectorAll("button,[role='button'],[aria-label]")).filter(visible);
+          var controlText = controls.map(textOf).join(" ");
+          var loginVisible = /(?:sign in|log in|login|forgot password|reset password|authentication required)/i.test(body);
+          var authenticated = !loginVisible && (
+            /^\/(?:profile|call|appointments|finance|selfcheck)(?:\/|$)/i.test(path) ||
+            /Waiting for a call|You are (?:Online|Offline)|Click to go (?:Offline|Online)|My Profile|Statistics|End call/i.test(body)
+          );
+          var availability = /Click to go Offline|You are Online/i.test(controlText) ? "online" :
+            /Click to go Online|You are Offline/i.test(controlText) ? "offline" : "unknown";
+          var callMatch = path.match(/^\/call\/([^/?#]+)\/?$/);
+          var endButton = controls.find(function (element) { return /^End call$/i.test(textOf(element)); }) || null;
+          var modality = /Video interpreting|Video interpreting call|\bVRI\b/i.test(body) ? "VRI" :
+            /Audio interpreting|Audio interpreting call|\bOPI\b|Telephonic/i.test(body) ? "OPI" : null;
+          var mediaElementCount = document.querySelectorAll("audio,video").length;
+          var timers = Array.from(document.querySelectorAll("body *")).filter(function (element) {
+            if (!visible(element) || element.children.length > 2) return false;
+            return /^\d{1,2}:\d{2}(?::\d{2})?$/.test(textOf(element));
+          }).map(function (element) {
+            var rect = element.getBoundingClientRect();
+            var score = endButton ? Math.hypot(
+              rect.left + rect.width / 2 - (endButton.getBoundingClientRect().left + endButton.getBoundingClientRect().width / 2),
+              rect.top + rect.height / 2 - (endButton.getBoundingClientRect().top + endButton.getBoundingClientRect().height / 2)
+            ) : Math.abs(rect.left + rect.width / 2 - innerWidth / 2) + rect.top;
+            return { text: textOf(element), score: score };
+          }).sort(function (a, b) { return a.score - b.score; });
+          var timerText = timers.length ? timers[0].text : null;
+          var timerParts = timerText ? timerText.split(":").map(Number) : [];
+          var platformTimerSeconds = timerParts.length === 3
+            ? timerParts[0] * 3600 + timerParts[1] * 60 + timerParts[2]
+            : timerParts.length === 2
+              ? timerParts[0] * 60 + timerParts[1]
+              : null;
+          return {
+            authenticated: authenticated,
+            availability: availability,
+            route: path,
+            callId: callMatch ? callMatch[1] : null,
+            endCallVisible: !!endButton,
+            platformTimerSeconds: Number.isFinite(platformTimerSeconds) ? platformTimerSeconds : null,
+            modality: modality,
+            mediaElementCount: mediaElementCount,
+            pageTimeOrigin: Number.isFinite(performance.timeOrigin) ? performance.timeOrigin : null,
+            title: String(document.title || "").slice(0, 180)
+          };
+        }
+      });
+      var result = execution && execution[0] && execution[0].result || {};
+      return Object.assign({ tabId: tab.id, windowId: tab.windowId, url: tab.url || "", probeError: null }, result);
+    } catch (error) {
+      return { tabId: tab.id, windowId: tab.windowId, url: tab.url || "", probeError: String(error), authenticated: false, availability: "unknown", route: "", callId: null };
+    }
+  }
+
+  async function reconcilePlatformTelemetry(trigger) {
+    var observedAt = iso();
+    var tabs = await chrome.tabs.query({ url: AUTHORIZED_ORIGIN + "/*" });
+    var probes = await Promise.all(tabs.map(function (tab) { return probeCloudTabTelemetry(tab); }));
+    var readable = probes.filter(function (probe) { return !probe.probeError; });
+    var authenticated = readable.filter(function (probe) { return !!probe.authenticated; });
+    var onlineTabs = authenticated.filter(function (probe) { return probe.availability === "online"; });
+    var callTabs = authenticated.filter(function (probe) { return !!probe.callId; });
+    var selectedCall = callTabs.find(function (probe) {
+      return tabs.some(function (tab) { return tab.id === probe.tabId && !!tab.active; });
+    }) || callTabs[0] || null;
+    var stateBefore = (await chrome.storage.local.get(["effectifState"])).effectifState || {};
+    var shouldStartCall = false;
+    var shouldCloseCall = false;
+    await mutateState(async function (state) {
+      var now = observedAt;
+      if (authenticated.length) {
+        if (!state.sessionStartedAt) {
+          var sessionOriginCandidates = authenticated
+            .map(function (probe) { return Number(probe.pageTimeOrigin); })
+            .filter(function (value) { return Number.isFinite(value) && value > 0 && value <= Date.now(); })
+            .sort(function (a, b) { return a - b; });
+          var inferredSessionStart = sessionOriginCandidates.length
+            ? new Date(sessionOriginCandidates[0]).toISOString()
+            : now;
+          state.sessionStartedAt = inferredSessionStart;
+          state.sessionSourceTabId = authenticated[0].tabId;
+          record("PLATFORM_SESSION_RECONCILED_STARTED", {
+            trigger: trigger || "reconcile", tabId: authenticated[0].tabId,
+            route: authenticated[0].route || "/<ROOT>",
+            startMeasurement: inferredSessionStart === now ? "first-authenticated-observation" : "page-time-origin",
+            inferredStartAt: inferredSessionStart
+          }, "info", "background");
+        }
+        state.sessionLastObservedAt = now;
+      } else if (state.sessionStartedAt && (tabs.length === 0 || readable.length > 0)) {
         state.sessionSegments = (state.sessionSegments || []).concat({
-          startedAt: state.sessionStartedAt, endedAt: event.timestamp,
-          durationSeconds: Math.max(0, (Date.parse(event.timestamp) - Date.parse(state.sessionStartedAt)) / 1000),
-          reason: event.payload && event.payload.reason || "pagehide"
+          startedAt: state.sessionStartedAt, endedAt: now,
+          durationSeconds: Math.max(0, (Date.parse(now) - Date.parse(state.sessionStartedAt)) / 1000),
+          reason: tabs.length === 0 ? "no-cloud-tabs" : "no-authenticated-cloud-tab",
+          sourceTabId: state.sessionSourceTabId || null
         }).slice(-1000);
+        record("PLATFORM_SESSION_RECONCILED_ENDED", {
+          trigger: trigger || "reconcile",
+          reason: tabs.length === 0 ? "no-cloud-tabs" : "no-authenticated-cloud-tab",
+          durationSeconds: Math.max(0, (Date.parse(now) - Date.parse(state.sessionStartedAt)) / 1000)
+        }, "info", "background");
         state.sessionStartedAt = null;
+        state.sessionSourceTabId = null;
+        state.sessionLastObservedAt = now;
       }
-      chrome.storage.local.set({ effectifState: state });
+
+      if (onlineTabs.length) {
+        if (!state.onlineStartedAt) {
+          state.onlineStartedAt = now;
+          state.onlineSourceTabId = onlineTabs[0].tabId;
+          record("PLATFORM_ONLINE_RECONCILED_STARTED", {
+            trigger: trigger || "reconcile", tabId: onlineTabs[0].tabId,
+            route: onlineTabs[0].route || "/<ROOT>"
+          }, "info", "background");
+        }
+        state.onlineLastObservedAt = now;
+        state.onlineSourceTabId = onlineTabs[0].tabId;
+      } else if (state.onlineStartedAt && tabs.length === 0) {
+        state.onlineSegments = (state.onlineSegments || []).concat({
+          startedAt: state.onlineStartedAt, endedAt: now,
+          durationSeconds: Math.max(0, (Date.parse(now) - Date.parse(state.onlineStartedAt)) / 1000),
+          reason: "no-cloud-tabs",
+          sourceTabId: state.onlineSourceTabId || null
+        }).slice(-1000);
+        record("PLATFORM_ONLINE_RECONCILED_ENDED", {
+          trigger: trigger || "reconcile",
+          reason: "no-cloud-tabs",
+          durationSeconds: Math.max(0, (Date.parse(now) - Date.parse(state.onlineStartedAt)) / 1000)
+        }, "info", "background");
+        state.onlineStartedAt = null;
+        state.onlineSourceTabId = null;
+        state.onlineLastObservedAt = now;
+      } else if (state.onlineStartedAt && authenticated.length > 0 &&
+                 onlineTabs.length === 0 && probes.some(function (probe) { return probe.availability === "offline"; })) {
+        state.onlineSegments = (state.onlineSegments || []).concat({
+          startedAt: state.onlineStartedAt, endedAt: now,
+          durationSeconds: Math.max(0, (Date.parse(now) - Date.parse(state.onlineStartedAt)) / 1000),
+          reason: "explicit-offline-observation",
+          sourceTabId: state.onlineSourceTabId || null
+        }).slice(-1000);
+        record("PLATFORM_ONLINE_RECONCILED_ENDED", {
+          trigger: trigger || "reconcile",
+          reason: "explicit-offline-observation",
+          durationSeconds: Math.max(0, (Date.parse(now) - Date.parse(state.onlineStartedAt)) / 1000)
+        }, "info", "background");
+        state.onlineStartedAt = null;
+        state.onlineSourceTabId = null;
+        state.onlineLastObservedAt = now;
+      }
+
+      if (selectedCall) {
+        state.callLastObservedAt = now;
+        state.callMissingSinceAt = null;
+        state.callSourceTabId = selectedCall.tabId;
+        if (!state.callId || state.callId !== selectedCall.callId) shouldStartCall = true;
+      } else if (state.callId && (tabs.length === 0 || readable.length > 0)) {
+        if (!state.callMissingSinceAt) {
+          state.callMissingSinceAt = now;
+        } else if (Date.now() - Date.parse(state.callMissingSinceAt) > 15000) {
+          shouldCloseCall = true;
+        }
+      }
+    }, "reconcile-platform-telemetry");
+
+    if (shouldStartCall && selectedCall) {
+      startCall({
+        timestamp: observedAt,
+        callId: selectedCall.callId,
+        payload: {
+          route: selectedCall.route || "/call/<ID>",
+          evidence: {
+            endCallButtonVisible: !!selectedCall.endCallVisible,
+            platformTimerSeconds: selectedCall.platformTimerSeconds,
+            mediaElementCount: Number(selectedCall.mediaElementCount || 0)
+          },
+          modality: selectedCall.modality || null,
+          reconciliation: true,
+          tabId: selectedCall.tabId
+        }
+      });
+    } else if (shouldCloseCall) {
+      closeCall("reconcile-no-call-route", NaN, null);
+    }
+
+    var signature = JSON.stringify({
+      tabs: tabs.length,
+      authenticated: authenticated.length,
+      online: onlineTabs.length,
+      calls: callTabs.map(function (probe) { return { tabId: probe.tabId, callId: probe.callId }; }),
+      probeErrors: probes.filter(function (probe) { return !!probe.probeError; }).map(function (probe) { return { tabId: probe.tabId, error: probe.probeError }; })
+    });
+    var prior = await chrome.storage.local.get(["effectifPlatformTelemetryProbe"]);
+    if (!prior.effectifPlatformTelemetryProbe || prior.effectifPlatformTelemetryProbe.signature !== signature || trigger === "popup-open") {
+      await chrome.storage.local.set({ effectifPlatformTelemetryProbe: { observedAt: observedAt, trigger: trigger || "reconcile", signature: signature } });
+      record("PLATFORM_TELEMETRY_RECONCILED", {
+        trigger: trigger || "reconcile",
+        tabCount: tabs.length, authenticatedCount: authenticated.length,
+        onlineCount: onlineTabs.length, callCount: callTabs.length,
+        probeErrors: probes.filter(function (probe) { return !!probe.probeError; }).length
+      }, "info", "background");
+    }
+  }
+
+  function handleSession(event) {
+    reconcilePlatformTelemetry("event:" + String(event.action || "session")).catch(function (error) {
+      record("PLATFORM_SESSION_RECONCILE_ERROR", { trigger: event.action, error: String(error) }, "warn", "background");
     });
   }
   function handleAvailability(event) {
-    chrome.storage.local.get(["effectifState"], function (stored) {
-      var state = Object.assign(baseState(), stored.effectifState || {});
-      var next = event.payload && event.payload.state;
-      if (next === "online" && !state.onlineStartedAt) {
-        state.onlineStartedAt = event.timestamp;
-      } else if (next === "offline" && state.onlineStartedAt) {
-        state.onlineSegments = (state.onlineSegments || []).concat({
-          startedAt: state.onlineStartedAt,
-          endedAt: event.timestamp,
-          durationSeconds: Math.max(0, (Date.parse(event.timestamp) - Date.parse(state.onlineStartedAt)) / 1000)
-        }).slice(-1000);
-        state.onlineStartedAt = null;
-      }
-      chrome.storage.local.set({ effectifState: state });
+    reconcilePlatformTelemetry("event:availability:" + String(event.payload && event.payload.state || "unknown")).catch(function (error) {
+      record("PLATFORM_ONLINE_RECONCILE_ERROR", { trigger: event.payload && event.payload.state || null, error: String(error) }, "warn", "background");
     });
   }
   function markIncoming(event) {
@@ -343,8 +547,18 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       if (!callId || state.callId === callId ||
           (state.completedCalls || []).some(function (call) { return call.callId === callId; })) return;
       state.callId = callId;
-      state.callStartedAt = event.timestamp;
-      state.callModality = state.pendingCall && state.pendingCall.modality || "OPI";
+      var measuredPlatformSeconds = Number(event.payload && event.payload.evidence && event.payload.evidence.platformTimerSeconds);
+      var routeTimestampMs = Date.parse(event.timestamp);
+      var measuredStartAt = Number.isFinite(measuredPlatformSeconds) && measuredPlatformSeconds >= 0 &&
+        measuredPlatformSeconds <= 86400 && Number.isFinite(routeTimestampMs)
+        ? new Date(routeTimestampMs - measuredPlatformSeconds * 1000).toISOString()
+        : event.timestamp;
+      state.callStartedAt = measuredStartAt;
+      state.callSourceTabId = event.payload && event.payload.tabId || null;
+      state.callLastObservedAt = event.timestamp;
+      state.callMissingSinceAt = null;
+      state.callModality = event.payload && event.payload.modality ||
+        state.pendingCall && state.pendingCall.modality || "OPI";
       state.pendingCall = null;
       state.pendingCallEnd = null;
       chrome.alarms.clear("effectif-pending-call");
@@ -354,7 +568,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       state.dailyCalls[day] = Number(state.dailyCalls[day] || 0) + 1;
       record("CALL_TIMER_STARTED", {
         callId: callId, modality: state.callModality,
-        trigger: "call-route-entered", route: event.payload && event.payload.route || "/call/<ID>",
+        trigger: event.payload && event.payload.reconciliation ? "reconciliation" : "call-route-entered",
+        route: event.payload && event.payload.route || "/call/<ID>",
+        startMeasurement: Number.isFinite(measuredPlatformSeconds) ? "platform-timer-backdated" : "route-detection",
+        startOffsetSeconds: Number.isFinite(measuredPlatformSeconds) ? measuredPlatformSeconds : null,
         evidence: event.payload && event.payload.evidence || null
       }, "info", "background");
     }).then(function (state) {
@@ -811,6 +1028,25 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       }
       return true;
     }
+    if(message.type==="INCOMING_DIALOG_CLOSED"){
+      mutateState(async function(state){
+        if(!state.pendingCall||state.callId)return;
+        state.pendingCall.closedAt=message.timestamp||iso();
+        if(!state.pendingCall.clickedAt){
+          record("INCOMING_DIALOG_CLOSED_OBSERVED",{pendingId:state.pendingCall.id||null,detectedAt:state.pendingCall.detectedAt||null,closedAt:state.pendingCall.closedAt},"info","content");
+        }
+        chrome.alarms.create("effectif-pending-call",{when:Date.now()+2500});
+      },"incoming-dialog-closed");
+      return false;
+    }
+    if(message.type==="RECONCILE_PLATFORM_TELEMETRY"){
+      reconcilePlatformTelemetry(message.trigger||"manual").then(function(){
+        chrome.storage.local.get(["effectifState"],function(stored){
+          sendResponse({ok:true,state:stored.effectifState||{}});
+        });
+      }).catch(function(error){sendResponse({ok:false,error:String(error)});});
+      return true;
+    }
     if (message.type === "EFFECTIF_TELEMETRY_STATS") {
       KhoraTelemetryDB.stats().then(function (stats) { sendResponse({ ok: true, stats: stats }); })
         .catch(function (error) { sendResponse({ ok: false, error: String(error) }); });
@@ -901,18 +1137,26 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
     chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
     chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
+    chrome.alarms.create("effectif-platform-reconcile",{delayInMinutes:0.1,periodInMinutes:0.5});
     chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5,periodInMinutes:2});
     chrome.alarms.create("signal-network-window",{delayInMinutes:0.25,periodInMinutes:0.25});
     refreshExchangeRate("installed").catch(function(){});
     if(details&&details.reason==="update"&&/^0\.4\./.test(String(details.previousVersion||"")))record("V050_TRANSCRIPTION_MIGRATION_ENABLED",{previousVersion:details.previousVersion,platformAudioAccess:true}, "info","background");
   });
-  chrome.runtime.onStartup.addListener(function(){record("EXTENSION_RUNTIME_STARTED",{manifestVersion:chrome.runtime.getManifest().version},"info","runtime");markObservabilityBuildCheckpoint("startup").catch(function(){});});
+  chrome.runtime.onStartup.addListener(function(){
+    record("EXTENSION_RUNTIME_STARTED",{manifestVersion:chrome.runtime.getManifest().version},"info","runtime");
+    markObservabilityBuildCheckpoint("startup").catch(function(){});
+    reconcilePlatformTelemetry("runtime-startup").catch(function(error){
+      record("PLATFORM_TELEMETRY_RECONCILE_ERROR",{trigger:"runtime-startup",error:String(error)},"warn","background");
+    });
+  });
   chrome.runtime.onSuspend.addListener(function(){log("info","EXTENSION_RUNTIME_SUSPENDING",{pendingNetworkRequests:networkRequests?networkRequests.size:0});});
   initialize().then(function(){try{SignalObservationSync.start()}catch(_){}}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
   markObservabilityBuildCheckpoint("runtime-start").catch(function(){});
   chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
   chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
   chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
+  chrome.alarms.create("effectif-platform-reconcile",{delayInMinutes:0.1,periodInMinutes:0.5});
   chrome.alarms.create("signal-network-window",{delayInMinutes:0.25,periodInMinutes:0.25});
   refreshExchangeRate("startup").catch(function(){});
   chrome.alarms.onAlarm.addListener(function(alarm){
@@ -931,6 +1175,12 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       });
       return;
     }
+    if(alarm.name==="effectif-platform-reconcile"){
+      reconcilePlatformTelemetry("alarm").catch(function(error){
+        record("PLATFORM_TELEMETRY_RECONCILE_ERROR",{trigger:"alarm",error:String(error)},"warn","background");
+      });
+      return;
+    }
     if(alarm.name==="effectif-telemetry-maintenance"){
       chrome.storage.local.get(["effectifConfig"],async function(stored){
         var config=Object.assign({},DEFAULT_CONFIG,stored.effectifConfig||{});
@@ -942,7 +1192,21 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     mutateState(async function(state){
       if(!state.pendingCall||state.callId)return;
       var clickedAt=state.pendingCall.clickedAt||(state.lastConnectAt&&Math.abs(Date.parse(state.lastConnectAt)-Date.parse(state.pendingCall.detectedAt))<=2000?state.lastConnectAt:null);
-      var missed={id:state.pendingCall.id||uid(),detectedAt:state.pendingCall.detectedAt,clickedAt:clickedAt,classifiedAt:iso(),modality:state.pendingCall.modality||"OPI",reason:clickedAt?"connect_clicked_no_call_route":"dialog_expired_before_click"};
+      if (state.pendingCall.clickedAt) {
+        var failedConnect=state.pendingCall;
+        state.pendingCall=null;
+        record("CONNECT_FLOW_FAILED_NO_CALL_ROUTE", {
+          pendingId:failedConnect.id||null, detectedAt:failedConnect.detectedAt||null,
+          clickedAt:failedConnect.clickedAt||null, classifiedAt:iso(),
+          reason:"connect_clicked_no_call_route"
+        }, "warn", "alarm");
+        return;
+      }
+      if (!state.pendingCall.closedAt && Date.now() - Date.parse(state.pendingCall.detectedAt || iso()) < 60000) {
+        chrome.alarms.create("effectif-pending-call", { when: Date.now() + 5000 });
+        return;
+      }
+      var missed={id:state.pendingCall.id||uid(),detectedAt:state.pendingCall.detectedAt,clickedAt:null,classifiedAt:iso(),modality:state.pendingCall.modality||"OPI",reason:state.pendingCall.closedAt?"dialog_closed_without_connect":"dialog_timeout"};
       state.missedCalls=Number(state.missedCalls||0)+1;state.dailyMissedCalls=Object.assign({},state.dailyMissedCalls||{});var day=localDay(missed.detectedAt||iso());state.dailyMissedCalls[day]=Number(state.dailyMissedCalls[day]||0)+1;state.missedCallRecords=(state.missedCallRecords||[]).concat(missed).slice(-1000);state.pendingCall=null;record("MISSED_CALL_CLASSIFIED",missed,"warn","alarm");
     });
   });
@@ -1002,9 +1266,23 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         tabId: tabId, status: changeInfo.status || "url-change",
         route: routeShape(url), active: !!tab.active
       }, "info", "tabs");
+      reconcilePlatformTelemetry(changeInfo.status === "complete" ? "tab-complete" : "tab-url-change")
+        .catch(function (error) {
+          record("PLATFORM_TELEMETRY_RECONCILE_ERROR", {
+            trigger: "tab-update", tabId: tabId, error: String(error)
+          }, "warn", "background");
+        });
     }
   });
+  chrome.tabs.onActivated.addListener(function(activeInfo){
+    reconcilePlatformTelemetry("tab-activated").catch(function(error){
+      record("PLATFORM_TELEMETRY_RECONCILE_ERROR",{trigger:"tab-activated",tabId:activeInfo&&activeInfo.tabId||null,error:String(error)},"warn","background");
+    });
+  });
   chrome.tabs.onRemoved.addListener(function(tabId){
+    reconcilePlatformTelemetry("tab-removed").catch(function(error){
+      record("PLATFORM_TELEMETRY_RECONCILE_ERROR",{trigger:"tab-removed",tabId:tabId,error:String(error)},"warn","background");
+    });
     loadSignalSessions().then(function(data){var active=data.sessions.find(function(s){return s.id===data.activeSessionId});if(active&&Number(active.sourceTabId)===Number(tabId))stopGroqCapture("source-tab-closed").catch(function(){})}).catch(function(){});
   });
 })();

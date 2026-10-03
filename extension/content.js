@@ -224,7 +224,16 @@
   function autoAnswer() {
     if (!isTarget() || currentCallId()) return;
     var dialogs = document.querySelectorAll(DIALOG);
-    if (!dialogs.length) lastIncomingSignature = "";
+    if (!dialogs.length) {
+      if (lastIncomingSignature) {
+        emit("INCOMING_DIALOG_CLOSED", {
+          signature: lastIncomingSignature,
+          reason: currentCallId() ? "call-route-confirmed" : "dialog-removed"
+        });
+      }
+      lastIncomingSignature = "";
+      return;
+    }
     dialogs.forEach(function (dialog) {
       var text = normalized(dialog.innerText || dialog.textContent);
       if (!/Is requesting interpretation/i.test(text)) return;
