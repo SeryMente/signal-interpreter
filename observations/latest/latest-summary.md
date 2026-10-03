@@ -1,42 +1,20 @@
-# Signal Interpreter · latest observation
+# Signal Interpreter latest observation
 
-- Batch: `batch-8b26d839-eda0-4387-996a-b19a8d431056`
-- Recibido: `2026-10-02T17:14:43.431Z`
-- Trigger: critical
-- Extensión: 0.9.3
-- Eventos: 21
-- Errores: 1
-- Warnings: 2
-- Secuencia: 49138 → 49158
+- Batch: batch-selftest-4268c46b71114f67a43da6c986608b14
+- Recibido: 2026-10-03T18:31:33.632Z
+- Trigger: observability-self-test
+- Extension: 0.9.20
+- Eventos: 1
+- Errores: 0
+- Warnings: 0
+- Secuencia: 0 -> 0
 
-## Categorías
-```json
+## Categorias
 {
-  "BILLING": 6,
-  "BRIDGE": 3,
-  "LIVE_CAPTION": 1,
-  "SIGNAL": 3,
-  "UIA": 1,
-  "RUNTIME": 7
+  "OBSERVABILITY": 1
 }
-```
 
 ## Acciones
-```json
 {
-  "NETWORK_REQUEST_COMPLETED": 6,
-  "SIGNAL_BRIDGE_EVENT_RECEIVED": 3,
-  "SIGNAL_CAPTION_STATUS": 1,
-  "SIGNAL_SOURCE_TAB_DEACTIVATED": 1,
-  "SIGNAL_MIC_CONTROL": 1,
-  "SIGNAL_MIC_STATUS": 1,
-  "SIGNAL_UIA_SCAN": 1,
-  "INCOMING_DIALOG_DETECTED": 1,
-  "CONNECT_BUTTON_FOUND": 1,
-  "USER_INTERACTION": 1,
-  "CONNECT_CLICKED": 1,
-  "PLATFORM_INTEGRITY_CHECK": 1,
-  "SCREEN_MAP": 1,
-  "STATE_MUTATION_ERROR": 1
+  "OBSERVABILITY_REPORTER_SELF_TEST": 1
 }
-```
