@@ -328,11 +328,30 @@
         });
       }catch(nativeError){
         await localDownloadDiagnostic(payload);
+        await new Promise(function(resolve){
+          chrome.storage.local.set({effectifObservabilityExportAttempt:{
+            at:new Date().toISOString(), sequence:built.sequence, result:"failed",
+            error:String(nativeError&&nativeError.message||nativeError), mode:"manual",
+            generatedAt:built.at
+          }},resolve);
+        });
         status("Diagnóstico guardado localmente. Falta instalar el puente GitHub una sola vez.",true);return;
       }
-      if(!response||!response.ok)throw new Error(response&&response.error||"El puente GitHub no confirmó la publicación.");
-      await new Promise(function(resolve){chrome.storage.local.set({effectifObservabilityExport:{at:built.at,sequence:built.sequence,commit:response.commit||null}},resolve);});
-      status("Observabilidad enviada a GitHub · "+payload.counts.events+" eventos · "+payload.counts.snapshots+" snapshots");
+      if(!response||!response.ok){
+        var publishError=String(response&&response.error||"El puente GitHub no confirmó la publicación.");
+        await new Promise(function(resolve){
+          chrome.storage.local.set({effectifObservabilityExportAttempt:{
+            at:new Date().toISOString(), sequence:built.sequence, result:"failed",
+            error:publishError, mode:"manual", generatedAt:built.at
+          }},resolve);
+        });
+        throw new Error(publishError);
+      }
+      await new Promise(function(resolve){chrome.storage.local.set({
+        effectifObservabilityExport:{at:built.at,sequence:built.sequence,commit:response.commit||null,mode:"manual",result:"success"},
+        effectifObservabilityExportAttempt:{at:new Date().toISOString(),sequence:built.sequence,result:"success",mode:"manual",generatedAt:built.at}
+      },resolve);});
+      status("Observabilidad enviada a GitHub · "+payload.counts.events+" eventos · "+payload.counts.snapshots+" eventos");
     }catch(error){status("No se pudo publicar la observabilidad: "+String(error),true);}
     finally{button.disabled=false;}
   });
