@@ -99,3 +99,12 @@ Esta versión hace dos correcciones operativas:
 - La exportación manual conserva el diagnóstico local, pero ya no convierte cualquier excepción de Native Messaging en el mensaje genérico de "falta instalar el puente". Si el host no está registrado se informa específicamente de esa condición; si el host existe pero falla al arrancar, se muestra el error real.
 
 **Importante:** la exportación de observabilidad de GitHub utiliza el host Native Messaging `com.serymente.signal_interpreter.observability`. Ese host debe estar instalado y registrado en Windows para publicar directamente desde la extensión. La extensión no debe fingir que una instalación inexistente es un fallo de GitHub.
+
+
+### v0.9.18 — Inicialización determinista del indicador
+
+La versión 0.9.18 corrige un defecto de ciclo de vida del indicador de la barra de herramientas: el indicador se recalcula explícitamente después de la inicialización del service worker y después de una instalación/actualización de la extensión, por lo que no depende de que el usuario cambie de pestaña o active otra pestaña para empezar a mostrar estado.
+
+También corrige el patrón de detección de disponibilidad para que `status: online` y `status: offline` reconozcan correctamente los espacios mediante `\s`.
+
+La revisión del entorno local confirmó además que el host Native Messaging `com.serymente.signal_interpreter.observability` no está registrado en Chrome y no existe una instalación local identificable de ese host. El directorio `bridge/windows-uia` del repositorio es otro componente: corresponde al lector histórico de Chrome Live Caption/Windows UI Automation y **no implementa** el host de exportación GitHub. Por tanto, la exportación directa a GitHub sigue dependiendo de instalar ese host específico; la extensión ya no debe atribuir ese estado a un problema genérico de GitHub.
