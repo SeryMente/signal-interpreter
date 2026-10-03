@@ -307,8 +307,8 @@
       renderObservabilityStamp("obsAi", data.lastAiReviewedAt, "", data.lastAiReviewedAt ? "ok" : "warn");
       if (data.lastGitSyncStatus === "error" && github) github.title = String(data.lastGitSyncError || "Último envío automático con error");
     } catch (error) {
-      if (github) { github.textContent = "Reporter no disponible"; github.className = "warn"; github.title = String(error); }
-      if (ai) { ai.textContent = "Sin conexión al registro"; ai.className = "warn"; ai.title = "El estado de revisión IA se sirve por el reporter local."; }
+      if (github) { github.textContent = "Sincronización no disponible"; github.className = "warn"; github.title = "El servicio local de sincronización automática no responde."; }
+      if (ai) { ai.textContent = "Estado no disponible"; ai.className = "warn"; ai.title = "No se pudo consultar el registro local de observabilidad."; }
     }
   }
   function formatBytes(bytes) {

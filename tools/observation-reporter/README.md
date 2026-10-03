@@ -1,19 +1,15 @@
-# Observation Reporter
+## Observation Reporter
 
-El reporter local recibe batches sanitizados desde 127.0.0.1:8788 y sincroniza observations/ con GitHub usando el Git configurado en el repositorio.
+El reporter local recibe lotes sanitizados en `127.0.0.1:8788` y mantiene `observations/` como buffer de trabajo.
 
-Cada evento marca el registro como pendiente; la extensión coalescea el envío para no bloquear captura, UI ni bridge. El envío automático normal ocurre en una ventana de hasta 2 minutos; eventos críticos fuerzan un intento inmediato. El reporter escribe cada batch localmente y agrupa commit/push durante 10 minutos.
+La publicación automática usa una copia dedicada fuera del repositorio de desarrollo y publica exclusivamente en `origin/main`; nunca hace commit ni push sobre la rama donde estés trabajando.
 
-La sincronización manual está disponible en la consola Live con SINCRONIZAR LOG.
+La extensión coalescea el envío normal para no interferir con captura, UI ni bridge. Los eventos críticos provocan un intento acelerado. Cada publicación confirmada actualiza el estado local fuera del repositorio en `%USERPROFILE%\\.signal-interpreter\\observation-reporter-status.json`.
 
-El endpoint GET `/health` expone el último envío automático confirmado a GitHub y el último registro local de revisión por IA, con sus marcas temporales; no contiene credenciales ni contenido conversacional.
+`GET /health` expone el último envío automático confirmado, su commit, estado y la última revisión IA registrada. La interfaz usa estos datos para mostrar tiempos relativos sin lenguaje interno del servicio.
 
-El estado persistente del reporter se guarda fuera del repositorio en `%USERPROFILE%\\.signal-interpreter\\observation-reporter-status.json`, evitando generar commits adicionales sólo para observabilidad de observabilidad.
+El reporter está diseñado para ejecutarse de forma persistente mediante una tarea programada al iniciar sesión de Windows y para reiniciarse ante un fallo. La instalación se realiza con `install-autostart.ps1`; la ejecución utilizada por la tarea es `run.ps1`.
 
-No se exporta texto de conversación, captions, snapshots ni credenciales al repositorio.
+La exportación completa del diagnóstico sigue siendo una acción manual separada; no se confunde con la publicación automática de observaciones.
 
-Ejecución manual: .\tools\observation-reporter\run.ps1
-
-Arranque automático al iniciar sesión de Windows: .\tools\observation-reporter\install-autostart.ps1
-
-Requiere Node y un origin/main autenticado para git push.
+No se publica texto conversacional, captions, audio ni credenciales en `observations/`.

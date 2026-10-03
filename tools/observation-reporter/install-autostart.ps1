@@ -1,1 +1,12 @@
-$ErrorActionPreference="Stop";$root=(Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path;$node=(Get-Command node -ErrorAction Stop).Source;$taskName="Signal Interpreter Observation Reporter";$action=New-ScheduledTaskAction -Execute $node -Argument ("`""+$root+"\tools\observation-reporter\server.mjs`"") -WorkingDirectory $root;$trigger=New-ScheduledTaskTrigger -AtLogOn;Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Description "Starts the local Signal Interpreter diagnostic reporter at logon." -Force | Out-Null;Write-Host ("Installed: "+$taskName);
+$ErrorActionPreference="Stop";
+$root=(Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path;
+$taskName="Signal Interpreter Observation Reporter";
+$node=(Get-Command node -ErrorAction Stop).Source;
+$server=Join-Path $root "tools\observation-reporter\server.mjs";
+$action=New-ScheduledTaskAction -Execute $node -Argument ('"' + $server + '"') -WorkingDirectory $root;
+$trigger=New-ScheduledTaskTrigger -AtLogOn;
+$settings=New-ScheduledTaskSettingsSet -StartWhenAvailable -RestartCount 10 -RestartInterval (New-TimeSpan -Minutes 1) -MultipleInstances IgnoreNew -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries;
+$userId="$env:COMPUTERNAME\fila4";
+$principal=New-ScheduledTaskPrincipal -UserId $userId -LogonType Interactive -RunLevel Limited;
+Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Description "Signal Interpreter: reporter local de observabilidad con publicacion automatica segura en GitHub." -Force | Out-Null;
+Write-Host ("Installed direct Node for " + $userId);
