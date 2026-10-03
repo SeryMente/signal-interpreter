@@ -1,9 +1,13 @@
 (function () {
   "use strict";
-  if (window.__SIGNAL_INTERPRETER_CLOUD_V0913__) return;
-  window.__SIGNAL_INTERPRETER_CLOUD_V0913__ = true;
+  var RUNTIME_VERSION = chrome.runtime.getManifest().version;
+  var SIGNAL_RUNTIME_MARKER = "__SIGNAL_INTERPRETER_CLOUD_RUNTIME__";
+  var existingRuntimeMarker = window[SIGNAL_RUNTIME_MARKER];
+  if (existingRuntimeMarker && existingRuntimeMarker.extensionId === chrome.runtime.id && existingRuntimeMarker.version === RUNTIME_VERSION && existingRuntimeMarker.active) return;
+  window[SIGNAL_RUNTIME_MARKER] = { extensionId: chrome.runtime.id, version: RUNTIME_VERSION, active: true, startedAt: new Date().toISOString() };
+  try { delete window.__SIGNAL_INTERPRETER_CLOUD_V0913__; } catch (_) {}
 
-  var DIALOG = 'div[role="dialog"][aria-modal="true"]';
+  var DIALOG = '[role="dialog"]';
   var CONNECT = 'button[aria-label="Connect"]';
   var config = {
     targetHost: "app.cloudinterpreter.com",
@@ -239,7 +243,10 @@
       if (!/Is requesting interpretation/i.test(text)) return;
       var modality = /Audio interpreting/i.test(text) ? "OPI" :
         /Video interpreting/i.test(text) ? "VRI" : "UNKNOWN";
-      var button = dialog.querySelector(CONNECT);
+      var button = Array.from(dialog.querySelectorAll("button,[role='button']")).filter(visibleElement).find(function (element) {
+        var label = normalized(element.getAttribute("aria-label") || element.textContent || "");
+        return /^Connect$/i.test(label);
+      }) || null;
       var signature = modality + "|" + !!button + "|" + (button ? !!button.disabled : "none");
       var newIncoming = signature !== lastIncomingSignature;
       if (newIncoming) {

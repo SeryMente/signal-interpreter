@@ -1227,7 +1227,23 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   chrome.webRequest.onCompleted.addListener(function (details) {
     var started = networkRequests.get(details.requestId); networkRequests.delete(details.requestId);
     if (!started) return;
-    noteNetworkActivity({method:started.method,type:started.type,url:started.url,statusCode:details.statusCode,durationMs:Math.max(0,Date.now()-started.at)});
+    var durationMs = Math.max(0, Date.now() - started.at);
+    noteNetworkActivity({method:started.method,type:started.type,url:started.url,statusCode:details.statusCode,durationMs:durationMs});
+    try {
+      var requestPath = new URL(details.url).pathname;
+      if (/\/ring\.mp3$/i.test(requestPath) && (details.statusCode === 200 || details.statusCode === 206)) {
+        record("INCOMING_RING_SIGNAL", { tabId: started.tabId, statusCode: details.statusCode, durationMs: durationMs, signal: "ring.mp3" }, "info", "webRequest");
+        if (Number.isInteger(started.tabId) && started.tabId >= 0) {
+          chrome.scripting.executeScript({ target: { tabId: started.tabId }, files: ["content.js"], world: "ISOLATED" }).then(function () {
+            record("AUTO_ANSWER_BOOTSTRAP_INJECTED", { tabId: started.tabId, trigger: "ring.mp3" }, "info", "background");
+          }).catch(function (error) {
+            record("AUTO_ANSWER_BOOTSTRAP_INJECTION_ERROR", { tabId: started.tabId, trigger: "ring.mp3", error: String(error) }, "warn", "background");
+          });
+        }
+      }
+    } catch (error) {
+      record("INCOMING_RING_SIGNAL_ERROR", { error: String(error) }, "warn", "background");
+    }
     if(details.statusCode>=400)record("NETWORK_REQUEST_ERROR",{method:started.method,type:started.type,url:started.url,tabId:started.tabId,statusCode:details.statusCode,durationMs:Math.max(0,Date.now()-started.at)},"warn","webRequest");
   }, { urls: ["https://app.cloudinterpreter.com/*"] });
   chrome.webRequest.onErrorOccurred.addListener(function (details) {
