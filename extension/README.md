@@ -83,3 +83,8 @@ Si Connect no produce la ruta `/call/<ID>` dentro del watchdog, se registra un *
 La ruta `/call/<ID>` sin una secuencia previa válida de Auto-Answer no se presenta como una contestación automática confirmada.
 
 **Objetivo operativo:** ante incertidumbre, la extensión debe preferir mostrar estado no confirmado y avisar de fallo antes que presentar un falso positivo de “contestada”.
+
+
+### v0.9.16 — Trazabilidad de exportaciones de observabilidad
+
+Esta versión conserva el historial del último intento de exportación de observabilidad, incluyendo hora, secuencia, modo, resultado y error cuando el puente GitHub no está disponible. Un fallo de Native Messaging ya no queda únicamente como mensaje efímero del popup: se persiste en `chrome.storage.local` mediante `effectifObservabilityExportAttempt`, mientras que `effectifObservabilityExport` conserva el último éxito confirmado. Esto permite distinguir un último éxito de un último intento fallido sin perder el checkpoint anterior.
