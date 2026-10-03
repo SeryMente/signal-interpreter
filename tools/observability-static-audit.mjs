@@ -37,9 +37,21 @@ assert.ok(host.includes('Repo = "SeryMente/signal-interpreter"'));
 assert.ok(host.includes('Path = "diagnostics/latest.json"'));
 const csproj=read("tools/observability-native-host/SignalInterpreterObservabilityHost.csproj");
 const installer=read("tools/install-observability-host.ps1");
+const bootstrap=read("tools/bootstrap-windows.ps1");
 assert.ok(csproj.includes("<SelfContained>true</SelfContained>"));
 assert.ok(installer.includes("IncludeNativeLibrariesForSelfExtract=true"));
+assert.ok(installer.includes("$env:USERPROFILE"));
+assert.equal(installer.includes("C:\\Users\\fila4\\Desktop"),false);
+assert.ok(bootstrap.includes("Git.Git"));
+assert.ok(bootstrap.includes("GitHub.cli"));
+assert.ok(bootstrap.includes("Microsoft.DotNet.SDK.8"));
+assert.ok(bootstrap.includes("OpenJS.NodeJS.LTS"));
+assert.ok(bootstrap.includes("setup-groq-key.ps1"));
+assert.ok(bootstrap.includes("install-observability-host.ps1"));
+assert.ok(bootstrap.includes("observability-static-audit.mjs"));
 assert.ok(host.includes('DiagnosticsBranch = "observability"'));
+assert.ok(host.includes("422"));
+assert.ok(host.includes('request["sha"] = refreshed.Sha'));
 
 const forbidden=["CaptionBubbleLabel","AXVirtualView","SpeechRecognition","SignalLiveCaptionBridge","127.0.0.1:8787"];
 for(const value of [background,content,popup]){

@@ -49,7 +49,21 @@ try
         };
         if (current.Exists && !string.IsNullOrWhiteSpace(current.Sha)) request["sha"] = current.Sha;
         await File.WriteAllTextAsync(tempPayload, JsonSerializer.Serialize(request), new UTF8Encoding(false));
-        var output = await RunGhAsync("api", $"repos/{Repo}/contents/{Path}", "--method", "PUT", "--input", tempPayload);
+        string output;
+        try
+        {
+            output = await RunGhAsync("api", $"repos/{Repo}/contents/{Path}", "--method", "PUT", "--input", tempPayload);
+        }
+        catch (Exception ex) when (ex.Message.Contains("422", StringComparison.OrdinalIgnoreCase) &&
+                                  ex.Message.Contains("sha", StringComparison.OrdinalIgnoreCase))
+        {
+            var refreshed = await GetCurrentFileStateAsync();
+            if (!refreshed.Exists || string.IsNullOrWhiteSpace(refreshed.Sha))
+                throw;
+            request["sha"] = refreshed.Sha;
+            await File.WriteAllTextAsync(tempPayload, JsonSerializer.Serialize(request), new UTF8Encoding(false));
+            output = await RunGhAsync("api", $"repos/{Repo}/contents/{Path}", "--method", "PUT", "--input", tempPayload);
+        }
         using var responseDoc = JsonDocument.Parse(output);
         string? commitUrl = null;
         if (responseDoc.RootElement.TryGetProperty("commit", out var commit) &&
