@@ -30,3 +30,28 @@ No es necesario ejecutar ningún proceso de bridge local.
 ## Pruebas
 
 La prueba de transcripción está en tools/groq-transcriber-tests.mjs y valida endpoint, modelo, parámetros de Groq, segmentos y redacción de credenciales.
+
+
+## Control de Auto-Answer por perfil y disponibilidad
+
+**Versión de extensión: 0.9.15**
+
+En cada ciclo de modificación de la extensión, este README debe leerse antes de editar y la versión de `extension/manifest.json` debe incrementarse.
+
+Auto-Answer solo puede ejecutar **Connect** cuando se cumplen simultáneamente estas condiciones:
+
+1. La pestaña está en `https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz` (barra final opcional).
+2. La página muestra **You are Online** / **Click to go Offline**.
+3. Auto-Answer está habilitado.
+4. La solicitud es OPI verificable; la política existente mantiene VRI bloqueado para Auto-Answer.
+
+Fuera de ese perfil, o cuando el perfil está Offline/no confirmado, **no se pulsa Connect**.
+
+### Indicadores visuales
+
+- 🟢 Verde: Auto-Answer activo, perfil autorizado y **You are Online**.
+- 🟡 Amarillo: perfil autorizado pero disponibilidad aún no confirmada.
+- ⚫ Gris: perfil autorizado pero **You are Offline**.
+- 🔴 Rojo: Auto-Answer desactivado.
+
+El icono de la extensión se actualiza por pestaña mediante `chrome.action.setIcon()`; la pestaña del perfil autorizado también recibe un favicon de estado.
