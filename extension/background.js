@@ -48,7 +48,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   var hotloadLastRecoveryAt = 0;
   var hotloadReloadScheduled = false;
   var tabAvailability = new Map();
+  var tabReadiness = new Map();
   var actionIconCache = new Map();
+  var READINESS_MAX_AGE_MS = 5000;
 
   function hasActiveCall(state) {
     return !!(state && state.callId && state.callStartedAt);
@@ -1001,11 +1003,18 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     var targetUrl = url || tab.url || "";
     var status = "disabled";
     if (isAuthorizedProfileUrl(targetUrl)) {
+      var readiness = tabReadiness.get(Number(tabId));
       var availability = tabAvailability.get(Number(tabId)) || "unknown";
       var stored = await chrome.storage.local.get(["effectifConfig"]);
       var enabled = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}).autoAnswerEnabled !== false;
+      var fresh = readiness && Number.isFinite(Number(readiness.at)) && Date.now() - Number(readiness.at) <= READINESS_MAX_AGE_MS;
+      var exactReady = !!(readiness && readiness.ready === true &&
+        readiness.authorizedProfile === true &&
+        readiness.exactUrl === AUTHORIZED_ORIGIN + AUTHORIZED_PROFILE_PATH &&
+        readiness.runtimeVersion === chrome.runtime.getManifest().version &&
+        fresh);
       if (!enabled) status = "disabled";
-      else if (availability === "online") status = "active";
+      else if (exactReady && availability === "online") status = "active";
       else if (availability === "offline") status = "offline";
       else status = "waiting";
     }
@@ -1284,7 +1293,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   });
   chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     if (changeInfo.url || changeInfo.status === "loading" || changeInfo.status === "complete") {
-      if (changeInfo.url && !isAuthorizedProfileUrl(changeInfo.url)) tabAvailability.delete(Number(tabId));
+      if (changeInfo.url && !isAuthorizedProfileUrl(changeInfo.url)) {
+        tabAvailability.delete(Number(tabId));
+        tabReadiness.delete(Number(tabId));
+      }
       refreshActionIndicator(tabId, changeInfo.url || tab.url).catch(function () {});
     }
   });
@@ -1321,6 +1333,22 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         handleAvailability(event);
         if (Number.isFinite(Number(eventTabId))) refreshActionIndicator(Number(eventTabId), sender.tab && sender.tab.url).catch(function () {});
       }
+      if (event.action === "AUTO_ANSWER_READINESS") {
+        var readinessTabId = sender.tab && sender.tab.id;
+        if (Number.isFinite(Number(readinessTabId))) {
+          tabReadiness.set(Number(readinessTabId), {
+            ready: event.payload && event.payload.ready === true,
+            authorizedProfile: event.payload && event.payload.authorizedProfile === true,
+            exactUrl: String(event.payload && event.payload.exactUrl || ""),
+            runtimeVersion: String(event.payload && event.payload.runtimeVersion || ""),
+            at: Date.now()
+          });
+          if (event.payload && event.payload.availability) {
+            tabAvailability.set(Number(readinessTabId), String(event.payload.availability));
+          }
+          refreshActionIndicator(Number(readinessTabId), sender.tab && sender.tab.url).catch(function () {});
+        }
+      }
       if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event);
       if (event.action === "CONNECT_CLICKED") alertOnConnect(event);
       if (event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
@@ -1352,7 +1380,6 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       }
       if (event.action === "CALL_ROUTE_ENTERED") {
         startCall(event);
-        requestCallAlert(event.payload && event.payload.callId || event.callId || null, "call-route-entered-immediate");
       }
       if (event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
         hotloadHeartbeat("answer-route-confirmed").catch(function() {});
