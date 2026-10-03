@@ -51,7 +51,7 @@ assert.ok(bootstrap.includes("install-observability-host.ps1"));
 assert.ok(bootstrap.includes("observability-static-audit.mjs"));
 assert.ok(host.includes('DiagnosticsBranch = "observability"'));
 assert.ok(host.includes("422"));
-assert.ok(host.includes("request[\\"sha\\"] = refreshed.Sha"));
+assert.ok(host.includes('request["sha"] = refreshed.Sha'));
 
 const forbidden=["CaptionBubbleLabel","AXVirtualView","SpeechRecognition","SignalLiveCaptionBridge","127.0.0.1:8787"];
 for(const value of [background,content,popup]){
