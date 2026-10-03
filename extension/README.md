@@ -55,3 +55,31 @@ Fuera de ese perfil, o cuando el perfil está Offline/no confirmado, **no se pul
 - 🔴 Rojo: Auto-Answer desactivado.
 
 El icono de la extensión se actualiza por pestaña mediante `chrome.action.setIcon()`; la pestaña del perfil autorizado también recibe un favicon de estado.
+
+
+### Garantía operativa del indicador y confirmación de contestación
+
+El indicador verde de la barra de extensiones es **fail-closed**: no representa solamente que la extensión esté cargada. Solo se activa cuando, simultáneamente:
+
+1. La pestaña coincide exactamente con el perfil autorizado.
+2. El DOM de Cloud Interpreter confirma **You are Online** / **Click to go Offline**.
+3. Auto-Answer está habilitado.
+4. El content script de la versión actual reporta explícitamente estado **ready**.
+5. El reporte de readiness tiene una antigüedad máxima de 5 segundos.
+
+El icono activo usa un **check blanco sobre verde** y badge **ON**. Si cualquiera de las condiciones deja de estar confirmada, el indicador deja de mostrar estado activo.
+
+La confirmación de que una llamada fue contestada por Auto-Answer tampoco depende del simple hallazgo de un diálogo entrante ni del clic en **Connect**. La confirmación válida requiere:
+
+- haber ejecutado el Connect de Auto-Answer;
+- permanecer dentro de una ventana de confirmación válida;
+- detectar el cambio real de ruta desde el perfil autorizado a `/call/<ID>`;
+- confirmar esa transición antes de emitir el aviso de contestación.
+
+El sonido de contestación y el aviso de voz **“Llamada entrante.”** se disparan únicamente después de esa confirmación. El clic en Connect por sí solo ya no genera el beep.
+
+Si Connect no produce la ruta `/call/<ID>` dentro del watchdog, se registra un **CONNECT_ROUTE_TIMEOUT** y no se presenta la llamada como contestada.
+
+La ruta `/call/<ID>` sin una secuencia previa válida de Auto-Answer no se presenta como una contestación automática confirmada.
+
+**Objetivo operativo:** ante incertidumbre, la extensión debe preferir mostrar estado no confirmado y avisar de fallo antes que presentar un falso positivo de “contestada”.
