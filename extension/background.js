@@ -1547,7 +1547,11 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       }
       chrome.offscreen.closeDocument().catch(function(){});
       return initialize();
-    }).then(function () { try { SignalObservationSync.start(); } catch (_) {} }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+    }).then(function () {
+      return refreshAllActionIndicators().catch(function(error){
+        record("ACTION_INDICATOR_INSTALL_REFRESH_ERROR",{error:String(error)},"warn","action");
+      }).then(function () { try { SignalObservationSync.start(); } catch (_) {} });
+    }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
     markObservabilityBuildCheckpoint(details&&details.reason||"installed",details&&details.previousVersion).catch(function(){});
     chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
     chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
@@ -1567,7 +1571,14 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     });
   });
   chrome.runtime.onSuspend.addListener(function(){log("info","EXTENSION_RUNTIME_SUSPENDING",{pendingNetworkRequests:networkRequests?networkRequests.size:0});});
-  initialize().then(function(){try{SignalObservationSync.start()}catch(_){};return recoverAfterRuntimeBoundary("runtime-start").catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");});}).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+  initialize().then(function(){
+    return refreshAllActionIndicators().catch(function(error){
+      record("ACTION_INDICATOR_STARTUP_REFRESH_ERROR",{error:String(error)},"warn","action");
+    }).then(function(){
+      try{SignalObservationSync.start()}catch(_){};
+      return recoverAfterRuntimeBoundary("runtime-start").catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");});
+    });
+  }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
   markObservabilityBuildCheckpoint("runtime-start").catch(function(){});
   chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
   chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
