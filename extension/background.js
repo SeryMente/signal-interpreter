@@ -1008,14 +1008,16 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       await chrome.action.setBadgeText({ tabId: Number(tabId), text: statusKey === "active" ? "ON" : "" });
       if (statusKey === "active") await chrome.action.setBadgeBackgroundColor({ tabId: Number(tabId), color: "#16a34a" });
       await chrome.action.setTitle({ tabId: Number(tabId), title: titles[statusKey] });
-    } catch (_) {}
+    } catch (error) {
+      record("ACTION_INDICATOR_ERROR", { tabId: Number(tabId), status: statusKey, error: String(error) }, "warn", "action");
+    }
   }
   async function refreshActionIndicator(tabId, url) {
     if (!Number.isFinite(Number(tabId))) return;
     var tab;
     try { tab = await chrome.tabs.get(Number(tabId)); } catch (_) { return; }
     var targetUrl = url || tab.url || "";
-    var status = "disabled";
+    var status = isAuthorizedCloudUrl(targetUrl) ? "waiting" : "disabled";
     if (isAuthorizedProfileUrl(targetUrl)) {
       var readiness = tabReadiness.get(Number(tabId));
       var availability = tabAvailability.get(Number(tabId)) || "unknown";
@@ -1305,6 +1307,16 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   chrome.tabs.onActivated.addListener(function (activeInfo) {
     refreshActionIndicator(activeInfo.tabId).catch(function () {});
   });
+  async function refreshAllActionIndicators() {
+    try {
+      var tabs = await chrome.tabs.query({ url: ["https://app.cloudinterpreter.com/*"] });
+      await Promise.all((tabs || []).map(function (tab) {
+        return refreshActionIndicator(tab.id, tab.url).catch(function () {});
+      }));
+    } catch (error) {
+      record("ACTION_INDICATOR_REFRESH_ALL_ERROR", { error: String(error) }, "warn", "action");
+    }
+  }
   chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     if (changeInfo.url || changeInfo.status === "loading" || changeInfo.status === "complete") {
       if (changeInfo.url && !isAuthorizedProfileUrl(changeInfo.url)) {
@@ -1547,6 +1559,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if(details&&details.reason==="update"&&/^0\.4\./.test(String(details.previousVersion||"")))record("V050_TRANSCRIPTION_MIGRATION_ENABLED",{previousVersion:details.previousVersion,platformAudioAccess:true}, "info","background");
   });
   chrome.runtime.onStartup.addListener(function(){
+    refreshAllActionIndicators().catch(function () {});
     record("EXTENSION_RUNTIME_STARTED",{manifestVersion:chrome.runtime.getManifest().version},"info","runtime");
     markObservabilityBuildCheckpoint("startup").catch(function(){});
     reconcilePlatformTelemetry("runtime-startup").catch(function(error){
