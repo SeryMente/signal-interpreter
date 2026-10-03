@@ -88,3 +88,14 @@ La ruta `/call/<ID>` sin una secuencia previa válida de Auto-Answer no se prese
 ### v0.9.16 — Trazabilidad de exportaciones de observabilidad
 
 Esta versión conserva el historial del último intento de exportación de observabilidad, incluyendo hora, secuencia, modo, resultado y error cuando el puente GitHub no está disponible. Un fallo de Native Messaging ya no queda únicamente como mensaje efímero del popup: se persiste en `chrome.storage.local` mediante `effectifObservabilityExportAttempt`, mientras que `effectifObservabilityExport` conserva el último éxito confirmado. Esto permite distinguir un último éxito de un último intento fallido sin perder el checkpoint anterior.
+
+
+### v0.9.17 — Indicador visible y diagnóstico real del puente GitHub
+
+Esta versión hace dos correcciones operativas:
+
+- El indicador de la extensión se inicializa también en las pestañas de Cloud Interpreter aunque todavía no exista el perfil autorizado o no se haya confirmado disponibilidad; el estado activo continúa reservado exclusivamente al perfil autorizado, Auto-Answer habilitado, disponibilidad Online y readiness fresco.
+- La detección de disponibilidad acepta las variantes visibles de controles Online/Offline que utiliza la interfaz, sin convertir un estado desconocido en Online.
+- La exportación manual conserva el diagnóstico local, pero ya no convierte cualquier excepción de Native Messaging en el mensaje genérico de "falta instalar el puente". Si el host no está registrado se informa específicamente de esa condición; si el host existe pero falla al arrancar, se muestra el error real.
+
+**Importante:** la exportación de observabilidad de GitHub utiliza el host Native Messaging `com.serymente.signal_interpreter.observability`. Ese host debe estar instalado y registrado en Windows para publicar directamente desde la extensión. La extensión no debe fingir que una instalación inexistente es un fallo de GitHub.
