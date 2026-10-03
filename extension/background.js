@@ -247,6 +247,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       activeStartedAt: null, activeSegments: [], activeSourceTabId: null, activeLastObservedAt: null,
       callStartedAt: null, callId: null, callModality: null, callSourceTabId: null, callLastObservedAt: null, callMissingSinceAt: null,
       completedCalls: [], totalCalls: 0, dailyCalls: {},
+      callStartOfficialStats: null,
       missedCalls: 0, dailyMissedCalls: {}, missedCallRecords: [],
       transcriptionActive: false, transcriptionTabId: null,
       hotLoadLease: {
@@ -301,6 +302,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     if (state.activeStartedAt !== null && typeof state.activeStartedAt !== "string") state.activeStartedAt = null;
     if (state.activeSourceTabId !== null && !Number.isFinite(Number(state.activeSourceTabId))) state.activeSourceTabId = null;
     if (!Array.isArray(state.completedCalls)) state.completedCalls = [];
+    if (!state.callStartOfficialStats || typeof state.callStartOfficialStats !== "object" || Array.isArray(state.callStartOfficialStats)) state.callStartOfficialStats = null;
     if (!Array.isArray(state.missedCallRecords)) state.missedCallRecords = [];
     var minimumCallCount = state.completedCalls.length + (state.callId ? 1 : 0);
     state.totalCalls = Math.max(Number(state.totalCalls || 0), minimumCallCount);
@@ -797,6 +799,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         ? new Date(routeTimestampMs - measuredPlatformSeconds * 1000).toISOString()
         : event.timestamp;
       state.callStartedAt = measuredStartAt;
+      state.callStartOfficialStats = {
+        status: "syncing", callId: callId, requestedAt: event.timestamp,
+        capturedAt: null, method: null, summary: null, error: null
+      };
       state.callSourceTabId = event.payload && event.payload.tabId || null;
       state.callLastObservedAt = event.timestamp;
       state.callMissingSinceAt = null;
@@ -829,6 +835,38 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     }).then(function (state) {
       if (!state || state.callId !== callId) return;
       record("TRANSCRIPTION_MODULE_READY", { callId: callId, engine: "groq-whisper" }, "info", "background");
+      record("CALL_START_OFFICIAL_STATS_REQUESTED", {
+        callId: callId, tabId: state.callSourceTabId || null,
+        policy: "page-context-authenticated-no-navigation-no-reload"
+      }, "info", "background");
+      syncOfficialPlatformData().then(function (result) {
+        var snapshot = result && result.snapshot || {};
+        var summary = snapshot.summary || {};
+        return mutateState(async function (nextState) {
+          if (nextState.callId !== callId) return;
+          nextState.callStartOfficialStats = {
+            status: "ready", callId: callId,
+            requestedAt: nextState.callStartOfficialStats && nextState.callStartOfficialStats.requestedAt || event.timestamp,
+            capturedAt: snapshot.capturedAt || iso(), method: result.method || null,
+            summary: summary, error: null
+          };
+          record("CALL_START_OFFICIAL_STATS_READY", {
+            callId: callId, method: result.method || null,
+            earned: summary.earned || null, callCount: summary.callCount || null,
+            callLength: summary.callLength || null
+          }, "info", "background");
+        }, "call-start-official-stats-ready");
+      }).catch(function (error) {
+        mutateState(async function (nextState) {
+          if (nextState.callId !== callId) return;
+          nextState.callStartOfficialStats = Object.assign({}, nextState.callStartOfficialStats || {}, {
+            status: "error", capturedAt: iso(), method: null, summary: null, error: String(error)
+          });
+        }, "call-start-official-stats-error").catch(function () {});
+        record("CALL_START_OFFICIAL_STATS_ERROR", {
+          callId: callId, error: String(error), fallback: "overlay-local-metrics"
+        }, "warn", "background");
+      });
       requestCallAlert(callId, "call-route-confirmed");
     });
   }
@@ -974,7 +1012,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         state.transcriptionTabId = null;
         state.transcriptionStatus = { phase: "stopped", connected: false, engine: "groq" };
       }
-      state.callStartedAt = null; state.callId = null; state.callModality = null; state.callSourceTabId = null; state.pendingCallEnd = null;
+      state.callStartedAt = null; state.callId = null; state.callModality = null; state.callSourceTabId = null; state.pendingCallEnd = null; state.callStartOfficialStats = null;
       record("CALL_TIMER_STOPPED", Object.assign({}, call, {
         confirmation: source === "rating-route" ? "rating-route" : "fallback-route",
         observedVsPlatformDeltaSeconds: hasPlatformSeconds ? Math.round((observedSeconds - billableSeconds) * 1000) / 1000 : null

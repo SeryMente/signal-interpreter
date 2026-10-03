@@ -706,9 +706,20 @@
     var official = platformMirror.statistics && platformMirror.statistics.summary || {};
     var officialUsd = Number(official.earnedUsd);
     if (!(officialUsd > 0)) officialUsd = parseOfficialUsd(official.earned);
+    var callStartStatsState = state.callStartOfficialStats && state.callStartOfficialStats.callId === state.callId
+      ? state.callStartOfficialStats : null;
+    var callStartStats = callStartStatsState && callStartStatsState.status === "ready" ? callStartStatsState.summary || {} : null;
+    if (callStartStats) {
+      official = callStartStats;
+      officialUsd = Number(official.earnedUsd);
+      if (!(officialUsd >= 0)) officialUsd = parseOfficialUsd(official.earned);
+    } else if (callStartStatsState) {
+      official = {};
+      officialUsd = null;
+    }
     var hasOfficial = Number.isFinite(officialUsd) && officialUsd >= 0 && official.earned != null;
     var baseUsd = hasOfficial ? officialUsd : completedUsd;
-    return { calls: calls.length, modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd, totalUsd: baseUsd + (hasOfficial ? 0 : liveUsd), officialUsd: hasOfficial ? officialUsd : null, fx: fx };
+    return { calls: calls.length, modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd, totalUsd: baseUsd + (hasOfficial ? 0 : liveUsd), officialUsd: hasOfficial ? officialUsd : null, officialStats: official, callStartStatsReady: !!callStartStats, fx: fx };
   }
   function stopOverlay(reason) {
     if (overlayTimer) clearInterval(overlayTimer);
@@ -767,7 +778,7 @@
     overlayHost.id = "signal-interpreter-earnings-overlay";
     overlayHost.style.cssText = "all:initial;position:fixed;z-index:2147483647;top:12px;right:12px;pointer-events:auto";
     overlayRoot = overlayHost.attachShadow({ mode: "closed" });
-    overlayRoot.innerHTML = '<style>:host{all:initial}.card{width:210px;box-sizing:border-box;padding:10px 12px;border:1px solid rgba(111,211,255,.28);border-radius:13px;background:rgba(5,18,34,.90);box-shadow:0 8px 30px rgba(0,0,0,.24);backdrop-filter:blur(12px);color:#dff7ff;font:12px/1.25 Arial,sans-serif;user-select:none}.top{display:flex;align-items:center;justify-content:space-between;gap:8px}.brand{color:#75d9ff;font-size:9px;font-weight:700;letter-spacing:.14em}.actions{display:flex;gap:4px}button{border:0;border-radius:6px;background:rgba(255,255,255,.08);color:#9db2c6;width:22px;height:22px;cursor:pointer}button:hover{background:rgba(255,255,255,.16);color:white}.amount{margin-top:5px;color:white;font-size:21px;font-weight:750;font-variant-numeric:tabular-nums}.detail{display:flex;justify-content:space-between;gap:8px;margin-top:5px;color:#8fa6bb;font-size:10px}.live{color:#79e4a6;font-variant-numeric:tabular-nums}.fx{margin-top:6px;color:#647f98;font-size:9px}.compact .detail,.compact .fx{display:none}.compact{width:174px;padding:8px 10px}.compact .amount{font-size:17px;margin-top:2px}</style><section class="card" aria-live="polite"><div class="top"><span class="brand">SIGNAL INTERPRETER · INGRESO</span><span class="actions"><button id="compact" title="Compactar o ampliar">↕</button><button id="close" title="Ocultar overlay">×</button></span></div><div class="amount" id="amount">MX$0.0000</div><div class="detail"><span id="summary">Sin llamada</span><span class="live" id="live">+MX$0.0000</span></div><div class="fx" id="fx">Obteniendo tipo de cambio…</div></section>';
+    overlayRoot.innerHTML = '<style>:host{all:initial}.card{width:210px;box-sizing:border-box;padding:10px 12px;border:1px solid rgba(111,211,255,.28);border-radius:13px;background:rgba(5,18,34,.90);box-shadow:0 8px 30px rgba(0,0,0,.24);backdrop-filter:blur(12px);color:#dff7ff;font:12px/1.25 Arial,sans-serif;user-select:none}.top{display:flex;align-items:center;justify-content:space-between;gap:8px}.brand{color:#75d9ff;font-size:9px;font-weight:700;letter-spacing:.14em}.actions{display:flex;gap:4px}button{border:0;border-radius:6px;background:rgba(255,255,255,.08);color:#9db2c6;width:22px;height:22px;cursor:pointer}button:hover{background:rgba(255,255,255,.16);color:white}.amount{margin-top:5px;color:white;font-size:21px;font-weight:750;font-variant-numeric:tabular-nums}.detail{display:flex;justify-content:space-between;gap:8px;margin-top:5px;color:#8fa6bb;font-size:10px}.live{color:#79e4a6;font-variant-numeric:tabular-nums}.micro{margin-top:6px;color:#70869b;font-size:8px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}.fx{margin-top:5px;color:#647f98;font-size:8px}.compact .detail,.compact .fx{display:none}.compact{width:174px;padding:8px 10px}.compact .amount{font-size:17px;margin-top:2px}</style><section class="card" aria-live="polite"><div class="top"><span class="brand">SIGNAL INTERPRETER · INGRESO</span><span class="actions"><button id="compact" title="Compactar o ampliar">↕</button><button id="close" title="Ocultar overlay">×</button></span></div><div class="amount" id="amount">MX$0.0000</div><div class="detail"><span id="summary">Sin llamada</span><span class="live" id="live">+MX$0.0000</span></div><div class="micro" id="micro">Statistics · sincronizando…</div><div class="fx" id="fx">Obteniendo tipo de cambio…</div></section>';
     document.documentElement.appendChild(overlayHost);
     integrity.extensionDomWrites += 1;
     overlayRoot.getElementById("close").addEventListener("click", function () {
@@ -804,6 +815,13 @@
     overlayRoot.getElementById("amount").textContent = money(total, currency, 4);
     overlayRoot.getElementById("live").textContent = info.officialUsd !== null ? "En llamada +" + money(live, currency, 4) : "+" + money(live, currency, 4);
     overlayRoot.getElementById("summary").textContent = state.callStartedAt ? info.modality + " · " + (info.liveSeconds / 60).toFixed(2) + " min" : info.calls + " llamadas hoy";
+    var official = info.officialStats || {};
+    var micro = info.callStartStatsReady
+      ? "Statistics · " + [official.earned || "", official.callCount ? official.callCount + " llamadas" : "", official.callLength || ""].filter(Boolean).join(" · ")
+      : (state.callStartedAt && state.callStartOfficialStats && state.callStartOfficialStats.status === "error"
+        ? "Statistics · no disponible · estimación local"
+        : "Statistics · sincronizando…");
+    overlayRoot.getElementById("micro").textContent = micro;
     overlayRoot.getElementById("fx").textContent = mxnAvailable
       ? "USD/MXN " + info.fx.toFixed(4) + " · " + (config.exchangeRateDate || "último disponible")
       : "Sin tasa MXN: mostrando USD";
