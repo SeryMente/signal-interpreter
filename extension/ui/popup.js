@@ -296,10 +296,19 @@
       : "Sin registro";
   }
   async function refreshObservabilityStatus() {
-    var github = $("obsGithub"), ai = $("obsAi");
+    var github = $("obsGithub"), manual = $("obsManual"), ai = $("obsAi");
     if (github) { github.textContent = "Comprobando…"; github.className = ""; }
+    if (manual) { manual.textContent = "Consultando…"; manual.className = ""; }
     if (ai) { ai.textContent = "Comprobando…"; ai.className = ""; }
     try {
+      await new Promise(function (resolve) {
+        chrome.storage.local.get(["effectifObservabilityExport"], function (stored) {
+          var manualExport = stored.effectifObservabilityExport || {};
+          renderObservabilityStamp("obsManual", manualExport.at, "", manualExport.at ? "ok" : "warn");
+          if (manual && manualExport.commit) manual.title = new Date(manualExport.at).toLocaleString("es-MX") + " · Commit " + manualExport.commit;
+          resolve();
+        });
+      });
       var response = await fetch("http://127.0.0.1:8788/health?ts=" + Date.now(), { cache: "no-store" });
       if (!response.ok) throw new Error("HTTP " + response.status);
       var data = await response.json();
