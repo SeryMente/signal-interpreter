@@ -54,6 +54,8 @@
   var callRouteId = null;
   var lastIncomingSignature = "";
   var lastAvailability = "";
+  var readinessTimer = null;
+  var lastSpokenCallId = "";
   var lastMediaSignature = "";
   var lastMediaAt = 0;
   var lastScreenSignature = "";
@@ -228,6 +230,24 @@
       return false;
     }
   }
+  function speakConfirmedAnswer(callId, flowId) {
+    if (!config.soundEnabled || !callId || lastSpokenCallId === callId) return false;
+    lastSpokenCallId = callId;
+    try {
+      if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) throw new Error("SpeechSynthesis no disponible");
+      var utterance = new SpeechSynthesisUtterance("Llamada entrante.");
+      utterance.lang = "es-MX";
+      utterance.volume = Math.max(0.15, Math.min(1, Number(config.volume) || 0.8));
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
+      emit("CALL_ALERT_TTS_PLAYED", { callId: callId, flowId: flowId || null, phrase: "Llamada entrante.", lang: "es-MX" });
+      return true;
+    } catch (error) {
+      emit("CALL_ALERT_TTS_ERROR", { callId: callId, flowId: flowId || null, error: String(error) }, "warn");
+      return false;
+    }
+  }
   function callActivationEvidence() {
     var endButtons = Array.from(document.querySelectorAll("button,[role='button']")).filter(visibleElement).filter(function (element) {
       return /^End call$/i.test(normalized(element.getAttribute("aria-label") || element.textContent || ""));
@@ -245,6 +265,7 @@
   function trackRoute(reason) {
     var next = location.pathname;
     if (next === route && reason !== "start") return;
+    var previousRoute = route;
     var previousCallId = callRouteId;
     var ratingMatch = next.match(/^\/call\/([^/?#]+)\/rate\/?$/);
     var nextCallId = currentCallId();
@@ -272,25 +293,41 @@
     }
     if (callRouteId && callRouteId !== previousCallId) {
       callDisplayStartedAt = Date.now();
-      if (answerFlow.flowId) {
-        window[ANSWER_LEASE_MARKER] = Object.assign({}, answerFlow, { callId: callRouteId, routeConfirmed: true, confirmedAt: iso() });
-      }
-      playPageCallBeep("call-route-entered", callRouteId, answerFlow.flowId || null);
-      activateOverlayForCall(callRouteId, "call-route-entered");
+      var routeFromAuthorizedProfile = location.origin === AUTHORIZED_PROFILE_ORIGIN &&
+        (previousRoute === AUTHORIZED_PROFILE_PATH || previousRoute === AUTHORIZED_PROFILE_PATH + "/");
+      var answerFlowConfirmed = !!(
+        routeFromAuthorizedProfile &&
+        answerFlow.flowId &&
+        answerFlow.clickAt &&
+        !answerFlow.routeConfirmed &&
+        Date.now() - Date.parse(answerFlow.clickAt) <= 30000
+      );
       var evidence = callActivationEvidence();
-      emit("CALL_ROUTE_ENTERED", { callId: callRouteId, reason: reason, evidence: evidence });
-      if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; }
-      if (answerFlow.clickAt && !answerFlow.routeConfirmed) {
+      if (answerFlowConfirmed) {
         answerFlow.routeConfirmed = true;
-        window[ANSWER_LEASE_MARKER] = Object.assign({}, window[ANSWER_LEASE_MARKER] || {}, answerFlow, { callId: callRouteId, routeConfirmed: true, confirmedAt: iso() });
+        window[ANSWER_LEASE_MARKER] = Object.assign({}, window[ANSWER_LEASE_MARKER] || {}, answerFlow, {
+          callId: callRouteId, routeConfirmed: true, confirmedAt: iso()
+        });
+        playPageCallBeep("confirmed-answer-route", callRouteId, answerFlow.flowId);
+        speakConfirmedAnswer(callRouteId, answerFlow.flowId);
         emit("ANSWER_FLOW_ROUTE_CONFIRMED", {
           flowId: answerFlow.flowId,
           callId: callRouteId,
           modality: answerFlow.modality,
           latencyMs: Math.max(0, Date.parse(iso()) - Date.parse(answerFlow.clickAt)),
-          evidence: evidence
+          evidence: evidence,
+          confirmation: "authorized-profile-to-call-route"
+        });
+      } else {
+        emit("CALL_ROUTE_ENTERED", {
+          callId: callRouteId,
+          reason: reason,
+          evidence: evidence,
+          autoAnswerConfirmation: "not-claimed"
         });
       }
+      activateOverlayForCall(callRouteId, "call-route-entered");
+      if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; }
       emitIntegrity("call-entered");
     }
     if (!callRouteId && !isRatingRoute()) {
@@ -384,7 +421,6 @@
         };
         window[ANSWER_LEASE_MARKER] = { flowId: flowId, clickAt: answerFlow.clickAt, modality: modality, fingerprint: fingerprint, routeConfirmed: false, runtimeVersion: RUNTIME_VERSION };
         button.click();
-        playPageCallBeep("auto-answer-connect-click", null, flowId);
         integrity.permittedConnectClicks += 1;
         emit("CONNECT_CLICKED", {
           modality: modality,
@@ -414,9 +450,31 @@
       }
     });
   }
+  function emitAutoAnswerReadiness(reason) {
+    var availability = readAvailabilityState();
+    var ready = isAuthorizedProfilePage() && config.autoAnswerEnabled && availability === "online";
+    emit("AUTO_ANSWER_READINESS", {
+      ready: ready,
+      availability: availability,
+      authorizedProfile: isAuthorizedProfilePage(),
+      route: routeTemplate(),
+      exactUrl: location.origin + location.pathname,
+      runtimeVersion: RUNTIME_VERSION,
+      reason: reason || "state-check"
+    });
+    return ready;
+  }
+  function scheduleReadinessHeartbeat() {
+    if (readinessTimer) clearInterval(readinessTimer);
+    readinessTimer = setInterval(function () {
+      emitAutoAnswerReadiness("heartbeat");
+    }, 2000);
+    emitAutoAnswerReadiness("startup");
+  }
   function detectAvailability() {
     var next = readAvailabilityState();
     syncPageFavicon();
+    emitAutoAnswerReadiness("availability");
     if (next !== "unknown" && next !== lastAvailability) {
       lastAvailability = next;
       emit("AVAILABILITY_STATE", { state: next });
@@ -870,6 +928,8 @@
     autoAnswer();
     renderOverlay();
     if (!isTarget() || !config.autoAnswerEnabled || currentCallId()) { if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; } }
+    syncPageFavicon();
+    emitAutoAnswerReadiness("config");
     if (telemetryStarted && telemetryTimer) {
       clearInterval(telemetryTimer);
       telemetryTimer = setInterval(function () { performanceSnapshot("heartbeat"); }, Math.max(10, Number(config.telemetryHeartbeatSeconds || 30)) * 1000);
@@ -909,14 +969,17 @@
       });
     }
   }, true);
-  window.addEventListener("popstate", function () { trackRoute("popstate"); });
-  window.addEventListener("hashchange", function () { trackRoute("hashchange"); });
+  scheduleReadinessHeartbeat();
+  window.addEventListener("popstate", function () { trackRoute("popstate"); emitAutoAnswerReadiness("popstate"); });
+  window.addEventListener("hashchange", function () { trackRoute("hashchange"); emitAutoAnswerReadiness("hashchange"); });
+  emitAutoAnswerReadiness("initial-route");
   if (window.navigation && window.navigation.addEventListener) {
     window.navigation.addEventListener("navigate", function () {
       setTimeout(function () { trackRoute("navigation"); }, 0);
     });
   }
   window.addEventListener("pagehide", function () {
+    if (readinessTimer) { clearInterval(readinessTimer); readinessTimer = null; }
     var activeCallId = currentCallId();
     if (activeCallId) {
       emit("CALL_ROUTE_ENDED", {
