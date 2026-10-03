@@ -972,7 +972,19 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     ctx.clearRect(0, 0, size, size);
     ctx.beginPath(); ctx.arc(center, center, size * 0.47, 0, Math.PI * 2); ctx.fillStyle = "#111827"; ctx.fill();
     ctx.beginPath(); ctx.arc(center, center, size * 0.36, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
-    ctx.beginPath(); ctx.arc(center, center, size * 0.14, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill();
+    if (color === "#22c55e") {
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = Math.max(1.5, size * 0.11);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(size * 0.27, size * 0.51);
+      ctx.lineTo(size * 0.44, size * 0.68);
+      ctx.lineTo(size * 0.75, size * 0.34);
+      ctx.stroke();
+    } else {
+      ctx.beginPath(); ctx.arc(center, center, size * 0.14, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill();
+    }
     var data = ctx.getImageData(0, 0, size, size);
     actionIconCache.set(key, data);
     return data;
@@ -993,6 +1005,8 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         32: iconImageData(colors[statusKey], 32),
         48: iconImageData(colors[statusKey], 48)
       }});
+      await chrome.action.setBadgeText({ tabId: Number(tabId), text: statusKey === "active" ? "ON" : "" });
+      if (statusKey === "active") await chrome.action.setBadgeBackgroundColor({ tabId: Number(tabId), color: "#16a34a" });
       await chrome.action.setTitle({ tabId: Number(tabId), title: titles[statusKey] });
     } catch (_) {}
   }
