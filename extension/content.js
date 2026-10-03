@@ -129,8 +129,8 @@
       ].join(" "));
     }).filter(Boolean);
     var text = signals.join(" ");
-    if (/(?:click to go offline|you are online|go offline|status[:\\s]+online|online status)/i.test(text)) return "online";
-    if (/(?:click to go online|you are offline|go online|status[:\\s]+offline|offline status)/i.test(text)) return "offline";
+    if (/(?:click to go offline|you are online|go offline|status[:\s]+online|online status)/i.test(text)) return "online";
+    if (/(?:click to go online|you are offline|go online|status[:\s]+offline|offline status)/i.test(text)) return "offline";
     return "unknown";
   }
   function syncPageFavicon() {
