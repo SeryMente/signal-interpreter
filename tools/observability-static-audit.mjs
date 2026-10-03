@@ -9,7 +9,7 @@ const popup=read("extension/ui/popup.js");
 const offscreen=read("extension/offscreen.js");
 const host=read("tools/observability-native-host/SignalInterpreterObservabilityHost.cs");
 
-assert.equal(manifest.version,"0.9.17");
+assert.equal(manifest.version,"0.9.19");
 assert.ok(manifest.host_permissions.includes("http://127.0.0.1:8788/*"));
 assert.ok(manifest.permissions.includes("nativeMessaging"));
 assert.ok(manifest.permissions.includes("scripting"));

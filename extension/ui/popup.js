@@ -96,6 +96,7 @@
     };
   }
   function render() {
+    $("buildVersion").textContent = BUILD_LABEL;
     $("enabled").checked = !!config.autoAnswerEnabled;
     $("observation").checked = !!config.observationEnabled;
     $("networkTelemetryEnabled").checked = !!config.networkTelemetryEnabled;
