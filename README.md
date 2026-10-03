@@ -25,7 +25,9 @@ Auto-Answer, OPI/VRI, Online/Offline, llamadas perdidas, cronómetros, ingresos,
 
 En chrome://extensions activa Developer mode y usa Load unpacked sobre la carpeta extension/.
 
-No es necesario ejecutar ningún proceso de bridge local.
+No es necesario ejecutar ningún proceso de bridge local para la transcripción.
+
+La observabilidad automática utiliza un reporter local silencioso en 127.0.0.1:8788, instalado mediante el Programador de tareas de Windows. No requiere una ventana de Command Prompt o PowerShell abierta. La arquitectura y operación están documentadas en docs/OBSERVABILITY.md.
 
 ## Pruebas
 
