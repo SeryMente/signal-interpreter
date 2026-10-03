@@ -108,3 +108,14 @@ La versión 0.9.18 corrige un defecto de ciclo de vida del indicador de la barra
 También corrige el patrón de detección de disponibilidad para que `status: online` y `status: offline` reconozcan correctamente los espacios mediante `\s`.
 
 La revisión del entorno local confirmó además que el host Native Messaging `com.serymente.signal_interpreter.observability` no está registrado en Chrome y no existe una instalación local identificable de ese host. El directorio `bridge/windows-uia` del repositorio es otro componente: corresponde al lector histórico de Chrome Live Caption/Windows UI Automation y **no implementa** el host de exportación GitHub. Por tanto, la exportación directa a GitHub sigue dependiendo de instalar ese host específico; la extensión ya no debe atribuir ese estado a un problema genérico de GitHub.
+### v0.9.19 — Restauración del host de exportación GitHub
+
+Esta versión restaura la ruta operativa existente para exportar observabilidad directamente a GitHub:
+
+- El host nativo se publica como ejecutable autocontenido en `%USERPROFILE%\\.signal-interpreter\\observability-native`.
+- El instalador registra `com.serymente.signal_interpreter.observability` para Chrome mediante Native Messaging.
+- El host reutiliza la autenticación existente de GitHub CLI (`gh auth`) y no almacena tokens en el código.
+- El instalador descubre automáticamente una extensión desempaquetada válida que contenga `manifest.json`, en lugar de asumir únicamente `Desktop\\Signal-Interpreter-Extension`.
+- El origen de la extensión queda restringido mediante `allowed_origins`, sin comodines.
+
+La implementación existente del repositorio ya contiene el host, el protocolo stdio y la publicación mediante GitHub CLI; la regresión estaba en la instalación/registro local del host, no en la necesidad de crear un puente nuevo.
