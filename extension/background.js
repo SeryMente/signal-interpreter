@@ -5,6 +5,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
 
   var GROQ_MODEL = "whisper-large-v3-turbo";
   var AUTHORIZED_ORIGIN = "https://app.cloudinterpreter.com";
+  var AUTHORIZED_PROFILE_PATH = "/profile/cmu2wuz1v0uwr07adbzb9djfz";
   var OFFICIAL_STATS_URL = AUTHORIZED_ORIGIN + "/profile/cmu2wuz1v0uwr07adbzb9djfz/logs";
   var GROQ_USD_PER_AUDIO_HOUR = 0.04;
   var DEFAULT_CONFIG = {
@@ -46,6 +47,8 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   var hotloadLastHeartbeatAt = 0;
   var hotloadLastRecoveryAt = 0;
   var hotloadReloadScheduled = false;
+  var tabAvailability = new Map();
+  var actionIconCache = new Map();
 
   function hasActiveCall(state) {
     return !!(state && state.callId && state.callStartedAt);
@@ -951,6 +954,64 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       });
     });
   }
+  function isAuthorizedProfileUrl(raw) {
+    try {
+      var url = new URL(String(raw || ""));
+      return url.origin === AUTHORIZED_ORIGIN &&
+        (url.pathname === AUTHORIZED_PROFILE_PATH || url.pathname === AUTHORIZED_PROFILE_PATH + "/");
+    } catch (_) { return false; }
+  }
+  function iconImageData(color, size) {
+    var key = color + ":" + size;
+    if (actionIconCache.has(key)) return actionIconCache.get(key);
+    var canvas = new OffscreenCanvas(size, size);
+    var ctx = canvas.getContext("2d");
+    var center = size / 2;
+    ctx.clearRect(0, 0, size, size);
+    ctx.beginPath(); ctx.arc(center, center, size * 0.47, 0, Math.PI * 2); ctx.fillStyle = "#111827"; ctx.fill();
+    ctx.beginPath(); ctx.arc(center, center, size * 0.36, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+    ctx.beginPath(); ctx.arc(center, center, size * 0.14, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill();
+    var data = ctx.getImageData(0, 0, size, size);
+    actionIconCache.set(key, data);
+    return data;
+  }
+  async function setActionIndicator(tabId, status) {
+    if (!Number.isFinite(Number(tabId))) return;
+    var colors = { active: "#22c55e", waiting: "#f59e0b", offline: "#6b7280", disabled: "#ef4444" };
+    var titles = {
+      active: "Signal Interpreter · AUTO-ANSWER ACTIVO · Profile autorizado · You are Online",
+      waiting: "Signal Interpreter · ESPERA · Profile autorizado, disponibilidad no confirmada",
+      offline: "Signal Interpreter · BLOQUEADO · You are Offline",
+      disabled: "Signal Interpreter · AUTO-ANSWER DESACTIVADO"
+    };
+    var statusKey = colors[status] ? status : "disabled";
+    try {
+      await chrome.action.setIcon({ tabId: Number(tabId), imageData: {
+        16: iconImageData(colors[statusKey], 16),
+        32: iconImageData(colors[statusKey], 32),
+        48: iconImageData(colors[statusKey], 48)
+      }});
+      await chrome.action.setTitle({ tabId: Number(tabId), title: titles[statusKey] });
+    } catch (_) {}
+  }
+  async function refreshActionIndicator(tabId, url) {
+    if (!Number.isFinite(Number(tabId))) return;
+    var tab;
+    try { tab = await chrome.tabs.get(Number(tabId)); } catch (_) { return; }
+    var targetUrl = url || tab.url || "";
+    var status = "disabled";
+    if (isAuthorizedProfileUrl(targetUrl)) {
+      var availability = tabAvailability.get(Number(tabId)) || "unknown";
+      var stored = await chrome.storage.local.get(["effectifConfig"]);
+      var enabled = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}).autoAnswerEnabled !== false;
+      if (!enabled) status = "disabled";
+      else if (availability === "online") status = "active";
+      else if (availability === "offline") status = "offline";
+      else status = "waiting";
+    }
+    await setActionIndicator(Number(tabId), status);
+  }
+
   function isAuthorizedCloudUrl(raw){try{return new URL(String(raw||"")).origin===AUTHORIZED_ORIGIN}catch(_){return false;}}
   function readVisibleOfficialSummaryFromPage() {
     function normalize(value){return String(value||"").replace(/\s+/g," ").trim();}
@@ -1218,6 +1279,19 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   function addSignalSessionSegment(message,sendResponse){loadSignalSessions().then(function(data){var id=message.sessionId||data.activeSessionId,s=data.sessions.find(function(x){return x.id===id});if(!s)throw new Error("Sesión no encontrada");var text=String(message.text||"").trim();if(!text)throw new Error("Texto vacío");var seg={id:"manual-"+uid(),text:text.slice(0,12000),timestamp:iso(),reason:"manual",source:"manual",speaker:message.speaker==="YO"?"YO":"CLIENTE"};return persistSignalSegment(id,seg).then(function(x){if(!x.ok)throw new Error(x.dbError||x.cacheError||"No se pudo persistir");return{ok:true,session:x.session,segment:seg}})}).then(function(r){broadcastSignalEvent({type:"signal.transcript.segment",sessionId:r.session.id,manual:true,segment:r.segment,timestamp:r.segment.timestamp});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})});}
   async function openSignalLiveWindow(audioStreamId,tabId,sourceUrl,sourceTitle){var targetUrl=chrome.runtime.getURL("ui/live.html");try{var session=await ensureSignalSession({tabId:tabId,sourceUrl:sourceUrl,title:sourceTitle}),windows=await chrome.windows.getAll({populate:true,windowTypes:["popup"]}),existing=windows.find(function(w){return Array.isArray(w.tabs)&&w.tabs.some(function(t){return String(t.url||"").split("#")[0].split("?")[0]===targetUrl})}),windowId=null;if(existing&&existing.id!=null){windowId=existing.id;await chrome.windows.update(windowId,{focused:true,state:"normal"})}else{var stored=await chrome.storage.local.get(["signalLiveBounds"]),b=stored.signalLiveBounds||{},d={url:targetUrl,type:"popup",focused:true,width:Number.isFinite(b.width)?b.width:760,height:Number.isFinite(b.height)?b.height:760};if(Number.isFinite(b.left))d.left=b.left;if(Number.isFinite(b.top))d.top=b.top;var created=await chrome.windows.create(d);windowId=created&&created.id||null}var activation=await activateSignalSession(session.id,audioStreamId||null);return{ok:!!windowId,windowId:windowId,reused:!!existing,session:activation.session||signalSessionCopy(session,true),audio:null,capture:activation};}catch(error){return{ok:false,error:String(error)}}}
   signalGroqQueue=Promise.resolve();
+  chrome.tabs.onActivated.addListener(function (activeInfo) {
+    refreshActionIndicator(activeInfo.tabId).catch(function () {});
+  });
+  chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    if (changeInfo.url || changeInfo.status === "loading" || changeInfo.status === "complete") {
+      if (changeInfo.url && !isAuthorizedProfileUrl(changeInfo.url)) tabAvailability.delete(Number(tabId));
+      refreshActionIndicator(tabId, changeInfo.url || tab.url).catch(function () {});
+    }
+  });
+  chrome.tabs.onRemoved.addListener(function (tabId) {
+    tabAvailability.delete(Number(tabId));
+  });
+
   chrome.runtime.onConnect.addListener(function(port){if(!port||port.name!=="signal-live-console")return;signalLivePort=port;signalLiveConsoleOpen=true;port.onDisconnect.addListener(function(){if(signalLivePort===port){signalLivePort=null;signalLiveConsoleOpen=false;}});});
 
 
@@ -1241,7 +1315,12 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       }, message.event || {});
       appendEvent(event, function () { sendResponse({ ok: true }); });
       if (event.action === "PLATFORM_SESSION_STARTED" || event.action === "PLATFORM_SESSION_ENDED") handleSession(event);
-      if (event.action === "AVAILABILITY_STATE") handleAvailability(event);
+      if (event.action === "AVAILABILITY_STATE") {
+        var eventTabId = sender.tab && sender.tab.id;
+        if (Number.isFinite(Number(eventTabId))) tabAvailability.set(Number(eventTabId), event.payload && event.payload.state || "unknown");
+        handleAvailability(event);
+        if (Number.isFinite(Number(eventTabId))) refreshActionIndicator(Number(eventTabId), sender.tab && sender.tab.url).catch(function () {});
+      }
       if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event);
       if (event.action === "CONNECT_CLICKED") alertOnConnect(event);
       if (event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
