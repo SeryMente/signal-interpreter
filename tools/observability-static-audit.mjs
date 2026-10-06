@@ -63,7 +63,7 @@ assert.ok(content.includes("__SIGNAL_INTERPRETER_CLOUD_RUNTIME__"));
 assert.ok(content.includes("__SIGNAL_INTERPRETER_ANSWER_LEASE__"));
 assert.ok(content.includes("__SIGNAL_INTERPRETER_CALL_BEEP__"));
 assert.ok(content.includes("CALL_ALERT_PAGE_BEEP_PLAYED"));
-assert.ok(content.includes("auto-answer-connect-click"));
+assert.ok(content.includes("CONNECT_CLICKED"));
 assert.ok(content.includes('[role="dialog"]'));
 assert.ok(offscreen.includes('if(message.type==="EFFECTIF_PLAY_SOUND")'));
 const soundStart=offscreen.indexOf('if(message.type==="EFFECTIF_PLAY_SOUND")');
