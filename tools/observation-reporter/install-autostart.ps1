@@ -21,6 +21,10 @@ $watchTrigger=New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(10) -Repe
 $watchName="Signal Interpreter Observation Watchdog"
 Register-ScheduledTask -TaskName $watchName -Action $watchAction -Trigger $watchTrigger -Principal $principal -Settings $watchSettings -Description "Restarts the Signal Interpreter observation reporter when its health endpoint is unavailable." -Force | Out-Null
 
+$listener=Get-NetTCPConnection -LocalPort 8788 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+if($listener){
+  try{Stop-Process -Id $listener.OwningProcess -Force -ErrorAction Stop; Start-Sleep -Seconds 1; Write-Host "STALE_REPORTER_STOPPED" -ForegroundColor Yellow}catch{Write-Warning ("Could not stop stale reporter: "+$_.Exception.Message)}
+}
 Start-ScheduledTask -TaskName $reporterName
 Start-ScheduledTask -TaskName $watchName
 Start-Sleep -Seconds 3
