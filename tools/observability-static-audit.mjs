@@ -8,6 +8,10 @@ const content=read("extension/content.js");
 const popup=read("extension/ui/popup.js");
 const offscreen=read("extension/offscreen.js");
 const host=read("tools/observability-native-host/SignalInterpreterObservabilityHost.cs");
+const reporter=read("tools/observation-reporter/server.mjs");
+const observationSync=read("extension/observation-sync.js");
+const watchdog=read("tools/observation-reporter/watchdog.ps1");
+const reporterInstaller=read("tools/observation-reporter/install-autostart.ps1");
 
 assert.equal(manifest.version,"0.9.14");
 assert.ok(manifest.permissions.includes("nativeMessaging"));
@@ -110,6 +114,24 @@ assert.ok(bootstrap.includes("observability-static-audit.mjs"));
 assert.ok(host.includes('DiagnosticsBranch = "observability"'));
 assert.ok(host.includes("422"));
 assert.ok(host.includes('request["sha"] = refreshed.Sha'));
+
+assert.ok(background.includes("alarm.name===\"signal-observation-sync\""));
+assert.ok(background.includes("SignalObservationSync.flush(\"alarm\""));
+assert.ok(observationSync.includes("flushQueue=Promise.resolve()"));
+assert.ok(observationSync.includes("EVENT_THRESHOLD"));
+assert.ok(observationSync.includes("retryMs"));
+assert.ok(reporter.includes("durableWrite"));
+assert.ok(reporter.includes("PUBLISH_ROOT"));
+assert.ok(reporter.includes("SPOOL"));
+assert.ok(reporter.includes("git push"));
+assert.ok(reporter.includes("fallbackPublishBatch"));
+assert.ok(reporter.includes("timeout:timeoutMs"));
+assert.ok(reporter.includes("uncaughtException"));
+assert.ok(reporter.includes("unhandledRejection"));
+assert.ok(watchdog.includes("127.0.0.1:$Port/health"));
+assert.ok(watchdog.includes("Start-Process"));
+assert.ok(reporterInstaller.includes("RestartCount 999"));
+assert.ok(reporterInstaller.includes("Observation Watchdog"));
 
 const forbidden=["CaptionBubbleLabel","AXVirtualView","SpeechRecognition","SignalLiveCaptionBridge","127.0.0.1:8787"];
 for(const value of [background,content,popup]){
