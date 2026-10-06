@@ -121,7 +121,7 @@ assert.ok(host.includes('DiagnosticsBranch = "observability"'));
 assert.ok(host.includes("422"));
 assert.ok(host.includes('request["sha"] = refreshed.Sha'));
 assert.ok(reporter.includes("PUBLISH_ROOT"));
-assert.ok(reporter.includes("gh repo clone"));
+assert.ok(reporter.includes('["repo","clone"'));
 assert.ok(reporter.includes("git push"));
 assert.ok(reporter.includes("fallbackPublishBatch"));
 assert.ok(reporter.includes("scheduleGitSync(true)"));
