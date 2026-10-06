@@ -1589,6 +1589,12 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   chrome.alarms.onAlarm.addListener(function(alarm){
     if(!alarm)return;
     if(alarm.name==="signal-network-window"){flushNetworkActivity();hotloadHeartbeat("alarm").catch(function(error){record("HOTLOAD_HEARTBEAT_ERROR",{error:String(error)}, "warn","runtime");});return;}
+    if(alarm.name==="signal-observation-sync"){
+      SignalObservationSync.flush("alarm").then(function(result){
+        if(result&&result.ok===false)record("OBSERVATION_SYNC_RETRY_SCHEDULED",{retryMs:result.retryMs||null,error:result.error||null,sequence:result.sequence||null},"warn","background");
+      }).catch(function(error){record("OBSERVATION_SYNC_ALARM_ERROR",{error:String(error)},"warn","background");});
+      return;
+    }
     if(alarm.name==="effectif-exchange-rate"){refreshExchangeRate("alarm").catch(function(){});return;}
     if(alarm.name==="effectif-official-sync"){
       record("PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",{trigger:"hourly"}, "info","background");
