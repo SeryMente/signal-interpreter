@@ -25,6 +25,8 @@ jobs:
           node --check extension/offscreen.js
           node --check extension/groq-transcriber.js
           node --check extension/ui/popup.js
+          node --check extension/observation-sync.js
+          node --check tools/observation-reporter/server.mjs
       - name: Native host build
         run: dotnet build tools/observability-native-host/SignalInterpreterObservabilityHost.csproj -c Release
       - name: Observability static audit
