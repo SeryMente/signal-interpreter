@@ -64,6 +64,9 @@ async function fallbackPublishBatch(batchId){
   try{
     const batchFile=path.join(SPOOL,batchId+".json");if(!fs.existsSync(batchFile))return false;
     await ghPut("observations/batches/"+batchId+".json",batchFile,"diagnostic: fallback publish observation batch");
+    const latestFile=path.join(LATEST,"latest.json"),summaryFile=path.join(LATEST,"latest-summary.md");
+    if(fs.existsSync(latestFile))await ghPut("observations/latest/latest.json",latestFile,"diagnostic: fallback publish latest observation");
+    if(fs.existsSync(summaryFile))await ghPut("observations/latest/latest-summary.md",summaryFile,"diagnostic: fallback publish observation summary");
     health.fallbackPublishes+=1;health.lastFallbackAt=iso();health.lastGitError=null;saveHealth();removeSpoolBatch(batchId);log("github-api fallback published "+batchId);return true;
   }catch(error){health.lastGitError=String(error);saveHealth();log("github-api fallback failed "+batchId+": "+String(error));return false}
 }
