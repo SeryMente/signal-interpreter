@@ -1507,7 +1507,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
 
   async function markObservabilityBuildCheckpoint(reason, previousVersion) {
     try {
-      var files=["manifest.json","background.js","content.js","offscreen.js","groq-transcriber.js","ui/popup.js"];
+      var files=["manifest.json","background.js","content.js","observation-sync.js","telemetry-db.js","offscreen.js","groq-transcriber.js","ui/popup.js"];
       var texts=await Promise.all(files.map(function(file){return fetch(chrome.runtime.getURL(file),{cache:"no-store"}).then(function(response){if(!response.ok)throw new Error("No se pudo leer "+file);return response.text();});}));
       var bytes=new TextEncoder().encode(texts.join("\n/* SIGNAL OBSERVABILITY BUILD BOUNDARY */\n"));
       var digest=await crypto.subtle.digest("SHA-256",bytes);
@@ -1550,7 +1550,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     }).then(function () {
       return refreshAllActionIndicators().catch(function(error){
         record("ACTION_INDICATOR_INSTALL_REFRESH_ERROR",{error:String(error)},"warn","action");
-      }).then(function () { try { SignalObservationSync.start(); } catch (_) {} });
+      }).then(function () { try { SignalObservationSync.start(); } catch (_) {} SignalObservationSync.flush("startup").catch(function(error){record("OBSERVATION_SYNC_STARTUP_ERROR",{error:String(error)},"warn","background");}); });
     }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
     markObservabilityBuildCheckpoint(details&&details.reason||"installed",details&&details.previousVersion).catch(function(){});
     chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
@@ -1576,6 +1576,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
       record("ACTION_INDICATOR_STARTUP_REFRESH_ERROR",{error:String(error)},"warn","action");
     }).then(function(){
       try{SignalObservationSync.start()}catch(_){};
+      SignalObservationSync.flush("startup").catch(function(error){record("OBSERVATION_SYNC_STARTUP_ERROR",{error:String(error)},"warn","background");});
       return recoverAfterRuntimeBoundary("runtime-start").catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");});
     });
   }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
