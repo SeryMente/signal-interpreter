@@ -13,7 +13,7 @@ const watchdog=read("tools/observation-reporter/watchdog.ps1");
 const reporterInstaller=read("tools/observation-reporter/install-autostart.ps1");
 const host=read("tools/observability-native-host/SignalInterpreterObservabilityHost.cs");
 
-assert.equal(manifest.version,"0.9.22");
+assert.equal(manifest.version,"0.9.23");
 assert.ok(manifest.permissions.includes("nativeMessaging"));
 assert.ok(manifest.permissions.includes("scripting"));
 assert.deepEqual(manifest.content_scripts[0].matches,["https://app.cloudinterpreter.com/*"]);
