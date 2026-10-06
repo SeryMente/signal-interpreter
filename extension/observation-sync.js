@@ -5,7 +5,7 @@ var MAX_BATCH=200;
 var EVENT_THRESHOLD=50;
 var MIN_GAP_MS=10000;
 var MAX_DELAY_MS=120000;
-var timer=null,lastTriggerAt=0,pendingEvents=0,alarmScheduled=false;
+var timer=null,lastTriggerAt=0,pendingEvents=0,alarmScheduled=false,flushQueue=Promise.resolve();
 
 function iso(){return new Date().toISOString()}
 function uid(){return crypto.randomUUID()}
@@ -59,19 +59,30 @@ async function post(payload){
     return await response.json().catch(function(){return{ok:true}});
   }finally{clearTimeout(to)}
 }
-async function flush(reason){
-  var now=Date.now();if(now-lastTriggerAt<MIN_GAP_MS&&reason!=="manual"&&reason!=="critical")return{ok:true,skipped:"rate-limited"};
+async function flushInternal(reason){
+  var now=Date.now();if(now-lastTriggerAt<MIN_GAP_MS&&reason!=="manual"&&reason!=="critical"&&reason!=="startup")return{ok:true,skipped:"rate-limited"};
   lastTriggerAt=now;var data=await collect();if(!data.events.length){alarmScheduled=false;pendingEvents=0;return{ok:true,skipped:"clean"}};
   var batchId="batch-"+uid(),payload={schema:"signal-interpreter-observation-batch/v1",batchId:batchId,createdAt:iso(),trigger:reason||"scheduled",extensionVersion:chrome.runtime.getManifest().version,events:data.events,summary:data.summary};
-  var state=data.state;state.lastAttemptAt=iso();state.lastBatchId=batchId;await setState(state);
+  var state=data.state;state.lastAttemptAt=iso();state.lastBatchId=batchId;state.pendingCount=data.events.length;await setState(state);
   try{
     var r=await post(payload);state.ackedSequence=Math.max(Number(state.ackedSequence)||0,Number(data.summary.lastSequence)||0);alarmScheduled=false;pendingEvents=0;state.pendingCount=0;state.lastSuccessAt=iso();state.consecutiveFailures=0;state.lastError=null;await setState(state);return{ok:true,batchId:batchId,accepted:r.accepted!==false,sequence:state.ackedSequence,summary:data.summary};
-  }catch(error){state.consecutiveFailures=Number(state.consecutiveFailures||0)+1;state.lastError=String(error);await setState(state);return{ok:false,batchId:batchId,error:String(error),summary:data.summary}}
+  }catch(error){
+    state.consecutiveFailures=Number(state.consecutiveFailures||0)+1;state.lastError=String(error);await setState(state);
+    var retryMs=Math.min(300000,15000*Math.pow(2,Math.min(4,state.consecutiveFailures-1)));
+    try{chrome.alarms.create("signal-observation-sync",{when:Date.now()+retryMs})}catch(_){}
+    return{ok:false,batchId:batchId,error:String(error),retryMs:retryMs,summary:data.summary}
+  }
+}
+function flush(reason){
+  var run=flushQueue.then(function(){return flushInternal(reason)},function(){return flushInternal(reason)});
+  flushQueue=run.catch(function(){});
+  return run;
 }
 function noteEvent(event){
   mark();
   var critical=event&&(event.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(String(event.action||"")));
-  if(critical){flush("critical").catch(function(){}) ;return}
+  if(critical){flush("critical").catch(function(){});return}
+  if(pendingEvents>=EVENT_THRESHOLD){flush("event-threshold").catch(function(){});return}
   if(!timer)timer=setTimeout(function(){timer=null;flush("event-window").catch(function(){})},30000);
 }
 function start(){try{chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5,periodInMinutes:2})}catch(_){}}
