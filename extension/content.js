@@ -29,16 +29,26 @@
     overlayCompact: true,
     opiRatePerMinute: 0.20,
     vriRatePerMinute: 0.25,
-    usdMxnRate: null
+    usdMxnRate: null,
+    exchangeRateDate: null,
+    exchangeRateUpdatedAt: null,
+    earningsDisplayCurrency: "MXN"
   };
   var state = {};
   var platformMirror = {};
+  var activeCallEarnings = {};
   var overlayHost = null;
   var overlayRoot = null;
   var overlayTimer = null;
   var overlayLifecycleActive = false;
   var overlayLifecycleCallId = null;
   var overlayRatingStopEmitted = false;
+  var overlayPeriod = "today";
+  var overlayCurrency = "MXN";
+  var overlaySyncPending = {};
+  var overlayLastLocalDay = null;
+  var overlayLastLocalMonth = null;
+  var overlayFxRefreshRequestedDate = null;
   var callDisplayStartedAt = null;
   var observer = null;
   var telemetryStarted = false;
@@ -62,6 +72,7 @@
   var lastMirrorSignature = "";
   var lastPortalStructureSignature = "";
   var lastCallEndMeasurement = null;
+  var ratingConfirmationTimer = null;
   var answerWatchdog = null;
   var existingAnswerLease = window[ANSWER_LEASE_MARKER];
   var answerFlow = existingAnswerLease && existingAnswerLease.flowId && existingAnswerLease.clickAt && (Date.now() - Date.parse(existingAnswerLease.clickAt) < 30000)
@@ -269,6 +280,64 @@
       urlPattern: /^\/call\/[^/?#]+\/?$/.test(location.pathname)
     };
   }
+  function emitRatingConfirmed(callId, previousCallId, endMeasurement) {
+    if (!callId || !isRatingRoute() || !ratingStarsVisible()) return false;
+    emit("CALL_ROUTE_ENDED", {
+      callId: callId,
+      platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
+      reason: "rating-stars-confirmed",
+      endSignal: "rating-stars-confirmed"
+    });
+    emit("RATING_ROUTE_ENTERED", {
+      callId: callId,
+      previousCallId: previousCallId || null,
+      platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
+      confirmation: "rating-stars-visible"
+    });
+    return true;
+  }
+  function scheduleRatingCompletionConfirmation(callId, previousCallId, endMeasurement) {
+    if (ratingConfirmationTimer) clearTimeout(ratingConfirmationTimer);
+    var startedAt = Date.now();
+    function check() {
+      if (!isRatingRoute() || currentCallId()) {
+        emit("CALL_ROUTE_ENDED", {
+          callId: callId,
+          platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
+          reason: "rating-route-left-before-confirmation",
+          endSignal: "route-fallback-no-rating"
+        });
+        emit("RATING_ROUTE_FAILED", {
+          callId: callId,
+          previousCallId: previousCallId || null,
+          confirmation: "rating-route-left-before-stars"
+        }, "warn");
+        ratingConfirmationTimer = null;
+        return;
+      }
+      if (emitRatingConfirmed(callId, previousCallId, endMeasurement)) {
+        ratingConfirmationTimer = null;
+        return;
+      }
+      if (Date.now() - startedAt >= 3000) {
+        emit("CALL_ROUTE_ENDED", {
+          callId: callId,
+          platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
+          reason: "rating-stars-timeout",
+          endSignal: "route-fallback-no-rating"
+        });
+        emit("RATING_ROUTE_FAILED", {
+          callId: callId,
+          previousCallId: previousCallId || null,
+          confirmation: "rating-stars-not-observed"
+        }, "warn");
+        ratingConfirmationTimer = null;
+        return;
+      }
+      ratingConfirmationTimer = setTimeout(check, 150);
+    }
+    check();
+  }
   function trackRoute(reason) {
     var next = location.pathname;
     if (next === route && reason !== "start") return;
@@ -284,20 +353,23 @@
     emitAutoAnswerReadiness("route:" + reason);
     if (leavingCall) {
       if (!Number.isFinite(endMeasurement)) endMeasurement = ratingMatch ? null : parsePlatformSeconds();
-      emit("CALL_ROUTE_ENDED", {
+      if (ratingMatch) scheduleRatingCompletionConfirmation(previousCallId, previousCallId, endMeasurement);
+      else emit("CALL_ROUTE_ENDED", {
         callId: previousCallId,
         platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
-        reason: ratingMatch ? "rating-route" : reason,
-        endSignal: ratingMatch ? "rating-stars-route" : "route-fallback"
+        reason: reason,
+        endSignal: "route-fallback"
       });
     }
     if (ratingMatch && (!previousCallId || previousCallId === ratingMatch[1])) {
-      emit("RATING_ROUTE_ENTERED", {
-        callId: ratingMatch[1],
-        previousCallId: previousCallId || null,
-        platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
-        confirmation: "rating-stars-route"
-      });
+      if (!previousCallId) {
+        emit("RATING_ROUTE_ENTERED", {
+          callId: ratingMatch[1],
+          previousCallId: null,
+          platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
+          confirmation: "rating-route-direct"
+        });
+      }
     }
     if (callRouteId && callRouteId !== previousCallId) {
       callDisplayStartedAt = Date.now();
@@ -767,23 +839,252 @@
       style: "currency", currency: currency, minimumFractionDigits: digits, maximumFractionDigits: digits
     }).format(Number(value) || 0);
   }
-  function earningsNow() {
-    var today = localDay();
+  function overlayCallInPeriod(call, period) {
+    var date = new Date(call.startedAt || call.endedAt);
+    var now = new Date();
+    if (!Number.isFinite(date.getTime())) return false;
+    if (period === "today") return localDay(date) === localDay(now);
+    if (period === "currentMonth") return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+    if (period === "year") return date.getFullYear() === now.getFullYear();
+    var previous = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return date.getFullYear() === previous.getFullYear() && date.getMonth() === previous.getMonth();
+  }
+  function earningsNow(period) {
+    period = /^(today|currentMonth|previousMonth|year)$/.test(String(period || "")) ? period : "today";
     var calls = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) {
-      return localDay(call.startedAt || call.endedAt) === today;
+      return overlayCallInPeriod(call, period);
     }) : [];
     var completedUsd = calls.reduce(function (sum, call) { return sum + Number(call.estimatedRevenue || 0); }, 0);
-    var liveSeconds = state.callStartedAt ? Math.max(0, (Date.now() - Date.parse(state.callStartedAt)) / 1000) : (callDisplayStartedAt ? Math.max(0, (Date.now() - callDisplayStartedAt) / 1000) : 0);
+    var activePeriod = period !== "previousMonth";
+    var liveSeconds = activePeriod
+      ? (state.callStartedAt ? Math.max(0, (Date.now() - Date.parse(state.callStartedAt)) / 1000)
+        : (callDisplayStartedAt ? Math.max(0, (Date.now() - callDisplayStartedAt) / 1000) : 0))
+      : 0;
     var modality = state.callModality || "OPI";
     var rate = modality === "VRI" ? Number(config.vriRatePerMinute || 0.25) : Number(config.opiRatePerMinute || 0.20);
     var liveUsd = liveSeconds / 60 * rate;
-    var fx = Number(config.usdMxnRate || 0);
-    var official = platformMirror.statistics && platformMirror.statistics.summary || {};
+    if (period === "year") {
+      var yearChart = platformMirror.earningsCharts && platformMirror.earningsCharts.year;
+      var yearItems = Array.isArray(yearChart && yearChart.items) ? yearChart.items : [];
+      var now = new Date(), currentMonthKey = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+      var yearUsd = yearItems.reduce(function (sum, item) {
+        var value = Number(item.earnedUsd) || 0;
+        if (item.key === currentMonthKey && state.callId && activeCallEarnings && activeCallEarnings.callId === state.callId &&
+            activeCallEarnings.baselines && activeCallEarnings.baselines.currentMonth) {
+          value = Number(activeCallEarnings.baselines.currentMonth.earnedUsd) || 0;
+          value += liveUsd;
+        }
+        return sum + value;
+      }, 0);
+      var yearCalls = yearItems.reduce(function (sum, item) { return sum + Number(item.callCount || 0); }, 0);
+      return {
+        period: period, calls: yearCalls || calls.length, modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd,
+        totalUsd: yearChart && yearChart.complete ? yearUsd : completedUsd + liveUsd,
+        officialUsd: yearChart && yearChart.complete ? yearUsd : null,
+        fx: Number(config.usdMxnRate || 0), fxDate: config.exchangeRateDate || null, hasOfficial: !!(yearChart && yearChart.complete)
+      };
+    }
+    var entry = period === "today"
+      ? (platformMirror.earnings && platformMirror.earnings.today) || platformMirror.statistics
+      : platformMirror.earnings && platformMirror.earnings[period];
+    var official = entry && entry.summary || {};
     var officialUsd = Number(official.earnedUsd);
-    if (!(officialUsd > 0)) officialUsd = parseOfficialUsd(official.earned);
-    var hasOfficial = Number.isFinite(officialUsd) && officialUsd >= 0 && official.earned != null;
+    if (!(officialUsd >= 0)) officialUsd = parseOfficialUsd(official.earned);
+    var callBaseline = entry && entry.callBaseline;
+    if (activePeriod && state.callId && activeCallEarnings && activeCallEarnings.callId === state.callId &&
+        activeCallEarnings.baselines && activeCallEarnings.baselines[period]) {
+      callBaseline = activeCallEarnings.baselines[period];
+    }
+    if (activePeriod && state.callId && callBaseline && callBaseline.callId === state.callId) {
+      officialUsd = Number(callBaseline.earnedUsd);
+      if (!(officialUsd >= 0)) officialUsd = parseOfficialUsd(callBaseline.earned);
+    }
+    var hasOfficial = Number.isFinite(officialUsd) && officialUsd >= 0 && (official.earned != null || (callBaseline && callBaseline.callId === state.callId));
     var baseUsd = hasOfficial ? officialUsd : completedUsd;
-    return { calls: calls.length, modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd, totalUsd: baseUsd + (hasOfficial ? 0 : liveUsd), officialUsd: hasOfficial ? officialUsd : null, fx: fx };
+    var totalUsd = baseUsd + (activePeriod ? liveUsd : 0);
+    var officialCalls = Number(official.callCount);
+    return {
+      period: period, calls: Number.isFinite(officialCalls) && officialCalls >= 0 ? officialCalls : calls.length,
+      modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd,
+      totalUsd: totalUsd, officialUsd: hasOfficial ? officialUsd : null, fx: Number(config.usdMxnRate || 0),
+      fxDate: config.exchangeRateDate || null, hasOfficial: hasOfficial
+    };
+  }
+  function requestOverlayEarnings(period) {
+    period = /^(today|currentMonth|previousMonth)$/.test(String(period || "")) ? period : "today";
+    if (overlaySyncPending[period]) return;
+    overlaySyncPending[period] = true;
+    try {
+      chrome.runtime.sendMessage({ type: "EFFECTIF_EARNINGS_RANGE", period: period }, function (response) {
+        overlaySyncPending[period] = false;
+        if (!response || !response.ok) {
+          emit("EARNINGS_OVERLAY_SYNC_ERROR", { period: period, error: String(response && response.error || "sin respuesta") }, "warn");
+        }
+        renderOverlay();
+      });
+    } catch (error) {
+      overlaySyncPending[period] = false;
+      emit("EARNINGS_OVERLAY_SYNC_ERROR", { period: period, error: String(error) }, "warn");
+    }
+  }
+  function requestOverlayChart(period) {
+    period = period === "year" ? "year" : "currentMonth";
+    var key = "chart:" + period;
+    if (overlaySyncPending[key]) return;
+    overlaySyncPending[key] = true;
+    try {
+      chrome.runtime.sendMessage({ type: "EFFECTIF_EARNINGS_CHART", period: period }, function (response) {
+        overlaySyncPending[key] = false;
+        if (!response || !response.ok) {
+          emit("EARNINGS_OVERLAY_CHART_SYNC_ERROR", { period: period, error: String(response && response.error || "sin respuesta") }, "warn");
+        }
+        renderOverlay();
+      });
+    } catch (error) {
+      overlaySyncPending[key] = false;
+      emit("EARNINGS_OVERLAY_CHART_SYNC_ERROR", { period: period, error: String(error) }, "warn");
+    }
+  }
+  function callStatsForPeriod(period) {
+    function inPeriod(value) {
+      return overlayCallInPeriod({ startedAt: value }, period);
+    }
+    var completed = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) { return inPeriod(call.startedAt || call.endedAt); }).length : 0;
+    var unfinished = Array.isArray(state.unfinishedCalls) ? state.unfinishedCalls.filter(function (call) { return inPeriod(call.startedAt || call.endedAt); }).length : 0;
+    var missed = Array.isArray(state.missedCallRecords) ? state.missedCallRecords.filter(function (call) { return inPeriod(call.detectedAt || call.classifiedAt); }).length : 0;
+    var active = state.callId && state.callStartedAt && inPeriod(state.callStartedAt) ? 1 : 0;
+    return { completed: completed, unfinished: unfinished, missed: missed, active: active, total: completed + unfinished + missed + active };
+  }
+  function escapeXml(value) {
+    return String(value == null ? "" : value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");
+  }
+  function renderCurrentMonthChart(container) {
+    var chart = platformMirror.earningsCharts && platformMirror.earningsCharts.currentMonth;
+    var items = Array.isArray(chart && chart.items) ? chart.items.slice() : [];
+    if (!chart || !chart.complete || !items.length) {
+      container.innerHTML = '<div class="chart-empty">Histórico diario oficial: cargando…</div>';
+      return;
+    }
+    var today = localDay();
+    var todayInfo = earningsNow("today");
+    var liveMinutes = todayInfo.liveSeconds / 60;
+    var baselineToday = activeCallEarnings && activeCallEarnings.callId === state.callId && activeCallEarnings.baselines && activeCallEarnings.baselines.today;
+    items = items.map(function (item) {
+      if (item.key !== today) return item;
+      var todayItem = Object.assign({}, item, { earnedUsd: todayInfo.totalUsd });
+      if (state.callId && state.callStartedAt) todayItem.minutes = (baselineToday ? Number(baselineToday.minutes || 0) : Number(item.minutes || 0)) + liveMinutes;
+      return todayItem;
+    });
+    var chartCurrency = overlayCurrency === "MXN" && config.usdMxnRate > 0 && config.exchangeRateDate === localDay() ? "MXN" : "USD";
+    var chartFx = chartCurrency === "MXN" ? Number(config.usdMxnRate) : 1;
+    var max = Math.max(0.0001, items.reduce(function (m, item) { return Math.max(m, (Number(item.earnedUsd) || 0) * chartFx); }, 0));
+    var width = 250, height = 92, left = 8, top = 7, bottom = 18, plotH = height - top - bottom;
+    var gap = 2, barWidth = Math.max(3, (width - left * 2 - gap * (items.length - 1)) / items.length);
+    var bars = items.map(function (item, index) {
+      var rawValue = Math.max(0, Number(item.earnedUsd) || 0), value = rawValue * chartFx, barH = value / max * plotH;
+      var x = left + index * (barWidth + gap), y = top + plotH - barH;
+      var title = item.key + " · " + money(value, chartCurrency, 4) + " · " + Number(item.minutes || 0).toFixed(1) + " min";
+      return '<rect class="day-bar" x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" width="' + Math.max(1, barWidth).toFixed(2) + '" height="' + Math.max(0.5, barH).toFixed(2) + '" rx="1"><title>' + escapeXml(title) + '</title></rect>';
+    }).join("");
+    var points = items.map(function (item, index) {
+      var value = Math.max(0, Number(item.earnedUsd) || 0) * chartFx, x = left + index * (barWidth + gap) + barWidth / 2, y = top + plotH - value / max * plotH;
+      return x.toFixed(2) + "," + y.toFixed(2);
+    }).join(" ");
+    var labels = items.map(function (item, index) {
+      var day = Number(item.label), show = day === 1 || day % 5 === 0 || index === items.length - 1;
+      if (!show) return "";
+      var x = left + index * (barWidth + gap) + barWidth / 2;
+      return '<text x="' + x.toFixed(2) + '" y="88" text-anchor="middle">' + escapeXml(item.label) + '</text>';
+    }).join("");
+    container.innerHTML = '<div class="chart-title">Este mes · ingreso por día</div>' +
+      '<svg class="chart-svg current-chart" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="Ingreso por día del mes actual">' +      '<line class="axis" x1="8" y1="78" x2="242" y2="78"></line>' + bars + '<polyline class="trend" points="' + points + '"></polyline>' + labels + '</svg>' +
+      '<div class="chart-note">Barras = ingreso diario · línea = tendencia · Hoy incluye la llamada viva</div>';
+  }
+  function renderYearChart(container) {
+    var chart = platformMirror.earningsCharts && platformMirror.earningsCharts.year;
+    var items = Array.isArray(chart && chart.items) ? chart.items.slice() : [];
+    if (!chart || !chart.complete || items.length !== 12) {
+      container.innerHTML = '<div class="chart-empty">Histórico anual oficial: cargando…</div>';
+      return;
+    }
+    var now = new Date(), currentMonthKey = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+    var baselineMonth = activeCallEarnings && activeCallEarnings.callId === state.callId && activeCallEarnings.baselines && activeCallEarnings.baselines.currentMonth;
+    items = items.map(function (item) {
+      var next = Object.assign({}, item);
+      if (item.key === currentMonthKey && state.callId && state.callStartedAt) {
+        next.earnedUsd = Number(baselineMonth && baselineMonth.earnedUsd || 0) + earningsNow("currentMonth").liveUsd;
+        next.minutes = Number(baselineMonth && baselineMonth.minutes || item.minutes || 0) + earningsNow("currentMonth").liveSeconds / 60;
+      }
+      return next;
+    });
+    var currency = overlayCurrency === "MXN" && config.usdMxnRate > 0 && config.exchangeRateDate === localDay() ? "MXN" : "USD";
+    var fx = currency === "MXN" ? Number(config.usdMxnRate) : 1;
+    var maxMoney = Math.max(0.0001, items.reduce(function (m, item) { return Math.max(m, (Number(item.earnedUsd) || 0) * fx); }, 0));
+    var maxMinutes = Math.max(0.0001, items.reduce(function (m, item) { return Math.max(m, Number(item.minutes) || 0); }, 0));
+    var width = 250, height = 112, left = 16, right = 6, incomeTop = 8, rowH = 40, minuteTop = 62;
+    var groupW = (width - left - right) / 12, barW = Math.max(4, groupW * 0.3);
+    var incomeBars = items.map(function (item, index) {
+      var moneyValue = (Number(item.earnedUsd) || 0) * fx, h = moneyValue / maxMoney * rowH, x = left + index * groupW + groupW * 0.17, y = incomeTop + rowH - h;
+      return '<rect class="income-bar" x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" width="' + barW.toFixed(2) + '" height="' + Math.max(0.5, h).toFixed(2) + '" rx="1"><title>' + escapeXml(item.label + " · " + money(moneyValue, currency, 2)) + '</title></rect>';
+    }).join("");
+    var minuteBars = items.map(function (item, index) {
+      var minutes = Number(item.minutes) || 0, h = minutes / maxMinutes * rowH, x = left + index * groupW + groupW * 0.53, y = minuteTop + rowH - h;
+      return '<rect class="minute-bar" x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" width="' + barW.toFixed(2) + '" height="' + Math.max(0.5, h).toFixed(2) + '" rx="1"><title>' + escapeXml(item.label + " · " + minutes.toFixed(1) + " min") + '</title></rect>';
+    }).join("");
+    var labels = items.map(function (item, index) { var x = left + index * groupW + groupW / 2; return '<text x="' + x.toFixed(2) + '" y="109" text-anchor="middle">' + escapeXml(item.label) + '</text>'; }).join("");
+    container.innerHTML = '<div class="chart-title">' + now.getFullYear() + ' · ingreso y minutos</div>' +
+      '<div class="chart-legend"><span><i class="income-key"></i>' + escapeXml(currency) + '</span><span><i class="minute-key"></i>minutos</span></div>' +
+      '<svg class="chart-svg year-chart" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="Ingresos y minutos trabajados por mes">' +
+      '<line class="axis" x1="16" y1="48" x2="244" y2="48"></line><line class="axis" x1="16" y1="102" x2="244" y2="102"></line>' + incomeBars + minuteBars + labels + '</svg>' +
+      '<div class="chart-note">Barras dobles por mes · escalas independientes para dinero y minutos</div>';
+  }
+  function renderOverlayChart(container) {
+    if (overlayPeriod === "currentMonth") renderCurrentMonthChart(container);
+    else if (overlayPeriod === "year") renderYearChart(container);
+    else container.innerHTML = overlayPeriod === "previousMonth" ? '<div class="chart-empty">Mes pasado: total oficial del rango cerrado · 1.º al último día del mes.</div>' : '';
+  }
+  function requestOverlayExchangeRate(reason) {
+    var today = localDay();
+    if (overlayFxRefreshRequestedDate === today || overlaySyncPending.fx) return;
+    overlayFxRefreshRequestedDate = today;
+    overlaySyncPending.fx = true;
+    try {
+      chrome.runtime.sendMessage({ type: "EFFECTIF_REFRESH_EXCHANGE_RATE", reason: reason || "overlay" }, function (response) {
+        overlaySyncPending.fx = false;
+        if (!response || !response.ok) {
+          emit("EARNINGS_OVERLAY_FX_SYNC_ERROR", { error: String(response && response.error || "sin respuesta"), reason: reason || "overlay" }, "warn");
+        }
+        renderOverlay();
+      });
+    } catch (error) {
+      overlaySyncPending.fx = false;
+      emit("EARNINGS_OVERLAY_FX_SYNC_ERROR", { error: String(error), reason: reason || "overlay" }, "warn");
+    }
+  }
+  function reconcileOverlayDateRollover() {
+    var today = localDay();
+    var month = today.slice(0, 7);
+    if (overlayLastLocalDay === null) {
+      overlayLastLocalDay = today;
+      overlayLastLocalMonth = month;
+      if (config.exchangeRateDate !== today) requestOverlayExchangeRate("overlay-start-stale-fx");
+      return;
+    }
+    if (today === overlayLastLocalDay) {
+      if (config.exchangeRateDate !== today) requestOverlayExchangeRate("overlay-stale-fx");
+      return;
+    }
+    var monthChanged = overlayLastLocalMonth !== month;
+    overlayLastLocalDay = today;
+    overlayLastLocalMonth = month;
+    overlayFxRefreshRequestedDate = null;
+    requestOverlayExchangeRate("local-date-rollover");
+    requestOverlayEarnings("today");
+    if (overlayPeriod === "currentMonth") requestOverlayEarnings("currentMonth");
+    else if (overlayPeriod === "previousMonth") requestOverlayEarnings("previousMonth");
+    else if (overlayPeriod === "year") requestOverlayChart("year");
+    if (monthChanged && overlayPeriod === "currentMonth") requestOverlayChart("currentMonth");
+    emit("EARNINGS_OVERLAY_DATE_ROLLOVER", { localDay: today, monthChanged: monthChanged, callId: overlayLifecycleCallId });
   }
   function stopOverlay(reason) {
     if (overlayTimer) clearInterval(overlayTimer);
@@ -829,6 +1130,8 @@
     overlayLifecycleActive = true;
     overlayLifecycleCallId = callId;
     overlayRatingStopEmitted = false;
+    overlayPeriod = "today";
+    overlayCurrency = /^(MXN|USD)$/.test(String(config.earningsDisplayCurrency || "")) ? config.earningsDisplayCurrency : "MXN";
     emit("EARNINGS_OVERLAY_STARTED", { callId: callId, reason: reason || "call-start" });
     renderOverlay();
   }
@@ -842,7 +1145,7 @@
     overlayHost.id = "signal-interpreter-earnings-overlay";
     overlayHost.style.cssText = "all:initial;position:fixed;z-index:2147483647;top:12px;right:12px;pointer-events:auto";
     overlayRoot = overlayHost.attachShadow({ mode: "closed" });
-    overlayRoot.innerHTML = '<style>:host{all:initial}.card{width:210px;box-sizing:border-box;padding:10px 12px;border:1px solid rgba(111,211,255,.28);border-radius:13px;background:rgba(5,18,34,.90);box-shadow:0 8px 30px rgba(0,0,0,.24);backdrop-filter:blur(12px);color:#dff7ff;font:12px/1.25 Arial,sans-serif;user-select:none}.top{display:flex;align-items:center;justify-content:space-between;gap:8px}.brand{color:#75d9ff;font-size:9px;font-weight:700;letter-spacing:.14em}.actions{display:flex;gap:4px}button{border:0;border-radius:6px;background:rgba(255,255,255,.08);color:#9db2c6;width:22px;height:22px;cursor:pointer}button:hover{background:rgba(255,255,255,.16);color:white}.amount{margin-top:5px;color:white;font-size:21px;font-weight:750;font-variant-numeric:tabular-nums}.detail{display:flex;justify-content:space-between;gap:8px;margin-top:5px;color:#8fa6bb;font-size:10px}.live{color:#79e4a6;font-variant-numeric:tabular-nums}.fx{margin-top:6px;color:#647f98;font-size:9px}.compact .detail,.compact .fx{display:none}.compact{width:174px;padding:8px 10px}.compact .amount{font-size:17px;margin-top:2px}</style><section class="card" aria-live="polite"><div class="top"><span class="brand">SIGNAL INTERPRETER · INGRESO</span><span class="actions"><button id="compact" title="Compactar o ampliar">↕</button><button id="close" title="Ocultar overlay">×</button></span></div><div class="amount" id="amount">MX$0.0000</div><div class="detail"><span id="summary">Sin llamada</span><span class="live" id="live">+MX$0.0000</span></div><div class="fx" id="fx">Obteniendo tipo de cambio…</div></section>';
+    overlayRoot.innerHTML = '<style>:host{all:initial}.card{width:296px;max-width:calc(100vw - 24px);box-sizing:border-box;padding:10px 12px;border:1px solid rgba(111,211,255,.28);border-radius:13px;background:rgba(5,18,34,.92);box-shadow:0 8px 30px rgba(0,0,0,.24);backdrop-filter:blur(12px);color:#dff7ff;font:12px/1.25 Arial,sans-serif;user-select:none}.top{display:flex;align-items:center;justify-content:space-between;gap:8px}.brand{color:#75d9ff;font-size:9px;font-weight:700;letter-spacing:.14em}.actions,.periods,.currencies{display:flex;gap:4px}.toolbar{display:flex;gap:4px;margin-top:8px}.toolbar button{flex:1}.currencies{margin-top:4px}.currencies button{flex:1}button{border:0;border-radius:6px;background:rgba(255,255,255,.08);color:#9db2c6;min-width:0;height:23px;padding:0 7px;font:700 9px/1 Arial,sans-serif;cursor:pointer}button:hover{background:rgba(255,255,255,.16);color:white}button.active{background:rgba(111,211,255,.2);color:#dff7ff;box-shadow:inset 0 0 0 1px rgba(111,211,255,.35)}.top .actions button{width:22px;padding:0}.amount{margin-top:7px;color:white;font-size:22px;font-weight:750;font-variant-numeric:tabular-nums}.detail{display:flex;justify-content:space-between;gap:8px;margin-top:5px;color:#8fa6bb;font-size:10px}.live{color:#79e4a6;font-variant-numeric:tabular-nums}.fx{margin-top:6px;color:#647f98;font-size:9px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:8px}.stat{min-width:0;padding:5px 4px;border-radius:7px;background:rgba(255,255,255,.045);text-align:center}.stat b{display:block;color:#fff;font-size:13px;font-variant-numeric:tabular-nums}.stat span{display:block;margin-top:2px;color:#6f879e;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chart-block{margin-top:8px;padding-top:7px;border-top:1px solid rgba(111,211,255,.12)}.chart-title{color:#a9c2d6;font-size:9px;font-weight:700;margin-bottom:3px}.chart-svg{width:100%;height:auto;display:block}.chart-svg text{fill:#6f879e;font-size:7px;font-family:Arial,sans-serif}.axis{stroke:rgba(159,190,214,.18);stroke-width:1}.day-bar{fill:#4db6df;opacity:.42}.trend{fill:none;stroke:#8de8ff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.income-bar{fill:#7fd7ff;opacity:.72}.minute-bar{fill:#79e4a6;opacity:.68}.chart-empty{padding:10px 4px;color:#718ba3;font-size:9px}.chart-note{margin-top:3px;color:#5c7389;font-size:8px}.chart-legend{display:flex;gap:10px;margin:2px 0 4px;color:#7892a8;font-size:8px}.chart-legend i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:3px;vertical-align:-1px}.income-key{background:#7fd7ff}.minute-key{background:#79e4a6}.compact .detail,.compact .fx,.compact .stats,.compact .chart-block{display:none}.compact{width:236px;padding:8px 10px}.compact .amount{font-size:18px;margin-top:5px}</style><section class="card" aria-live="polite"><div class="top"><span class="brand">SIGNAL INTERPRETER · INGRESO</span><span class="actions"><button id="compact" title="Compactar o ampliar">↕</button><button id="close" title="Ocultar overlay">×</button></span></div><div class="toolbar periods"><button data-period="today">Hoy</button><button data-period="currentMonth">Este mes</button><button data-period="previousMonth">Mes pasado</button><button data-period="year">Año</button></div><div class="currencies"><button data-currency="MXN">MXN</button><button data-currency="USD">USD</button></div><div class="amount" id="amount">MX$—</div><div class="detail"><span id="summary">Hoy · Sin llamada</span><span class="live" id="live">+MX$0.0000</span></div><div class="stats"><div class="stat"><b id="completed">0</b><span>Completadas</span></div><div class="stat"><b id="unfinished">0</b><span>No terminadas</span></div><div class="stat"><b id="missed">0</b><span>Perdidas</span></div><div class="stat"><b id="totalCalls">0</b><span>Total</span></div></div><div class="chart-block" id="chart"></div><div class="fx" id="fx">Actualizando tasa de hoy…</div></section>';
     document.documentElement.appendChild(overlayHost);
     integrity.extensionDomWrites += 1;
     overlayRoot.getElementById("close").addEventListener("click", function () {
@@ -857,31 +1160,82 @@
         chrome.storage.local.set({ effectifConfig: current });
       });
     });
+    overlayRoot.querySelectorAll("[data-period]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        overlayPeriod = button.getAttribute("data-period") || "today";
+        emit("EARNINGS_OVERLAY_PERIOD_SELECTED", { period: overlayPeriod, callId: overlayLifecycleCallId });
+        renderOverlay();
+        if (overlayPeriod === "currentMonth") {
+          requestOverlayEarnings("currentMonth");
+          requestOverlayChart("currentMonth");
+        } else if (overlayPeriod === "year") {
+          requestOverlayChart("year");
+        } else {
+          requestOverlayEarnings(overlayPeriod);
+        }
+      });
+    });
+    overlayRoot.querySelectorAll("[data-currency]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        overlayCurrency = /^(MXN|USD)$/.test(button.getAttribute("data-currency") || "") ? button.getAttribute("data-currency") : "MXN";
+        config.earningsDisplayCurrency = overlayCurrency;
+        chrome.storage.local.set({ effectifConfig: config });
+        emit("EARNINGS_OVERLAY_CURRENCY_SELECTED", { currency: overlayCurrency, callId: overlayLifecycleCallId });
+        renderOverlay();
+      });
+    });
     overlayTimer = setInterval(renderOverlay, 100);
   }
   function renderOverlay() {
-    if (!overlayLifecycleActive) {
-      if (currentCallId()) activateOverlayForCall(currentCallId(), "call-detected");
-      else return;
+    var routeCallId = currentCallId();
+    if (!routeCallId) {
+      if (overlayLifecycleActive) stopOverlay(isRatingRoute() ? "rating-route" : "route-not-call");
+      return;
     }
+    if (!overlayLifecycleActive || overlayLifecycleCallId !== routeCallId) {
+      activateOverlayForCall(routeCallId, "call-detected");
+    }
+    reconcileOverlayDateRollover();
     if (ratingStarsVisible()) {
       stopOverlay("rating-stars");
       return;
     }
     ensureOverlay();
     if (!overlayRoot) return;
-    var info = earningsNow();
-    var mxnAvailable = info.fx > 0;
-    var total = mxnAvailable ? info.totalUsd * info.fx : info.totalUsd;
-    var live = mxnAvailable ? info.liveUsd * info.fx : info.liveUsd;
-    var currency = mxnAvailable ? "MXN" : "USD";
-    overlayRoot.querySelector(".card").classList.toggle("compact", !!config.overlayCompact);
-    overlayRoot.getElementById("amount").textContent = money(total, currency, 4);
-    overlayRoot.getElementById("live").textContent = info.officialUsd !== null ? "En llamada +" + money(live, currency, 4) : "+" + money(live, currency, 4);
-    overlayRoot.getElementById("summary").textContent = state.callStartedAt ? info.modality + " · " + (info.liveSeconds / 60).toFixed(2) + " min" : info.calls + " llamadas hoy";
-    overlayRoot.getElementById("fx").textContent = mxnAvailable
-      ? "USD/MXN " + info.fx.toFixed(4) + " · " + (config.exchangeRateDate || "último disponible")
-      : "Sin tasa MXN: mostrando USD";
+    var info = earningsNow(overlayPeriod);
+    var fxFresh = info.fx > 0 && info.fxDate === localDay();
+    var currency = overlayCurrency === "USD" ? "USD" : "MXN";
+    var convertedTotal = currency === "MXN" ? (fxFresh ? info.totalUsd * info.fx : null) : info.totalUsd;
+    var convertedLive = currency === "MXN" ? (fxFresh ? info.liveUsd * info.fx : null) : info.liveUsd;
+    var totalText = convertedTotal == null ? "MX$—" : money(convertedTotal, "MXN", 4);
+    var liveText = convertedLive == null ? "+MX$—" : "+" + money(convertedLive, currency, 4);
+    if (currency === "USD") totalText = money(info.totalUsd, "USD", 4);
+    if (overlayPeriod === "previousMonth") liveText = "Sin llamada";
+    var periodLabel = overlayPeriod === "today" ? "Hoy" : overlayPeriod === "currentMonth" ? "Este mes" : overlayPeriod === "previousMonth" ? "Mes pasado" : "Año";
+    var callStats = callStatsForPeriod(overlayPeriod);
+    var expandedHistorical = overlayPeriod !== "today";
+    overlayRoot.querySelector(".card").classList.toggle("compact", !!config.overlayCompact && !expandedHistorical);
+    overlayRoot.querySelectorAll("[data-period]").forEach(function (button) {
+      button.classList.toggle("active", button.getAttribute("data-period") === overlayPeriod);
+    });
+    overlayRoot.querySelectorAll("[data-currency]").forEach(function (button) {
+      button.classList.toggle("active", button.getAttribute("data-currency") === currency);
+    });
+    overlayRoot.getElementById("amount").textContent = totalText;
+    overlayRoot.getElementById("live").textContent = state.callStartedAt && overlayPeriod !== "previousMonth"
+      ? "En llamada " + liveText
+      : liveText;
+    overlayRoot.getElementById("summary").textContent = state.callStartedAt && overlayPeriod !== "previousMonth"
+      ? periodLabel + " · " + callStats.total + " llamadas · " + info.modality + " · " + (info.liveSeconds / 60).toFixed(2) + " min · " + (callStats.active ? "1 en curso" : "")
+      : periodLabel + " · " + callStats.total + " llamadas";
+    overlayRoot.getElementById("completed").textContent = String(callStats.completed);
+    overlayRoot.getElementById("unfinished").textContent = String(callStats.unfinished);
+    overlayRoot.getElementById("missed").textContent = String(callStats.missed);
+    overlayRoot.getElementById("totalCalls").textContent = String(callStats.total);
+    renderOverlayChart(overlayRoot.getElementById("chart"));
+    overlayRoot.getElementById("fx").textContent = fxFresh
+      ? "USD/MXN " + info.fx.toFixed(4) + " · tasa de hoy " + info.fxDate
+      : "Tasa USD/MXN de hoy no confirmada todavía";
   }
   function start() {
     if (observer || !isTarget() || (!config.autoAnswerEnabled && !config.observationEnabled)) return;
@@ -945,14 +1299,16 @@
   }
 
 
-  chrome.storage.local.get(["effectifConfig", "effectifState", "effectifPlatformMirror"], function (stored) {
+  chrome.storage.local.get(["effectifConfig", "effectifState", "effectifPlatformMirror", "effectifCallEarnings"], function (stored) {
     state = stored.effectifState || {}; platformMirror = stored.effectifPlatformMirror || {};
+    activeCallEarnings = stored.effectifCallEarnings || {};
     apply(stored.effectifConfig);
   });
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local") return;
     if (changes.effectifState) { state = changes.effectifState.newValue || {}; renderOverlay(); }
     if (changes.effectifPlatformMirror) { platformMirror = changes.effectifPlatformMirror.newValue || {}; renderOverlay(); }
+    if (changes.effectifCallEarnings) { activeCallEarnings = changes.effectifCallEarnings.newValue || {}; renderOverlay(); }
     if (changes.effectifConfig) apply(changes.effectifConfig.newValue);
   });
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
