@@ -30,3 +30,13 @@ No es necesario ejecutar ningún proceso de bridge local.
 ## Pruebas
 
 La prueba de transcripción está en tools/groq-transcriber-tests.mjs y valida endpoint, modelo, parámetros de Groq, segmentos y redacción de credenciales.
+## Persistencia automática de observabilidad
+
+La observabilidad operativa de Signal Interpreter tiene un contrato de persistencia explícito:
+
+- La extensión conserva los eventos en IndexedDB y dispara el envío por eventos críticos, umbral, ventana y alarma periódica.
+- Los batches enviados al reporter local se escriben primero de forma durable antes de confirmar su recepción.
+- El reporter mantiene un spool independiente del repositorio de desarrollo para que un reset, checkout o conflicto de código no destruya telemetría pendiente.
+- La publicación usa un repositorio Git aislado, reintenta los pushes y dispone de fallback mediante GitHub API para el batch más reciente.
+- Un Scheduled Task reinicia el reporter y un watchdog supervisa continuamente el endpoint local.
+- La ruta de desarrollo puede verificarse mediante el self-test de extremo a extremo que publica un batch deliberado en `main`.
