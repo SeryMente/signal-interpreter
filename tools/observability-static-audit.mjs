@@ -31,6 +31,7 @@ assert.ok(content.includes("navigationProbeTimer"));
 assert.ok(content.includes("CALL_END_CONTROL_INTERACTION"));
 assert.ok(content.includes("maxApproxBytes"));
 assert.ok(content.includes("textFingerprint"));
+assert.ok(content.includes("computedStyleSurface"));
 
 assert.ok(background.includes("NETWORK_ACTIVITY_WINDOW"));
 assert.ok(background.includes("readOfficialStatsViaTrpc"));
