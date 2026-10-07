@@ -879,11 +879,11 @@
         return { rows: rows };
       }).filter(function (table) { return table.rows.length; });
   }
-  function portalStructureSnapshot(reason, force) {
+  function emitPlatformSurfaceSnapshot(reason) {
     if (!isTarget() || !config.observationEnabled) return;
     var platformSurface = extractPortalStructure();
     var signature = JSON.stringify(platformSurface);
-    if (signature === lastPlatformSurfaceHash && !force) return;
+    if (signature === lastPlatformSurfaceHash) return;
     lastPortalStructureSignature = signature;
     lastPlatformSurfaceHash = signature;
     emit("PLATFORM_SURFACE_SNAPSHOT", {
@@ -892,6 +892,21 @@
       snapshotHash: stableSurfaceToken(signature),
       platformSurface: platformSurface
     }, "info");
+  }
+  function portalStructureSnapshot(reason, force) {
+    if (!isTarget() || !config.observationEnabled) return;
+    if (platformSurfaceTimer) {
+      clearTimeout(platformSurfaceTimer);
+      platformSurfaceTimer = null;
+    }
+    if (force) {
+      emitPlatformSurfaceSnapshot(reason);
+      return;
+    }
+    platformSurfaceTimer = setTimeout(function () {
+      platformSurfaceTimer = null;
+      emitPlatformSurfaceSnapshot(reason);
+    }, 500);
   }
   function platformUrlDescriptor(raw) {
     try {
@@ -1515,9 +1530,17 @@
     startRichTelemetry();
     lastObservedHref = location.href;
     observePlatformUrl("start");
-    ["popstate", "hashchange", "pageshow"].forEach(function (name) {
-      window.addEventListener(name, function () { observePlatformUrl(name); });
+    window.addEventListener("popstate", function () {
+      trackRoute("popstate");
+      observePlatformUrl("popstate");
+      emitAutoAnswerReadiness("popstate");
     });
+    window.addEventListener("hashchange", function () {
+      trackRoute("hashchange");
+      observePlatformUrl("hashchange");
+      emitAutoAnswerReadiness("hashchange");
+    });
+    window.addEventListener("pageshow", function () { observePlatformUrl("pageshow"); });
     if (navigationProbeTimer) clearInterval(navigationProbeTimer);
     navigationProbeTimer = setInterval(function () { observePlatformUrl("interval"); }, 1000);
     emit("PLATFORM_SESSION_STARTED", { title: safe(document.title), userAgent: navigator.userAgent, language: navigator.language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
@@ -1532,9 +1555,12 @@
     renderOverlay();
   }
   function stop(reason) {
-    if (!observer) return;
-    observer.disconnect();
-    observer = null;
+    if (observer) {
+      observer.disconnect();
+      observer = null;
+    }
+    if (platformSurfaceTimer) { clearTimeout(platformSurfaceTimer); platformSurfaceTimer = null; }
+    if (navigationProbeTimer) { clearInterval(navigationProbeTimer); navigationProbeTimer = null; }
     emit("OBSERVER_STOPPED", { reason: reason || "config" });
   }
   function apply(next) {
@@ -1590,12 +1616,10 @@
     }
   }, true);
   scheduleReadinessHeartbeat();
-  window.addEventListener("popstate", function () { trackRoute("popstate"); emitAutoAnswerReadiness("popstate"); });
-  window.addEventListener("hashchange", function () { trackRoute("hashchange"); emitAutoAnswerReadiness("hashchange"); });
   emitAutoAnswerReadiness("initial-route");
   if (window.navigation && window.navigation.addEventListener) {
     window.navigation.addEventListener("navigate", function () {
-      setTimeout(function () { trackRoute("navigation"); }, 0);
+      setTimeout(function () { trackRoute("navigation"); observePlatformUrl("navigation"); }, 0);
     });
   }
   window.addEventListener("pagehide", function () {
