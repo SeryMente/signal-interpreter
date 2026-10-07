@@ -1,36 +1,29 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-364c2f56-bdc8-49e9-8678-323f85305d3d
-- Creado: 2026-10-07T23:05:01.254Z
-- Trigger: event-window
+- Batch: batch-c1261ced-9f46-48a1-be5e-cfbee5792291
+- Creado: 2026-10-07T23:05:54.544Z
+- Trigger: critical
 - Extensión: 0.10.2
-- Eventos: 45
+- Eventos: 6
 - Errores: 0
-- Warnings: 0
-- Secuencia: 3516 → 3560
+- Warnings: 1
+- Secuencia: 3634 → 3639
 - Identidades de plataforma: 3
-- Snapshots de plataforma: 6
-- Deltas de plataforma: 6
+- Snapshots de plataforma: 10
+- Deltas de plataforma: 10
 
 ## Categorías
 
 {
-  "PORTAL": 8,
-  "RUNTIME": 37
+  "RUNTIME": 4,
+  "PORTAL": 1,
+  "SESSION": 1
 }
 
 ## Acciones
 
 {
-  "PLATFORM_URL_CHANGED": 2,
-  "PLATFORM_SURFACE_SNAPSHOT": 3,
-  "AUTO_ANSWER_READINESS": 27,
-  "AVAILABILITY_STATE": 1,
-  "SCREEN_MAP": 4,
-  "PLATFORM_ONLINE_RECONCILED_STARTED": 1,
-  "PLATFORM_MIRROR_UPDATED": 2,
-  "PLATFORM_TELEMETRY_RECONCILED": 1,
-  "USER_INTERACTION": 1,
-  "TAB_LIFECYCLE": 2,
-  "NETWORK_ACTIVITY_WINDOW": 1
+  "AUTO_ANSWER_READINESS": 4,
+  "NETWORK_ACTIVITY_WINDOW": 1,
+  "CONNECT_FLOW_FAILED_NO_CALL_ROUTE": 1
 }
