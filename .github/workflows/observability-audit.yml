@@ -45,6 +45,8 @@ jobs:
         run: node tools/observation-reporter/platform-learning-test.mjs
       - name: Observability package audit unit test
         run: node tools/observability-package-audit-test.mjs
+      - name: Observability package baseline audit
+        run: node tools/observability-package-audit.mjs observations
       - name: Observability cycle delta unit test
         run: node tools/observability-cycle-delta-test.mjs
       - name: Observability static audit
