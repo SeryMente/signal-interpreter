@@ -39,7 +39,7 @@
     config = Object.assign({}, config, patch);
     chrome.storage.local.set({ effectifConfig: config }, function () {
       render();
-      status("Configuración guardada");
+      status("ConfiguraciÃ³n guardada");
     });
   }
   function localDay(value) {
@@ -70,7 +70,7 @@
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
     $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
-    $("groqStatus").textContent = "Clave local ✓ · " + (config.groqModel || "whisper-large-v3-turbo");
+    $("groqStatus").textContent = "Clave local âœ“ Â· " + (config.groqModel || "whisper-large-v3-turbo");
     if ($("telemetryVersion")) $("telemetryVersion").textContent = BUILD_LABEL;
     $("sessionTimer").textContent = duration(state.sessionStartedAt);
     $("onlineTimer").textContent = duration(state.onlineStartedAt);
@@ -106,16 +106,16 @@
     var fx = Number(config.usdMxnRate || 0);
     var earnedUsdText = "US$" + earnedUsd.toFixed(4);
     var earnedMxnText = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
-    if ($("earningSummary")) $("earningSummary").textContent = earnedUsdText + " · " + earnedMxnText;
+    if ($("earningSummary")) $("earningSummary").textContent = earnedUsdText + " Â· " + earnedMxnText;
     $("exchangeRate").textContent = fx > 0 ? "$" + fx.toFixed(4) : "No disponible";
     if ($("earningLabel")) $("earningLabel").textContent = hasOfficial ? "Ingreso oficial hoy" : "Ingreso estimado hoy";
     $("exchangeMeta").textContent = fx > 0
-      ? "Fecha de referencia: " + (config.exchangeRateDate || "última disponible")
-      : ((state.exchangeRateError || "Reintentando automáticamente").slice(0, 90));
+      ? "Fecha de referencia: " + (config.exchangeRateDate || "Ãºltima disponible")
+      : ((state.exchangeRateError || "Reintentando automÃ¡ticamente").slice(0, 90));
     renderOfficial();
   }
   var openTranscript=$("openTranscript");
-  if(openTranscript)openTranscript.addEventListener("click",function(){openTranscript.disabled=true;status("Preparando captura de audio…");chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab||tab.id==null)throw new Error("No hay pestaña activa.");return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){return{tab:tab,streamId:streamId}})}).then(function(x){var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:x.tab.id,audioStreamId:x.streamId,sourceUrl:x.tab.url||"",sourceTitle:x.tab.title||""};return chrome.runtime.sendMessage(payload)}).then(function(response){status(response&&response.ok?"Groq: consola abierta y captura iniciada":"No se pudo iniciar: "+String(response&&response.error||"desconocido"),!(response&&response.ok));}).catch(function(error){status("No se pudo iniciar la captura: "+String(error),true);}).finally(function(){openTranscript.disabled=false;});});
+  if(openTranscript)openTranscript.addEventListener("click",function(){openTranscript.disabled=true;status("Preparando captura de audioâ€¦");chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab||tab.id==null)throw new Error("No hay pestaÃ±a activa.");return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){return{tab:tab,streamId:streamId}})}).then(function(x){var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:x.tab.id,audioStreamId:x.streamId,sourceUrl:x.tab.url||"",sourceTitle:x.tab.title||""};return chrome.runtime.sendMessage(payload)}).then(function(response){status(response&&response.ok?"Groq: consola abierta y captura iniciada":"No se pudo iniciar: "+String(response&&response.error||"desconocido"),!(response&&response.ok));}).catch(function(error){status("No se pudo iniciar la captura: "+String(error),true);}).finally(function(){openTranscript.disabled=false;});});
   $("groqModel").addEventListener("change",function(){save({groqModel:this.value});});
   $("enabled").addEventListener("change", function () {
     save({ autoAnswerEnabled: this.checked });
@@ -138,8 +138,8 @@
     if (!host) return;
     var order = ["statistics", "pre-scheduled", "appointments", "finance", "profile"];
     var labels = {
-      statistics: "Statistics · On-Demand",
-      "pre-scheduled": "Statistics · Pre-Scheduled",
+      statistics: "Statistics Â· On-Demand",
+      "pre-scheduled": "Statistics Â· Pre-Scheduled",
       appointments: "Appointments", finance: "Finance", profile: "Profile"
     };
     var cards = order.filter(function (key) { return mirror[key]; }).map(function (key) {
@@ -149,7 +149,7 @@
         summary.earned ? "Ganado " + summary.earned : "",
         summary.callLength ? "Tiempo " + summary.callLength : "",
         summary.callCount ? "Llamadas " + summary.callCount : ""
-      ].filter(Boolean).join(" · ");
+      ].filter(Boolean).join(" Â· ");
       var rows = (item.tables || []).reduce(function (sum, table) {
         return sum + Math.max(0, (table.rows || []).length - 1);
       }, 0);
@@ -161,7 +161,7 @@
           }).join("") + "</tr>";
         }).join("") + "</table></div>";
       }).join("");
-      var preview = (item.lines || []).slice(0, 8).join(" · ");
+      var preview = (item.lines || []).slice(0, 8).join(" Â· ");
       return '<details><summary><b>' + labels[key] + '</b><span>' +
         new Date(item.capturedAt).toLocaleTimeString() + '</span></summary>' +
         (summaryText ? '<p class="official-summary">' + escapeHtml(summaryText) + '</p>' : '') +
@@ -169,12 +169,12 @@
         tables +
         '<p class="preview">' + escapeHtml(preview || "Sin contenido visible") + '</p></details>';
     });
-    host.innerHTML = cards.length ? cards.join("") : "<small>Aún no hay pantallas sincronizadas.</small>";
+    host.innerHTML = cards.length ? cards.join("") : "<small>AÃºn no hay pantallas sincronizadas.</small>";
     var stats = mirror.statistics || {};
     var summary = stats.summary || {};
     if (summary.earnedUsd == null) summary.earnedUsd = (String(summary.earned || "").match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/) || [])[1] || null;
-    var official = [summary.earned ? "Ganado " + summary.earned : "", summary.callCount ? summary.callCount + " llamadas" : "", summary.callLength ? summary.callLength : ""].filter(Boolean).join(" · ");
-    if ($("officialSummary")) $("officialSummary").innerHTML = official ? "<strong>" + escapeHtml(official) + "</strong>" : "<small>Aún no hay datos oficiales sincronizados.</small>";
+    var official = [summary.earned ? "Ganado " + summary.earned : "", summary.callCount ? summary.callCount + " llamadas" : "", summary.callLength ? summary.callLength : ""].filter(Boolean).join(" Â· ");
+    if ($("officialSummary")) $("officialSummary").innerHTML = official ? "<strong>" + escapeHtml(official) + "</strong>" : "<small>AÃºn no hay datos oficiales sincronizados.</small>";
     if ($("officialMeta")) $("officialMeta").textContent = stats.capturedAt ? "Sincronizado " + new Date(stats.capturedAt).toLocaleTimeString() : "Cotejo con las pantallas de la plataforma";
   }
   function escapeHtml(value) {
@@ -184,11 +184,11 @@
   }
   var syncOfficial = $("syncOfficial");
   if (syncOfficial) syncOfficial.addEventListener("click", function () {
-    var button=this; button.disabled=true; status("Sincronizando Statistics…");
+    var button=this; button.disabled=true; status("Sincronizando Statisticsâ€¦");
     chrome.runtime.sendMessage({type:"SYNC_OFFICIAL_PLATFORM_DATA"}, function(response){
       if(response&&response.ok){
         var earned=response.snapshot&&response.snapshot.summary&&response.snapshot.summary.earned;
-        status(earned ? "Sincronizado · "+earned : "Sincronizado");
+        status(earned ? "Sincronizado Â· "+earned : "Sincronizado");
       } else {
         status("No se pudo sincronizar: "+String(response&&response.error||"desconocido"),true);
       }
@@ -198,7 +198,7 @@
   $("refresh").addEventListener("click", function () {
     chrome.tabs.query({ url: "https://app.cloudinterpreter.com/*" }, function (tabs) {
       var pending = tabs.length;
-      if (!pending) { status("No hay pestañas de Effectif abiertas", true); return; }
+      if (!pending) { status("No hay pestaÃ±as de Effectif abiertas", true); return; }
       tabs.forEach(function (tab) {
         chrome.tabs.sendMessage(tab.id, { type: "EFFECTIF_REQUEST_PLATFORM_SNAPSHOT" }, function () {
           pending -= 1;
@@ -211,7 +211,7 @@
     button.addEventListener("click", function () {
       chrome.storage.local.get(["effectifState"], function (stored) {
         if (stored.effectifState && stored.effectifState.callStartedAt) {
-          status("Durante una llamada no se abre Statistics ni se cambia de pestaña.", true);
+          status("Durante una llamada no se abre Statistics ni se cambia de pestaÃ±a.", true);
           return;
         }
         chrome.tabs.query({ url: "https://app.cloudinterpreter.com/profile/*" }, function (tabs) {
@@ -244,7 +244,7 @@
     try {
       var stats = await KhoraTelemetryDB.stats();
       $("telemetryCount").textContent = stats.events.toLocaleString("es-MX") + " eventos";
-      $("telemetryMeta").textContent = stats.snapshots.toLocaleString("es-MX") + " snapshots · " + Number(stats.signalSegments||0).toLocaleString("es-MX") + " segmentos Signal · " + formatBytes(stats.usageBytes) + " usados · desde " + (stats.oldestEventAt ? new Date(stats.oldestEventAt).toLocaleString() : "ahora");
+      $("telemetryMeta").textContent = stats.snapshots.toLocaleString("es-MX") + " snapshots Â· " + Number(stats.signalSegments||0).toLocaleString("es-MX") + " segmentos Signal Â· " + formatBytes(stats.usageBytes) + " usados Â· desde " + (stats.oldestEventAt ? new Date(stats.oldestEventAt).toLocaleString() : "ahora");
     } catch (error) {
       $("telemetryCount").textContent = "Base no disponible";
       $("telemetryMeta").textContent = String(error);
@@ -276,91 +276,27 @@
         textLength:String(s.text||"").length};
     });
   }
-  var githubPollTimer=null;
-  async function renderGithubStatus() {
+  async function renderRelayStatus() {
     try {
-      var config=await SignalGithubObservability.getConfig();
-      var statusInfo=await SignalGithubObservability.getStatus();
-      var input=$("githubClientId");
-      if(input && input.value!==String(config.clientId||"")) input.value=String(config.clientId||"");
-      var statusLabel=statusInfo.connected ? "Conectado" : statusInfo.configured ? "Autorización pendiente/no conectada" : "No configurada";
-      if($("githubSyncStatus")) $("githubSyncStatus").textContent=statusLabel;
-      if($("githubDisconnect")) $("githubDisconnect").disabled=!statusInfo.connected;
-      if($("githubAuthInfo")){
-        if(statusInfo.connected){
-          var expiry=statusInfo.tokenExpiresAt?new Date(statusInfo.tokenExpiresAt).toLocaleTimeString():"renovable";
-          $("githubAuthInfo").textContent="Repositorio: "+statusInfo.repository+" · token válido hasta "+expiry+".";
-        }else if(statusInfo.deviceFlow){
-          $("githubAuthInfo").textContent="Escribe el código "+statusInfo.deviceFlow.userCode+" en GitHub para completar la autorización.";
-        }else{
-          $("githubAuthInfo").textContent=statusInfo.error||"La extensión publicará directamente en observations/inbox/ y GitHub Actions construirá el paquete derivado.";
-        }
-      }
+      var info=await SignalObservabilityRelay.getStatus();
+      if($("githubSyncStatus")) $("githubSyncStatus").textContent=info.reachable ? "Relay Vercel · operativo" : "Relay no disponible";
+      if($("githubAuthInfo")) $("githubAuthInfo").textContent=info.reachable ? "Chrome → Vercel → GitHub Actions · "+info.repository : String(info.error||"No se pudo contactar al relay");
     } catch(error) {
       if($("githubSyncStatus")) $("githubSyncStatus").textContent="Error";
       if($("githubAuthInfo")) $("githubAuthInfo").textContent=String(error);
     }
   }
-  async function pollGithubAuthorization() {
-    try {
-      var result=await SignalGithubObservability.pollDeviceFlow();
-      if(result.status==="connected"){
-        status("GitHub conectado");
-        await renderGithubStatus();
-        return;
-      }
-      if(result.status==="expired"||result.status==="denied"||result.status==="error"){
-        if(result.status!=="authorization_pending") status("Autorización GitHub: "+String(result.error||result.status),true);
-        await renderGithubStatus();
-        return;
-      }
-      await renderGithubStatus();
-      clearTimeout(githubPollTimer);
-      githubPollTimer=setTimeout(pollGithubAuthorization,Math.max(5000,Number(result.retryInMs)||5000));
-    } catch(error) {
-      status("No se pudo completar la autorización GitHub: "+String(error),true);
-      await renderGithubStatus();
-    }
-  }
-  $("githubClientId").addEventListener("change",async function(){
-    await SignalGithubObservability.setConfig({clientId:this.value});
-    await renderGithubStatus();
-  });
-  $("githubConnect").addEventListener("click",async function(){
-    var button=this;button.disabled=true;status("Preparando autorización GitHub…");
-    try{
-      var result=await SignalGithubObservability.beginDeviceFlow();
-      status("Código GitHub: "+result.userCode);
-      await renderGithubStatus();
-      clearTimeout(githubPollTimer);
-      githubPollTimer=setTimeout(pollGithubAuthorization,Math.max(5000,Number(result.interval||5)*1000));
-    }catch(error){
-      status("No se pudo iniciar GitHub: "+String(error),true);
-    }finally{button.disabled=false;}
-  });
-  $("githubDisconnect").addEventListener("click",async function(){
-    await SignalGithubObservability.disconnect();
-    status("GitHub desconectado");
-    await renderGithubStatus();
-  });
+
   $("export").addEventListener("click",async function(){
-    var button=this;button.disabled=true;status("Publicando observabilidad pendiente en GitHub…");
+    var button=this; button.disabled=true; status("Publicando observabilidad pendiente…");
     try{
-      var response=await new Promise(function(resolve){
-        chrome.runtime.sendMessage({type:"SIGNAL_OBSERVATION_SYNC_NOW"},function(result){
-          if(chrome.runtime.lastError) resolve({ok:false,error:chrome.runtime.lastError.message});
-          else resolve(result||{ok:false,error:"Sin respuesta del worker"});
-        });
-      });
-      if(response&&response.ok){
-        status("Observabilidad publicada · "+Number(response.summary&&response.summary.eventsTotal||0)+" eventos");
-      }else{
-        status("No se pudo publicar: "+String(response&&response.error||"GitHub no disponible"),true);
-      }
+      var response=await new Promise(function(resolve){ chrome.runtime.sendMessage({type:"SIGNAL_OBSERVATION_SYNC_NOW"},function(result){ if(chrome.runtime.lastError) resolve({ok:false,error:chrome.runtime.lastError.message}); else resolve(result||{ok:false,error:"Sin respuesta del worker"}); }); });
+      if(response&&response.ok) status("Observabilidad aceptada · "+Number(response.summary&&response.summary.eventsTotal||0)+" eventos");
+      else status("No se pudo publicar: "+String(response&&response.error||"relay no disponible"),true);
     }catch(error){status("No se pudo publicar: "+String(error),true);}
     finally{button.disabled=false;}
   });
-  renderGithubStatus();
+  renderRelayStatus();
   function renderEarningsOnly() {
     var today = localDay();
     var completed = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) { return localDay(call.startedAt || call.endedAt) === today; }) : [];
@@ -379,7 +315,7 @@
     var fx = Number(config.usdMxnRate || 0);
     var usdText = "US$" + earnedUsd.toFixed(4);
     var mxnText = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
-    if ($("earningSummary")) $("earningSummary").textContent = usdText + " · " + mxnText;
+    if ($("earningSummary")) $("earningSummary").textContent = usdText + " Â· " + mxnText;
     if ($("earningLabel")) $("earningLabel").textContent = hasOfficial ? "Ingreso oficial hoy" : "Ingreso estimado hoy";
   }
   var popupStateLoaded = false;
@@ -391,7 +327,7 @@
       state = stored.effectifState || {};
       mirror = stored.effectifPlatformMirror || {};
       var last = stored.effectifLastEvent;
-      $("last").textContent = last ? new Date(last.timestamp).toLocaleTimeString() + " — " + last.action : "Sin eventos";
+      $("last").textContent = last ? new Date(last.timestamp).toLocaleTimeString() + " â€” " + last.action : "Sin eventos";
       render();
       refreshTelemetryStats();
     });
@@ -407,7 +343,7 @@
     if (changes.effectifPlatformMirror) mirror = changes.effectifPlatformMirror.newValue || {};
     if (changes.effectifLastEvent && changes.effectifLastEvent.newValue) {
       var last = changes.effectifLastEvent.newValue;
-      $("last").textContent = new Date(last.timestamp).toLocaleTimeString() + " — " + last.action;
+      $("last").textContent = new Date(last.timestamp).toLocaleTimeString() + " â€” " + last.action;
     }
     render();
   });

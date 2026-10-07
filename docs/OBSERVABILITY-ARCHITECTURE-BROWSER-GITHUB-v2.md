@@ -1,4 +1,4 @@
-# Arquitectura canónica de observabilidad: Chrome + GitHub
+# Arquitectura canónica de observabilidad: Chrome + Vercel Relay + GitHub
 
 **Sprint:** SPRINT-OBSERVABILITY-AUTOOBSERVATION-01  
 **Versión arquitectónica:** v2  
@@ -9,7 +9,7 @@
 
 La observabilidad de Signal Interpreter debe ejecutarse exclusivamente mediante:
 
-**extensión Chrome (Manifest V3) + APIs de Chrome + Cloud Interpreter + GitHub.**
+**extensión Chrome (Manifest V3) + APIs de Chrome + Cloud Interpreter + Vercel Functions + GitHub.**
 
 Queda prohibido que la observabilidad dependa de software residente o infraestructura auxiliar en Windows. En particular, no debe requerir:
 
@@ -29,7 +29,7 @@ Esta regla aplica al runtime operativo de la observabilidad, no a los runners ho
 
 El circuito completo es:
 
-**Cloud Interpreter → content script → background/service worker → IndexedDB → GitHub API → observations/inbox → GitHub Actions → paquete de observabilidad → siguiente ciclo de desarrollo.**
+**Cloud Interpreter → content script → background/service worker → IndexedDB → Vercel relay → GitHub API → observations/inbox → GitHub Actions → paquete de observabilidad → siguiente ciclo de desarrollo.**
 
 La extensión es la única entidad que observa la plataforma durante el uso real.
 
@@ -73,38 +73,31 @@ La confirmación de persistencia remota no sustituye la persistencia local.
 
 El runtime debe tolerar que el service worker de Chrome se suspenda y reanude.
 
-## 5. Transporte directo a GitHub
+## 5. Transporte mediante relay Vercel
 
-La extensión no envía observabilidad a localhost.
+La extensión no envía observabilidad a localhost ni contiene credenciales de GitHub.
 
-Publica cada batch en:
+Publica cada batch mediante una Vercel Function pública y de destino fijo:
+
+https://signal-interpreter-observability-re.vercel.app/api/batch
+
+El relay valida método, schema, batchId, cantidad de eventos y tamaño máximo. Después escribe exclusivamente en:
 
 observations/inbox/<batchId>.json
 
 mediante GitHub REST API.
 
-La autenticación se realiza mediante una GitHub App instalada exclusivamente sobre el repositorio SeryMente/signal-interpreter.
+### 5.1. Credencial remota
 
-### 5.1. Autorización
+El relay mantiene GITHUB_TOKEN como Secret de Vercel. Ese token nunca se entrega al navegador ni se versiona en el repositorio.
 
-La extensión usa el OAuth 2.0 Device Authorization Grant de la GitHub App:
+La extensión sólo conoce la URL del relay; no realiza OAuth de GitHub, no usa Device Flow y no requiere Client ID de una GitHub App.
 
-1. el usuario inicia explícitamente "Conectar GitHub" desde la interfaz de la extensión;
-2. GitHub devuelve user_code y verification_uri;
-3. Chrome abre la URL de verificación;
-4. el usuario autoriza;
-5. la extensión obtiene el user access token;
-6. el refresh token permite renovar el acceso sin volver a introducir credenciales mientras siga vigente.
+### 5.2. Aceptación e idempotencia
 
-No se almacena client_secret en la extensión.
+Si el batch ya existe en GitHub, el relay lo trata como aceptación duplicada. Si existe una carrera de escritura y GitHub devuelve conflicto, el relay vuelve a consultar el objeto antes de reportar error.
 
-El Client ID no es un secreto y se configura en la interfaz de la extensión.
-
-### 5.2. Alcance
-
-La GitHub App debe disponer únicamente de los permisos mínimos necesarios para escribir contenido del repositorio de Signal Interpreter.
-
-La instalación debe quedar restringida al repositorio objetivo.
+El batch no se elimina de IndexedDB hasta que la extensión recibe accepted: true.
 
 ## 6. Reconocimiento de aceptación
 
@@ -186,7 +179,7 @@ El límite temporal ya no depende de un reporter local.
 
 La latencia real de disponibilidad en GitHub será:
 
-**tiempo de flush del navegador + latencia GitHub API + tiempo del workflow de construcción.**
+**tiempo de flush del navegador + latencia Vercel + latencia GitHub API + tiempo del workflow de construcción.**
 
 Esto se mide y optimiza como una propiedad del sistema, no mediante un daemon local.
 
@@ -224,16 +217,14 @@ La observabilidad de producción no se valida mediante la instalación de softwa
 
 ## 13. Configuración externa única
 
-Existe una única precondición fuera del código: registrar/configurar la GitHub App en GitHub y obtener su Client ID.
-
-Ese acto se realiza exclusivamente en GitHub.
+La precondición fuera del código es disponer de una credencial de escritura de GitHub para SeryMente/signal-interpreter y almacenarla como Secret en el proyecto Vercel del relay.
 
 Configuración requerida:
 
-- GitHub App habilitada para Device Flow;
-- permisos mínimos de contenido;
-- instalación solamente en SeryMente/signal-interpreter;
-- Client ID introducido en la configuración de Signal Interpreter.
+- Vercel project: signal-interpreter-observability-relay;
+- Vercel Secret: GITHUB_TOKEN;
+- la credencial se utiliza exclusivamente del lado servidor;
+- la extensión no almacena ni solicita credenciales de GitHub.
 
 No debe existir ningún secreto de GitHub en el repositorio.
 
@@ -242,9 +233,10 @@ No debe existir ningún secreto de GitHub en el repositorio.
 La arquitectura se considera completa cuando:
 
 1. Chrome observa y persiste;
-2. Chrome publica directamente a GitHub;
-3. GitHub Actions construye el paquete;
-4. ningún servicio local participa;
+2. Chrome publica al relay Vercel;
+3. Vercel publica en GitHub;
+4. GitHub Actions construye el paquete;
+5. ningún servicio local participa;
 5. los batches sobreviven a suspensión/reanudación del service worker;
 6. el paquete contiene evidencia operacional y de plataforma;
 7. los deltas son reproducibles;

@@ -240,24 +240,22 @@ Definir un paquete de observabilidad compuesto como mínimo por:
 
 El paquete deberá mantener historial suficiente para comparar estados sin depender únicamente de un archivo latest.
 
-### Fase 5 — Sincronización automática browser→GitHub
+### Fase 5 — Sincronización automática browser→Vercel→GitHub
 
 Implementar una ruta que no requiera infraestructura instalada en la máquina del usuario:
 
 1. IndexedDB mantiene el backlog durable.
 2. La extensión sanea el batch antes de transmitirlo.
-3. La extensión obtiene/renueva autorización mediante la GitHub App.
-4. El batch se publica directamente en `observations/inbox/`.
+3. La extensión publica HTTPS en la Vercel Function de relay.
+4. El relay publica exclusivamente en `observations/inbox/` mediante GitHub REST API.
 5. GitHub Actions consume el inbox y construye los artefactos derivados.
-6. Los errores de red/autorización mantienen el backlog local para reintento.
+6. Los errores de red/relay mantienen el backlog local para reintento.
 
 La observabilidad de producción no depende del estado de ningún proceso Windows.
 
 El tiempo de disponibilidad remoto se mide como:
 
-**flush Chrome + GitHub API + workflow de construcción.**
-
-Estos tres componentes son los únicos que deben optimizarse para acercarse al ideal.
+**flush Chrome + Vercel relay + GitHub API + workflow de construcción.**
 ### Fase 6 — Delta protocolario para futuros ciclos
 
 En cada ciclo de desarrollo posterior, el protocolo deberá comenzar por acceder al paquete de observabilidad vigente y compararlo con el paquete/estado anterior.
@@ -310,7 +308,7 @@ El sprint se considerará exitoso cuando exista evidencia de que:
 5. La observación distingue estado real de inferencia.
 6. Los datos sensibles están protegidos por diseño.
 7. El paquete de observabilidad se persiste de forma durable.
-8. La extensión puede publicar directamente en GitHub sin servidor local.
+8. La extensión puede publicar automáticamente mediante el relay Vercel sin servidor local en Windows.
 9. GitHub Actions puede transformar el inbox en el paquete derivado.
 10. La construcción remota preserva el último estado real y no permite que pruebas contaminen latest.
 11. Existe un mecanismo reproducible para verificar el paquete y sus deltas.
@@ -355,8 +353,8 @@ La implementación debe materializar el objetivo mediante:
 - inventario acotado de CSS, JavaScript entregado y recursos observables;
 - contexto de pestaña, frame e iniciador en telemetría operacional;
 - persistencia durable en IndexedDB;
-- transporte directo a GitHub mediante observations/inbox/;
-- GitHub App con Device Flow y tokens de usuario renovables;
+- transporte browser→Vercel→GitHub mediante observations/inbox/;
+- Vercel Function con GITHUB_TOKEN almacenado como Secret;
 - construcción del paquete en GitHub Actions;
 - snapshots y deltas semánticos generados remotamente;
 - manifest, índices y health del paquete;
@@ -374,15 +372,15 @@ La aceptación técnica se apoya en cuatro capas:
 
 1. **Sintaxis:** todos los módulos JavaScript relevantes deben analizarse sin errores.
 2. **Pruebas unitarias:** learning, delta, pipeline GitHub y auditoría del paquete tienen fixtures reproducibles.
-3. **Auditoría estática:** CI verifica captura, privacidad, transporte browser→GitHub y ausencia de infraestructura local.
+3. **Auditoría estática:** CI verifica captura, privacidad, transporte browser→Vercel→GitHub y ausencia de infraestructura local.
 4. **Ejecución remota:** GitHub Actions valida la construcción del paquete y su publicación derivada.
 
 No se requiere instalar software, tareas, hosts nativos ni procesos residentes en Windows para validar la observabilidad.
 ## 12. Estado de cierre
 
-El sprint se considerará cerrado cuando la implementación browser→GitHub esté publicada, CI pase todas las guardas, la GitHub App esté configurada e instalada exclusivamente sobre `SeryMente/signal-interpreter`, y exista evidencia de al menos un batch real procesado por GitHub Actions.
+El sprint se considerará cerrado cuando la implementación browser→Vercel→GitHub esté publicada, CI pase todas las guardas, el relay Vercel esté desplegado con GITHUB_TOKEN como Secret y exista evidencia de al menos un batch real procesado por GitHub Actions.
 
 El cierre no depende de la instalación de ningún componente local de observabilidad en Windows.
 
 
-El sprint no se considerará cerrado únicamente porque el código compile. El cierre exige además que la implementación publicada haya sido instalada y activada en el entorno operativo `fila4`, que el reporter activo pertenezca a ese usuario y que exista evidencia de publicación de observabilidad real posterior a la activación.
+El sprint no se considerará cerrado únicamente porque el código compile. El cierre exige además que la implementación publicada esté preparada para el entorno operativo `fila4` y que exista evidencia de publicación de observabilidad real posterior al despliegue.
