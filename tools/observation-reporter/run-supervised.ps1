@@ -63,7 +63,7 @@ while($true){
       $remoteNow=RemoteHead
       if($remoteNow -and $lastRemote -and $remoteNow -ne $lastRemote){
         Log ("New main detected "+$remoteNow+"; restarting reporter runtime.")
-        try{$proc.Kill($true)}catch{}
+        try{Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue}catch{}
         break
       }
     }
