@@ -19,7 +19,7 @@ const githubPipelineTest=read("tools/observability-github-pipeline-test.mjs");
 const platformLearning=read("tools/observability/platform-learning.mjs");
 const platformLearningTest=read("tools/observability/platform-learning-test.mjs");
 
-assert.equal(manifest.version,"0.10.3");
+assert.equal(manifest.version,"0.10.4");
 assert.equal(manifest.permissions.includes("nativeMessaging"),false);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
@@ -64,6 +64,8 @@ assert.ok(background.includes("event.action === \"CALL_ROUTE_ENTERED\" || event.
 assert.ok(observationSync.includes("SignalObservabilityRelay.uploadBatch"));
 assert.ok(observationSync.includes("signal-observation-sync-retry"));
 assert.ok(observationSync.includes("EVENT_THRESHOLD"));
+assert.ok(observationSync.includes("checkpointReason"));
+assert.ok(observationSync.includes("reason === \"call-answered\" || reason === \"call-ended\""));
 assert.ok(observationSync.includes("safeEventUrl"));
 assert.equal(/127\.0\.0\.1:\d+/.test(observationSync),false);
 assert.equal(observationSync.includes("sendNativeMessage"),false);

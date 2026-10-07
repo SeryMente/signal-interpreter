@@ -96,7 +96,8 @@ async function collect(){
 }
 async function flushInternal(reason){
   var now=Date.now();
-  if(now-lastTriggerAt<MIN_GAP_MS&&reason!=="manual"&&reason!=="critical"&&reason!=="startup")return{ok:true,skipped:"rate-limited"};
+  var checkpointReason = reason === "call-answered" || reason === "call-ended";
+  if(now-lastTriggerAt<MIN_GAP_MS&&reason!=="manual"&&reason!=="critical"&&reason!=="startup"&&!checkpointReason)return{ok:true,skipped:"rate-limited"};
   lastTriggerAt=now;
   var data=await collect();
   if(!data.events.length){
