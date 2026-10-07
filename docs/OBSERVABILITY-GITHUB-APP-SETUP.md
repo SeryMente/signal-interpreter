@@ -80,3 +80,5 @@ No se registra el token en logs ni se escribe en el repositorio.
 Chrome → GitHub API → GitHub Actions → paquete de observabilidad → siguiente ciclo de desarrollo
 
 Windows no ejecuta ningún proceso, tarea programada, host nativo, watchdog, supervisor o servidor para sostener la observabilidad.
+
+El constructor se ejecuta además después de una auditoría exitosa de Signal Interpreter sobre main, como mecanismo de encadenamiento interno de GitHub Actions.
