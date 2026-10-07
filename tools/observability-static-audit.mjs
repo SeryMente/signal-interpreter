@@ -97,7 +97,7 @@ assert.ok(packageAuditTest.includes("OBSERVABILITY_PACKAGE_AUDIT_TEST"));
 assert.ok(cycleDelta.includes("signal-interpreter-cycle-delta/v1"));
 assert.ok(cycleDeltaTest.includes("OBSERVABILITY_CYCLE_DELTA_TEST"));
 assert.ok(githubPipeline.includes("buildObservabilityPackage"));
-assert.ok(githubPipeline.includes("observations/inbox"));
+assert.ok(githubPipeline.includes("const inbox=path.join(obs,\"inbox\")"));
 assert.ok(githubPipeline.includes("semanticPlatformDelta"));
 assert.ok(githubPipeline.includes("observability-build-health/v1"));
 assert.ok(githubPipelineTest.includes("OBSERVABILITY_GITHUB_PIPELINE_TEST"));
