@@ -157,7 +157,7 @@ assert.ok(packageAudit.includes("latestByIdentity"));
 assert.ok(packageAuditTest.includes("OBSERVABILITY_PACKAGE_AUDIT_TEST"));
 assert.ok(reporter.includes('["repo","clone"'));
 assert.ok(reporter.includes('["push","origin"'));
-assert.ok(reporter.includes("fallbackPublishBatch"));
+assert.ok(reporter.includes("fallbackPublishObservations"));
 assert.ok(reporter.includes("scheduleGitSync(true)"));
 assert.ok(reporter.includes("PUBLISH_SWEEP_MS"));
 assert.ok(reporter.includes("syncDueAt"));
