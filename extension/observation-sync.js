@@ -66,7 +66,9 @@ async function post(payload){
   try{
     var response=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json","X-Signal-Observation":"v1"},body:JSON.stringify(payload),signal:controller.signal,cache:"no-store"});
     if(!response.ok)throw new Error("HTTP "+response.status);
-    return await response.json().catch(function(){return{ok:true}});
+    var result=await response.json().catch(function(){return{ok:true}});
+    if(result&&result.accepted===false)throw new Error("Reporter rejected observation batch");
+    return result;
   }finally{clearTimeout(to)}
 }
 async function flushInternal(reason){
