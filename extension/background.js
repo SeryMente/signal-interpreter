@@ -1929,7 +1929,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
     chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
     chrome.alarms.create("effectif-platform-reconcile",{delayInMinutes:0.1,periodInMinutes:0.5});
-    chrome.alarms.create("signal-observation-sync",{delayInMinutes:0.5,periodInMinutes:2});
+    chrome.alarms.create("signal-observation-sync",{delayInMinutes:1,periodInMinutes:1});
     chrome.alarms.create("signal-network-window",{delayInMinutes:0.25,periodInMinutes:0.25});
     refreshExchangeRate("installed").catch(function(){});
     if(details&&details.reason==="update"&&/^0\.4\./.test(String(details.previousVersion||"")))record("V050_TRANSCRIPTION_MIGRATION_ENABLED",{previousVersion:details.previousVersion,platformAudioAccess:true}, "info","background");
@@ -1962,7 +1962,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   chrome.alarms.onAlarm.addListener(function(alarm){
     if(!alarm)return;
     if(alarm.name==="signal-network-window"){flushNetworkActivity();hotloadHeartbeat("alarm").catch(function(error){record("HOTLOAD_HEARTBEAT_ERROR",{error:String(error)}, "warn","runtime");});return;}
-    if(alarm.name==="signal-observation-sync"){
+    if(alarm.name==="signal-observation-sync"||alarm.name==="signal-observation-sync-retry"){
       SignalObservationSync.flush("alarm").then(function(result){
         if(result && result.ok===false) record("OBSERVATION_SYNC_RETRY_SCHEDULED",{retryMs:result.retryMs||null,error:result.error||null,sequence:result.sequence||null},"warn","background");
       }).catch(function(error){record("OBSERVATION_SYNC_ALARM_ERROR",{error:String(error)},"warn","background");});
