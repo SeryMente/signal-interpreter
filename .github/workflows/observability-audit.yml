@@ -39,6 +39,7 @@ jobs:
         run: |
           [void][scriptblock]::Create((Get-Content tools/observation-reporter/watchdog.ps1 -Raw))
           [void][scriptblock]::Create((Get-Content tools/observation-reporter/install-autostart.ps1 -Raw))
+          [void][scriptblock]::Create((Get-Content tools/observation-reporter/run-supervised.ps1 -Raw))
       - name: Native host build
         run: dotnet build tools/observability-native-host/SignalInterpreterObservabilityHost.csproj -c Release
       - name: Platform learning unit test
