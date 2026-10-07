@@ -12,32 +12,26 @@ const baseSurface={
   metadata:[{name:"viewport",contentLength:25}],
   frameworkHints:["react"]
 };
-
-const previous={snapshotId:"snap-1",identityKey:"https://app.cloudinterpreter.com|/profile/<ID>|",snapshotHash:sha256(baseSurface).slice(0,64),capturedAt:"2026-10-07T15:00:00.000Z",surface:baseSurface};
+const previous={snapshotId:"snap-1",identityKey:"https://app.cloudinterpreter.com|/profile/<ID>|",snapshotHash:sha256(baseSurface),capturedAt:"2026-10-07T15:00:00.000Z",surface:baseSurface};
 const initial=semanticPlatformDelta(null,Object.assign({},previous,{snapshotId:"snap-0"}));
 assert.equal(initial.type,"initial");
 assert.equal(initial.summary.added,7);
 const same=semanticPlatformDelta(previous,Object.assign({},previous,{snapshotId:"snap-2",capturedAt:"2026-10-07T15:01:00.000Z"}));
 assert.equal(same.type,"unchanged");
 assert.equal(same.changes.length,0);
-
 const changedSurface=JSON.parse(JSON.stringify(baseSurface));
 changedSurface.dom.tagCounts.button=2;
 changedSurface.controls.buttons.push({tag:"button",role:"button",label:"End call",disabled:false});
 changedSurface.css.stylesheets.push({href:"https://app.cloudinterpreter.com/assets/calls.css",disabled:false,media:"",ownerTag:"link",ruleCount:8,sameOriginReadable:true});
 changedSurface.frameworkHints.push("nextjs-assets");
 const changed=semanticPlatformDelta(previous,{
-  snapshotId:"snap-3",
-  identityKey:previous.identityKey,
-  snapshotHash:sha256(changedSurface).slice(0,64),
-  capturedAt:"2026-10-07T15:02:00.000Z",
-  surface:changedSurface
+  snapshotId:"snap-3",identityKey:previous.identityKey,snapshotHash:sha256(changedSurface),
+  capturedAt:"2026-10-07T15:02:00.000Z",surface:changedSurface
 });
 assert.equal(changed.type,"changed");
 assert.ok(changed.summary.added>=2);
 assert.ok(changed.summary.changed>=1);
 assert.ok(changed.summary.sections.includes("dom")||changed.summary.sections.includes("controls")||changed.summary.sections.includes("css"));
-
 assert.equal(fileToken("Call / 123 ? foo"),"Call_123_foo");
 assert.equal(sha256("abc").length,64);
 console.log("PLATFORM_LEARNING_TEST=PASS");

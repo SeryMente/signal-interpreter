@@ -55,12 +55,18 @@
             <div class="telemetry-grid"><label>RETENCIÓN (DÍAS)<input id="telemetryRetentionDays" type="number" min="7" max="730" step="1"></label><label>MÁX. EVENTOS<input id="telemetryMaxEvents" type="number" min="1000" max="1000000" step="1000"></label><label>HEARTBEAT (S)<input id="telemetryHeartbeatSeconds" type="number" min="10" max="300" step="5"></label></div>
             <small id="telemetryMeta">Preparando base persistente…</small>
           </section>
+          <section class="telemetry-control">
+            <div class="telemetry-head"><div><strong>Sincronización GitHub</strong><small id="githubSyncStatus">No configurada</small></div><b>GITHUB</b></div>
+            <label class="model-row">GITHUB APP CLIENT ID<input id="githubClientId" type="text" autocomplete="off" spellcheck="false" placeholder="Client ID"></label>
+            <div class="action-row"><button id="githubConnect" class="secondary compact">Conectar</button><button id="githubDisconnect" class="secondary compact" disabled>Desconectar</button></div>
+            <small id="githubAuthInfo">La observabilidad se publica directamente desde Chrome hacia GitHub.</small>
+          </section>
           <small id="last">Sin eventos</small>
-          <button id="export" class="secondary">Exportar diagnóstico completo</button>
+          <button id="export" class="secondary">Publicar observabilidad pendiente</button>
         </div>
       </details>
       <p id="status" role="status"></p>
     </main>
-    <script src="../telemetry-db.js"></script><script src="popup.js"></script>
+    <script src="../telemetry-db.js"></script><script src="../github-observability.js"></script><script src="popup.js"></script>
   </body>
 </html>

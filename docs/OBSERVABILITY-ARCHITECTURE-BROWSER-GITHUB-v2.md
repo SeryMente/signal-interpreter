@@ -1,0 +1,257 @@
+# Arquitectura canónica de observabilidad: Chrome + GitHub
+
+**Sprint:** SPRINT-OBSERVABILITY-AUTOOBSERVATION-01  
+**Versión arquitectónica:** v2  
+**Fecha:** 2026-10-07  
+**Repositorio:** SeryMente/signal-interpreter
+
+## 1. Regla arquitectónica vinculante
+
+La observabilidad de Signal Interpreter debe ejecutarse exclusivamente mediante:
+
+**extensión Chrome (Manifest V3) + APIs de Chrome + Cloud Interpreter + GitHub.**
+
+Queda prohibido que la observabilidad dependa de software residente o infraestructura auxiliar en Windows. En particular, no debe requerir:
+
+- Node.js o procesos locales de observabilidad;
+- servidores HTTP localhost;
+- Scheduled Tasks;
+- watchdogs de Windows;
+- supervisores;
+- Native Messaging;
+- hosts nativos;
+- instaladores de observabilidad;
+- agentes residentes o ventanas de consola.
+
+Esta regla aplica al runtime operativo de la observabilidad, no a los runners hospedados de GitHub Actions utilizados para construir y validar el paquete.
+
+## 2. Flujo canónico
+
+El circuito completo es:
+
+**Cloud Interpreter → content script → background/service worker → IndexedDB → GitHub API → observations/inbox → GitHub Actions → paquete de observabilidad → siguiente ciclo de desarrollo.**
+
+La extensión es la única entidad que observa la plataforma durante el uso real.
+
+GitHub es el sistema remoto de persistencia y el lugar donde se materializa el conocimiento derivado.
+
+## 3. Captura
+
+### 3.1. Cloud Interpreter
+
+La extensión observa reactivamente las URLs que el usuario realmente visita en https://app.cloudinterpreter.com/*.
+
+Puede capturar, cuando estén disponibles de forma legítima:
+
+- URL y transición;
+- estructura DOM/HTML renderizada;
+- controles y estados;
+- CSS observable y metadatos de hojas;
+- JavaScript entregado al navegador mediante metadatos/fingerprints;
+- recursos observables;
+- señales de llamadas, navegación y lifecycle;
+- metadatos de rendimiento;
+- metadatos de red permitidos.
+
+No se captura:
+
+- código PHP/server-side privado;
+- cuerpos de requests/responses;
+- cookies;
+- authorization headers;
+- tokens;
+- credenciales;
+- audio crudo;
+- transcripciones crudas;
+- HTML/CSS/JavaScript fuente completos.
+
+## 4. Persistencia local
+
+La extensión conserva los eventos en IndexedDB y el estado operativo auxiliar en chrome.storage.local.
+
+La confirmación de persistencia remota no sustituye la persistencia local.
+
+El runtime debe tolerar que el service worker de Chrome se suspenda y reanude.
+
+## 5. Transporte directo a GitHub
+
+La extensión no envía observabilidad a localhost.
+
+Publica cada batch en:
+
+observations/inbox/<batchId>.json
+
+mediante GitHub REST API.
+
+La autenticación se realiza mediante una GitHub App instalada exclusivamente sobre el repositorio SeryMente/signal-interpreter.
+
+### 5.1. Autorización
+
+La extensión usa el OAuth 2.0 Device Authorization Grant de la GitHub App:
+
+1. el usuario inicia explícitamente "Conectar GitHub" desde la interfaz de la extensión;
+2. GitHub devuelve user_code y verification_uri;
+3. Chrome abre la URL de verificación;
+4. el usuario autoriza;
+5. la extensión obtiene el user access token;
+6. el refresh token permite renovar el acceso sin volver a introducir credenciales mientras siga vigente.
+
+No se almacena client_secret en la extensión.
+
+El Client ID no es un secreto y se configura en la interfaz de la extensión.
+
+### 5.2. Alcance
+
+La GitHub App debe disponer únicamente de los permisos mínimos necesarios para escribir contenido del repositorio de Signal Interpreter.
+
+La instalación debe quedar restringida al repositorio objetivo.
+
+## 6. Reconocimiento de aceptación
+
+Cuando GitHub acepta el PUT del batch a observations/inbox/, la extensión considera el batch entregado al sistema remoto.
+
+El batch no se elimina de la base local hasta que la propia extensión haya confirmado la aceptación HTTP.
+
+Los fallos de autenticación, autorización, conflicto, rate limit o red incrementan el contador de reintentos y conservan el batch pendiente.
+
+## 7. Construcción del paquete en GitHub
+
+Una GitHub Action, ejecutada en infraestructura hospedada por GitHub, procesa observations/inbox/**.
+
+La Action:
+
+1. valida el schema;
+2. mueve los batches al historial durable;
+3. reconstruye/actualiza snapshots de plataforma;
+4. calcula deltas semánticos;
+5. actualiza índices;
+6. actualiza manifest.json;
+7. actualiza latest/ solamente con telemetría real;
+8. actualiza health/github-build.json;
+9. elimina del inbox los batches ya procesados;
+10. ejecuta las auditorías;
+11. publica el cambio derivado mediante el token de GitHub Actions.
+
+La Action es una función de construcción remota, no una dependencia del runtime del usuario.
+
+## 8. Paquete canónico
+
+observations/ debe contener como mínimo:
+
+- inbox/: entrada temporal desde Chrome;
+- batches/: historial de batches aceptados;
+- platform-snapshots/: superficies observadas;
+- platform-deltas/: cambios semánticos;
+- platform-index.json: último estado por identidad;
+- platform-latest.json: resumen consumible;
+- manifest.json: índice del paquete;
+- latest/latest.json: último batch real;
+- latest/latest-summary.md: resumen humano del último batch real;
+- health/github-build.json: estado del proceso de construcción remoto.
+
+Los archivos derivados no pueden ser sustituidos por un latest de una prueba.
+
+## 9. Identidad y aprendizaje
+
+La identidad de superficie sigue siendo:
+
+origin | route/path normalizado | query keys normalizadas
+
+Los valores de query parameters no forman parte de la identidad.
+
+Cada superficie nueva genera un baseline.
+
+Cada superficie modificada genera un delta semántico.
+
+Una superficie sin cambios no debe generar falsos hallazgos de novedad.
+
+El conocimiento debe distinguir:
+
+- observed;
+- inferred;
+- hypothesis;
+- unknown;
+- not-applicable.
+
+## 10. Sincronización
+
+La frecuencia base del runtime Chrome es:
+
+- flush periódico: ~1 minuto;
+- flush por umbral de eventos;
+- flush inmediato para eventos críticos;
+- retry con backoff.
+
+El límite temporal ya no depende de un reporter local.
+
+La latencia real de disponibilidad en GitHub será:
+
+**tiempo de flush del navegador + latencia GitHub API + tiempo del workflow de construcción.**
+
+Esto se mide y optimiza como una propiedad del sistema, no mediante un daemon local.
+
+## 11. Seguridad y privacidad
+
+La redacción se ejecuta antes de la publicación.
+
+Además de la redacción en la extensión, GitHub Actions vuelve a validar la estructura del paquete.
+
+La observabilidad no debe poder:
+
+- abrir rutas arbitrarias para descubrirlas;
+- cambiar la navegación de la plataforma para recolectar datos;
+- saltarse controles;
+- modificar datos;
+- capturar secretos;
+- convertir una prueba en una mutación de latest.
+
+## 12. Pruebas
+
+CI debe validar:
+
+- sintaxis de todos los módulos de observabilidad;
+- contrato de autenticación y transporte;
+- minimización/redacción;
+- learning/delta;
+- construcción del paquete;
+- integridad del paquete;
+- ausencia de cualquier runtime local de observabilidad;
+- ausencia de nativeMessaging;
+- ausencia de 127.0.0.1;
+- ausencia de Scheduled Tasks, watchdogs o supervisores.
+
+La observabilidad de producción no se valida mediante la instalación de software en Windows.
+
+## 13. Configuración externa única
+
+Existe una única precondición fuera del código: registrar/configurar la GitHub App en GitHub y obtener su Client ID.
+
+Ese acto se realiza exclusivamente en GitHub.
+
+Configuración requerida:
+
+- GitHub App habilitada para Device Flow;
+- permisos mínimos de contenido;
+- instalación solamente en SeryMente/signal-interpreter;
+- Client ID introducido en la configuración de Signal Interpreter.
+
+No debe existir ningún secreto de GitHub en el repositorio.
+
+## 14. Criterio de completitud
+
+La arquitectura se considera completa cuando:
+
+1. Chrome observa y persiste;
+2. Chrome publica directamente a GitHub;
+3. GitHub Actions construye el paquete;
+4. ningún servicio local participa;
+5. los batches sobreviven a suspensión/reanudación del service worker;
+6. el paquete contiene evidencia operacional y de plataforma;
+7. los deltas son reproducibles;
+8. las pruebas detectan una regresión de cualquiera de las reglas anteriores.
+
+## 15. Decisión de migración
+
+La infraestructura previa basada en reporter local, watchdog, supervisor, Scheduled Tasks y Native Messaging queda descontinuada y debe permanecer fuera del árbol de producción de Signal Interpreter.
+
+La nueva arquitectura es la única arquitectura canónica para la observabilidad del sprint.

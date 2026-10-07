@@ -4,7 +4,26 @@
 **Fecha de inicio:** 2026-10-07
 **Repositorio:** SeryMente/signal-interpreter
 **Rama:** sprint/observability-autoobservacion-2026-10-07
-**Estado:** Definición e implementación inicial
+**Estado:** Implementación browser→GitHub; infraestructura Windows de observabilidad descontinuada
+
+## 0. Enmienda arquitectónica vinculante
+
+A partir del 2026-10-07, la observabilidad de producción queda limitada a **Chrome + extensión Signal Interpreter + Cloud Interpreter + GitHub**.
+
+No forman parte del runtime de observabilidad:
+
+- reporter local;
+- localhost;
+- Node.js residente;
+- Scheduled Tasks;
+- watchdog/supervisor en Windows;
+- Native Messaging;
+- host nativo;
+- instaladores de observabilidad.
+
+La implementación derivada debe usar IndexedDB/chrome.storage para persistencia local, GitHub API para transporte y GitHub Actions para construir el paquete derivado.
+
+La especificación completa de esta decisión está en `docs/OBSERVABILITY-ARCHITECTURE-BROWSER-GITHUB-v2.md`.
 
 ## 1. Objetivo
 
@@ -131,19 +150,26 @@ Un evento importante no debe depender de que otro proceso siga vivo para sobrevi
 
 La persistencia local durable precede a la publicación remota.
 
-### 4.5. Sincronización frecuente y no deslizante
+### 4.5. Sincronización directa desde Chrome a GitHub
 
-La publicación debe ocurrir tan pronto como resulte razonablemente seguro hacerlo y no debe posponerse indefinidamente porque continúen entrando eventos.
+La sincronización de producción no utiliza ningún proceso intermedio local.
 
-La estrategia base deberá combinar:
+La ruta canónica es:
 
-- publicación por umbral/ventana;
-- periodicidad independiente;
-- reintentos con backoff;
-- watchdog;
-- spool durable;
-- fallback de publicación.
+**captura → IndexedDB/chrome.storage → batch saneado → GitHub API → observations/inbox → GitHub Actions → paquete derivado.**
 
+La extensión publica:
+
+- por umbral de eventos;
+- por ventana temporal;
+- inmediatamente ante eventos críticos;
+- con reintentos y backoff desde el service worker.
+
+La frecuencia base objetivo es de aproximadamente 1 minuto para el flush periódico, sin impedir envíos anteriores por umbral o criticidad.
+
+La aceptación HTTP de GitHub confirma que el batch ya está en el sistema remoto. El proceso de construcción posterior pertenece exclusivamente a GitHub Actions.
+
+No existe spool, watchdog, supervisor ni fallback local.
 ### 4.6. Trazabilidad
 
 Cada observación relevante debe poder relacionarse temporalmente con:
@@ -214,23 +240,24 @@ Definir un paquete de observabilidad compuesto como mínimo por:
 
 El paquete deberá mantener historial suficiente para comparar estados sin depender únicamente de un archivo latest.
 
-### Fase 5 — Sincronización automática
+### Fase 5 — Sincronización automática browser→GitHub
 
-Mantener una ruta automática:
+Implementar una ruta que no requiera infraestructura instalada en la máquina del usuario:
 
-**captura → spool durable → publicación → confirmación → estado de salud.**
+1. IndexedDB mantiene el backlog durable.
+2. La extensión sanea el batch antes de transmitirlo.
+3. La extensión obtiene/renueva autorización mediante la GitHub App.
+4. El batch se publica directamente en `observations/inbox/`.
+5. GitHub Actions consume el inbox y construye los artefactos derivados.
+6. Los errores de red/autorización mantienen el backlog local para reintento.
 
-La sincronización debe operar con baja latencia y disponer de mecanismos redundantes de recuperación.
+La observabilidad de producción no depende del estado de ningún proceso Windows.
 
-Como objetivo inicial, la arquitectura existente debe mantenerse al menos en estos órdenes de magnitud:
+El tiempo de disponibilidad remoto se mide como:
 
-- flush periódico de extensión: ~1 minuto;
-- publicación normal del reporter: ~30 segundos como deadline no deslizante;
-- sweep independiente del reporter: ~60 segundos;
-- retry con backoff ante fallas.
+**flush Chrome + GitHub API + workflow de construcción.**
 
-Estos valores podrán optimizarse durante el sprint mediante evidencia real.
-
+Estos tres componentes son los únicos que deben optimizarse para acercarse al ideal.
 ### Fase 6 — Delta protocolario para futuros ciclos
 
 En cada ciclo de desarrollo posterior, el protocolo deberá comenzar por acceder al paquete de observabilidad vigente y compararlo con el paquete/estado anterior.
@@ -283,13 +310,12 @@ El sprint se considerará exitoso cuando exista evidencia de que:
 5. La observación distingue estado real de inferencia.
 6. Los datos sensibles están protegidos por diseño.
 7. El paquete de observabilidad se persiste de forma durable.
-8. La sincronización a GitHub ocurre automáticamente y con baja latencia.
-9. La falla del reporter no implica pérdida silenciosa del backlog.
-10. El watchdog puede recuperar el servicio.
-11. Existe un mecanismo reproducible para verificar extremo a extremo la publicación.
+8. La extensión puede publicar directamente en GitHub sin servidor local.
+9. GitHub Actions puede transformar el inbox en el paquete derivado.
+10. La construcción remota preserva el último estado real y no permite que pruebas contaminen latest.
+11. Existe un mecanismo reproducible para verificar el paquete y sus deltas.
 12. Un ciclo posterior puede consultar el paquete y producir un delta útil para decidir qué desarrollar después.
-13. CI contiene guardas suficientes para impedir regresiones en los mecanismos críticos de observabilidad.
-
+13. CI contiene guardas suficientes para impedir regresiones en captura, transporte, privacidad y construcción remota.
 ## 8. Definición de completitud suficiente
 
 No se considerará posible demostrar que se capturó absolutamente todo en un sentido matemático.
@@ -322,37 +348,41 @@ Este documento constituye la definición inicial del sprint y podrá ampliarse c
 
 ## 10. Implementación del sprint
 
-La primera implementación materializa el objetivo mediante:
+La implementación debe materializar el objetivo mediante:
 
 - captura reactiva de cambios de URL y navegación SPA en Cloud Interpreter;
 - snapshots estructurales de DOM/HTML renderizado;
-- inventario acotado de CSS, incluyendo hojas, selectores visibles y perfiles de estilo computado;
-- inventario de JavaScript entregado al navegador y fingerprints de scripts inline;
-- inventario de recursos y procedencia de red sin cuerpos, headers sensibles ni secretos;
+- inventario acotado de CSS, JavaScript entregado y recursos observables;
 - contexto de pestaña, frame e iniciador en telemetría operacional;
-- persistencia de payloads estructurados dentro de los batches;
-- snapshots de plataforma y deltas semánticos por identidad de ruta;
-- reconstrucción del estado de aprendizaje desde el paquete publicado;
-- manifest, índices y auditoría de integridad del paquete;
-- protocolo ejecutable de delta entre ciclos de desarrollo;
-- self-test E2E con aislamiento respecto del estado real de plataforma;
-- límites de tamaño y minimización de datos antes de persistencia remota;
-- publicación durable con spool, retries, sweep, fallback y watchdog;
-- guardas estáticas y pruebas unitarias en CI.
+- persistencia durable en IndexedDB;
+- transporte directo a GitHub mediante observations/inbox/;
+- GitHub App con Device Flow y tokens de usuario renovables;
+- construcción del paquete en GitHub Actions;
+- snapshots y deltas semánticos generados remotamente;
+- manifest, índices y health del paquete;
+- aislamiento de self-tests respecto de latest real;
+- límites de tamaño y minimización de datos antes de publicación;
+- auditoría estática contra cualquier dependencia local de Windows;
+- protocolo de delta para los ciclos de desarrollo.
 
-La implementación adopta la versión de extensión `0.10.0` por tratarse de una ampliación funcional del modelo de observabilidad.
+La extensión adopta la versión 0.10.0 por la ampliación funcional del modelo de observabilidad.
 
+La infraestructura local previa queda fuera de esta implementación.
 ## 11. Evidencia de aceptación
 
 La aceptación técnica se apoya en cuatro capas:
 
-1. **Sintaxis/build:** todos los JavaScript/ESM relevantes, PowerShell y el host nativo deben compilar/analizar sin errores.
-2. **Pruebas unitarias:** el motor de delta y el auditor de paquete tienen fixtures reproducibles.
-3. **Auditoría estática:** CI verifica la presencia de contratos de captura, persistencia, privacidad, sincronización, recuperación y protocolo de ciclo.
-4. **E2E operacional:** el reporter debe aceptar, persistir y publicar batches; la publicación debe ser comprobable en GitHub y el self-test no debe contaminar `latest` ni el estado de aprendizaje.
+1. **Sintaxis:** todos los módulos JavaScript relevantes deben analizarse sin errores.
+2. **Pruebas unitarias:** learning, delta, pipeline GitHub y auditoría del paquete tienen fixtures reproducibles.
+3. **Auditoría estática:** CI verifica captura, privacidad, transporte browser→GitHub y ausencia de infraestructura local.
+4. **Ejecución remota:** GitHub Actions valida la construcción del paquete y su publicación derivada.
 
-La evidencia de cada nueva ejecución CI y de cada E2E operativo deberá conservarse como parte del historial del proyecto.
-
+No se requiere instalar software, tareas, hosts nativos ni procesos residentes en Windows para validar la observabilidad.
 ## 12. Estado de cierre
+
+El sprint se considerará cerrado cuando la implementación browser→GitHub esté publicada, CI pase todas las guardas, la GitHub App esté configurada e instalada exclusivamente sobre `SeryMente/signal-interpreter`, y exista evidencia de al menos un batch real procesado por GitHub Actions.
+
+El cierre no depende de la instalación de ningún componente local de observabilidad en Windows.
+
 
 El sprint no se considerará cerrado únicamente porque el código compile. El cierre exige además que la implementación publicada haya sido instalada y activada en el entorno operativo `fila4`, que el reporter activo pertenezca a ese usuario y que exista evidencia de publicación de observabilidad real posterior a la activación.

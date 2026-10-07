@@ -1,0 +1,56 @@
+name: signal-observability-build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "observations/inbox/**"
+  workflow_dispatch:
+
+concurrency:
+  group: signal-observability-build-main
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'diagnostic: enqueue observation batch')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build observability package
+        run: node tools/observability-github-pipeline.mjs "$GITHUB_WORKSPACE"
+
+      - name: Audit observability package
+        run: node tools/observability-package-audit.mjs observations
+
+      - name: Test semantic cycle delta
+        run: node tools/observability-cycle-delta-test.mjs
+
+      - name: Test GitHub package pipeline
+        run: node tools/observability-github-pipeline-test.mjs
+
+      - name: Commit derived observability package
+        shell: bash
+        run: |
+          git config user.name "Signal Interpreter Observability"
+          git config user.email "observability@users.noreply.github.com"
+          git add observations
+          if git diff --cached --quiet; then
+            echo "OBSERVABILITY_PACKAGE_NO_CHANGES"
+            exit 0
+          fi
+          git commit -m "diagnostic: rebuild observability package"
+          git push origin HEAD:main

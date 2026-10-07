@@ -32,17 +32,16 @@ No es necesario ejecutar ningún proceso de bridge local.
 La prueba de transcripción está en tools/groq-transcriber-tests.mjs y valida endpoint, modelo, parámetros de Groq, segmentos y redacción de credenciales.
 ## Persistencia automática de observabilidad
 
-La observabilidad de Signal Interpreter tiene un contrato de persistencia explícito y cubre dos planos: telemetría de la propia extensión y observación superficial de Cloud Interpreter.
+La observabilidad de Signal Interpreter cubre dos planos: telemetría de la propia extensión y observación superficial de Cloud Interpreter.
 
-- La extensión conserva eventos en IndexedDB y dispara el envío por eventos críticos, umbral, ventana y una alarma periódica independiente de los reintentos, con cadencia de 1 minuto.
-- Los batches enviados al reporter local se escriben primero de forma durable antes de confirmar su recepción.
-- La ruta de publicación usa un spool independiente del repositorio de desarrollo, un publisher Git aislado, reintentos, watchdog y fallback mediante GitHub API.
-- Los eventos de plataforma conservan payload estructurado suficiente para reconstruir contexto, URL, superficie DOM, CSS, JavaScript entregado al cliente, recursos y pistas de framework sin almacenar código server-side privado ni secretos.
-- El reporter genera snapshots de superficie en `observations/platform-snapshots/`, historial de deltas semánticos en `observations/platform-deltas/`, e índices en `observations/platform-index.json` y `observations/platform-latest.json`.
-- `observations/manifest.json` funciona como índice de paquete para el siguiente ciclo de desarrollo.
-- La observación de navegación es reactiva al uso real del usuario; no se ejecuta crawling masivo, fuzzing ni bypass de controles.
-- La captura distingue evidencia observada de inferencia y aplica minimización/redacción antes de publicar.
-- Un Scheduled Task reinicia el reporter y otro watchdog supervisa su salud y recuperación bajo el perfil operativo `fila4`.
-- El pipeline puede verificarse mediante el self-test de extremo a extremo sin contaminar el puntero `latest` de telemetría real.
+- La extensión observa reactivamente el uso real de `app.cloudinterpreter.com` y conserva los eventos en IndexedDB.
+- El envío se dispara por eventos críticos, umbral, ventana temporal y una alarma periódica de aproximadamente 1 minuto.
+- Los batches saneados se publican **directamente desde Chrome a GitHub** en `observations/inbox/`; no existe servidor local intermedio.
+- GitHub Actions transforma el inbox en batches históricos, snapshots, deltas, índices, manifest y health remoto.
+- La observación de plataforma conserva evidencia estructurada sobre URL, DOM/HTML renderizado, CSS, JavaScript entregado al navegador, recursos, controles y cambios observables, sin almacenar secretos, cuerpos de red ni código server-side privado.
+- La observación distingue evidencia observada, inferencia, hipótesis y desconocido.
+- El paquete derivado alimenta obligatoriamente el siguiente ciclo de desarrollo mediante un delta semántico.
+- No se requieren Node.js residente, Native Messaging, Scheduled Tasks, watchdogs, supervisores, hosts nativos ni servidores `localhost` en Windows.
 
-Consulta `docs/OBSERVABILITY-COVERAGE-MATRIX-v1.md` y `docs/OBSERVABILITY-DELTA-PROTOCOL-v1.md` para el contrato de cobertura y el protocolo de aprendizaje incremental.
+La arquitectura canónica está documentada en `docs/OBSERVABILITY-ARCHITECTURE-BROWSER-GITHUB-v2.md`.
+

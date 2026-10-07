@@ -13,6 +13,10 @@ export function auditObservabilityPackage(observationsRoot){
   const latestObservationFile=path.join(root,"latest","latest.json");
   const latestSummaryFile=path.join(root,"latest","latest-summary.md");
   assert(fs.existsSync(root),"observations directory missing");
+  const manifestExists=fs.existsSync(manifestFile),indexExists=fs.existsSync(indexFile),latestExists=fs.existsSync(latestFile);
+  if(!manifestExists&&!indexExists&&!latestExists){
+    return {ok:true,status:"uninitialized",manifest:null,identityCount:0,observations:0,deltas:0,routeCount:0};
+  }
   assert(fs.existsSync(manifestFile),"observations/manifest.json missing");
   assert(fs.existsSync(indexFile),"observations/platform-index.json missing");
   assert(fs.existsSync(latestFile),"observations/platform-latest.json missing");
