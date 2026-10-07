@@ -14,7 +14,7 @@ const PUBLISH_ROOT=path.join(BASE,".signal-interpreter-observability-publisher")
 const STATE_DIR=path.join(BASE,".signal-interpreter-observability-state");
 const STATE_FILE=path.join(STATE_DIR,"health.json"),LOG_FILE=path.join(STATE_DIR,"reporter.log");
 const PORT=Number(process.env.SIGNAL_OBSERVATION_PORT||8788),MAX_BYTES=5*1024*1024,COMMIT_WINDOW_MS=Number(process.env.SIGNAL_OBSERVATION_COMMIT_WINDOW_MS||30000),PUBLISH_SWEEP_MS=Number(process.env.SIGNAL_OBSERVATION_SWEEP_MS||60000);
-let syncTimer=null,syncRunning=false,dirty=false,forceNext=false;
+let syncTimer=null,syncDueAt=0,syncRunning=false,dirty=false,forceNext=false;
 let health=loadHealth();
 function iso(){return new Date().toISOString()}
 function loadHealth(){try{return Object.assign({startedAt:iso(),lastAcceptedAt:null,lastGitSuccessAt:null,lastFallbackAt:null,lastGitError:null,lastPublishedSequence:0,lastBatchId:null,gitAttempts:0,fallbackPublishes:0,queued:false},JSON.parse(fs.readFileSync(STATE_FILE,"utf8")))}catch(_){return {startedAt:iso(),lastAcceptedAt:null,lastGitSuccessAt:null,lastFallbackAt:null,lastGitError:null,lastPublishedSequence:0,lastBatchId:null,gitAttempts:0,fallbackPublishes:0,queued:false}}}
@@ -27,7 +27,7 @@ function gh(args){return run("gh.exe",args,ROOT)}
 function delay(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
 function spoolFiles(){if(!fs.existsSync(SPOOL))return[];return fs.readdirSync(SPOOL).filter(name=>name.endsWith(".json")).sort().map(name=>path.join(SPOOL,name))}
 function removeSpoolBatch(batchId){try{fs.rmSync(path.join(SPOOL,batchId+".json"),{force:true})}catch(_){} }
-function scheduleGitSync(force=false){dirty=true;health.queued=true;forceNext=forceNext||force;saveHealth();clearTimeout(syncTimer);syncTimer=setTimeout(()=>runGitSync().catch(()=>{}),force?5000:COMMIT_WINDOW_MS)}
+function scheduleGitSync(force=false){dirty=true;health.queued=true;forceNext=forceNext||force;saveHealth();const delayMs=force?5000:COMMIT_WINDOW_MS;const due=Date.now()+delayMs;if(syncTimer&&syncDueAt<=due)return;clearTimeout(syncTimer);syncDueAt=due;syncTimer=setTimeout(()=>{syncTimer=null;syncDueAt=0;runGitSync().catch(()=>{})},delayMs)}
 function publishSweep(){if(syncRunning)return;const pending=spoolFiles();if(dirty||pending.length){scheduleGitSync(false)}}
 async function ensurePublisher(){
   if(fs.existsSync(path.join(PUBLISH_ROOT,".git"))){
@@ -61,14 +61,14 @@ async function ghPut(repoPath,filePath,message){
     catch(error){if(!/409|422|sha/i.test(String(error)))throw error;const refreshed=(await gh(["api","repos/"+REPO+"/contents/"+repoPath+"?ref=main","--jq",".sha"])).trim();request.sha=refreshed;durableWrite(temp,JSON.stringify(request));return await gh(["api","repos/"+REPO+"/contents/"+repoPath,"--method","PUT","--input",temp])}
   }finally{try{fs.rmSync(temp,{force:true})}catch(_){}}
 }
-async function fallbackPublishBatch(batchId){
+async function fallbackPublishBatch(){
   try{
-    const batchFile=path.join(SPOOL,batchId+".json");if(!fs.existsSync(batchFile))return false;
-    await ghPut("observations/batches/"+batchId+".json",batchFile,"diagnostic: fallback publish observation batch");
+    const pending=spoolFiles();if(!pending.length)return false;
+    for(const batchFile of pending){const batchId=path.basename(batchFile,".json");await ghPut("observations/batches/"+batchId+".json",batchFile,"diagnostic: fallback publish observation batch");removeSpoolBatch(batchId);}
     const latestFile=path.join(LATEST,"latest.json"),summaryFile=path.join(LATEST,"latest-summary.md");
     if(fs.existsSync(latestFile))await ghPut("observations/latest/latest.json",latestFile,"diagnostic: fallback publish latest observation");
     if(fs.existsSync(summaryFile))await ghPut("observations/latest/latest-summary.md",summaryFile,"diagnostic: fallback publish observation summary");
-    health.fallbackPublishes+=1;health.lastFallbackAt=iso();health.lastGitError=null;saveHealth();removeSpoolBatch(batchId);log("github-api fallback published "+batchId);return true;
+    health.fallbackPublishes+=pending.length;health.lastFallbackAt=iso();health.lastGitError=null;saveHealth();log("github-api fallback published "+pending.length+" batch(es)");return true;
   }catch(error){health.lastGitError=String(error);saveHealth();log("github-api fallback failed "+batchId+": "+String(error));return false}
 }
 async function runGitSync(){
@@ -89,9 +89,9 @@ async function runGitSync(){
         health.lastGitSuccessAt=iso();health.lastGitError=null;saveHealth();for(const file of pending){try{fs.rmSync(file,{force:true})}catch(_){}};log("git-sync ok");return
       }catch(error){lastError=error;health.lastGitError=String(error);saveHealth();log("git-sync attempt "+attempt+" failed: "+String(error));if(attempt<4)await delay(1500*attempt)}
     }
-    if(pending.length)await fallbackPublishBatch(path.basename(pending[pending.length-1],".json"));
+    if(pending.length)await fallbackPublishBatch();
     throw lastError||new Error("git-sync failed")
-  }catch(error){dirty=true;health.queued=true;health.lastGitError=String(error);saveHealth();clearTimeout(syncTimer);syncTimer=setTimeout(()=>runGitSync().catch(()=>{}),120000)}finally{syncRunning=false}
+  }catch(error){dirty=true;health.queued=true;health.lastGitError=String(error);saveHealth();syncTimer=null;syncDueAt=0;scheduleGitSync(false)}finally{syncRunning=false}
 }
 const server=http.createServer((req,res)=>{
   res.setHeader("Access-Control-Allow-Origin","*");res.setHeader("Access-Control-Allow-Headers","Content-Type,X-Signal-Observation");res.setHeader("Access-Control-Allow-Methods","POST,OPTIONS,GET");
