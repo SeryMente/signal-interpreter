@@ -10,12 +10,26 @@ export function auditObservabilityPackage(observationsRoot){
   const manifestFile=path.join(root,"manifest.json");
   const indexFile=path.join(root,"platform-index.json");
   const latestFile=path.join(root,"platform-latest.json");
+  const latestObservationFile=path.join(root,"latest","latest.json");
+  const latestSummaryFile=path.join(root,"latest","latest-summary.md");
   assert(fs.existsSync(root),"observations directory missing");
   assert(fs.existsSync(manifestFile),"observations/manifest.json missing");
   assert(fs.existsSync(indexFile),"observations/platform-index.json missing");
   assert(fs.existsSync(latestFile),"observations/platform-latest.json missing");
 
   const manifest=readJson(manifestFile),index=readJson(indexFile),latest=readJson(latestFile);
+  if(fs.existsSync(latestObservationFile)){
+    const latestObservation=readJson(latestObservationFile);
+    assert(latestObservation.schema==="signal-interpreter-observation-batch/v1","latest observation schema invalid");
+    assert(latestObservation.trigger!=="observability-self-test","latest observation must never point to a self-test");
+    assert(latestObservation.batchId===manifest.lastBatchId,"manifest lastBatchId must match latest observation");
+    if(fs.existsSync(latestSummaryFile)){
+      const summary=fs.readFileSync(latestSummaryFile,"utf8");
+      const match=summary.match(/^- Batch:\s*(.+)$/m);
+      assert(match&&match[1]===latestObservation.batchId,"latest summary must match latest observation batch");
+      assert(!/^- Trigger:\s*observability-self-test$/m.test(summary),"latest summary must never be a self-test");
+    }
+  }
   assert(manifest.schema==="signal-interpreter-observability-package/v1","invalid observability manifest schema");
   assert(index.schema==="signal-interpreter-platform-index/v1","invalid platform index schema");
   assert(latest.schema==="signal-interpreter-platform-index/v1","invalid platform latest schema");
