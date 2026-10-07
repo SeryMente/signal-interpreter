@@ -108,6 +108,7 @@
   }
   function mirrorText(value, limit) { return safe(normalized(value)).slice(0, limit || 500); }
   function safePlatformUrl(raw) {
+    if (!raw) return "";
     try {
       var url = new URL(String(raw || ""), location.href);
       if (url.origin === AUTHORIZED_PROFILE_ORIGIN) {
@@ -308,7 +309,6 @@
     };
     return {
       schema: "signal-interpreter-platform-surface/v1",
-      capturedAt: iso(),
       page: page,
       controls: { buttons: buttons, links: links, fields: fields, headings: headings },
       dom: { tagCounts: tagCounts, elements: elements },
