@@ -32,5 +32,12 @@ assert.ok(checkpoint.actions.includes("OBSERVER_STARTED"));
 const second=computeCycleDelta(obs,checkpoint);
 assert.equal(second.summary.newEvents,0);
 assert.equal(second.summary.newRoutes.length,0);
+assert.equal(second.findings.regressionSignal,false);
+
+const regression=computeCycleDelta(obs,Object.assign({},checkpoint,{routes:["/profile/<ID>","/obsolete"],identities:["https://app.cloudinterpreter.com|/profile/<ID>|","obsolete"],platformObservations:2,platformDeltas:2}));
+assert.ok(regression.summary.removedRoutes.includes("/obsolete"));
+assert.ok(regression.summary.removedIdentities.includes("obsolete"));
+assert.equal(regression.findings.platformContractRegression,true);
+assert.equal(regression.findings.regressionSignal,true);
 fs.rmSync(root,{recursive:true,force:true});
 console.log("OBSERVABILITY_CYCLE_DELTA_TEST=PASS");
