@@ -305,7 +305,6 @@ function processBatchPlatformArtifacts(batch){
     if((platformState.seenHashes||[]).includes(dedupeKey)||(!snapshot.identityKey && (platformState.seenHashes||[]).includes(snapshot.snapshotHash)))continue;
     persistPlatformSnapshot(snapshot);processed++;
   }
-  if(processed)writeObservabilityManifest(batch);
   return processed;
 }
 async function processUnpublishedPlatformBatches(){
@@ -445,7 +444,8 @@ process.on("uncaughtException",error=>{log("uncaughtException: "+String(error));
 process.on("unhandledRejection",error=>{log("unhandledRejection: "+String(error));process.exit(1)});
 server.listen(PORT,"127.0.0.1",()=>{
   ensurePublisherSyncRoot();
-  health.startedAt=iso();saveHealth();processUnpublishedPlatformBatches();
+  health.startedAt=iso();saveHealth();
+  processUnpublishedPlatformBatches().finally(()=>writeObservabilityManifest(null));
   log("listening on http://127.0.0.1:"+PORT+" repo="+ROOT);
   scheduleGitSync(true);
   setInterval(publishSweep,PUBLISH_SWEEP_MS).unref();
