@@ -179,3 +179,34 @@ Un delta es útil para desarrollo cuando permite hacer al menos una de estas cos
 - diseñar una nueva prueba;
 - o reducir una incertidumbre relevante.
 
+
+
+## 12. Implementación ejecutable
+
+El protocolo está implementado por:
+
+`tools/observability-package-audit.mjs`  
+Verifica la integridad estructural del paquete antes de consumirlo.
+
+`tools/observability-cycle-delta.mjs`  
+Calcula el delta semántico entre el último checkpoint procesado y el paquete actual.
+
+`tools/observability-cycle-delta-test.mjs`  
+Prueba que una segunda lectura del mismo paquete no produzca falsos eventos de novedad.
+
+Uso operativo:
+
+```text
+node tools/observability-package-audit.mjs observations
+node tools/observability-cycle-delta.mjs --root observations --checkpoint observations/cycle-checkpoint.json --report observations/cycle-delta/latest.json
+```
+
+El modo `--advance` solo debe utilizarse después de que el delta haya sido revisado y utilizado por el ciclo de desarrollo:
+
+```text
+node tools/observability-cycle-delta.mjs --root observations --checkpoint observations/cycle-checkpoint.json --report observations/cycle-delta/latest.json --advance
+```
+
+El checkpoint representa el último estado que ya fue procesado por un ciclo, no simplemente el último estado que existe.
+
+Por tanto, un paquete puede contener datos más recientes que el último checkpoint y esos datos deben aparecer como novedad en el siguiente ciclo.
