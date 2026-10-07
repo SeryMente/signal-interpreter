@@ -56,10 +56,8 @@
             <small id="telemetryMeta">Preparando base persistente…</small>
           </section>
           <section class="telemetry-control">
-            <div class="telemetry-head"><div><strong>Sincronización GitHub</strong><small id="githubSyncStatus">No configurada</small></div><b>GITHUB</b></div>
-            <label class="model-row">GITHUB APP CLIENT ID<input id="githubClientId" type="text" autocomplete="off" spellcheck="false" placeholder="Client ID"></label>
-            <div class="action-row"><button id="githubConnect" class="secondary compact">Conectar</button><button id="githubDisconnect" class="secondary compact" disabled>Desconectar</button></div>
-            <small id="githubAuthInfo">La observabilidad se publica directamente desde Chrome hacia GitHub.</small>
+            <div class="telemetry-head"><div><strong>Sincronización remota</strong><small id="githubSyncStatus">Relay Vercel · comprobando…</small></div><b>RELAY</b></div>
+            <small id="githubAuthInfo">Chrome → Vercel → GitHub Actions. No requiere GitHub App ni credenciales de GitHub en la extensión.</small>
           </section>
           <small id="last">Sin eventos</small>
           <button id="export" class="secondary">Publicar observabilidad pendiente</button>
@@ -67,6 +65,6 @@
       </details>
       <p id="status" role="status"></p>
     </main>
-    <script src="../telemetry-db.js"></script><script src="../github-observability.js"></script><script src="popup.js"></script>
+    <script src="../telemetry-db.js"></script><script src="../observability-relay.js"></script><script src="popup.js"></script>
   </body>
 </html>

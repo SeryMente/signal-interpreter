@@ -60,7 +60,7 @@ async function getState(){
   var s=await chrome.storage.local.get(["signalObservationSyncState"]);
   return Object.assign({
     ackedSequence:0,pendingCount:0,lastAttemptAt:null,lastSuccessAt:null,lastBatchId:null,
-    lastGithubAcceptedAt:null,lastPackageBuildAt:null,consecutiveFailures:0,lastError:null
+    lastRelayAcceptedAt:null,lastPackageBuildAt:null,consecutiveFailures:0,lastError:null
   },s.signalObservationSyncState||{});
 }
 async function setState(state){await chrome.storage.local.set({signalObservationSyncState:state});}
@@ -114,14 +114,14 @@ async function flushInternal(reason){
   state.lastAttemptAt=iso();state.lastBatchId=batchId;state.pendingCount=data.events.length;
   await setState(state);
   try{
-    var r=await SignalGithubObservability.uploadBatch(payload);
+    var r=await SignalObservabilityRelay.uploadBatch(payload);
     state.ackedSequence=Math.max(Number(state.ackedSequence)||0,Number(data.summary.lastSequence)||0);
     alarmScheduled=false;pendingEvents=0;state.pendingCount=0;state.lastSuccessAt=iso();
-    state.lastGithubAcceptedAt=iso();state.lastError=null;state.consecutiveFailures=0;
-    if(r&&r.commitSha)state.lastGithubCommitSha=r.commitSha;
+    state.lastRelayAcceptedAt=iso();state.lastError=null;state.consecutiveFailures=0;
+    if(r&&r.commitSha)state.lastRelayCommitSha=r.commitSha;
     await setState(state);
     try{chrome.alarms.clear(RETRY_ALARM);}catch(_){}
-    return{ok:true,batchId:batchId,accepted:true,sequence:state.ackedSequence,summary:data.summary,githubCommit:r&&r.commitSha||null};
+    return{ok:true,batchId:batchId,accepted:true,sequence:state.ackedSequence,summary:data.summary,remoteCommit:r&&r.commitSha||null};
   }catch(error){
     state.consecutiveFailures=Number(state.consecutiveFailures||0)+1;
     state.lastError=String(error);

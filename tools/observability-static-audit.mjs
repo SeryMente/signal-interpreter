@@ -8,7 +8,7 @@ const background=read("extension/background.js");
 const content=read("extension/content.js");
 const popup=read("extension/ui/popup.js");
 const observationSync=read("extension/observation-sync.js");
-const github=read("extension/github-observability.js");
+const relay=read("extension/observability-relay.js");
 const workflow=read(".github/workflows/observability-build.yml");
 const packageAudit=read("tools/observability-package-audit.mjs");
 const packageAuditTest=read("tools/observability-package-audit-test.mjs");
@@ -26,12 +26,10 @@ assert.ok(manifest.permissions.includes("alarms"));
 assert.ok(manifest.permissions.includes("unlimitedStorage"));
 assert.ok(manifest.permissions.includes("scripting"));
 assert.ok(manifest.host_permissions.includes("https://app.cloudinterpreter.com/*"));
-assert.ok(manifest.host_permissions.includes("https://api.github.com/*"));
-assert.ok(manifest.host_permissions.includes("https://github.com/login/*"));
-assert.match(manifest.content_security_policy.extension_pages,/https:\/\/api\.github\.com/);
-assert.match(manifest.content_security_policy.extension_pages,/https:\/\/github\.com/);
+assert.ok(manifest.host_permissions.includes("https://signal-interpreter-observability-relay.vercel.app/*"));
+assert.match(manifest.content_security_policy.extension_pages,/https:\/\/signal-interpreter-observability-relay\.vercel\.app/);
 
-assert.ok(background.includes('importScripts("dialogue-engine.js","telemetry-db.js","github-observability.js","observation-sync.js","groq-transcriber.js")'));
+assert.ok(background.includes('importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js")'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync"'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync-retry"'));
 assert.ok(background.includes('SignalObservationSync.flush("startup"'));
@@ -54,34 +52,26 @@ assert.ok(content.includes("normalizePlatformPath"));
 assert.ok(content.includes("CALL_END_CONTROL_INTERACTION"));
 assert.ok(content.includes("installNavigationObservers"));
 
-assert.ok(observationSync.includes("SignalGithubObservability.uploadBatch"));
+assert.ok(observationSync.includes("SignalObservabilityRelay.uploadBatch"));
 assert.ok(observationSync.includes("signal-observation-sync-retry"));
 assert.ok(observationSync.includes("EVENT_THRESHOLD"));
 assert.ok(observationSync.includes("safeEventUrl"));
 assert.equal(/127\.0\.0\.1:\d+/.test(observationSync),false);
 assert.equal(observationSync.includes("sendNativeMessage"),false);
-assert.ok(observationSync.includes("lastGithubAcceptedAt"));
+assert.ok(observationSync.includes("lastRelayAcceptedAt"));
 
-assert.ok(github.includes("https://api.github.com"));
-assert.ok(github.includes("LOGIN_BASE") && github.includes("/login/device/code"));
-assert.ok(github.includes("urn:ietf:params:oauth:grant-type:device_code"));
-assert.ok(github.includes("repository_id"));
-assert.ok(github.includes("refresh_token"));
-assert.ok(github.includes("LOGIN_BASE") && github.includes("/login/oauth/access_token"));
-assert.ok(github.includes("observations/inbox"));
-assert.ok(github.includes("signalGithubObservabilityConfig"));
-assert.ok(github.includes("beginDeviceFlow"));
-assert.ok(github.includes("pollDeviceFlow"));
-assert.ok(github.includes("uploadBatch"));
-assert.equal(/client_secret/i.test(github),false);
-assert.equal(/127\.0\.0\.1/.test(github),false);
+assert.ok(relay.includes("https://signal-interpreter-observability-relay.vercel.app"));
+assert.ok(relay.includes("uploadBatch"));
+assert.ok(relay.includes("getStatus"));
+assert.equal(/client_secret|device.?flow|githubApp/i.test(relay),false);
+assert.equal(/127\.0\.0\.1/.test(relay),false);
 
 assert.equal(popup.includes("sendNativeMessage"),false);
 assert.equal(popup.includes("native messaging"),false);
-assert.ok(popup.includes("SignalGithubObservability"));
-assert.ok(popup.includes("githubClientId"));
-assert.ok(popup.includes("githubConnect"));
-assert.ok(popup.includes("Publicando observabilidad pendiente en GitHub"));
+assert.ok(popup.includes("SignalObservabilityRelay"));
+assert.equal(popup.includes("githubClientId"),false);
+assert.equal(popup.includes("githubConnect"),false);
+assert.ok(popup.includes("Publicando observabilidad pendiente"));
 
 assert.ok(workflow.includes("observations/inbox/**"));
 assert.ok(workflow.includes("node tools/observability-github-pipeline.mjs"));
@@ -116,7 +106,7 @@ for(const forbidden of [
   assert.equal(exists(forbidden),false,"Windows/local observability artifact remains: "+forbidden);
 }
 
-for(const value of [background,content,popup,observationSync,github]){
+for(const value of [background,content,popup,observationSync,relay]){
   assert.equal(value.includes("127.0.0.1:8788"),false,"Local observability endpoint remains.");
   assert.equal(value.includes("sendNativeMessage"),false,"Native messaging observability path remains.");
 }
