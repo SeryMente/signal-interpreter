@@ -111,7 +111,9 @@ La superficie describe únicamente lo observable desde el cliente.
 - fingerprint de texto;
 - visibilidad;
 - estado disabled;
-- geometría limitada.
+- geometría limitada;
+- perfil de estilos computados acotado;
+- fingerprint de texto estructural.
 
 ### controls
 
@@ -121,6 +123,8 @@ La superficie describe únicamente lo observable desde el cliente.
 - headings.
 
 ### css
+- inlineStyles: longitud y fingerprint de bloques `<style>`; no se almacena su fuente.
+
 
 - stylesheets;
 - URL;
@@ -141,7 +145,8 @@ No se almacena CSS fuente completo.
 - type;
 - async/defer/noModule;
 - presencia de integrity;
-- longitud de inline script.
+- longitud de inline script;
+- fingerprint de inline script.
 
 No se almacena código JavaScript fuente completo.
 
@@ -241,3 +246,20 @@ y reconstruir la evidencia necesaria para orientar un ciclo.
 Cambios incompatibles deben crear una nueva versión de schema.
 
 Cambios aditivos compatibles pueden permanecer dentro del mismo schema mientras no alteren el significado de campos existentes.
+
+
+## 13. Delta de ciclo
+
+El paquete puede consumirse mediante `tools/observability-cycle-delta.mjs`.
+
+El checkpoint de ciclo representa el último estado que ya fue analizado y utilizado para una decisión de desarrollo. El tool compara el estado actual con ese checkpoint y produce:
+
+- nuevos eventos;
+- nuevas acciones y categorías;
+- nuevas rutas;
+- nuevas identidades de plataforma;
+- nuevas observaciones y deltas;
+- errores y warnings nuevos;
+- foco recomendado para análisis.
+
+El estado `uninitialized` es válido cuando todavía no existe un paquete generado por el runtime.
