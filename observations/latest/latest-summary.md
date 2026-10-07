@@ -1,42 +1,36 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-92462715-dbec-42e5-8d0d-863eb6f1e9ae
-- Creado: 2026-10-07T23:50:15.964Z
-- Trigger: event-threshold
+- Batch: batch-7f0e798e-63ce-4862-97ce-e8c2ea596372
+- Creado: 2026-10-07T23:50:29.542Z
+- Trigger: critical
 - Extensión: 0.10.2
-- Eventos: 54
+- Eventos: 43
 - Errores: 0
-- Warnings: 0
-- Secuencia: 8492 → 8545
+- Warnings: 1
+- Secuencia: 8546 → 8588
 - Identidades de plataforma: 5
-- Snapshots de plataforma: 65
-- Deltas de plataforma: 65
+- Snapshots de plataforma: 67
+- Deltas de plataforma: 67
 
 ## Categorías
 
 {
-  "RUNTIME": 48,
-  "PORTAL": 6
+  "PORTAL": 6,
+  "RUNTIME": 37
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 22,
   "PLATFORM_MIRROR_UPDATED": 2,
+  "AUTO_ANSWER_READINESS": 28,
+  "PLATFORM_SURFACE_SNAPSHOT": 2,
+  "NETWORK_ACTIVITY_WINDOW": 1,
   "PERFORMANCE_HEARTBEAT": 2,
-  "PLATFORM_SESSION_STARTED": 1,
-  "OBSERVER_STARTED": 1,
+  "PAGE_VISIBILITY_CHANGED": 2,
+  "PAGE_LIFECYCLE": 2,
   "PLATFORM_INTEGRITY_CHECK": 1,
-  "PLATFORM_SURFACE_SNAPSHOT": 1,
-  "SCREEN_MAP": 5,
-  "PLATFORM_TELEMETRY_RECONCILED": 2,
-  "PLATFORM_EARNINGS_RANGE_REQUESTED": 1,
-  "NETWORK_ACTIVITY_WINDOW": 3,
-  "PLATFORM_ONLINE_RECONCILED_ENDED": 1,
-  "PAGE_LIFECYCLE": 6,
-  "TAB_LIFECYCLE": 1,
-  "PAGE_VISIBILITY_CHANGED": 3,
-  "PLATFORM_EARNINGS_RANGE_COMPLETED": 1,
-  "AVAILABILITY_STATE": 1
+  "PLATFORM_SESSION_ENDED": 1,
+  "OBSERVER_STOPPED": 1,
+  "NETWORK_REQUEST_ERROR": 1
 }
