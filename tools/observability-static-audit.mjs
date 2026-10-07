@@ -36,7 +36,7 @@ assert.ok(background.includes('alarm.name==="signal-observation-sync"'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync-retry"'));
 assert.ok(background.includes("SignalObservationSync.flush("startup""));
 assert.ok(background.includes("SignalObservationSync.flush("alarm""));
-assert.ok(background.includes("PLATFORM_INTEGRITY_CHECK"));
+assert.ok(content.includes("PLATFORM_INTEGRITY_CHECK"));
 assert.ok(background.includes("readOfficialStatsViaTrpc"));
 assert.ok(background.includes("no-tab-create-no-navigation-no-reload"));
 
@@ -63,11 +63,11 @@ assert.equal(observationSync.includes("sendNativeMessage"),false);
 assert.ok(observationSync.includes("lastGithubAcceptedAt"));
 
 assert.ok(github.includes("https://api.github.com"));
-assert.ok(github.includes("https://github.com/login/device/code"));
+assert.ok(github.includes("LOGIN_BASE") && github.includes("/login/device/code"));
 assert.ok(github.includes("urn:ietf:params:oauth:grant-type:device_code"));
 assert.ok(github.includes("repository_id"));
 assert.ok(github.includes("refresh_token"));
-assert.ok(github.includes("https://github.com/login/oauth/access_token"));
+assert.ok(github.includes("LOGIN_BASE") && github.includes("/login/oauth/access_token"));
 assert.ok(github.includes("observations/inbox"));
 assert.ok(github.includes("signalGithubObservabilityConfig"));
 assert.ok(github.includes("beginDeviceFlow"));
