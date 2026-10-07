@@ -1708,7 +1708,26 @@
     if (message && message.type === "EFFECTIF_REQUEST_PLATFORM_SNAPSHOT") {
       capturePlatformMirror("popup-sync", true);
       portalStructureSnapshot("popup-sync", true);
+      return false;
     }
+    if (message && message.type === "EFFECTIF_REFRESH_OVERLAY") {
+      if (message.callId && currentCallId() === message.callId) {
+        emit("EARNINGS_OVERLAY_REFRESHED", { callId: message.callId, reason: message.reason || "background-request" });
+        requestOverlayExchangeRate("call-answered");
+        requestOverlayEarnings("today");
+        requestOverlayEarnings("currentMonth");
+        requestOverlayChart("currentMonth");
+        if (overlayPeriod === "previousMonth") requestOverlayEarnings("previousMonth");
+        if (overlayPeriod === "year") requestOverlayChart("year");
+        reconcileOverlayDateRollover();
+        renderOverlay();
+        if (sendResponse) sendResponse({ ok: true, callId: message.callId });
+        return true;
+      }
+      if (sendResponse) sendResponse({ ok: false, error: "La pestaña ya no está en la llamada indicada" });
+      return true;
+    }
+    return false;
   });
   document.addEventListener("click", function (event) {
     var button = event.target && event.target.closest ? event.target.closest("button") : null;

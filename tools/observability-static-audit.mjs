@@ -19,7 +19,7 @@ const githubPipelineTest=read("tools/observability-github-pipeline-test.mjs");
 const platformLearning=read("tools/observability/platform-learning.mjs");
 const platformLearningTest=read("tools/observability/platform-learning-test.mjs");
 
-assert.equal(manifest.version,"0.10.2");
+assert.equal(manifest.version,"0.10.3");
 assert.equal(manifest.permissions.includes("nativeMessaging"),false);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
@@ -50,7 +50,16 @@ assert.ok(content.includes("inlineFingerprint"));
 assert.ok(content.includes("safePlatformUrl"));
 assert.ok(content.includes("normalizePlatformPath"));
 assert.ok(content.includes("CALL_END_CONTROL_INTERACTION"));
+assert.ok(content.includes("EFFECTIF_REFRESH_OVERLAY"));
+assert.ok(content.includes("requestOverlayEarnings(\"today\")"));
+assert.ok(content.includes("requestOverlayEarnings(\"currentMonth\")"));
+assert.ok(content.includes("requestOverlayChart(\"currentMonth\")"));
 assert.ok(content.includes("installNavigationObservers"));
+assert.ok(background.includes("checkpointCallObservability(\"call-answered\""));
+assert.ok(background.includes("checkpointCallObservability(\"call-ended\""));
+assert.ok(background.includes("SignalObservationSync.flush(checkpoint)"));
+assert.ok(background.includes("CALL_ANSWERED_OVERLAY_REFRESH_REQUESTED"));
+assert.ok(background.includes("event.action === \"CALL_ROUTE_ENTERED\" || event.action === \"ANSWER_FLOW_ROUTE_CONFIRMED\""));
 
 assert.ok(observationSync.includes("SignalObservabilityRelay.uploadBatch"));
 assert.ok(observationSync.includes("signal-observation-sync-retry"));

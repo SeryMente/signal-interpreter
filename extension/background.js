@@ -368,6 +368,39 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
   function record(action, payload, level, source) {
     appendEvent({ action: action, payload: payload || {}, level: level || "info", source: source || "background" });
   }
+  function checkpointCallObservability(reason, callId, stateSnapshot) {
+    var checkpoint = reason === "call-answered" ? "call-answered" : "call-ended";
+    var payload = {
+      checkpoint: checkpoint,
+      callId: callId || null,
+      extensionVersion: chrome.runtime.getManifest().version,
+      dailyCallsToday: stateSnapshot && stateSnapshot.dailyCalls ? Number(stateSnapshot.dailyCalls[localDay()] || 0) : null,
+      completedToday: stateSnapshot && stateSnapshot.completedCalls ? stateSnapshot.completedCalls.filter(function (call) { return localDay(call.startedAt || call.endedAt) === localDay(); }).length : null,
+      unfinishedToday: stateSnapshot && stateSnapshot.unfinishedCalls ? stateSnapshot.unfinishedCalls.filter(function (call) { return localDay(call.startedAt || call.endedAt) === localDay(); }).length : null,
+      callState: checkpoint === "call-answered" ? "active" : "closed"
+    };
+    appendEvent({ action: "CALL_OBSERVABILITY_CHECKPOINT", payload: payload, level: "info", source: "background" }, function () {
+      try {
+        SignalObservationSync.flush(checkpoint).catch(function (error) {
+          record("CALL_OBSERVABILITY_CHECKPOINT_FLUSH_ERROR", { checkpoint: checkpoint, callId: callId || null, error: String(error) }, "warn", "background");
+        });
+      } catch (error) {
+        record("CALL_OBSERVABILITY_CHECKPOINT_FLUSH_ERROR", { checkpoint: checkpoint, callId: callId || null, error: String(error) }, "warn", "background");
+      }
+    });
+  }
+  function requestCallOverlayRefresh(tabId, callId, reason) {
+    if (!Number.isFinite(Number(tabId))) return;
+    try {
+      chrome.tabs.sendMessage(Number(tabId), { type: "EFFECTIF_REFRESH_OVERLAY", callId: callId || null, reason: reason || "call-answered" }, function () {
+        if (chrome.runtime.lastError) {
+          record("EARNINGS_OVERLAY_REFRESH_DELIVERY_ERROR", { callId: callId || null, tabId: Number(tabId), reason: reason || "call-answered", error: chrome.runtime.lastError.message }, "warn", "background");
+        }
+      });
+    } catch (error) {
+      record("EARNINGS_OVERLAY_REFRESH_DELIVERY_ERROR", { callId: callId || null, tabId: Number(tabId), reason: reason || "call-answered", error: String(error) }, "warn", "background");
+    }
+  }
   function cloneStateForStorage(state) {
     var normalized = normalizeStateShape(state);
     try { return JSON.parse(JSON.stringify(normalized)); } catch (_) {
@@ -755,7 +788,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
         ? new Date(routeTimestampMs - measuredPlatformSeconds * 1000).toISOString()
         : event.timestamp;
       state.callStartedAt = measuredStartAt;
-      state.callSourceTabId = event.payload && event.payload.tabId || null;
+      state.callSourceTabId = event.payload && event.payload.tabId != null ? Number(event.payload.tabId) : (event.tabId != null ? Number(event.tabId) : null);
       state.callLastObservedAt = event.timestamp;
       state.callMissingSinceAt = null;
       state.callModality = event.payload && event.payload.modality ||
@@ -786,6 +819,13 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       }, "info", "background");
     }).then(function (state) {
       if (!state || state.callId !== callId) return;
+      checkpointCallObservability("call-answered", callId, state);
+      requestCallOverlayRefresh(state.callSourceTabId, callId, "call-answered");
+      record("CALL_ANSWERED_OVERLAY_REFRESH_REQUESTED", {
+        callId: callId,
+        tabId: state.callSourceTabId,
+        dailyCallsToday: Number(state.dailyCalls && state.dailyCalls[localDay()] || 0)
+      }, "info", "background");
       record("TRANSCRIPTION_MODULE_READY", { callId: callId, engine: "groq-whisper" }, "info", "background");
       requestCallAlert(callId, "call-route-confirmed");
       refreshExchangeRate("call-start").catch(function(error){
@@ -981,7 +1021,8 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
         observedVsPlatformDeltaSeconds: hasPlatformSeconds ? Math.round((observedSeconds - billableSeconds) * 1000) / 1000 : null
       }), "info", source);
       if (sendResponse) sendResponse({ ok: true, call: call });
-    }).then(function () {
+    }).then(function (finalState) {
+      checkpointCallObservability("call-ended", closedCallId, finalState);
       return reconcileOfficialEarningsAfterCall(closedCallId).catch(function(error){
         record("CALL_END_EARNINGS_RECONCILIATION_ERROR",{callId:closedCallId,error:String(error)},"warn","background");
       });
@@ -1767,7 +1808,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
           state.autoAnswerTelemetry.skipped = Number(state.autoAnswerTelemetry.skipped || 0) + 1;
         }, "auto-answer-skipped").catch(function () {});
       }
-      if (event.action === "CALL_ROUTE_ENTERED") {
+      if (event.action === "CALL_ROUTE_ENTERED" || event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
         startCall(event);
       }
       if (event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
