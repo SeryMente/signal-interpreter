@@ -320,7 +320,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   }
   function inferEventPhase(action){var a=String(action||"");if(/_REQUESTED$|_QUEUED$/.test(a))return"start";if(/_STARTED$|_CONNECTED$|_SENT$/.test(a))return"started";if(/_COMPLETED$|_UPDATED$|_PERSISTED$|_ACCEPTED$/.test(a))return"completed";if(/_ERROR$|_FAILED$/.test(a))return"error";if(/_REJECTED$|_BLOCKED$/.test(a))return"blocked";if(/_TIMEOUT$/.test(a))return"timeout";if(/_ABORTED$/.test(a))return"aborted";return"event"}
   function inferEventOutcome(action,level){var a=String(action||"");if(level==="error"||/_ERROR$|_FAILED$/.test(a))return"error";if(/_REJECTED$|_BLOCKED$/.test(a))return"blocked";if(/_TIMEOUT$/.test(a))return"timeout";if(/_ACCEPTED$|_COMPLETED$|_PERSISTED$|_UPDATED$|_STARTED$|_CONNECTED$/.test(a))return"success";return"observed"}
-  function inferEventCategory(action){var a=String(action||"");if(/^SIGNAL_/.test(a)){if(/CAPTION/.test(a))return"LIVE_CAPTION";if(/UIA/.test(a))return"UIA";if(/BRIDGE/.test(a))return"BRIDGE";if(/SESSION/.test(a))return"SESSION";if(/DIALOGUE/.test(a))return"DIALOGUE";if(/AUDIO/.test(a))return"CAPTURE";if(/PERSIST|SEGMENT/.test(a))return"STORAGE";if(/CONSOLE|LIVE_/.test(a))return"UI";return"SIGNAL"}if(/NETWORK|PORTAL|PLATFORM_OFFICIAL_SYNC|PLATFORM_MIRROR/.test(a))return"PORTAL";if(/EXCHANGE/.test(a))return"BILLING";if(/TRANSCRIPTION/.test(a))return"TRANSCRIPT";if(/CALL|MISSED/.test(a))return"SESSION";if(/SOUND/.test(a))return"SOUND";return"RUNTIME"}
+  function inferEventCategory(action){var a=String(action||"");if(/^SIGNAL_/.test(a)){if(/CAPTION/.test(a))return"LIVE_CAPTION";if(/UIA/.test(a))return"UIA";if(/BRIDGE/.test(a))return"BRIDGE";if(/SESSION/.test(a))return"SESSION";if(/DIALOGUE/.test(a))return"DIALOGUE";if(/AUDIO/.test(a))return"CAPTURE";if(/PERSIST|SEGMENT/.test(a))return"STORAGE";if(/CONSOLE|LIVE_/.test(a))return"UI";return"SIGNAL"}if(/NETWORK|PORTAL|PLATFORM_SURFACE|PLATFORM_URL|PLATFORM_OFFICIAL_SYNC|PLATFORM_MIRROR/.test(a))return"PORTAL";if(/EXCHANGE/.test(a))return"BILLING";if(/TRANSCRIPTION/.test(a))return"TRANSCRIPT";if(/CALL|MISSED/.test(a))return"SESSION";if(/SOUND/.test(a))return"SOUND";return"RUNTIME"}
   function appendEvent(input, callback) {
     eventQueue = eventQueue.then(async function () {
       var stored = await chrome.storage.local.get(["effectifEvents", "effectifEventSequence", "effectifTelemetryHealth"]);
@@ -1703,6 +1703,17 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         timestamp: iso(), tabId: sender.tab ? sender.tab.id : null,
         source: "content", level: "info"
       }, message.event || {});
+      if (sender.tab) {
+        event.tabId = Number(sender.tab.id);
+        event.windowId = Number(sender.tab.windowId);
+        event.context = Object.assign({}, event.context || {}, {
+          sourceTabId: Number(sender.tab.id),
+          sourceWindowId: Number(sender.tab.windowId),
+          observedTabStatus: sender.tab.status || null,
+          observedTabActive: !!sender.tab.active,
+          observedTabUrl: String(sender.tab.url || "").replace(/\?.*$/, "").slice(0, 500)
+        });
+      }
       appendEvent(event, function () { sendResponse({ ok: true }); });
       if (event.action === "PLATFORM_SESSION_STARTED" || event.action === "PLATFORM_SESSION_ENDED") handleSession(event);
       if (event.action === "AVAILABILITY_STATE") {
@@ -2026,7 +2037,20 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   }
   chrome.webRequest.onBeforeRequest.addListener(function (details) {
     if (!cachedConfig.observationEnabled || !cachedConfig.networkTelemetryEnabled) return;
-    networkRequests.set(details.requestId, { at: Date.now(), method: details.method, type: details.type, url: sanitizedRequestUrl(details.url), tabId: details.tabId });
+    var initiator = "";
+    try { initiator = new URL(details.initiator || "").origin; } catch (_) {}
+    networkRequests.set(details.requestId, {
+      at: Date.now(),
+      method: details.method,
+      type: details.type,
+      url: sanitizedRequestUrl(details.url),
+      tabId: details.tabId,
+      frameId: Number(details.frameId),
+      parentFrameId: Number(details.parentFrameId),
+      initiator: initiator,
+      requestBodyObserved: false,
+      privacy: "request-body-and-headers-not-captured"
+    });
     if (networkRequests.size > 5000) networkRequests.delete(networkRequests.keys().next().value);
   }, { urls: ["https://app.cloudinterpreter.com/*"] });
   var autoAnswerBootstrapAt = new Map();
@@ -2055,7 +2079,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
     var started = networkRequests.get(details.requestId); networkRequests.delete(details.requestId);
     if (!started) return;
     var durationMs = Math.max(0, Date.now() - started.at);
-    noteNetworkActivity({method:started.method,type:started.type,url:started.url,statusCode:details.statusCode,durationMs:durationMs});
+    noteNetworkActivity({
+      method:started.method,type:started.type,url:started.url,statusCode:details.statusCode,durationMs:durationMs,
+      frameId:started.frameId,parentFrameId:started.parentFrameId,initiator:started.initiator
+    });
     try {
       var requestPath = new URL(details.url).pathname;
       if (/\/ring\.mp3$/i.test(requestPath) && (details.statusCode === 200 || details.statusCode === 206)) {
@@ -2070,7 +2097,12 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
   chrome.webRequest.onErrorOccurred.addListener(function (details) {
     var started = networkRequests.get(details.requestId); networkRequests.delete(details.requestId);
     if (!started) return;
-    record("NETWORK_REQUEST_ERROR",{method:started.method,type:started.type,url:started.url,tabId:started.tabId,error:details.error,durationMs:Math.max(0,Date.now()-started.at)},"warn","webRequest");
+    record("NETWORK_REQUEST_ERROR",{
+      method:started.method,type:started.type,url:started.url,tabId:started.tabId,
+      frameId:started.frameId,parentFrameId:started.parentFrameId,initiator:started.initiator,
+      error:details.error,durationMs:Math.max(0,Date.now()-started.at),
+      privacy:"request-body-and-headers-not-captured"
+    },"warn","webRequest");
   }, { urls: ["https://app.cloudinterpreter.com/*"] });
   chrome.windows.onRemoved.addListener(function () {});
   chrome.storage.onChanged.addListener(function (changes, area) {

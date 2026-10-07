@@ -12,30 +12,46 @@ function iso(){return new Date().toISOString()}
 function uid(){return crypto.randomUUID()}
 function sleep(n){return new Promise(function(r){setTimeout(r,n)})}
 function scrub(value,key,depth){
-  if(depth>6)return"[MAX_DEPTH]";
+  if(depth>8)return"[MAX_DEPTH]";
   var k=String(key||"");
-  if(/text|caption|snapshot|transcript|dialog|utterance|content|html|body/i.test(k))return"[OMITTED]";
   if(/api.?key|authorization|cookie|password|secret|bearer|credential/i.test(k))return"[REDACTED]";
+  if(/rawAudio|rawTranscript|transcriptText|captionText|utterance|innerText|textContent|outerHTML|innerHTML|inputValue|requestBody|responseBody|bodyText|htmlText|cssText|javascriptSource|audioBlob|base64/i.test(k))return"[OMITTED]";
   if(typeof value==="string"){
-    return String(value).replace(/Bearers+[A-Za-z0-9._~+/=-]+/gi,"Bearer [REDACTED]").replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,}/gi,"[EMAIL]").slice(0,800);
+    return String(value)
+      .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi,"Bearer [REDACTED]")
+      .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,"[EMAIL]")
+      .slice(0,1200);
   }
   if(value===null||typeof value!=="object")return value;
-  if(Array.isArray(value))return value.slice(0,100).map(function(v){return scrub(v,"",depth+1)});
-  var o={};Object.keys(value).slice(0,120).forEach(function(k2){o[k2]=scrub(value[k2],k2,depth+1)});return o;
+  if(Array.isArray(value))return value.slice(0,240).map(function(v){return scrub(v,k,depth+1)});
+  var o={},keys=Object.keys(value);
+  if(keys.length>240)keys=keys.slice(0,240);
+  keys.forEach(function(k2){o[k2]=scrub(value[k2],k2,depth+1)});
+  return o;
+}
+function safeEventUrl(raw){
+  try{
+    var url=new URL(String(raw||""));
+    var path=url.pathname.replace(/\/call\/[^/]+/g,"/call/<ID>").replace(/\/profile\/[^/]+/g,"/profile/<ID>");
+    var keys=Array.from(url.searchParams.keys()).sort().slice(0,40);
+    return url.origin+path+(keys.length?"?"+keys.map(function(k){return encodeURIComponent(k)+"=<VALUE>"}).join("&"):"");
+  }catch(_){return String(raw||"").replace(/[?#].*$/,"").slice(0,500)}
 }
 function safeEvent(e){
   var out={
     schema:e.schema||"khora-effectif-event/v4",
     id:e.id||null,sequence:Number(e.sequence)||0,timestamp:e.timestamp||null,ingestedAt:e.ingestedAt||null,
     level:e.level||"info",category:e.category||"RUNTIME",component:e.component||e.source||"background",
+    extensionVersion:e.extensionVersion||null,host:String(e.host||"").slice(0,180),url:safeEventUrl(e.url||""),
     phase:e.phase||"event",action:e.action||"UNKNOWN",outcome:e.outcome||"observed",
     traceId:e.traceId||null,operationId:e.operationId||null,parentEventId:e.parentEventId||null,
     attempt:Number(e.attempt)||1,durationMs:e.durationMs==null?null:Number(e.durationMs),
-    session:scrub(e.session||{},"session",0),environment:scrub(e.environment||{},"environment",0),
+    tabId:e.tabId==null?null:Number(e.tabId),session:scrub(e.session||{},"session",0),environment:scrub(e.environment||{},"environment",0),
     expected:scrub(e.expected||null,"expected",0),observed:scrub(e.observed||null,"observed",0),
     reasonCode:e.reasonCode||null,error:scrub(e.error||null,"error",0),
     metrics:scrub(e.metrics||{},"metrics",0),context:scrub(e.context||{},"context",0),
-    privacy:scrub(e.privacy||{},"privacy",0)
+    privacy:scrub(e.privacy||{},"privacy",0),
+    payload:scrub(e.payload||{},"payload",0)
   };
   if(out.session&&out.session.sourceOrigin){try{out.session.sourceOrigin=new URL(out.session.sourceOrigin).origin}catch(_){}}
   return out;
@@ -58,7 +74,9 @@ async function post(payload){
   try{
     var response=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json","X-Signal-Observation":"v1"},body:JSON.stringify(payload),signal:controller.signal,cache:"no-store"});
     if(!response.ok)throw new Error("HTTP "+response.status);
-    return await response.json().catch(function(){return{ok:true}});
+    var result=await response.json().catch(function(){return{ok:true}});
+    if(result&&result.accepted===false)throw new Error("Reporter rejected observation batch");
+    return result;
   }finally{clearTimeout(to)}
 }
 async function flushInternal(reason){
