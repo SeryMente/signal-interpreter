@@ -124,7 +124,7 @@ assert.ok(reporter.includes("PUBLISH_ROOT"));
 assert.ok(reporter.includes('["repo","clone"'));
 assert.ok(reporter.includes('["push","origin"'));
 assert.ok(reporter.includes("fallbackPublishBatch"));
-assert.ok(reporter.includes("scheduleGitSync(true)"));\nassert.ok(reporter.includes("PUBLISH_SWEEP_MS"));\nassert.ok(reporter.includes("setInterval(publishSweep,PUBLISH_SWEEP_MS).unref()"));\nassert.ok(reporter.includes("||30000"));
+assert.ok(reporter.includes("scheduleGitSync(true)"));\nassert.ok(reporter.includes("PUBLISH_SWEEP_MS"));\nassert.ok(reporter.includes("syncDueAt"));\nassert.ok(reporter.includes("const due=Date.now()+delayMs"));\nassert.ok(reporter.includes("for(const batchFile of pending)"));\nassert.ok(reporter.includes("setInterval(publishSweep,PUBLISH_SWEEP_MS).unref()"));\nassert.ok(reporter.includes("||30000"));
 assert.ok(reporter.includes("uncaughtException"));
 assert.ok(watchdog.includes("127.0.0.1:$Port/health"));
 assert.ok(watchdog.includes("Start-Process"));
