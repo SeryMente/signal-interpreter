@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import {pathToFileURL} from "node:url";
 
 const DELTA_SCHEMA="signal-interpreter-cycle-delta/v1";
 const CHECKPOINT_SCHEMA="signal-interpreter-cycle-checkpoint/v1";
