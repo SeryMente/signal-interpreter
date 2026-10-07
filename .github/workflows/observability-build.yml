@@ -6,15 +6,9 @@ on:
       - main
     paths:
       - "observations/inbox/**"
-      - "docs/OBSERVABILITY-GITHUB-APP-SETUP.md"
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - "signal-observability-audit"
-    types:
-      - completed
 
 concurrency:
   group: signal-observability-build-main
@@ -25,7 +19,6 @@ permissions:
 
 jobs:
   build:
-    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
