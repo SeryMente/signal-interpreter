@@ -203,7 +203,7 @@ assert.ok(watchdog.includes("Start-Process"));
 assert.ok(reporterInstaller.includes("RestartCount 999"));
 assert.ok(reporterInstaller.includes("Observation Watchdog"));
 assert.ok(reporterInstaller.includes("run-supervised.ps1"));
-assert.ok(supervisor.includes("git archive --format=zip"));
+assert.ok(supervisor.includes(" archive --format=zip --output=$Archive origin/main"));
 assert.ok(supervisor.includes("origin/main"));
 assert.ok(supervisor.includes("SIGNAL_INTERPRETER_REPO"));
 assert.ok(supervisor.includes("Stop-Process -Id $proc.Id -Force"));
