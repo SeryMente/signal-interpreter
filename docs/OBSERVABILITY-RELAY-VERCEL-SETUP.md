@@ -37,7 +37,13 @@ La credencial debe tener permiso suficiente para crear contenido en `SeryMente/s
 
 ## Operación
 
-El relay limita el payload a 1.5 MB y 200 eventos por batch. Sólo acepta el schema `signal-interpreter-observation-batch/v1` y construye el único destino remoto permitido: `observations/inbox/<batchId>.json`.
+El relay limita el payload a 1.5 MB y 200 eventos por batch. También expone en GET la última publicación automática, la última publicación manual y la última marca de acceso del constructor al paquete.
+
+La extensión muestra esos tres tiempos en la sección Desarrollo. Los dos primeros proceden de `observations/health/github-build.json` y el tercero de `observations/health/model-context-access.json`.
+
+Cuando el modelo constructor accede al paquete para enriquecer contexto, debe ejecutar `node tools/observability-model-context-access.mjs` una vez completada la lectura; el script actualiza la marca usando la API autenticada de GitHub sin exponer el token en argumentos ni archivos.
+
+ Sólo acepta el schema `signal-interpreter-observation-batch/v1` y construye el único destino remoto permitido: `observations/inbox/<batchId>.json`.
 
 Los reenvíos del mismo batch son idempotentes: si el archivo ya existe, el relay devuelve aceptación duplicada.
 

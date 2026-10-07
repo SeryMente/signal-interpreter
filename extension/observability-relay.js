@@ -18,7 +18,7 @@ async function request(init){
 async function getStatus(){
   try{
     var data=await request({method:"GET"});
-    return{reachable:true,configured:true,repository:data&&data.repository||REPOSITORY,mode:data&&data.mode||"vercel-to-github",error:null};
+    return{reachable:true,configured:true,repository:data&&data.repository||REPOSITORY,mode:data&&data.mode||"vercel-to-github",publishHistory:data&&data.publishHistory||null,modelContextAccess:data&&data.modelContextAccess||null,error:null};
   }catch(error){
     return{reachable:false,configured:true,repository:REPOSITORY,error:String(error&&error.message||error)};
   }

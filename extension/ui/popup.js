@@ -276,14 +276,29 @@
         textLength:String(s.text||"").length};
     });
   }
+  function formatMoment(value, emptyLabel) {
+    if (!value) return emptyLabel;
+    var date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return emptyLabel;
+    return date.toLocaleString("es-MX", {hour12:false});
+  }
   async function renderRelayStatus() {
     try {
       var info=await SignalObservabilityRelay.getStatus();
+      var stored=await new Promise(function(resolve){chrome.storage.local.get(["signalObservationSyncState"],resolve);});
+      var syncState=stored.signalObservationSyncState||{};
+      var history=info.publishHistory||{};
       if($("githubSyncStatus")) $("githubSyncStatus").textContent=info.reachable ? "Relay Vercel · operativo" : "Relay no disponible";
       if($("githubAuthInfo")) $("githubAuthInfo").textContent=info.reachable ? "Chrome → Vercel → GitHub Actions · "+info.repository : String(info.error||"No se pudo contactar al relay");
+      if($("lastAutomaticPublish")) $("lastAutomaticPublish").textContent=formatMoment(history.lastAutomaticPublishAt||syncState.lastAutomaticPublishAt,"Nunca registrada");
+      if($("lastManualPublish")) $("lastManualPublish").textContent=formatMoment(history.lastManualPublishAt||syncState.lastManualPublishAt,"Nunca registrada");
+      if($("lastModelContextAccess")) $("lastModelContextAccess").textContent=formatMoment(info.modelContextAccess&&info.modelContextAccess.accessedAt,"No registrado");
     } catch(error) {
       if($("githubSyncStatus")) $("githubSyncStatus").textContent="Error";
       if($("githubAuthInfo")) $("githubAuthInfo").textContent=String(error);
+      if($("lastAutomaticPublish")) $("lastAutomaticPublish").textContent="No disponible";
+      if($("lastManualPublish")) $("lastManualPublish").textContent="No disponible";
+      if($("lastModelContextAccess")) $("lastModelContextAccess").textContent="No disponible";
     }
   }
 
@@ -294,7 +309,7 @@
       if(response&&response.ok) status("Observabilidad aceptada · "+Number(response.summary&&response.summary.eventsTotal||0)+" eventos");
       else status("No se pudo publicar: "+String(response&&response.error||"relay no disponible"),true);
     }catch(error){status("No se pudo publicar: "+String(error),true);}
-    finally{button.disabled=false;}
+    finally{button.disabled=false; await renderRelayStatus();}
   });
   renderRelayStatus();
   function renderEarningsOnly() {
@@ -341,6 +356,7 @@
     if (changes.effectifConfig) config = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.newValue || {});
     if (changes.effectifState) state = changes.effectifState.newValue || {};
     if (changes.effectifPlatformMirror) mirror = changes.effectifPlatformMirror.newValue || {};
+    if (changes.signalObservationSyncState) renderRelayStatus();
     if (changes.effectifLastEvent && changes.effectifLastEvent.newValue) {
       var last = changes.effectifLastEvent.newValue;
       $("last").textContent = new Date(last.timestamp).toLocaleTimeString() + " â€” " + last.action;
