@@ -13,7 +13,7 @@ const SPOOL=path.join(BASE,".signal-interpreter-observability-spool");
 const PUBLISH_ROOT=path.join(BASE,".signal-interpreter-observability-publisher");
 const STATE_DIR=path.join(BASE,".signal-interpreter-observability-state");
 const STATE_FILE=path.join(STATE_DIR,"health.json"),LOG_FILE=path.join(STATE_DIR,"reporter.log");
-const PORT=Number(process.env.SIGNAL_OBSERVATION_PORT||8788),MAX_BYTES=5*1024*1024,COMMIT_WINDOW_MS=Number(process.env.SIGNAL_OBSERVATION_COMMIT_WINDOW_MS||120000);
+const PORT=Number(process.env.SIGNAL_OBSERVATION_PORT||8788),MAX_BYTES=5*1024*1024,COMMIT_WINDOW_MS=Number(process.env.SIGNAL_OBSERVATION_COMMIT_WINDOW_MS||30000),PUBLISH_SWEEP_MS=Number(process.env.SIGNAL_OBSERVATION_SWEEP_MS||60000);
 let syncTimer=null,syncRunning=false,dirty=false,forceNext=false;
 let health=loadHealth();
 function iso(){return new Date().toISOString()}
@@ -28,6 +28,7 @@ function delay(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
 function spoolFiles(){if(!fs.existsSync(SPOOL))return[];return fs.readdirSync(SPOOL).filter(name=>name.endsWith(".json")).sort().map(name=>path.join(SPOOL,name))}
 function removeSpoolBatch(batchId){try{fs.rmSync(path.join(SPOOL,batchId+".json"),{force:true})}catch(_){} }
 function scheduleGitSync(force=false){dirty=true;health.queued=true;forceNext=forceNext||force;saveHealth();clearTimeout(syncTimer);syncTimer=setTimeout(()=>runGitSync().catch(()=>{}),force?5000:COMMIT_WINDOW_MS)}
+function publishSweep(){if(syncRunning)return;const pending=spoolFiles();if(dirty||pending.length){scheduleGitSync(false)}}
 async function ensurePublisher(){
   if(fs.existsSync(path.join(PUBLISH_ROOT,".git"))){
     await git(["remote","set-url","origin","https://github.com/"+REPO+".git"]);
@@ -116,4 +117,4 @@ server.requestTimeout=15000;server.headersTimeout=10000;
 server.on("error",error=>{log("server error: "+String(error));process.exitCode=1;setTimeout(()=>process.exit(1),100)});
 process.on("uncaughtException",error=>{log("uncaughtException: "+String(error));process.exit(1)});
 process.on("unhandledRejection",error=>{log("unhandledRejection: "+String(error));process.exit(1)});
-server.listen(PORT,"127.0.0.1",()=>{health.startedAt=iso();saveHealth();log("listening on http://127.0.0.1:"+PORT+" repo="+ROOT);scheduleGitSync(true)});
+server.listen(PORT,"127.0.0.1",()=>{health.startedAt=iso();saveHealth();log("listening on http://127.0.0.1:"+PORT+" repo="+ROOT);scheduleGitSync(true);setInterval(publishSweep,PUBLISH_SWEEP_MS).unref()});
