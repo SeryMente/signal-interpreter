@@ -61,7 +61,6 @@ assert.ok(background.includes("HOTLOAD_RUNTIME_BOUNDARY_RECOVERY_STARTED"));
 assert.ok(background.includes("HOTLOAD_CAPTURE_RECOVERY_COMPLETED"));
 assert.ok(background.includes("HOTLOAD_CAPTURE_LEASE_PREPARED"));
 assert.ok(background.includes("no-offscreen-close-no-transcription-reset"));
-assert.ok(background.includes("HOTLOAD_CALL_LEASE_HEARTBEAT"));
 assert.ok(background.includes('files: ["content.js"]'));
 assert.ok(content.includes("__SIGNAL_INTERPRETER_CLOUD_RUNTIME__"));
 assert.ok(content.includes("__SIGNAL_INTERPRETER_ANSWER_LEASE__"));
@@ -138,10 +137,19 @@ assert.ok(reporter.includes("setInterval(publishSweep,PUBLISH_SWEEP_MS).unref()"
 assert.ok(reporter.includes("||30000"));
 assert.ok(reporter.includes("uncaughtException"));
 assert.ok(watchdog.includes("127.0.0.1:$Port/health"));
+assert.ok(watchdog.includes("lastAcceptedAt"));
+assert.ok(watchdog.includes("if($h.health.lastAcceptedAt)"));
 assert.ok(watchdog.includes("Start-Process"));
 assert.ok(reporterInstaller.includes("RestartCount 999"));
 assert.ok(reporterInstaller.includes("Observation Watchdog"));
 assert.ok(reporterInstaller.includes("Start-ScheduledTask"));
+assert.ok(reporterInstaller.includes("Get-CimInstance Win32_ComputerSystem"));
+assert.ok(reporterInstaller.includes("$interactiveUser"));
+assert.ok(reporterInstaller.includes('Refusing to install outside the active fila4 profile'));
+assert.ok(reporterInstaller.includes("-UserId $interactiveUser"));
+assert.ok(reporterInstaller.includes("RunLevel Highest"));
+assert.ok(reporterInstaller.includes('if($owner -ne $interactiveUser)'));
+assert.equal(reporterInstaller.includes('$env:USERDOMAIN\\$env:USERNAME'),false);
 
 const forbidden=["CaptionBubbleLabel","AXVirtualView","SpeechRecognition","SignalLiveCaptionBridge","127.0.0.1:8787"];
 for(const value of [background,content,popup]){
