@@ -157,13 +157,14 @@ function normalizePlatformSnapshot(event,batch){
   if(String(page.origin||"")!=="https://app.cloudinterpreter.com")return null;
   const searchKeys=Array.isArray(page.searchKeys)?page.searchKeys.slice(0,40).map(String).sort():[];
   const identityKey=String(page.origin)+"|"+String(page.route||page.path||"")+"|"+searchKeys.join(",");
-  const snapshotHash=String(payload.snapshotHash||sha256(surface)).slice(0,64);
+  const snapshotHash=sha256(surface);
+  const sourceHash=String(payload.snapshotHash||"").slice(0,64);
   const snapshotId=String(event.id||sha256([batch.batchId,event.sequence,snapshotHash].join("|"))).slice(0,100);
   return{
     schema:"signal-interpreter-platform-observation/v1",
     snapshotId,batchId:batch.batchId,eventId:event.id||null,sequence:Number(event.sequence)||0,
     tabId:event.tabId==null?null:Number(event.tabId),capturedAt:String(surface.capturedAt||event.timestamp||iso()),
-    identityKey,snapshotHash,surface:scrubValue(surface,"platformSurface",0),
+    identityKey,snapshotHash,sourceHash,surface:scrubValue(surface,"platformSurface",0),
     route:String(page.route||page.path||""),
     url:String(page.url||page.path||"")
   };
@@ -223,7 +224,7 @@ function persistPlatformSnapshot(snapshot){
     lastDeltaPath:deltaPath||previous&&previous.lastDeltaPath||null,observations:existingCount+1,surface:snapshot.surface
   };
   platformState.observations=Number(platformState.observations||0)+(previous&&previous.snapshotHash===snapshot.snapshotHash?0:1);
-  platformState.seenHashes=(platformState.seenHashes||[]).concat(snapshot.snapshotHash).slice(-20000);
+  platformState.seenHashes=(platformState.seenHashes||[]).concat(snapshot.identityKey+"|"+snapshot.snapshotHash).slice(-20000);
   health.platformSnapshots=platformState.observations;
   health.platformRoutes=Object.keys(platformState.identities).length;
   health.platformLastObservationAt=snapshot.capturedAt;
@@ -236,7 +237,9 @@ function processBatchPlatformArtifacts(batch){
   for(const event of Array.isArray(batch&&batch.events)?batch.events:[]){
     if(String(event.action||"")!=="PLATFORM_SURFACE_SNAPSHOT")continue;
     const snapshot=normalizePlatformSnapshot(event,batch);
-    if(!snapshot||platformState.seenHashes.includes(snapshot.snapshotHash))continue;
+    if(!snapshot)continue;
+    const dedupeKey=snapshot.identityKey+"|"+snapshot.snapshotHash;
+    if((platformState.seenHashes||[]).includes(dedupeKey)||(!snapshot.identityKey && (platformState.seenHashes||[]).includes(snapshot.snapshotHash)))continue;
     persistPlatformSnapshot(snapshot);processed++;
   }
   if(processed)writeObservabilityManifest(batch);
