@@ -73,6 +73,8 @@ export function computeCycleDelta(observationsRoot,checkpointInput){
   const newCategories=categories.filter(x=>!knownCategories.has(x));
   const newRoutes=currentRoutes.filter(x=>!knownRoutes.has(x));
   const newIdentities=currentIdentities.filter(x=>!knownIdentities.has(x));
+  const removedRoutes=arr(checkpoint.routes).map(String).filter(x=>!new Set(currentRoutes).has(x)).sort();
+  const removedIdentities=arr(checkpoint.identities).map(String).filter(x=>!new Set(currentIdentities).has(x)).sort();
   const errors=events.filter(e=>e.level==="error");
   const warnings=events.filter(e=>e.level==="warn");
   const actionErrors={};
@@ -107,6 +109,10 @@ export function computeCycleDelta(observationsRoot,checkpointInput){
       newCategories,
       newRoutes,
       newIdentities,
+      removedRoutes,
+      removedIdentities,
+      platformObservationDelta:currentObservations-numberOr(checkpoint.platformObservations),
+      platformDeltaDelta:currentDeltas-numberOr(checkpoint.platformDeltas),
       newPlatformObservations:Math.max(0,currentObservations-numberOr(checkpoint.platformObservations)),
       newPlatformDeltas:Math.max(0,currentDeltas-numberOr(checkpoint.platformDeltas)),
       firstNewSequence:eventFirst?numberOr(eventFirst.sequence):null,
@@ -116,7 +122,8 @@ export function computeCycleDelta(observationsRoot,checkpointInput){
     findings:{
       novelty:newActions.length>0||newRoutes.length>0||newIdentities.length>0||events.length>0,
       platformChanged:newRoutes.length>0||newIdentities.length>0||currentDeltas>numberOr(checkpoint.platformDeltas),
-      regressionSignal:errors.length>0,
+      platformContractRegression:removedRoutes.length>0||removedIdentities.length>0||currentObservations<numberOr(checkpoint.platformObservations),
+      regressionSignal:errors.length>0||removedRoutes.length>0||removedIdentities.length>0,
       warningSignal:warnings.length>0,
       unknowns:missing
     },
@@ -124,6 +131,8 @@ export function computeCycleDelta(observationsRoot,checkpointInput){
       ...Object.entries(actionErrors).sort((a,b)=>b[1]-a[1]).map(([action,count])=>({type:"error-action",action,count})),
       ...newRoutes.map(route=>({type:"new-route",route})),
       ...newIdentities.map(identity=>({type:"new-platform-identity",identity})),
+      ...removedRoutes.map(route=>({type:"removed-route",route})),
+      ...removedIdentities.map(identity=>({type:"removed-platform-identity",identity})),
       ...newActions.map(action=>({type:"new-action",action}))
     ].slice(0,50)
   };
