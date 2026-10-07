@@ -145,11 +145,22 @@ async function ensurePublisher(){
   await git(["config","user.name","Signal Interpreter Observability"]);
   await git(["config","user.email","observability@users.noreply.github.com"]);
 }
+function sanitizeObservedUrl(raw){
+  try{
+    const url=new URL(String(raw||""));
+    const isTarget=url.origin==="https://app.cloudinterpreter.com";
+    const pathname=url.pathname.replace(/\/call\/[^/]+/g,"/call/<ID>").replace(/\/profile\/[^/]+/g,"/profile/<ID>");
+    const queryKeys=Array.from(url.searchParams.keys()).sort().slice(0,40);
+    if(!isTarget)return url.origin;
+    return url.origin+pathname+(queryKeys.length?"?"+queryKeys.map(key=>encodeURIComponent(key)+"=<VALUE>").join("&"):"");
+  }catch(_){return String(raw||"").replace(/[?#].*$/,"").slice(0,500)}
+}
 function scrubValue(value,key="",depth=0){
   if(depth>8)return"[MAX_DEPTH]";
   const k=String(key||"");
   if(/api.?key|authorization|cookie|password|secret|token|credential/i.test(k))return"[REDACTED]";
   if(/rawAudio|rawTranscript|transcriptText|captionText|utterance|innerText|textContent|outerHTML|innerHTML|inputValue|requestBody|responseBody|bodyText|htmlText|cssText|javascriptSource|audioBlob|base64|requestTextSafe|dialogText/i.test(k))return"[OMITTED]";
+  if(/^(?:url|href|src|initiator)$/i.test(k))return sanitizeObservedUrl(value);
   if(typeof value==="string"){
     return value
       .replace(/\\bBearer\\s+[A-Za-z0-9._~+/=-]+/gi,"Bearer [REDACTED]")
