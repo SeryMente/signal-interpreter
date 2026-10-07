@@ -171,6 +171,16 @@
     });
     return result;
   }
+  function computedStyleSurface(style) {
+    if (!style) return null;
+    var keys = ["display","position","boxSizing","flexDirection","justifyContent","alignItems","gridTemplateColumns","overflow","width","height","padding","margin"];
+    var output = {};
+    keys.forEach(function (key) {
+      var value = style.getPropertyValue(key);
+      if (value) output[key] = structuralToken(value);
+    });
+    return output;
+  }
   function elementSurface(element) {
     var style = element && getComputedStyle(element);
     var rect = element && element.getBoundingClientRect ? element.getBoundingClientRect() : null;
@@ -189,6 +199,7 @@
       childCount: element && element.children ? element.children.length : 0,
       textLength: text.length,
       textFingerprint: stableSurfaceToken(text),
+      computedStyle: computedStyleSurface(style),
       bbox: rect ? { width: Math.round(rect.width), height: Math.round(rect.height) } : null
     };
   }
