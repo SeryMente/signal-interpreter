@@ -1,6 +1,6 @@
 (function(global){
 "use strict";
-var RELAY_BASE="https://signal-interpreter-observability-relay.vercel.app";
+var RELAY_BASE="https://signal-interpreter-observability-re.vercel.app";
 var RELAY_ENDPOINT=RELAY_BASE+"/api/batch";
 var REPOSITORY="SeryMente/signal-interpreter";
 var REQUEST_TIMEOUT_MS=15000;

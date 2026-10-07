@@ -79,7 +79,7 @@ La extensión no envía observabilidad a localhost ni contiene credenciales de G
 
 Publica cada batch mediante una Vercel Function pública y de destino fijo:
 
-https://signal-interpreter-observability-relay.vercel.app/api/batch
+https://signal-interpreter-observability-re.vercel.app/api/batch
 
 El relay valida método, schema, batchId, cantidad de eventos y tamaño máximo. Después escribe exclusivamente en:
 

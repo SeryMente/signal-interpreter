@@ -26,8 +26,8 @@ assert.ok(manifest.permissions.includes("alarms"));
 assert.ok(manifest.permissions.includes("unlimitedStorage"));
 assert.ok(manifest.permissions.includes("scripting"));
 assert.ok(manifest.host_permissions.includes("https://app.cloudinterpreter.com/*"));
-assert.ok(manifest.host_permissions.includes("https://signal-interpreter-observability-relay.vercel.app/*"));
-assert.match(manifest.content_security_policy.extension_pages,/https:\/\/signal-interpreter-observability-relay\.vercel\.app/);
+assert.ok(manifest.host_permissions.includes("https://signal-interpreter-observability-re.vercel.app/*"));
+assert.match(manifest.content_security_policy.extension_pages,/https:\/\/signal-interpreter-observability-re\.vercel\.app/);
 
 assert.ok(background.includes('importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js")'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync"'));
@@ -60,7 +60,7 @@ assert.equal(/127\.0\.0\.1:\d+/.test(observationSync),false);
 assert.equal(observationSync.includes("sendNativeMessage"),false);
 assert.ok(observationSync.includes("lastRelayAcceptedAt"));
 
-assert.ok(relay.includes("https://signal-interpreter-observability-relay.vercel.app"));
+assert.ok(relay.includes("https://signal-interpreter-observability-re.vercel.app"));
 assert.ok(relay.includes("uploadBatch"));
 assert.ok(relay.includes("getStatus"));
 assert.equal(/client_secret|device.?flow|githubApp/i.test(relay),false);
