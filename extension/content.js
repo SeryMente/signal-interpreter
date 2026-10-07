@@ -75,6 +75,7 @@
   var lastObservedHref = location.href;
   var platformSurfaceTimer = null;
   var navigationProbeTimer = null;
+  var navigationListenersInstalled = false;
   var lastCallEndMeasurement = null;
   var ratingConfirmationTimer = null;
   var answerWatchdog = null;
@@ -1569,6 +1570,34 @@
       ? "USD/MXN " + info.fx.toFixed(4) + " · tasa de hoy " + info.fxDate
       : "Tasa USD/MXN de hoy no confirmada todavía";
   }
+  function installNavigationObservers() {
+    if (navigationListenersInstalled) return;
+    navigationListenersInstalled = true;
+    window.addEventListener("popstate", function () {
+      trackRoute("popstate");
+      observePlatformUrl("popstate");
+      emitAutoAnswerReadiness("popstate");
+    });
+    window.addEventListener("hashchange", function () {
+      trackRoute("hashchange");
+      observePlatformUrl("hashchange");
+      emitAutoAnswerReadiness("hashchange");
+    });
+    window.addEventListener("pageshow", function () {
+      if (isTarget() && (config.autoAnswerEnabled || config.observationEnabled) && !observer) start();
+      observePlatformUrl("pageshow");
+      emitAutoAnswerReadiness("pageshow");
+    });
+    if (window.navigation && window.navigation.addEventListener) {
+      window.navigation.addEventListener("navigate", function () {
+        setTimeout(function () {
+          trackRoute("navigation");
+          observePlatformUrl("navigation");
+        }, 0);
+      });
+    }
+  }
+
   function start() {
     if (observer || !isTarget() || (!config.autoAnswerEnabled && !config.observationEnabled)) return;
     if (!document.documentElement) {
@@ -1598,17 +1627,7 @@
     startRichTelemetry();
     lastObservedHref = location.href;
     observePlatformUrl("start");
-    window.addEventListener("popstate", function () {
-      trackRoute("popstate");
-      observePlatformUrl("popstate");
-      emitAutoAnswerReadiness("popstate");
-    });
-    window.addEventListener("hashchange", function () {
-      trackRoute("hashchange");
-      observePlatformUrl("hashchange");
-      emitAutoAnswerReadiness("hashchange");
-    });
-    window.addEventListener("pageshow", function () { observePlatformUrl("pageshow"); });
+    installNavigationObservers();
     if (navigationProbeTimer) clearInterval(navigationProbeTimer);
     navigationProbeTimer = setInterval(function () { observePlatformUrl("interval"); }, 1000);
     emit("PLATFORM_SESSION_STARTED", { title: safe(document.title), userAgent: navigator.userAgent, language: navigator.language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
@@ -1685,11 +1704,7 @@
   }, true);
   scheduleReadinessHeartbeat();
   emitAutoAnswerReadiness("initial-route");
-  if (window.navigation && window.navigation.addEventListener) {
-    window.navigation.addEventListener("navigate", function () {
-      setTimeout(function () { trackRoute("navigation"); observePlatformUrl("navigation"); }, 0);
-    });
-  }
+  installNavigationObservers();
   window.addEventListener("pagehide", function () {
     if (readinessTimer) { clearInterval(readinessTimer); readinessTimer = null; }
     var activeCallId = currentCallId();
