@@ -34,6 +34,7 @@ assert.ok(content.includes("computedStyleSurface"));
 assert.ok(content.includes("installNavigationObservers"));
 assert.ok(content.includes("inlineFingerprint"));
 assert.ok(content.includes("inlineStyleSurface"));
+assert.ok(content.includes("if (!telemetryTimer) telemetryTimer = setInterval"));
 
 assert.ok(background.includes("NETWORK_ACTIVITY_WINDOW"));
 assert.ok(background.includes("readOfficialStatsViaTrpc"));
@@ -158,6 +159,8 @@ assert.ok(reporter.includes("platformIdentityCount"));
 assert.ok(reporter.includes("rebuildPlatformStateFromPackage"));
 assert.ok(reporter.includes("const snapshotHash=sha256(surface)"));
 assert.ok(reporter.includes("sanitizeObservedUrl"));
+assert.ok(reporter.includes("eventsTotal:safeEvents.length"));
+assert.ok(reporter.includes("critical:safeEvents.some"));
 
 assert.ok(reporter.includes('snapshot.identityKey+"|"+snapshot.snapshotHash'));
 assert.ok(reporter.includes("batch.trigger==="+"\"observability-self-test\""));
