@@ -13,7 +13,6 @@
     "alarms",
     "unlimitedStorage",
     "webRequest",
-    "nativeMessaging",
     "scripting"
   ],
   "host_permissions": [
@@ -22,7 +21,9 @@
     "https://api.frankfurter.dev/*",
     "https://open.er-api.com/*",
     "https://api.groq.com/*",
-    "https://api.exchangerate.fun/*"
+    "https://api.exchangerate.fun/*",
+    "https://api.github.com/*",
+    "https://github.com/login/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -62,6 +63,6 @@
     "128": "icons/icon128.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src https://api.exchangerate.fun https://api.groq.com https://api.frankfurter.app https://api.frankfurter.dev https://open.er-api.com"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src https://api.github.com https://github.com https://api.exchangerate.fun https://api.groq.com https://api.frankfurter.app https://api.frankfurter.dev https://open.er-api.com"
   }
 }
