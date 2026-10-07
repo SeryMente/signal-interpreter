@@ -187,6 +187,8 @@
       visible: !!(style && style.display !== "none" && style.visibility !== "hidden" && !element.hidden && rect && rect.width > 0 && rect.height > 0),
       disabled: !!(element && element.disabled),
       childCount: element && element.children ? element.children.length : 0,
+      textLength: text.length,
+      textFingerprint: stableSurfaceToken(text),
       bbox: rect ? { width: Math.round(rect.width), height: Math.round(rect.height) } : null
     };
   }
@@ -194,8 +196,18 @@
     var sheets = [];
     Array.from(document.styleSheets || []).slice(0, 100).forEach(function (sheet) {
       var href = safePlatformUrl(sheet.href || "");
-      var ruleCount = null, readable = false;
-      try { ruleCount = sheet.cssRules ? sheet.cssRules.length : 0; readable = true; } catch (_) {}
+      var ruleCount = null, readable = false, selectorCount = 0, atRuleCount = 0, selectors = [];
+      try {
+        var rules = sheet.cssRules ? Array.from(sheet.cssRules) : [];
+        ruleCount = rules.length; readable = true;
+        rules.slice(0, 120).forEach(function (rule) {
+          var cssType = Number(rule && rule.type || 0);
+          if (cssType === 1 && rule.selectorText) {
+            selectorCount += 1;
+            if (selectors.length < 40) selectors.push(structuralToken(rule.selectorText));
+          } else if (cssType !== 1) atRuleCount += 1;
+        });
+      } catch (_) {}
       var owner = sheet.ownerNode;
       sheets.push({
         href: href,
@@ -203,6 +215,9 @@
         media: sheet.media ? structuralToken(String(sheet.media.mediaText || "")) : "",
         ownerTag: String(owner && owner.tagName || "").toLowerCase(),
         ruleCount: ruleCount,
+        selectorCount: selectorCount,
+        atRuleCount: atRuleCount,
+        selectors: selectors,
         sameOriginReadable: readable
       });
     });
@@ -307,7 +322,7 @@
       searchKeys: Array.from(new URL(location.href).searchParams.keys()).sort().slice(0, 40),
       hashPresent: !!location.hash
     };
-    return {
+    var surface = {
       schema: "signal-interpreter-platform-surface/v1",
       page: page,
       controls: { buttons: buttons, links: links, fields: fields, headings: headings },
@@ -325,6 +340,43 @@
         rawAudioStored: false
       }
     };
+    function approxBytes(value) {
+      try { return new TextEncoder().encode(JSON.stringify(value)).length; } catch (_) { return JSON.stringify(value).length * 2; }
+    }
+    var originalCounts = {
+      elements: surface.dom.elements.length,
+      buttons: surface.controls.buttons.length,
+      links: surface.controls.links.length,
+      fields: surface.controls.fields.length,
+      headings: surface.controls.headings.length,
+      resources: surface.resources.recent.length,
+      stylesheets: surface.css.stylesheets.length,
+      scripts: surface.javascript.scripts.length,
+      metadata: surface.metadata.length
+    };
+    surface.dom.elements = surface.dom.elements.slice(0, 360);
+    surface.controls.buttons = surface.controls.buttons.slice(0, 120);
+    surface.controls.links = surface.controls.links.slice(0, 100);
+    surface.controls.fields = surface.controls.fields.slice(0, 80);
+    surface.controls.headings = surface.controls.headings.slice(0, 70);
+    surface.resources.recent = surface.resources.recent.slice(-60);
+    surface.css.stylesheets = surface.css.stylesheets.slice(0, 80);
+    surface.javascript.scripts = surface.javascript.scripts.slice(0, 100);
+    surface.metadata = surface.metadata.slice(0, 80);
+    var maxBytes = 48000;
+    while (approxBytes(surface) > maxBytes && surface.dom.elements.length > 120) surface.dom.elements = surface.dom.elements.slice(0, Math.max(120, Math.floor(surface.dom.elements.length * 0.8)));
+    while (approxBytes(surface) > maxBytes && surface.resources.recent.length > 20) surface.resources.recent = surface.resources.recent.slice(-Math.max(20, Math.floor(surface.resources.recent.length * 0.8)));
+    surface.bounds = {
+      maxApproxBytes: maxBytes,
+      actualApproxBytes: approxBytes(surface),
+      originalCounts: originalCounts,
+      retainedCounts: {
+        elements: surface.dom.elements.length, buttons: surface.controls.buttons.length, links: surface.controls.links.length,
+        fields: surface.controls.fields.length, headings: surface.controls.headings.length, resources: surface.resources.recent.length,
+        stylesheets: surface.css.stylesheets.length, scripts: surface.javascript.scripts.length, metadata: surface.metadata.length
+      }
+    };
+    return surface;
   }
   function isTarget() { return location.hostname === config.targetHost; }
   function isAuthorizedProfilePage() {
