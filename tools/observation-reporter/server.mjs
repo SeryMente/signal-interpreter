@@ -301,15 +301,16 @@ function processBatchPlatformArtifacts(batch){
     if(String(event.action||"")!=="PLATFORM_SURFACE_SNAPSHOT")continue;
     const snapshot=normalizePlatformSnapshot(event,batch);
     if(!snapshot)continue;
+    const currentIdentity=platformState.identities[snapshot.identityKey]||null;
     const dedupeKey=snapshot.identityKey+"|"+snapshot.snapshotHash;
-    if((platformState.seenHashes||[]).includes(dedupeKey)||(!snapshot.identityKey && (platformState.seenHashes||[]).includes(snapshot.snapshotHash)))continue;
+    if((currentIdentity&&currentIdentity.snapshotHash===snapshot.snapshotHash) || (platformState.seenHashes||[]).includes(dedupeKey))continue;
     persistPlatformSnapshot(snapshot);processed++;
   }
   return processed;
 }
 async function processUnpublishedPlatformBatches(){
   if(!fs.existsSync(BATCHES))return;
-  const files=fs.readdirSync(BATCHES).filter(x=>x.endsWith(".json")).sort().slice(-200);
+  const files=fs.readdirSync(BATCHES).filter(x=>x.endsWith(".json")).sort();
   for(const file of files){
     try{
       const batch=JSON.parse(fs.readFileSync(path.join(BATCHES,file),"utf8"));
