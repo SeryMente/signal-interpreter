@@ -48,6 +48,8 @@ assert.ok(observationSync.includes("payload:scrub(e.payload"));
 assert.ok(observationSync.includes("extensionVersion:e.extensionVersion"));
 assert.ok(observationSync.includes("url:e.url"));
 assert.ok(observationSync.includes("Reporter rejected observation batch"));
+assert.ok(observationSync.includes("safeEventUrl"));
+
 
 assert.ok(observationSync.includes("periodInMinutes:1"));
 assert.equal(observationSync.includes("chrome.alarms.create(\"signal-observation-sync\",{when:"),false);
@@ -150,6 +152,8 @@ assert.ok(reporter.includes("processUnpublishedPlatformBatches"));
 assert.ok(reporter.includes("platformIdentityCount"));
 assert.ok(reporter.includes("rebuildPlatformStateFromPackage"));
 assert.ok(reporter.includes("const snapshotHash=sha256(surface)"));
+assert.ok(reporter.includes("sanitizeObservedUrl"));
+
 assert.ok(reporter.includes('snapshot.identityKey+"|"+snapshot.snapshotHash'));
 assert.ok(reporter.includes("batch.trigger==="+"\"observability-self-test\""));
 assert.ok(packageAudit.includes("signal-interpreter-observability-package/v1"));
