@@ -27,7 +27,7 @@ assert.ok(background.includes("/api/trpc/logFetcher.fetchInterpreterLogs"));
 assert.ok(background.includes("reconcilePlatformTelemetry"));
 assert.ok(background.includes('alarm.name==="signal-observation-sync"'));
 assert.ok(background.includes("SignalObservationSync.flush(\"startup\""));
-assert.ok(background.includes("SignalObservationSync.flush(\"alarm\""));
+assert.ok(background.includes("SignalObservationSync.flush(\"alarm\""));\nassert.ok(background.includes('alarm.name==="signal-observation-sync-retry"'));\nassert.ok(background.includes('periodInMinutes:1'));
 assert.ok(observationSync.includes("flushQueue=Promise.resolve()"));
 assert.ok(observationSync.includes("EVENT_THRESHOLD"));
 assert.ok(observationSync.includes("signal-observation-sync-retry"));\nassert.ok(observationSync.includes("periodInMinutes:1"));\nassert.equal(observationSync.includes("chrome.alarms.create(\"signal-observation-sync\",{when:"),false);
