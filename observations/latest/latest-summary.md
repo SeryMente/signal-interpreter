@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-49a83b6a-054d-48ae-b67a-f931be508fb2
-- Creado: 2026-10-07T22:39:54.254Z
-- Trigger: manual
+- Batch: batch-af4380a9-dc5f-4cfe-947e-06416aacd2e7
+- Creado: 2026-10-07T22:40:15.307Z
+- Trigger: event-window
 - Extensión: 0.10.0
 - Eventos: 200
 - Errores: 0
-- Warnings: 9
-- Secuencia: 401 → 600
+- Warnings: 0
+- Secuencia: 601 → 800
 - Identidades de plataforma: 0
 - Snapshots de plataforma: 0
 - Deltas de plataforma: 0
@@ -15,28 +15,16 @@
 ## Categorías
 
 {
-  "RUNTIME": 194,
-  "PORTAL": 4,
-  "SESSION": 2
+  "RUNTIME": 197,
+  "SESSION": 3
 }
 
 ## Acciones
 
 {
-  "MEDIA_HEALTH": 53,
-  "AUTO_ANSWER_READINESS": 96,
-  "EARNINGS_OVERLAY_CURRENCY_SELECTED": 2,
-  "EARNINGS_OVERLAY_PERIOD_SELECTED": 9,
-  "PLATFORM_EARNINGS_RANGE_REQUESTED": 8,
-  "PLATFORM_EARNINGS_RANGE_COMPLETED": 8,
-  "EARNINGS_SYNC_QUEUE_ERROR": 3,
-  "PLATFORM_EARNINGS_CHART_MESSAGE_ERROR": 3,
-  "EARNINGS_OVERLAY_CHART_SYNC_ERROR": 3,
-  "PLATFORM_INTEGRITY_CHECK": 4,
-  "NETWORK_ACTIVITY_WINDOW": 3,
-  "PAGE_LIFECYCLE": 3,
-  "HOTLOAD_CALL_LEASE_HEARTBEAT": 2,
-  "PAGE_VISIBILITY_CHANGED": 1,
-  "PORTAL_STRUCTURE_SNAPSHOT": 1,
-  "PERFORMANCE_HEARTBEAT": 1
+  "AUTO_ANSWER_READINESS": 117,
+  "MEDIA_HEALTH": 73,
+  "PLATFORM_INTEGRITY_CHECK": 5,
+  "HOTLOAD_CALL_LEASE_HEARTBEAT": 3,
+  "PERFORMANCE_HEARTBEAT": 2
 }
