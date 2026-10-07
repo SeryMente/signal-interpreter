@@ -315,7 +315,7 @@ function processBatchPlatformArtifacts(batch){
   if(processed)writeObservabilityManifest(batch);
   return processed;
 }
-function processUnpublishedPlatformBatches(){
+async function processUnpublishedPlatformBatches(){
   if(!fs.existsSync(BATCHES))return;
   const files=fs.readdirSync(BATCHES).filter(x=>x.endsWith(".json")).sort().slice(-200);
   for(const file of files){
