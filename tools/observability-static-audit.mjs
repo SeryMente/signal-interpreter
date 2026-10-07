@@ -22,6 +22,8 @@ assert.ok(popup.includes("sendNativeMessage"));
 assert.ok(content.includes("extractPortalStructure"));
 assert.ok(content.includes("PLATFORM_SURFACE_SNAPSHOT"));
 assert.ok(content.includes("safePlatformUrl"));
+assert.ok(content.includes("normalizePlatformPath"));
+assert.equal(content.includes("requestTextSafe"),false);
 assert.ok(content.includes("stylesheetSurface"));
 assert.ok(content.includes("scriptSurface"));
 assert.ok(content.includes("resourceSurface"));
@@ -53,6 +55,8 @@ assert.ok(observationSync.includes("extensionVersion:e.extensionVersion"));
 assert.ok(observationSync.includes('url:safeEventUrl(e.url||\"\")'));
 assert.ok(observationSync.includes("Reporter rejected observation batch"));
 assert.ok(observationSync.includes("safeEventUrl"));
+assert.ok(observationSync.includes("url|href|src|initiator"));
+assert.ok(observationSync.includes("[PHONE]"));
 
 
 assert.ok(observationSync.includes("periodInMinutes:1"));
@@ -159,6 +163,9 @@ assert.ok(reporter.includes("platformIdentityCount"));
 assert.ok(reporter.includes("rebuildPlatformStateFromPackage"));
 assert.ok(reporter.includes("const snapshotHash=sha256(surface)"));
 assert.ok(reporter.includes("sanitizeObservedUrl"));
+assert.ok(reporter.includes("batchId inválido"));
+assert.ok(reporter.includes("previous&&previous.snapshotPath"));
+assert.ok(reporter.includes("processUnpublishedPlatformBatches"));
 assert.ok(reporter.includes("eventsTotal:safeEvents.length"));
 assert.ok(reporter.includes("critical:safeEvents.some"));
 
