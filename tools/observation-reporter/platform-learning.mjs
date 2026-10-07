@@ -64,10 +64,11 @@ export function semanticPlatformDelta(previous,current){
   compareArray(p.controls&&p.controls.links,c.controls&&c.controls.links,"controls.links",x=>String(x.path||"")+"|"+String(x.label||""),changes);
   compareArray(p.controls&&p.controls.fields,c.controls&&c.controls.fields,"controls.fields",x=>JSON.stringify(x),changes);
   compareArray(p.css&&p.css.stylesheets,c.css&&c.css.stylesheets,"css.stylesheets",x=>String(x.href||"")+"|"+String(x.media||""),changes);
-  compareArray(p.css&&p.css.inlineStyles,c.css&&c.css.inlineStyles,"css.inlineStyles",x=>String(x.index||0)+"|"+String(x.media||""),changes);
-  compareArray(p.javascript&&p.javascript.scripts,c.javascript&&c.javascript.scripts,"javascript.scripts",x=>String(x.src||"")+"|"+String(x.type||"")+"|"+String(x.inlineLength||0),changes);
+  compareArray(p.css&&p.css.inlineStyles,c.css&&c.css.inlineStyles,"css.inlineStyles",x=>String(x.index||0)+"|"+String(x.media||"")+"|"+String(x.inlineFingerprint||""),changes);
+  compareArray(p.javascript&&p.javascript.scripts,c.javascript&&c.javascript.scripts,"javascript.scripts",x=>String(x.src||"")+"|"+String(x.type||"")+"|"+String(x.inlineLength||0)+"|"+String(x.inlineFingerprint||""),changes);
   compareArray(p.resources&&p.resources.recent,c.resources&&c.resources.recent,"resources.recent",x=>String(x.url||"")+"|"+String(x.initiatorType||""),changes);
   compareArray(p.frameworkHints,c.frameworkHints,"frameworkHints",x=>String(x),changes);
+  compareArray(p.metadata,c.metadata,"metadata",x=>String(x.name||"")+"|"+String(x.contentLength||0),changes);
   const sections=Array.from(new Set(changes.map(x=>String(x.path||"").split(".")[0])));
   const summary={added:changes.filter(x=>x.kind==="added"||x.kind==="initial").length,removed:changes.filter(x=>x.kind==="removed").length,changed:changes.filter(x=>x.kind==="changed").length,sections};
   return{
