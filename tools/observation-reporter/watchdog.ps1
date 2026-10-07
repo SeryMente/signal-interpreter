@@ -13,11 +13,12 @@ try{
   $h=Invoke-RestMethod -Uri "http://127.0.0.1:$Port/health" -TimeoutSec 3
   if(-not $h.ok){$restart=$true}
   else{
-    $lastAccepted=[DateTime]::Parse($h.health.lastAcceptedAt)
+    $lastAccepted=$null
+    if($h.health.lastAcceptedAt){$lastAccepted=[DateTime]::Parse($h.health.lastAcceptedAt)}
     $lastGit=$null
     if($h.health.lastGitSuccessAt){$lastGit=[DateTime]::Parse($h.health.lastGitSuccessAt)}
     $spoolCount=[int]$h.health.spoolCount
-    if($spoolCount -gt 0 -and (-not $lastGit -or $lastAccepted -gt $lastGit.AddMinutes(5))){$restart=$true}
+    if($spoolCount -gt 0 -and (-not $lastGit -or -not $lastAccepted -or $lastAccepted -gt $lastGit.AddMinutes(5))){$restart=$true}
   }
 }catch{$restart=$true}
 if(-not $restart){return}
