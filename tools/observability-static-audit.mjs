@@ -13,7 +13,7 @@ const watchdog=read("tools/observation-reporter/watchdog.ps1");
 const reporterInstaller=read("tools/observation-reporter/install-autostart.ps1");
 const host=read("tools/observability-native-host/SignalInterpreterObservabilityHost.cs");
 
-assert.equal(manifest.version,"0.9.23");
+assert.equal(manifest.version,"0.10.0");
 assert.ok(manifest.permissions.includes("nativeMessaging"));
 assert.ok(manifest.permissions.includes("scripting"));
 assert.deepEqual(manifest.content_scripts[0].matches,["https://app.cloudinterpreter.com/*"]);
@@ -29,6 +29,9 @@ assert.ok(content.includes("resourceSurface"));
 assert.ok(content.includes("observePlatformUrl"));
 assert.ok(content.includes("navigationProbeTimer"));
 assert.ok(content.includes("CALL_END_CONTROL_INTERACTION"));
+assert.ok(content.includes("maxApproxBytes"));
+assert.ok(content.includes("textFingerprint"));
+
 assert.ok(background.includes("NETWORK_ACTIVITY_WINDOW"));
 assert.ok(background.includes("readOfficialStatsViaTrpc"));
 assert.ok(background.includes("/api/trpc/logFetcher.fetchInterpreterLogs"));
@@ -44,6 +47,8 @@ assert.ok(observationSync.includes("signal-observation-sync-retry"));
 assert.ok(observationSync.includes("payload:scrub(e.payload"));
 assert.ok(observationSync.includes("extensionVersion:e.extensionVersion"));
 assert.ok(observationSync.includes("url:e.url"));
+assert.ok(observationSync.includes("Reporter rejected observation batch"));
+
 assert.ok(observationSync.includes("periodInMinutes:1"));
 assert.equal(observationSync.includes("chrome.alarms.create(\"signal-observation-sync\",{when:"),false);
 assert.ok(background.includes("probeCloudTabTelemetry"));
