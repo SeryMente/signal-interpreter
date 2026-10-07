@@ -71,6 +71,10 @@
   var lastScreenSignature = "";
   var lastMirrorSignature = "";
   var lastPortalStructureSignature = "";
+  var lastPlatformSurfaceHash = "";
+  var lastObservedHref = location.href;
+  var platformSurfaceTimer = null;
+  var navigationProbeTimer = null;
   var lastCallEndMeasurement = null;
   var ratingConfirmationTimer = null;
   var answerWatchdog = null;
@@ -103,25 +107,224 @@
       .slice(0, 1000);
   }
   function mirrorText(value, limit) { return safe(normalized(value)).slice(0, limit || 500); }
+  function safePlatformUrl(raw) {
+    try {
+      var url = new URL(String(raw || ""), location.href);
+      if (url.origin === AUTHORIZED_PROFILE_ORIGIN) {
+        var path = url.pathname
+          .replace(/\/call\/[^/]+/g, "/call/<ID>")
+          .replace(/\/profile\/[^/]+/g, "/profile/<ID>");
+        var keys = Array.from(url.searchParams.keys()).sort().slice(0, 30);
+        return url.origin + path + (keys.length ? "?" + keys.map(function (key) { return encodeURIComponent(key) + "=<VALUE>"; }).join("&") : "");
+      }
+      return url.origin;
+    } catch (_) { return "[INVALID_URL]"; }
+  }
+  function stableSurfaceToken(value) {
+    var text = String(value == null ? "" : value);
+    var hash = 2166136261;
+    for (var i = 0; i < text.length; i += 1) {
+      hash ^= text.charCodeAt(i);
+      hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+    }
+    return ("00000000" + (hash >>> 0).toString(16)).slice(-8);
+  }
+  function structuralText(value) {
+    var text = normalized(value).replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[EMAIL]");
+    text = text.replace(/\b(?:\+?\d[\d\s().-]{7,}\d)\b/g, "[PHONE]");
+    text = text.replace(/\b\d{7,}\b/g, "[NUMBER]");
+    return text.slice(0, 120);
+  }
+  function structuralToken(value) {
+    var text = structuralText(value);
+    if (!text) return "";
+    return text.length > 80 ? "[TEXT:" + text.length + ":" + stableSurfaceToken(text) + "]" : text;
+  }
+  function selectorPath(element) {
+    if (!element || !element.tagName) return "";
+    var parts = [], current = element, depth = 0;
+    while (current && current.nodeType === 1 && depth < 5) {
+      var tag = String(current.tagName || "").toLowerCase();
+      var id = current.getAttribute && current.getAttribute("id");
+      if (id) {
+        parts.unshift(tag + "#" + structuralToken(id).replace(/[^a-z0-9_-]/gi, "_").slice(0, 80));
+        break;
+      }
+      var parent = current.parentElement, index = parent ? Array.prototype.indexOf.call(parent.children, current) + 1 : 1;
+      parts.unshift(tag + ":nth-child(" + index + ")");
+      current = parent;
+      depth += 1;
+    }
+    return parts.join(">");
+  }
+  function attributeInventory(element) {
+    if (!element || !element.attributes) return {};
+    var allowed = ["id","role","aria-label","aria-labelledby","aria-describedby","data-testid","data-test","data-state","data-slot","data-component","data-cy","type","name","rel","target","href"];
+    var result = {};
+    allowed.forEach(function (name) {
+      var value = element.getAttribute(name);
+      if (value == null) return;
+      if (name === "href") result[name] = safePlatformUrl(value);
+      else if (name === "aria-label" || name === "aria-labelledby" || name === "aria-describedby" || name === "name" || name === "id" || name === "data-testid" || name === "data-test" || name === "data-component" || name === "data-cy") result[name] = structuralToken(value);
+      else result[name] = structuralToken(value);
+    });
+    return result;
+  }
+  function elementSurface(element) {
+    var style = element && getComputedStyle(element);
+    var rect = element && element.getBoundingClientRect ? element.getBoundingClientRect() : null;
+    var classes = element && typeof element.className === "string"
+      ? element.className.split(/\s+/).filter(Boolean).map(structuralToken).filter(Boolean).slice(0, 20)
+      : [];
+    var text = structuralToken(element && (element.getAttribute("aria-label") || element.getAttribute("title") || element.textContent) || "");
+    return {
+      selector: selectorPath(element),
+      tag: String(element && element.tagName || "").toLowerCase(),
+      attributes: attributeInventory(element),
+      classes: classes,
+      text: text,
+      visible: !!(style && style.display !== "none" && style.visibility !== "hidden" && !element.hidden && rect && rect.width > 0 && rect.height > 0),
+      disabled: !!(element && element.disabled),
+      childCount: element && element.children ? element.children.length : 0,
+      bbox: rect ? { width: Math.round(rect.width), height: Math.round(rect.height) } : null
+    };
+  }
+  function stylesheetSurface() {
+    var sheets = [];
+    Array.from(document.styleSheets || []).slice(0, 100).forEach(function (sheet) {
+      var href = safePlatformUrl(sheet.href || "");
+      var ruleCount = null, readable = false;
+      try { ruleCount = sheet.cssRules ? sheet.cssRules.length : 0; readable = true; } catch (_) {}
+      var owner = sheet.ownerNode;
+      sheets.push({
+        href: href,
+        disabled: !!sheet.disabled,
+        media: sheet.media ? structuralToken(String(sheet.media.mediaText || "")) : "",
+        ownerTag: String(owner && owner.tagName || "").toLowerCase(),
+        ruleCount: ruleCount,
+        sameOriginReadable: readable
+      });
+    });
+    return sheets;
+  }
+  function scriptSurface() {
+    return Array.from(document.scripts || []).slice(0, 120).map(function (script) {
+      var src = safePlatformUrl(script.src || "");
+      return {
+        src: src,
+        type: structuralToken(script.type || (script.src && /\.m?js(?:$|[?#])/i.test(script.src) ? "module-or-js" : "")),
+        async: !!script.async,
+        defer: !!script.defer,
+        noModule: !!script.noModule,
+        integrityPresent: !!script.integrity,
+        inlineLength: script.src ? 0 : String(script.textContent || "").length
+      };
+    });
+  }
+  function resourceSurface() {
+    var entries = performance.getEntriesByType("resource") || [];
+    var seen = {};
+    var recent = entries.slice(-100).map(function (entry) {
+      var name = safePlatformUrl(entry.name);
+      var key = [name, entry.initiatorType || "other"].join("|");
+      seen[key] = true;
+      return {
+        url: name,
+        initiatorType: entry.initiatorType || "other",
+        durationMs: Math.round(Number(entry.duration || 0)),
+        transferBytes: Number(entry.transferSize || 0),
+        encodedBytes: Number(entry.encodedBodySize || 0),
+        decodedBytes: Number(entry.decodedBodySize || 0),
+        protocol: structuralToken(entry.nextHopProtocol || "")
+      };
+    });
+    return { totalObserved: entries.length, recent: recent.slice(-80), uniqueRecent: Object.keys(seen).length };
+  }
+  function frameworkHints(scripts, elements) {
+    var signals = [];
+    var ids = elements.map(function (x) { return x.attributes && x.attributes.id || ""; }).join(" ");
+    var srcs = scripts.map(function (x) { return x.src || ""; }).join(" ");
+    if (document.querySelector("#__next")) signals.push("nextjs");
+    if (document.querySelector("#root")) signals.push("react-root-candidate");
+    if (document.querySelector("[data-reactroot]")) signals.push("react");
+    if (/_next\//i.test(srcs)) signals.push("nextjs-assets");
+    if (/\bwebpack\b/i.test(srcs)) signals.push("webpack-assets");
+    if (/\bvite\b/i.test(srcs)) signals.push("vite-assets");
+    if (/\bvue\b/i.test(srcs)) signals.push("vue-assets");
+    if (/\bangular\b/i.test(srcs)) signals.push("angular-assets");
+    if (/\bsvelte\b/i.test(srcs)) signals.push("svelte-assets");
+    if (/\bnuxt\b/i.test(srcs)) signals.push("nuxt-assets");
+    if (ids) signals.push("structural-id-surface");
+    return Array.from(new Set(signals));
+  }
   function extractPortalStructure() {
     function labelOf(element) {
-      return safe(element.getAttribute && (element.getAttribute("aria-label") || element.getAttribute("title") || "") || element.textContent || "").slice(0, 120);
+      return structuralToken(element.getAttribute && (element.getAttribute("aria-label") || element.getAttribute("title") || "") || "");
     }
-    var buttons = Array.from(document.querySelectorAll("button,[role='button']")).filter(visibleElement).slice(0, 160).map(function (element) {
-      return {tag: String(element.tagName || "").toLowerCase(), role: safe(element.getAttribute && element.getAttribute("role") || ""), label: labelOf(element), disabled: !!element.disabled};
+    var controls = Array.from(document.querySelectorAll("button,[role='button']")).filter(visibleElement).slice(0, 180);
+    var buttons = controls.map(function (element) {
+      return {tag: String(element.tagName || "").toLowerCase(), role: structuralToken(element.getAttribute && element.getAttribute("role") || ""), label: labelOf(element), disabled: !!element.disabled};
     }).filter(function (x) { return x.label || x.role; });
-    var links = Array.from(document.querySelectorAll("a[href]")).filter(visibleElement).slice(0, 120).map(function (element) {
+    var links = Array.from(document.querySelectorAll("a[href]")).filter(visibleElement).slice(0, 140).map(function (element) {
       var href = "";
-      try { var u = new URL(element.getAttribute("href"), location.href); href = u.origin === location.origin ? u.pathname : u.origin; } catch (_) {}
+      try { href = safePlatformUrl(element.getAttribute("href")); } catch (_) {}
       return {label: labelOf(element), path: href};
     }).filter(function (x) { return x.label || x.path; });
-    var fields = Array.from(document.querySelectorAll("input,select,textarea")).filter(visibleElement).slice(0, 80).map(function (element) {
-      return {tag: String(element.tagName || "").toLowerCase(), type: safe(element.getAttribute("type") || ""), name: safe(element.getAttribute("name") || ""), aria: safe(element.getAttribute("aria-label") || element.getAttribute("placeholder") || "")};
+    var fields = Array.from(document.querySelectorAll("input,select,textarea")).filter(visibleElement).slice(0, 100).map(function (element) {
+      return {tag: String(element.tagName || "").toLowerCase(), type: structuralToken(element.getAttribute("type") || ""), name: structuralToken(element.getAttribute("name") || ""), aria: structuralToken(element.getAttribute("aria-label") || element.getAttribute("placeholder") || "")};
     });
-    var headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,[role='heading']")).filter(visibleElement).slice(0, 80).map(function (element) {
-      return safe(element.textContent).slice(0, 160);
+    var headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,[role='heading']")).filter(visibleElement).slice(0, 100).map(function (element) {
+      return structuralText(element.textContent);
     }).filter(Boolean);
-    return {route: routeTemplate(), title: safe(document.title), buttons: buttons, links: links, fields: fields, headings: headings};
+    var surfaceCandidates = Array.from(document.querySelectorAll("html,head,body,main,nav,header,footer,aside,section,form,dialog,button,a,input,select,textarea,[role]")).slice(0, 500);
+    var elements = surfaceCandidates.map(elementSurface);
+    var tagCounts = {};
+    Array.from(document.querySelectorAll("body *")).slice(0, 6000).forEach(function (element) {
+      var tag = String(element.tagName || "").toLowerCase();
+      if (tag) tagCounts[tag] = Number(tagCounts[tag] || 0) + 1;
+    });
+    var metadata = Array.from(document.querySelectorAll("meta")).slice(0, 100).map(function (meta) {
+      return {
+        name: structuralToken(meta.getAttribute("name") || meta.getAttribute("property") || ""),
+        contentLength: String(meta.getAttribute("content") || "").length
+      };
+    }).filter(function (x) { return x.name; });
+    var scripts = scriptSurface();
+    var stylesheets = stylesheetSurface();
+    var page = {
+      origin: location.origin,
+      url: safePlatformUrl(location.href),
+      path: safePlatformUrl(location.origin + location.pathname),
+      route: routeTemplate(),
+      title: structuralText(document.title),
+      language: structuralToken(document.documentElement && document.documentElement.lang || ""),
+      charset: document.characterSet || "",
+      readyState: document.readyState,
+      visibility: document.visibilityState,
+      nodeCount: document.getElementsByTagName("*").length,
+      viewport: { width: innerWidth, height: innerHeight, devicePixelRatio: devicePixelRatio },
+      searchKeys: Array.from(new URL(location.href).searchParams.keys()).sort().slice(0, 40),
+      hashPresent: !!location.hash
+    };
+    return {
+      schema: "signal-interpreter-platform-surface/v1",
+      capturedAt: iso(),
+      page: page,
+      controls: { buttons: buttons, links: links, fields: fields, headings: headings },
+      dom: { tagCounts: tagCounts, elements: elements },
+      css: { stylesheets: stylesheets, inlineStyleCount: document.querySelectorAll("[style]").length, styleElementCount: document.querySelectorAll("style").length },
+      javascript: { scripts: scripts, scriptCount: scripts.length },
+      resources: resourceSurface(),
+      metadata: metadata,
+      frameworkHints: frameworkHints(scripts, elements),
+      privacy: {
+        rawTextStored: false,
+        rawHtmlStored: false,
+        rawCssStored: false,
+        rawJavascriptStored: false,
+        rawAudioStored: false
+      }
+    };
   }
   function isTarget() { return location.hostname === config.targetHost; }
   function isAuthorizedProfilePage() {
@@ -678,11 +881,47 @@
   }
   function portalStructureSnapshot(reason, force) {
     if (!isTarget() || !config.observationEnabled) return;
-    var portal = extractPortalStructure(), signature = JSON.stringify(portal);
-    if (signature === lastPortalStructureSignature && !force) return;
+    var platformSurface = extractPortalStructure();
+    var signature = JSON.stringify(platformSurface);
+    if (signature === lastPlatformSurfaceHash && !force) return;
     lastPortalStructureSignature = signature;
-    emit("PORTAL_STRUCTURE_SNAPSHOT", {reason:reason || "heartbeat", portal:portal});
+    lastPlatformSurfaceHash = signature;
+    emit("PLATFORM_SURFACE_SNAPSHOT", {
+      schema: "signal-interpreter-platform-surface-event/v1",
+      snapshotReason: reason || "heartbeat",
+      snapshotHash: stableSurfaceToken(signature),
+      platformSurface: platformSurface
+    }, "info");
   }
+  function platformUrlDescriptor(raw) {
+    try {
+      var url = new URL(String(raw || ""), location.href);
+      var keys = Array.from(url.searchParams.keys()).sort().slice(0, 40);
+      return {
+        origin: url.origin,
+        path: url.pathname.replace(/\/call\/[^/]+/g, "/call/<ID>").replace(/\/profile\/[^/]+/g, "/profile/<ID>"),
+        route: routeTemplate(),
+        searchKeys: keys,
+        hashPresent: !!url.hash
+      };
+    } catch (_) { return {origin: "", path: "", route: "", searchKeys: [], hashPresent: false}; }
+  }
+  function observePlatformUrl(reason) {
+    if (!isTarget() || !config.observationEnabled) return false;
+    var href = location.href;
+    if (href === lastObservedHref) return false;
+    var previous = lastObservedHref;
+    lastObservedHref = href;
+    emit("PLATFORM_URL_CHANGED", {
+      reason: reason || "poll",
+      previous: platformUrlDescriptor(previous),
+      current: platformUrlDescriptor(href),
+      navigationType: (performance.getEntriesByType("navigation")[0] || {}).type || "unknown"
+    }, "info");
+    portalStructureSnapshot("url-change:" + (reason || "poll"), true);
+    return true;
+  }
+
   function capturePlatformMirror(reason, force) {
     var key = mirrorKey();
     if (!key || !config.observationEnabled || location.hostname !== config.targetHost) return;
@@ -824,6 +1063,16 @@
       if (!config.interactionTelemetryEnabled) return;
       var target = event.target && event.target.closest ? event.target.closest("button,a,[role='button'],input,select") : null;
       var descriptor = elementDescriptor(target); if (!descriptor) return;
+      var label = normalized(descriptor.label || "");
+      if (/^(?:end call|hang up|end)$/i.test(label)) {
+        emit("CALL_END_CONTROL_INTERACTION", {
+          kind: "click",
+          target: descriptor,
+          callId: currentCallId(),
+          route: routeTemplate(),
+          source: "user-interaction-observer"
+        }, "info");
+      }
       emit("USER_INTERACTION", { kind: "click", target: descriptor });
     }, true);
     performanceSnapshot("telemetry-start");
@@ -1264,6 +1513,13 @@
       attributeFilter: ["class", "style", "hidden", "aria-hidden", "aria-modal", "aria-label", "disabled"]
     });
     startRichTelemetry();
+    lastObservedHref = location.href;
+    observePlatformUrl("start");
+    ["popstate", "hashchange", "pageshow"].forEach(function (name) {
+      window.addEventListener(name, function () { observePlatformUrl(name); });
+    });
+    if (navigationProbeTimer) clearInterval(navigationProbeTimer);
+    navigationProbeTimer = setInterval(function () { observePlatformUrl("interval"); }, 1000);
     emit("PLATFORM_SESSION_STARTED", { title: safe(document.title), userAgent: navigator.userAgent, language: navigator.language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
     emit("OBSERVER_STARTED", { autoAnswerEnabled: config.autoAnswerEnabled });
     emitIntegrity("startup");
