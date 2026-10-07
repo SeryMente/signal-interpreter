@@ -50,7 +50,7 @@ assert.ok(observationSync.includes("EVENT_THRESHOLD"));
 assert.ok(observationSync.includes("signal-observation-sync-retry"));
 assert.ok(observationSync.includes("payload:scrub(e.payload"));
 assert.ok(observationSync.includes("extensionVersion:e.extensionVersion"));
-assert.ok(observationSync.includes("url:safeEventUrl(e.url||"")"));
+assert.ok(observationSync.includes('url:safeEventUrl(e.url||\"\")'));
 assert.ok(observationSync.includes("Reporter rejected observation batch"));
 assert.ok(observationSync.includes("safeEventUrl"));
 
