@@ -276,89 +276,91 @@
         textLength:String(s.text||"").length};
     });
   }
-  async function buildDevelopmentDiagnostic() {
-    var checkpoints=await new Promise(function(resolve){chrome.storage.local.get(["effectifObservabilityUpdate","effectifObservabilityExport"],function(s){resolve(s);});});
-    var last=checkpoints.effectifObservabilityExport||{},update=checkpoints.effectifObservabilityUpdate||{};
-    var sinceSequence=Number(last.sequence!=null?last.sequence:update.eventSequence||0),sinceAt=last.at||update.updatedAt||new Date(0).toISOString();
-    var results=await Promise.all([
-      KhoraTelemetryDB.getEventsAfter(sinceSequence,5000),
-      KhoraTelemetryDB.getSnapshots(),
-      KhoraTelemetryDB.getAllSignalSegments(),
-      chrome.storage.local.get(["effectifConfig","effectifState","effectifPlatformMirror","effectifLastEvent","effectifTelemetryHealth","effectifEventSequence"])
-    ]);
-    var events=results[0]||[], snapshots=(results[1]||[]).filter(function(x){return String(x.capturedAt||"")>String(sinceAt)}).slice(-100);
-    var segments=(results[2]||[]).filter(function(x){return String(x.timestamp||"")>String(sinceAt)}).slice(-500);
-    var stored=results[3]||{}, cfg=Object.assign({},stored.effectifConfig||{});delete cfg.groqApiKey;
-    var safeSessions=[];
-    try{var sessions=Array.isArray(stored.signalInterpreterSessions)?stored.signalInterpreterSessions:[];safeSessions=sessions.map(function(s){var c=Object.assign({},s);delete c.segments;return scrubDiagnostic(c,0)});}catch(_){}
-    var summary={};events.forEach(function(e){var k=String(e.action||"UNKNOWN");summary[k]=Number(summary[k]||0)+1;});
-    var bundle={
-      schema:"signal-interpreter-development-observability/v1",generatedAt:new Date().toISOString(),
-      baseline:{sinceAt:sinceAt,sinceSequence:sinceSequence,update:update,lastExport:last},
-      runtime:{extensionVersion:chrome.runtime.getManifest().version,host:"app.cloudinterpreter.com",currentEventSequence:Number(stored.effectifEventSequence||0)},
-      counts:{events:events.length,snapshots:snapshots.length,signalSegments:segments.length,eventTypes:Object.keys(summary).length},
-      eventSummary:summary,
-      state:scrubDiagnostic(stored.effectifState||{},0),config:cfg,
-      telemetryHealth:scrubDiagnostic(stored.effectifTelemetryHealth||{},0),lastEvent:scrubDiagnostic(stored.effectifLastEvent||null,0),
-      sessions:safeSessions,
-      events:scrubDiagnostic(events,0),
-      platformSnapshots:scrubDiagnostic(snapshots,0),
-      platformMirror:scrubDiagnostic(stored.effectifPlatformMirror||{},0),
-      signalSegments:compactSignalSegments(segments),
-      portalObservation:{source:"visible-portal-structure-and-network-metadata",rawAudio:false,rawTranscript:false,
-        routes:Object.keys(stored.effectifPlatformMirror||{}).map(function(k){return k}),
-        snapshots:(snapshots||[]).map(function(s){return{key:s.key||null,route:s.route||null,capturedAt:s.capturedAt||null,portal:s.portal||null,summary:s.summary||null,tablesCount:Array.isArray(s.tables)?s.tables.length:0};})}
-    };
-    return {bundle:bundle,sequence:Number(stored.effectifEventSequence||sinceSequence),at:bundle.generatedAt};
+  var githubPollTimer=null;
+  async function renderGithubStatus() {
+    try {
+      var config=await SignalGithubObservability.getConfig();
+      var statusInfo=await SignalGithubObservability.getStatus();
+      var input=$("githubClientId");
+      if(input && input.value!==String(config.clientId||"")) input.value=String(config.clientId||"");
+      var statusLabel=statusInfo.connected ? "Conectado" : statusInfo.configured ? "Autorización pendiente/no conectada" : "No configurada";
+      if($("githubSyncStatus")) $("githubSyncStatus").textContent=statusLabel;
+      if($("githubDisconnect")) $("githubDisconnect").disabled=!statusInfo.connected;
+      if($("githubAuthInfo")){
+        if(statusInfo.connected){
+          var expiry=statusInfo.tokenExpiresAt?new Date(statusInfo.tokenExpiresAt).toLocaleTimeString():"renovable";
+          $("githubAuthInfo").textContent="Repositorio: "+statusInfo.repository+" · token válido hasta "+expiry+".";
+        }else if(statusInfo.deviceFlow){
+          $("githubAuthInfo").textContent="Escribe el código "+statusInfo.deviceFlow.userCode+" en GitHub para completar la autorización.";
+        }else{
+          $("githubAuthInfo").textContent=statusInfo.error||"La extensión publicará directamente en observations/inbox/ y GitHub Actions construirá el paquete derivado.";
+        }
+      }
+    } catch(error) {
+      if($("githubSyncStatus")) $("githubSyncStatus").textContent="Error";
+      if($("githubAuthInfo")) $("githubAuthInfo").textContent=String(error);
+    }
   }
-  async function localDownloadDiagnostic(payload){
-    var blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download="signal-interpreter-diagnostico-"+new Date().toISOString().replace(/[:.]/g,"-")+".json";
-    document.body.appendChild(link);link.click();link.remove();setTimeout(function(){URL.revokeObjectURL(url)},2000);
+  async function pollGithubAuthorization() {
+    try {
+      var result=await SignalGithubObservability.pollDeviceFlow();
+      if(result.status==="connected"){
+        status("GitHub conectado");
+        await renderGithubStatus();
+        return;
+      }
+      if(result.status==="expired"||result.status==="denied"||result.status==="error"){
+        if(result.status!=="authorization_pending") status("Autorización GitHub: "+String(result.error||result.status),true);
+        await renderGithubStatus();
+        return;
+      }
+      await renderGithubStatus();
+      clearTimeout(githubPollTimer);
+      githubPollTimer=setTimeout(pollGithubAuthorization,Math.max(5000,Number(result.retryInMs)||5000));
+    } catch(error) {
+      status("No se pudo completar la autorización GitHub: "+String(error),true);
+      await renderGithubStatus();
+    }
   }
-  $("export").addEventListener("click", async function () {
-    var button=this;button.disabled=true;status("Preparando observabilidad desde el último checkpoint…");
+  $("githubClientId").addEventListener("change",async function(){
+    await SignalGithubObservability.setConfig({clientId:this.value});
+    await renderGithubStatus();
+  });
+  $("githubConnect").addEventListener("click",async function(){
+    var button=this;button.disabled=true;status("Preparando autorización GitHub…");
     try{
-      var built=await buildDevelopmentDiagnostic(),payload=built.bundle,response=null;
-      try{
-        response=await new Promise(function(resolve,reject){
-          chrome.runtime.sendNativeMessage("com.serymente.signal_interpreter.observability",{repository:"SeryMente/signal-interpreter",path:"diagnostics/latest.json",message:"chore: update latest development observability",diagnostic:payload},function(r){
-            if(chrome.runtime.lastError)return reject(new Error(chrome.runtime.lastError.message));resolve(r);
-          });
+      var result=await SignalGithubObservability.beginDeviceFlow();
+      status("Código GitHub: "+result.userCode);
+      await renderGithubStatus();
+      clearTimeout(githubPollTimer);
+      githubPollTimer=setTimeout(pollGithubAuthorization,Math.max(5000,Number(result.interval||5)*1000));
+    }catch(error){
+      status("No se pudo iniciar GitHub: "+String(error),true);
+    }finally{button.disabled=false;}
+  });
+  $("githubDisconnect").addEventListener("click",async function(){
+    await SignalGithubObservability.disconnect();
+    status("GitHub desconectado");
+    await renderGithubStatus();
+  });
+  $("export").addEventListener("click",async function(){
+    var button=this;button.disabled=true;status("Publicando observabilidad pendiente en GitHub…");
+    try{
+      var response=await new Promise(function(resolve){
+        chrome.runtime.sendMessage({type:"SIGNAL_OBSERVATION_SYNC_NOW"},function(result){
+          if(chrome.runtime.lastError) resolve({ok:false,error:chrome.runtime.lastError.message});
+          else resolve(result||{ok:false,error:"Sin respuesta del worker"});
         });
-      }catch(nativeError){
-        await localDownloadDiagnostic(payload);
-        await new Promise(function(resolve){
-          chrome.storage.local.set({effectifObservabilityExportAttempt:{
-            at:new Date().toISOString(), sequence:built.sequence, result:"failed",
-            error:String(nativeError&&nativeError.message||nativeError), mode:"manual",
-            generatedAt:built.at
-          }},resolve);
-        });
-        var nativeMessage=String(nativeError&&nativeError.message||nativeError);
-        var hint=/Specified native messaging host not found|native messaging host.*not found|host.*not found/i.test(nativeMessage)
-          ? "El puente GitHub no está instalado o registrado."
-          : "El puente GitHub no pudo iniciarse: " + nativeMessage;
-        status("Diagnóstico guardado localmente. " + hint,true);return;
+      });
+      if(response&&response.ok){
+        status("Observabilidad publicada · "+Number(response.summary&&response.summary.eventsTotal||0)+" eventos");
+      }else{
+        status("No se pudo publicar: "+String(response&&response.error||"GitHub no disponible"),true);
       }
-      if(!response||!response.ok){
-        var publishError=String(response&&response.error||"El puente GitHub no confirmó la publicación.");
-        await new Promise(function(resolve){
-          chrome.storage.local.set({effectifObservabilityExportAttempt:{
-            at:new Date().toISOString(), sequence:built.sequence, result:"failed",
-            error:publishError, mode:"manual", generatedAt:built.at
-          }},resolve);
-        });
-        throw new Error(publishError);
-      }
-      await new Promise(function(resolve){chrome.storage.local.set({
-        effectifObservabilityExport:{at:built.at,sequence:built.sequence,commit:response.commit||null,mode:"manual",result:"success"},
-        effectifObservabilityExportAttempt:{at:new Date().toISOString(),sequence:built.sequence,result:"success",mode:"manual",generatedAt:built.at}
-      },resolve);});
-      status("Observabilidad enviada a GitHub · "+payload.counts.events+" eventos · "+payload.counts.snapshots+" eventos");
-    }catch(error){status("No se pudo publicar la observabilidad: "+String(error),true);}
+    }catch(error){status("No se pudo publicar: "+String(error),true);}
     finally{button.disabled=false;}
   });
+  renderGithubStatus();
   function renderEarningsOnly() {
     var today = localDay();
     var completed = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) { return localDay(call.startedAt || call.endedAt) === today; }) : [];
