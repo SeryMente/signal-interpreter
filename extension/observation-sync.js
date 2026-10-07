@@ -16,10 +16,12 @@ function scrub(value,key,depth){
   var k=String(key||"");
   if(/api.?key|authorization|cookie|password|secret|bearer|credential/i.test(k))return"[REDACTED]";
   if(/rawAudio|rawTranscript|transcriptText|captionText|utterance|innerText|textContent|outerHTML|innerHTML|inputValue|requestBody|responseBody|bodyText|htmlText|cssText|javascriptSource|audioBlob|base64/i.test(k))return"[OMITTED]";
+  if(/^(?:url|href|src|initiator)$/i.test(k))return safeEventUrl(value);
   if(typeof value==="string"){
     return String(value)
       .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi,"Bearer [REDACTED]")
       .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,"[EMAIL]")
+      .replace(/(?:\+?\d[\d\s().-]{7,}\d)/g,"[PHONE]")
       .slice(0,1200);
   }
   if(value===null||typeof value!=="object")return value;
