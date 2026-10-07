@@ -108,14 +108,20 @@
       .slice(0, 1000);
   }
   function mirrorText(value, limit) { return safe(normalized(value)).slice(0, limit || 500); }
+  function normalizePlatformPath(pathname) {
+    var path = String(pathname || "")
+      .replace(/\/call\/[^/]+/g, "/call/<ID>")
+      .replace(/\/profile\/[^/]+/g, "/profile/<ID>");
+    return path.split("/").map(function (segment) {
+      return /^(?:[0-9]{6,}|[a-f0-9]{16,}|[A-Za-z0-9_-]{20,})$/i.test(segment) ? "<ID>" : segment;
+    }).join("/");
+  }
   function safePlatformUrl(raw) {
     if (!raw) return "";
     try {
       var url = new URL(String(raw || ""), location.href);
       if (url.origin === AUTHORIZED_PROFILE_ORIGIN) {
-        var path = url.pathname
-          .replace(/\/call\/[^/]+/g, "/call/<ID>")
-          .replace(/\/profile\/[^/]+/g, "/profile/<ID>");
+        var path = normalizePlatformPath(url.pathname);
         var keys = Array.from(url.searchParams.keys()).sort().slice(0, 30);
         return url.origin + path + (keys.length ? "?" + keys.map(function (key) { return encodeURIComponent(key) + "=<VALUE>"; }).join("&") : "");
       }
