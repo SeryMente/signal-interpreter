@@ -313,14 +313,18 @@ function processBatchPlatformArtifacts(batch){
   return processed;
 }
 async function processUnpublishedPlatformBatches(){
-  if(!fs.existsSync(BATCHES))return;
+  if(!fs.existsSync(BATCHES))return 0;
   const files=fs.readdirSync(BATCHES).filter(x=>x.endsWith(".json")).sort();
+  let processed=0,lastBatch=null;
   for(const file of files){
     try{
       const batch=JSON.parse(fs.readFileSync(path.join(BATCHES,file),"utf8"));
-      processBatchPlatformArtifacts(batch);
+      const count=processBatchPlatformArtifacts(batch);
+      if(count>0){processed+=count;lastBatch=batch;}
     }catch(error){log("platform batch repair failed "+file+": "+String(error))}
   }
+  if(lastBatch)writeObservabilityManifest(lastBatch);
+  return processed;
 }
 async function ghPut(repoPath,filePath,message){
   const content=fs.readFileSync(filePath).toString("base64");let sha=null;
@@ -451,7 +455,6 @@ server.listen(PORT,"127.0.0.1",async()=>{
   ensurePublisherSyncRoot();
   health.startedAt=iso();saveHealth();
   await processUnpublishedPlatformBatches();
-  writeObservabilityManifest(null);
   log("listening on http://127.0.0.1:"+PORT+" repo="+ROOT);
   scheduleGitSync(true);
   setInterval(publishSweep,PUBLISH_SWEEP_MS).unref();
