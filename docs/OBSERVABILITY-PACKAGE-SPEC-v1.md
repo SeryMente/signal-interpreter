@@ -10,13 +10,14 @@ Debe contener evidencia operacional y conocimiento incremental de la superficie 
 
 \`observations/\`
 
+- \`inbox/\`: batches recibidos directamente desde la extensión mediante GitHub API.
 - \`batches/\`: batches originales saneados y publicados.
-- \`latest/\`: punteros resumidos al estado operacional reciente.
 - \`platform-snapshots/YYYY-MM-DD/\`: snapshots de superficies observadas.
 - \`platform-deltas/YYYY-MM-DD/\`: diferencias semánticas entre snapshots.
 - \`platform-index.json\`: índice de última superficie por identidad.
 - \`platform-latest.json\`: resumen rápido de conocimiento de plataforma.
 - \`manifest.json\`: índice del paquete.
+- \`health/github-build.json\`: estado del build remoto que transforma el inbox.
 
 ## 3. Manifest
 
@@ -221,12 +222,12 @@ El delta no declara causalidad.
 
 El estado del pipeline debe permitir determinar al menos:
 
-- última recepción;
-- última publicación Git;
-- último fallback;
+- última entrada procesada desde GitHub API;
+- último build/publicación derivada en GitHub Actions;
+- último error de build/publicación;
 - último error;
 - número de intentos;
-- backlog;
+- inbox/backlog pendiente;
 - bytes pendientes;
 - número de superficies;
 - número de deltas.
@@ -263,3 +264,9 @@ El checkpoint de ciclo representa el último estado que ya fue analizado y utili
 - foco recomendado para análisis.
 
 El estado `uninitialized` es válido cuando todavía no existe un paquete generado por el runtime.
+
+## 14. Transporte y runtime
+
+El paquete no depende de un reporter local ni de un proceso residente. Chrome publica los batches en `observations/inbox/` mediante GitHub API. GitHub Actions construye y publica los artefactos derivados.
+
+La observabilidad de producción no requiere Node.js, Native Messaging, Scheduled Tasks, watchdogs, supervisores, hosts nativos ni servidores localhost en Windows.
