@@ -960,14 +960,19 @@
       emitPlatformSurfaceSnapshot(reason);
     }, 500);
   }
+  function platformRouteFromPath(pathname) {
+    return String(pathname || "")
+      .replace(/^\/call\/[^/?#]+/, "/call/<ID>")
+      .replace(/^\/profile\/[^/?#]+/, "/profile/<ID>");
+  }
   function platformUrlDescriptor(raw) {
     try {
       var url = new URL(String(raw || ""), location.href);
       var keys = Array.from(url.searchParams.keys()).sort().slice(0, 40);
       return {
         origin: url.origin,
-        path: url.pathname.replace(/\/call\/[^/]+/g, "/call/<ID>").replace(/\/profile\/[^/]+/g, "/profile/<ID>"),
-        route: routeTemplate(),
+        path: platformRouteFromPath(url.pathname),
+        route: platformRouteFromPath(url.pathname),
         searchKeys: keys,
         hashPresent: !!url.hash
       };
