@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import {pathToFileURL} from "node:url";
 
 function readJson(file){return JSON.parse(fs.readFileSync(file,"utf8"))}
 function assert(condition,message){if(!condition)throw new Error(message)}
