@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-ea2db9da-3bc1-4515-97c9-a0db8950e399",
-  "createdAt": "2026-10-07T22:52:53.225Z",
-  "trigger": "startup",
+  "batchId": "batch-9db005f5-b8e9-4171-aaad-af39477c72ce",
+  "createdAt": "2026-10-07T22:53:21.680Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.0",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "ae398563-fc0f-47b7-93e9-6a4112a140e7",
-      "sequence": 3402,
-      "timestamp": "2026-10-07T22:52:51.888Z",
-      "ingestedAt": "2026-10-07T22:52:51.890Z",
+      "id": "70f28ea2-50a6-4026-86dd-39f4e52148ab",
+      "sequence": 3405,
+      "timestamp": "2026-10-07T22:52:56.068Z",
+      "ingestedAt": "2026-10-07T22:52:56.068Z",
       "level": "info",
       "category": "BILLING",
       "component": "background",
@@ -20,7 +20,7 @@
       "phase": "completed",
       "action": "EXCHANGE_RATE_UPDATED",
       "outcome": "success",
-      "traceId": "fca063c8-1f8d-4b2a-bdea-05f87d1ac6a5",
+      "traceId": "6f17fcd1-d536-4eac-ae8f-edabaa5b81ef",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -34,7 +34,7 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": "installed",
+      "reasonCode": "alarm",
       "error": null,
       "metrics": {},
       "context": {},
@@ -48,122 +48,27 @@
         "rate": 17.975335,
         "rateDate": "[PHONE]",
         "source": "ExchangeRate.fun / hourly snapshot",
-        "reason": "installed"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "a57e4f0a-5e93-46cb-ace2-3c79b5927f37",
-      "sequence": 3403,
-      "timestamp": "2026-10-07T22:52:52.462Z",
-      "ingestedAt": "2026-10-07T22:52:52.462Z",
-      "level": "info",
-      "category": "BILLING",
-      "component": "background",
-      "extensionVersion": "0.10.0",
-      "host": "",
-      "url": "",
-      "phase": "completed",
-      "action": "EXCHANGE_RATE_UPDATED",
-      "outcome": "success",
-      "traceId": "a38b62c5-61fc-4c7f-be78-98256f289a54",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.0",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "startup",
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "pair": "USD/MXN",
-        "rate": 17.975335,
-        "rateDate": "[PHONE]",
-        "source": "ExchangeRate.fun / hourly snapshot",
-        "reason": "startup"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "a7c65cbc-162f-4607-9bcc-fca0667c2839",
-      "sequence": 3404,
-      "timestamp": "2026-10-07T22:52:52.875Z",
-      "ingestedAt": "2026-10-07T22:52:52.875Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.0",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "PLATFORM_TELEMETRY_RECONCILED",
-      "outcome": "observed",
-      "traceId": "3ef6e4b3-2f1c-404e-9cac-899713b5808b",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.0",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "popup-open",
-        "tabCount": 0,
-        "authenticatedCount": 0,
-        "onlineCount": 0,
-        "callCount": 0,
-        "probeErrors": 0
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 1,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 3402,
-    "lastSequence": 3404,
-    "firstTimestamp": "2026-10-07T22:52:51.888Z",
-    "lastTimestamp": "2026-10-07T22:52:52.875Z",
+    "firstSequence": 3405,
+    "lastSequence": 3405,
+    "firstTimestamp": "2026-10-07T22:52:56.068Z",
+    "lastTimestamp": "2026-10-07T22:52:56.068Z",
     "actions": {
-      "EXCHANGE_RATE_UPDATED": 2,
-      "PLATFORM_TELEMETRY_RECONCILED": 1
+      "EXCHANGE_RATE_UPDATED": 1
     },
     "categories": {
-      "BILLING": 2,
-      "RUNTIME": 1
+      "BILLING": 1
     }
   }
 }
