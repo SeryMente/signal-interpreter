@@ -43,7 +43,7 @@ const remoteJson=execFileSync("gh",["api","repos/SeryMente/signal-interpreter/co
 const remoteBuffer=Buffer.from(remoteJson,"base64");
 const remoteBatch=JSON.parse(remoteBuffer.toString("utf8"));
 const remotePayload=remoteBatch.events&&remoteBatch.events[0]&&remoteBatch.events[0].payload;
-if(!remotePayload||remotePayload.platformSurface&&remotePayload.platformSurface.schema!=="signal-interpreter-platform-surface/v1")throw new Error("Platform payload was not preserved in GitHub batch");
+if(!remotePayload||!remotePayload.platformSurface||remotePayload.platformSurface.schema!=="signal-interpreter-platform-surface/v1")throw new Error("Platform payload was not preserved in GitHub batch");
 if((Number(health.health.platformSnapshots)||0)!==(Number(before.health.platformSnapshots)||0)||(Number(health.health.platformDeltas)||0)!==(Number(before.health.platformDeltas)||0))throw new Error("Self-test contaminated platform learning counters");
 const out=execFileSync("gh",["api","repos/SeryMente/signal-interpreter/contents/observations/batches/"+batchId+".json?ref=main","--jq",".sha"],{encoding:"utf8"}).trim();
 if(!out)throw new Error("GitHub object SHA was empty");
