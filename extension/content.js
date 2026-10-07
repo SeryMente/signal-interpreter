@@ -259,7 +259,8 @@
         defer: !!script.defer,
         noModule: !!script.noModule,
         integrityPresent: !!script.integrity,
-        inlineLength: script.src ? 0 : String(script.textContent || "").length
+        inlineLength: script.src ? 0 : String(script.textContent || "").length,
+        inlineFingerprint: script.src ? "" : stableSurfaceToken(String(script.textContent || ""))
       };
     });
   }
@@ -316,7 +317,7 @@
       return {tag: String(element.tagName || "").toLowerCase(), type: structuralToken(element.getAttribute("type") || ""), name: structuralToken(element.getAttribute("name") || ""), aria: structuralToken(element.getAttribute("aria-label") || element.getAttribute("placeholder") || "")};
     });
     var headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,[role='heading']")).filter(visibleElement).slice(0, 100).map(function (element) {
-      return structuralText(element.textContent);
+      return structuralToken(element.textContent);
     }).filter(Boolean);
     var surfaceCandidates = Array.from(document.querySelectorAll("html,head,body,main,nav,header,footer,aside,section,form,dialog,button,a,input,select,textarea,[role]")).slice(0, 500);
     var elements = surfaceCandidates.map(elementSurface);
@@ -338,7 +339,7 @@
       url: safePlatformUrl(location.href),
       path: safePlatformUrl(location.origin + location.pathname),
       route: routeTemplate(),
-      title: structuralText(document.title),
+      title: structuralToken(document.title),
       language: structuralToken(document.documentElement && document.documentElement.lang || ""),
       charset: document.characterSet || "",
       readyState: document.readyState,
@@ -1664,6 +1665,7 @@
     }
     if (platformSurfaceTimer) { clearTimeout(platformSurfaceTimer); platformSurfaceTimer = null; }
     if (navigationProbeTimer) { clearInterval(navigationProbeTimer); navigationProbeTimer = null; }
+    if (telemetryTimer) { clearInterval(telemetryTimer); telemetryTimer = null; }
     emit("OBSERVER_STOPPED", { reason: reason || "config" });
   }
   function apply(next) {
@@ -1699,6 +1701,7 @@
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message && message.type === "EFFECTIF_REQUEST_PLATFORM_SNAPSHOT") {
       capturePlatformMirror("popup-sync", true);
+      portalStructureSnapshot("popup-sync", true);
     }
   });
   document.addEventListener("click", function (event) {
