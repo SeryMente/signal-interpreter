@@ -1102,8 +1102,8 @@
     emit("PERFORMANCE_HEARTBEAT", payload);
   }
   function startRichTelemetry() {
-    if (telemetryStarted) return;
-    telemetryStarted = true;
+    if (!telemetryStarted) {
+      telemetryStarted = true;
     try {
       new PerformanceObserver(function (list) {
         list.getEntries().forEach(function (entry) {
@@ -1159,8 +1159,9 @@
       }
       emit("USER_INTERACTION", { kind: "click", target: descriptor });
     }, true);
-    performanceSnapshot("telemetry-start");
-    telemetryTimer = setInterval(function () { performanceSnapshot("heartbeat"); }, Math.max(10, Number(config.telemetryHeartbeatSeconds || 30)) * 1000);
+      performanceSnapshot("telemetry-start");
+    }
+    if (!telemetryTimer) telemetryTimer = setInterval(function () { performanceSnapshot("heartbeat"); }, Math.max(10, Number(config.telemetryHeartbeatSeconds || 30)) * 1000);
   }
   function localDay(value) {
     var date = value ? new Date(value) : new Date();
