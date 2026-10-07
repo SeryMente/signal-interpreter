@@ -361,12 +361,12 @@ const server=http.createServer((req,res)=>{
       const receivedAt=iso(),latest=Object.assign({},batch,{receivedAt}),s=batch.summary||{},isSelfTest=batch.trigger==="observability-self-test";
       durableWrite(path.join(SPOOL,batch.batchId+".json"),JSON.stringify(batch,null,2)+"\\n");
       durableWrite(path.join(BATCHES,batch.batchId+".json"),JSON.stringify(batch,null,2)+"\\n");
+      const processed=processBatchPlatformArtifacts(batch);
       if(!isSelfTest){
         durableWrite(path.join(LATEST,"latest.json"),JSON.stringify(latest,null,2)+"\\n");
-        const manifestText=["# Signal Interpreter · latest observation","","- Batch: "+batch.batchId,"- Recibido: "+receivedAt,"- Trigger: "+batch.trigger,"- Extensión: "+batch.extensionVersion,"- Eventos: "+Number(s.eventsTotal||batch.events.length),"- Errores: "+Number(s.errors||0),"- Warnings: "+Number(s.warnings||0),"- Secuencia: "+Number(s.firstSequence||0)+" → "+Number(s.lastSequence||0),"- Observaciones de plataforma: "+Number(platformState.observations||0),"- Deltas de plataforma: "+Number(platformState.deltas||0),"","## Categorías","",JSON.stringify(s.categories||{},null,2),"","","## Acciones","",JSON.stringify(s.actions||{},null,2),""].join("\\n");
+        const manifestText=["# Signal Interpreter · latest observation","","- Batch: "+batch.batchId,"- Recibido: "+receivedAt,"- Trigger: "+batch.trigger,"- Extensión: "+batch.extensionVersion,"- Eventos: "+Number(s.eventsTotal||batch.events.length),"- Errores: "+Number(s.errors||0),"- Warnings: "+Number(s.warnings||0),"- Secuencia: "+Number(s.firstSequence||0)+" → "+Number(s.lastSequence||0),"- Observaciones de plataforma: "+Number(platformState.observations||0),"- Deltas de plataforma: "+Number(platformState.deltas||0),"- Identidades de plataforma: "+Object.keys(platformState.identities||{}).length,"","## Categorías","",JSON.stringify(s.categories||{},null,2),"","","## Acciones","",JSON.stringify(s.actions||{},null,2),""].join("\\n");
         durableWrite(path.join(LATEST,"latest-summary.md"),manifestText);
       }
-      const processed=processBatchPlatformArtifacts(batch);
       health.lastAcceptedAt=receivedAt;health.lastBatchId=batch.batchId;
       health.lastPublishedSequence=Math.max(Number(health.lastPublishedSequence)||0,Number(s.lastSequence)||0);
       saveHealth();
