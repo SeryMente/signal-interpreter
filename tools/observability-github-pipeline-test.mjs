@@ -40,6 +40,9 @@ assert.equal(first.manifest.lastBatchId,"b1");
 assert.equal(first.index.identityCount,1);
 assert.equal(first.index.observations,1);
 assert.equal(first.index.deltas,1);
+assert.equal(first.health.lastAutomaticPublishAt,"2026-10-07T20:00:00.000Z");
+assert.equal(first.health.lastAutomaticBatchId,"b1");
+assert.equal(first.health.lastManualPublishAt,null);
 assert.equal(fs.existsSync(path.join(inbox,"b1.json")),false);
 
 const self=batch("self-test","observability-self-test");
@@ -60,5 +63,14 @@ assert.equal(third.manifest.lastBatchId,"b2");
 assert.equal(third.index.identityCount,1);
 assert.ok(third.index.observations>=2);
 assert.ok(third.index.deltas>=2);
+assert.equal(third.health.lastAutomaticPublishAt,"2026-10-07T20:01:00.000Z");
+
+const manual=batch("manual-1","manual");
+manual.createdAt="2026-10-07T20:02:00.000Z";manual.events[0].timestamp=manual.createdAt;manual.events[0].id="event-manual-1";
+fs.writeFileSync(path.join(inbox,"manual-1.json"),JSON.stringify(manual));
+const fourth=buildObservabilityPackage(root);
+assert.equal(fourth.health.lastAutomaticPublishAt,"2026-10-07T20:01:00.000Z");
+assert.equal(fourth.health.lastManualPublishAt,"2026-10-07T20:02:00.000Z");
+assert.equal(fourth.health.lastManualBatchId,"manual-1");
 fs.rmSync(root,{recursive:true,force:true});
 console.log("OBSERVABILITY_GITHUB_PIPELINE_TEST=PASS");

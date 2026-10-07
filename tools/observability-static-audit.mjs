@@ -63,6 +63,8 @@ assert.ok(observationSync.includes("lastRelayAcceptedAt"));
 assert.ok(relay.includes("https://signal-interpreter-observability-re.vercel.app"));
 assert.ok(relay.includes("uploadBatch"));
 assert.ok(relay.includes("getStatus"));
+assert.ok(relay.includes("publishHistory"));
+assert.ok(relay.includes("modelContextAccess"));
 assert.equal(/client_secret|device.?flow|githubApp/i.test(relay),false);
 assert.equal(/127\.0\.0\.1/.test(relay),false);
 
@@ -72,6 +74,9 @@ assert.ok(popup.includes("SignalObservabilityRelay"));
 assert.equal(popup.includes("githubClientId"),false);
 assert.equal(popup.includes("githubConnect"),false);
 assert.ok(popup.includes("Publicando observabilidad pendiente"));
+assert.ok(popup.includes("lastAutomaticPublish"));
+assert.ok(popup.includes("lastManualPublish"));
+assert.ok(popup.includes("lastModelContextAccess"));
 
 assert.ok(workflow.includes("observations/inbox/**"));
 assert.ok(workflow.includes("node tools/observability-github-pipeline.mjs"));
@@ -90,6 +95,8 @@ assert.ok(githubPipeline.includes("buildObservabilityPackage"));
 assert.ok(githubPipeline.includes("const inbox=path.join(obs,\"inbox\")"));
 assert.ok(githubPipeline.includes("semanticPlatformDelta"));
 assert.ok(githubPipeline.includes("observability-build-health/v1"));
+assert.ok(githubPipeline.includes("derivePublishHistory"));
+assert.ok(githubPipeline.includes("updatePublishHistory"));
 assert.ok(githubPipelineTest.includes("OBSERVABILITY_GITHUB_PIPELINE_TEST"));
 assert.ok(platformLearning.includes("semanticPlatformDelta"));
 assert.ok(platformLearningTest.includes("PLATFORM_LEARNING_TEST=PASS"));

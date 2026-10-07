@@ -21,6 +21,31 @@ function listJson(dir){
   if(!fs.existsSync(dir))return[];
   return fs.readdirSync(dir).filter(x=>x.endsWith(".json")).sort().map(x=>path.join(dir,x));
 }
+function derivePublishHistory(obs){
+  const history={lastAutomaticPublishAt:null,lastAutomaticBatchId:null,lastManualPublishAt:null,lastManualBatchId:null};
+  for(const file of listJson(path.join(obs,"batches"))){
+    const batch=readJson(file,null);
+    if(!batch||batch.schema!==BATCH_SCHEMA||!batch.batchId||!batch.createdAt)continue;
+    if(batch.trigger==="observability-self-test"||batch.extensionVersion==="self-test")continue;
+    const time=Date.parse(batch.createdAt);
+    if(!Number.isFinite(time))continue;
+    if(batch.trigger==="manual"){
+      if(!history.lastManualPublishAt||time>Date.parse(history.lastManualPublishAt)){history.lastManualPublishAt=batch.createdAt;history.lastManualBatchId=batch.batchId;}
+    }else if(!history.lastAutomaticPublishAt||time>Date.parse(history.lastAutomaticPublishAt)){
+      history.lastAutomaticPublishAt=batch.createdAt;history.lastAutomaticBatchId=batch.batchId;
+    }
+  }
+  return history;
+}
+function updatePublishHistory(history,batch){
+  if(!batch||!batch.createdAt||batch.trigger==="observability-self-test"||batch.extensionVersion==="self-test")return;
+  const time=Date.parse(batch.createdAt);if(!Number.isFinite(time))return;
+  if(batch.trigger==="manual"){
+    if(!history.lastManualPublishAt||time>Date.parse(history.lastManualPublishAt)){history.lastManualPublishAt=batch.createdAt;history.lastManualBatchId=batch.batchId;}
+  }else if(!history.lastAutomaticPublishAt||time>Date.parse(history.lastAutomaticPublishAt)){
+    history.lastAutomaticPublishAt=batch.createdAt;history.lastAutomaticBatchId=batch.batchId;
+  }
+}
 function normalizeRoute(value){
   return String(value||"/")
     .replace(/^\/call\/[^/?#]+/,"/call/<ID>")
@@ -195,6 +220,7 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     index=rebuildFromBatches(obs,index);
   }
   const inboxFiles=listJson(inbox);
+  const publishHistory=derivePublishHistory(obs);
   let processedInbox=0,lastInput=null;
   for(const inboxFile of inboxFiles){
     const batch=readJson(inboxFile,null);
@@ -207,6 +233,7 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     index.identityCount=Object.keys(index.latestByIdentity).length;
     index.routes=Array.from(new Set(Object.values(index.latestByIdentity).map(x=>x&&x.route).filter(Boolean))).sort();
     index.routeCount=index.routes.length;
+    updatePublishHistory(publishHistory,batch);
     processedInbox+=1;
     if(!lastInput||batchTime(batch)>batchTime(lastInput))lastInput=batch;
     fs.rmSync(inboxFile,{force:true});
@@ -256,6 +283,10 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     lastInputBatchId:lastInput&&lastInput.batchId||null,
     lastInputCreatedAt:lastInput&&lastInput.createdAt||null,
     latestRealBatchId:latestReal&&latestReal.batchId||null,
+    lastAutomaticPublishAt:publishHistory.lastAutomaticPublishAt,
+    lastAutomaticBatchId:publishHistory.lastAutomaticBatchId,
+    lastManualPublishAt:publishHistory.lastManualPublishAt,
+    lastManualBatchId:publishHistory.lastManualBatchId,
     batchFiles:manifest.totalBatchFiles,
     platformSnapshots:Number(index.observations||0),
     platformDeltas:Number(index.deltas||0),

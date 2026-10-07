@@ -3,6 +3,7 @@ const BRANCH = "main";
 const API_VERSION = "2022-11-28";
 const MAX_BODY_BYTES = 1500000;
 const MAX_EVENTS = 200;
+const MODEL_CONTEXT_PATH = "observations/health/model-context-access.json";
 
 function cors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -38,7 +39,22 @@ async function getExisting(path){try{return await githubRequest(`/repos/${REPOSI
 export default async function handler(req,res){
   cors(res);
   if(req.method==="OPTIONS") return res.status(204).end();
-  if(req.method==="GET") return res.status(200).json({ok:true,service:"signal-interpreter-observability-relay",repository:REPOSITORY,branch:BRANCH,mode:"vercel-to-github"});
+  if(req.method==="GET") {
+    let modelContextAccess=null;
+    let publishHistory={lastAutomaticPublishAt:null,lastAutomaticBatchId:null,lastManualPublishAt:null,lastManualBatchId:null};
+    try {
+      const marker=await getExisting(MODEL_CONTEXT_PATH);
+      if(marker && marker.content) modelContextAccess=JSON.parse(Buffer.from(marker.content.replace(/\n/g,""),"base64").toString("utf8"));
+    } catch(_) {}
+    try {
+      const health=await getExisting("observations/health/github-build.json");
+      if(health && health.content){
+        const parsed=JSON.parse(Buffer.from(health.content.replace(/\n/g,""),"base64").toString("utf8"));
+        publishHistory={lastAutomaticPublishAt:parsed.lastAutomaticPublishAt||null,lastAutomaticBatchId:parsed.lastAutomaticBatchId||null,lastManualPublishAt:parsed.lastManualPublishAt||null,lastManualBatchId:parsed.lastManualBatchId||null};
+      }
+    } catch(_) {}
+    return res.status(200).json({ok:true,service:"signal-interpreter-observability-relay",repository:REPOSITORY,branch:BRANCH,mode:"vercel-to-github",publishHistory,modelContextAccess:modelContextAccess});
+  }
   if(req.method!=="POST") return res.status(405).json({ok:false,error:"Method not allowed"});
   if(!process.env.GITHUB_TOKEN) return res.status(503).json({ok:false,error:"Relay not configured"});
   try{

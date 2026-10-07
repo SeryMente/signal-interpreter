@@ -60,7 +60,7 @@ async function getState(){
   var s=await chrome.storage.local.get(["signalObservationSyncState"]);
   return Object.assign({
     ackedSequence:0,pendingCount:0,lastAttemptAt:null,lastSuccessAt:null,lastBatchId:null,
-    lastRelayAcceptedAt:null,lastPackageBuildAt:null,consecutiveFailures:0,lastError:null
+    lastRelayAcceptedAt:null,lastAutomaticPublishAt:null,lastAutomaticBatchId:null,lastManualPublishAt:null,lastManualBatchId:null,lastPackageBuildAt:null,consecutiveFailures:0,lastError:null
   },s.signalObservationSyncState||{});
 }
 async function setState(state){await chrome.storage.local.set({signalObservationSyncState:state});}
@@ -117,7 +117,10 @@ async function flushInternal(reason){
     var r=await SignalObservabilityRelay.uploadBatch(payload);
     state.ackedSequence=Math.max(Number(state.ackedSequence)||0,Number(data.summary.lastSequence)||0);
     alarmScheduled=false;pendingEvents=0;state.pendingCount=0;state.lastSuccessAt=iso();
-    state.lastRelayAcceptedAt=iso();state.lastError=null;state.consecutiveFailures=0;
+    state.lastRelayAcceptedAt=iso();
+    if(reason==="manual"){state.lastManualPublishAt=state.lastRelayAcceptedAt;state.lastManualBatchId=batchId;}
+    else{state.lastAutomaticPublishAt=state.lastRelayAcceptedAt;state.lastAutomaticBatchId=batchId;}
+    state.lastError=null;state.consecutiveFailures=0;
     if(r&&r.commitSha)state.lastRelayCommitSha=r.commitSha;
     await setState(state);
     try{chrome.alarms.clear(RETRY_ALARM);}catch(_){}
