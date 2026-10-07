@@ -40,6 +40,41 @@ function loadHealth(){
   const defaults={startedAt:iso(),lastAcceptedAt:null,lastGitSuccessAt:null,lastFallbackAt:null,lastGitError:null,lastPublishedSequence:0,lastBatchId:null,gitAttempts:0,fallbackPublishes:0,queued:false,platformSnapshots:0,platformDeltas:0,platformRoutes:0,platformLastObservationAt:null,platformLastDeltaAt:null};
   try{return Object.assign(defaults,JSON.parse(fs.readFileSync(STATE_FILE,"utf8")))}catch(_){return defaults}
 }
+function rebuildPlatformStateFromPackage(){
+  const rebuilt={schema:"signal-interpreter-platform-learning-state/v1",generatedAt:iso(),lastUpdatedAt:iso(),observations:0,deltas:0,identities:{},seenHashes:[]};
+  try{
+    if(fs.existsSync(PLATFORM_INDEX)){
+      const index=JSON.parse(fs.readFileSync(PLATFORM_INDEX,"utf8"));
+      const latest=index.latestByIdentity&&typeof index.latestByIdentity==="object"?index.latestByIdentity:{};
+      for(const [identity,value] of Object.entries(latest)){
+        if(!value||!value.snapshotPath)continue;
+        const snapshotFile=path.join(OBS,value.snapshotPath);
+        if(!fs.existsSync(snapshotFile))continue;
+        try{
+          const snapshot=JSON.parse(fs.readFileSync(snapshotFile,"utf8"));
+          rebuilt.identities[identity]={
+            snapshotId:snapshot.snapshotId||value.snapshotId||null,
+            capturedAt:snapshot.capturedAt||value.capturedAt||null,
+            route:snapshot.route||value.route||"",
+            url:snapshot.url||value.url||"",
+            snapshotHash:snapshot.snapshotHash||value.snapshotHash||null,
+            snapshotPath:value.snapshotPath,
+            lastDeltaPath:value.lastDeltaPath||null,
+            observations:Number(value.observations||1),
+            surface:snapshot.surface||null
+          };
+          if(rebuilt.identities[identity].snapshotHash){
+            rebuilt.seenHashes.push(identity+"|"+rebuilt.identities[identity].snapshotHash);
+          }
+        }catch(_){}
+      }
+      rebuilt.observations=Number(index.observations||Object.keys(rebuilt.identities).length||0);
+      rebuilt.deltas=Number(index.deltas||0);
+    }
+  }catch(error){log("platform package state rebuild failed: "+String(error))}
+  rebuilt.seenHashes=rebuilt.seenHashes.slice(-20000);
+  return rebuilt;
+}
 function loadPlatformState(){
   const defaults={schema:"signal-interpreter-platform-learning-state/v1",generatedAt:null,lastUpdatedAt:null,observations:0,deltas:0,identities:{},seenHashes:[]};
   try{
@@ -47,7 +82,7 @@ function loadPlatformState(){
     parsed.identities=parsed.identities&&typeof parsed.identities==="object"?parsed.identities:{};
     parsed.seenHashes=Array.isArray(parsed.seenHashes)?parsed.seenHashes.slice(-20000):[];
     return Object.assign(defaults,parsed);
-  }catch(_){return defaults}
+  }catch(_){return rebuildPlatformStateFromPackage()}
 }
 function log(message){
   const line="[observation-reporter] "+iso()+" "+message;
