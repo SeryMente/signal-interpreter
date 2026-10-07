@@ -56,7 +56,7 @@ La extensión publica batches saneados en:
 
 observations/inbox/<batchId>.json
 
-GitHub Actions consume ese inbox y genera:
+GitHub Actions consume ese inbox mediante el evento de publicación y, como respaldo, mediante un barrido programado cada 5 minutos. Genera:
 
 - observations/batches/
 - observations/platform-snapshots/
