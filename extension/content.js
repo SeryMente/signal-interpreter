@@ -739,7 +739,7 @@
         emit("INCOMING_DIALOG_DETECTED", {
           modality: modality, connectFound: !!button,
           connectDisabled: button ? !!button.disabled : null,
-          requestTextSafe: safe(text).slice(0, 500),
+          requestTextLength: text.length,
           dialog: {
             buttons: dialog.querySelectorAll("button").length,
             inputs: dialog.querySelectorAll("input,select,textarea").length,
