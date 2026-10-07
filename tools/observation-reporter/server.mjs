@@ -304,13 +304,6 @@ async function processUnpublishedPlatformBatches(){
     }catch(error){log("platform batch repair failed "+file+": "+String(error))}
   }
 }
-function findPlatformDerivedGitFiles(){
-  const result=[];
-  try{
-    const out=fs.existsSync(path.join(PUBLISH_ROOT,".git"))?fs.readFileSync("/dev/null"):"";
-  }catch(_){}
-  return result;
-}
 async function ghPut(repoPath,filePath,message){
   const content=fs.readFileSync(filePath).toString("base64");let sha=null;
   try{sha=(await gh(["api","repos/"+REPO+"/contents/"+repoPath+"?ref=main","--jq",".sha"])).trim()||null}catch(error){if(!/404|Not Found/i.test(String(error)))throw error}
@@ -379,7 +372,6 @@ async function runGitSync(){
     }
     if(lastPending.length)await fallbackPublishObservations(lastPending);
     else throw lastError||new Error("git-sync failed");
-    if(lastPending.length)removeSpoolBatch(path.basename(lastPending[lastPending.length-1],".json"));
     return;
   }catch(error){
     dirty=true;health.queued=true;health.lastGitError=String(error);saveHealth();
