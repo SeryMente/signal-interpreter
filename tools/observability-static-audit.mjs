@@ -133,6 +133,7 @@ assert.ok(reporter.includes("PUBLISH_SWEEP_MS"));
 assert.ok(reporter.includes("syncDueAt"));
 assert.ok(reporter.includes("const due=Date.now()+delayMs"));
 assert.ok(reporter.includes("for(const batchFile of pending"));
+assert.ok(reporter.includes('batch.trigger==="observability-self-test"'));
 assert.ok(reporter.includes("setInterval(publishSweep,PUBLISH_SWEEP_MS).unref()"));
 assert.ok(reporter.includes("||30000"));
 assert.ok(reporter.includes("uncaughtException"));
