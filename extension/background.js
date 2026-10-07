@@ -1703,6 +1703,17 @@ importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq
         timestamp: iso(), tabId: sender.tab ? sender.tab.id : null,
         source: "content", level: "info"
       }, message.event || {});
+      if (sender.tab) {
+        event.tabId = Number(sender.tab.id);
+        event.windowId = Number(sender.tab.windowId);
+        event.context = Object.assign({}, event.context || {}, {
+          sourceTabId: Number(sender.tab.id),
+          sourceWindowId: Number(sender.tab.windowId),
+          observedTabStatus: sender.tab.status || null,
+          observedTabActive: !!sender.tab.active,
+          observedTabUrl: String(sender.tab.url || "").replace(/\?.*$/, "").slice(0, 500)
+        });
+      }
       appendEvent(event, function () { sendResponse({ ok: true }); });
       if (event.action === "PLATFORM_SESSION_STARTED" || event.action === "PLATFORM_SESSION_ENDED") handleSession(event);
       if (event.action === "AVAILABILITY_STATE") {
