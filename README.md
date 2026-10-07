@@ -34,7 +34,7 @@ La prueba de transcripción está en tools/groq-transcriber-tests.mjs y valida e
 
 La observabilidad operativa de Signal Interpreter tiene un contrato de persistencia explícito:
 
-- La extensión conserva los eventos en IndexedDB y dispara el envío por eventos críticos, umbral, ventana y alarma periódica.
+- La extensión conserva los eventos en IndexedDB y dispara el envío por eventos críticos, umbral, ventana y una alarma periódica independiente de los reintentos, con cadencia de 1 minuto.
 - Los batches enviados al reporter local se escriben primero de forma durable antes de confirmar su recepción.
 - El reporter mantiene un spool independiente del repositorio de desarrollo para que un reset, checkout o conflicto de código no destruya telemetría pendiente.
 - La publicación usa un repositorio Git aislado, reintenta los pushes y dispone de fallback mediante GitHub API para el batch más reciente.
