@@ -1,8 +1,7 @@
 $ErrorActionPreference="SilentlyContinue"
 $Port=8788
 $Root=(Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
-$Server=Join-Path $Root "tools\observation-reporter\server.mjs"
-$Node=(Get-Command node -ErrorAction Stop).Source
+$Supervisor=Join-Path $Root "tools\observation-reporter\run-supervised.ps1"
 $Base=Split-Path $Root
 $State=Join-Path $Base ".signal-interpreter-observability-state"
 $Log=Join-Path $State "watchdog.log"
@@ -25,4 +24,7 @@ if(-not $restart){return}
 Log "Reporter unhealthy or backlog not reaching GitHub; recovery requested."
 $listener=Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
 if($listener){try{Stop-Process -Id $listener.OwningProcess -Force}catch{}}
-try{Start-Process -FilePath $Node -ArgumentList @('"' + $Server + '"') -WorkingDirectory $Root -WindowStyle Hidden;Log "Reporter restarted."}catch{Log ("Reporter restart failed: "+$_.Exception.Message)}
+$running=Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like "*run-supervised.ps1*" } | Select-Object -First 1
+if(-not $running){
+  try{Start-Process -FilePath "powershell.exe" -ArgumentList @("-NoProfile","-WindowStyle","Hidden","-ExecutionPolicy","Bypass","-File",$Supervisor) -WorkingDirectory $Root -WindowStyle Hidden;Log "Supervised reporter restarted."}catch{Log ("Supervisor restart failed: "+$_.Exception.Message)}
+}
