@@ -34,8 +34,8 @@ assert.match(manifest.content_security_policy.extension_pages,/https:\/\/github\
 assert.ok(background.includes('importScripts("dialogue-engine.js","telemetry-db.js","github-observability.js","observation-sync.js","groq-transcriber.js")'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync"'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync-retry"'));
-assert.ok(background.includes("SignalObservationSync.flush("startup""));
-assert.ok(background.includes("SignalObservationSync.flush("alarm""));
+assert.ok(background.includes('SignalObservationSync.flush("startup"'));
+assert.ok(background.includes('SignalObservationSync.flush("alarm"'));
 assert.ok(content.includes("PLATFORM_INTEGRITY_CHECK"));
 assert.ok(background.includes("readOfficialStatsViaTrpc"));
 assert.ok(background.includes("no-tab-create-no-navigation-no-reload"));
