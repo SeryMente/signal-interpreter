@@ -143,8 +143,8 @@ export function checkpointFromPackage(observationsRoot){
     platformDeltas:numberOr(manifest.platform&&manifest.platform.deltas),
     routes:unique(index.routes),
     identities:unique(Object.keys(index.latestByIdentity&&typeof index.latestByIdentity==="object"?index.latestByIdentity:{})),
-    actions:unique(loadBatches(root).slice(-200).flatMap(file=>{try{return arr(readJson(file).events).map(e=>e.action)}catch(_){return[]}})),
-    categories:unique(loadBatches(root).slice(-200).flatMap(file=>{try{return arr(readJson(file).events).map(e=>e.category)}catch(_){return[]}}))
+    actions:unique(loadBatches(root).flatMap(file=>{try{return arr(readJson(file).events).map(e=>e.action)}catch(_){return[]}})),
+    categories:unique(loadBatches(root).flatMap(file=>{try{return arr(readJson(file).events).map(e=>e.category)}catch(_){return[]}}))
   };
 }
 
