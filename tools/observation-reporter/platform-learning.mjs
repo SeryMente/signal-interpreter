@@ -64,6 +64,7 @@ export function semanticPlatformDelta(previous,current){
   compareArray(p.controls&&p.controls.links,c.controls&&c.controls.links,"controls.links",x=>String(x.path||"")+"|"+String(x.label||""),changes);
   compareArray(p.controls&&p.controls.fields,c.controls&&c.controls.fields,"controls.fields",x=>JSON.stringify(x),changes);
   compareArray(p.css&&p.css.stylesheets,c.css&&c.css.stylesheets,"css.stylesheets",x=>String(x.href||"")+"|"+String(x.media||""),changes);
+  compareArray(p.css&&p.css.inlineStyles,c.css&&c.css.inlineStyles,"css.inlineStyles",x=>String(x.index||0)+"|"+String(x.media||""),changes);
   compareArray(p.javascript&&p.javascript.scripts,c.javascript&&c.javascript.scripts,"javascript.scripts",x=>String(x.src||"")+"|"+String(x.type||"")+"|"+String(x.inlineLength||0),changes);
   compareArray(p.resources&&p.resources.recent,c.resources&&c.resources.recent,"resources.recent",x=>String(x.url||"")+"|"+String(x.initiatorType||""),changes);
   compareArray(p.frameworkHints,c.frameworkHints,"frameworkHints",x=>String(x),changes);
