@@ -150,7 +150,7 @@ assert.ok(reporter.includes("processUnpublishedPlatformBatches"));
 assert.ok(reporter.includes("platformIdentityCount"));
 assert.ok(reporter.includes("rebuildPlatformStateFromPackage"));
 assert.ok(reporter.includes("const snapshotHash=sha256(surface)"));
-assert.ok(reporter.includes("identityKey+"+"|"+"+snapshot.snapshotHash"));
+assert.ok(reporter.includes('snapshot.identityKey+"|"+snapshot.snapshotHash'));
 assert.ok(reporter.includes("batch.trigger==="+"\"observability-self-test\""));
 assert.ok(packageAudit.includes("signal-interpreter-observability-package/v1"));
 assert.ok(packageAudit.includes("latestByIdentity"));
