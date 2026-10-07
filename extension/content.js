@@ -183,7 +183,7 @@
       tag: String(element && element.tagName || "").toLowerCase(),
       attributes: attributeInventory(element),
       classes: classes,
-      text: text,
+      text: text ? "[TEXT:" + text.length + ":" + stableSurfaceToken(text) + "]" : "",
       visible: !!(style && style.display !== "none" && style.visibility !== "hidden" && !element.hidden && rect && rect.width > 0 && rect.height > 0),
       disabled: !!(element && element.disabled),
       childCount: element && element.children ? element.children.length : 0,
