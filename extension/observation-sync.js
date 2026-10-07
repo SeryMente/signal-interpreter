@@ -34,6 +34,7 @@ function safeEvent(e){
     schema:e.schema||"khora-effectif-event/v4",
     id:e.id||null,sequence:Number(e.sequence)||0,timestamp:e.timestamp||null,ingestedAt:e.ingestedAt||null,
     level:e.level||"info",category:e.category||"RUNTIME",component:e.component||e.source||"background",
+    extensionVersion:e.extensionVersion||null,host:e.host||null,url:e.url||null,
     phase:e.phase||"event",action:e.action||"UNKNOWN",outcome:e.outcome||"observed",
     traceId:e.traceId||null,operationId:e.operationId||null,parentEventId:e.parentEventId||null,
     attempt:Number(e.attempt)||1,durationMs:e.durationMs==null?null:Number(e.durationMs),
