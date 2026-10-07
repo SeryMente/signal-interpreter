@@ -11,7 +11,7 @@ Esta matriz define qué debe observar Signal Interpreter, dónde se observa, qu�
 | Área | Señal requerida | Fuente | Evidencia persistente | Frecuencia/trigger | Estado objetivo |
 |---|---|---|---|---|---|
 | Runtime | inicio, suspensión, actualización, límites de versión | background | evento estructurado | lifecycle | Cubierto |
-| Errores | excepción, rechazo, timeout, fallo de API | background/content/reporter | evento + error contextual | inmediato | Cubierto |
+| Errores | excepción, rechazo, timeout, fallo de API | background/content | evento + error contextual | inmediato | Cubierto |
 | Navegación | URL, ruta, cambio de query keys, navegación SPA | content + tabs | URL event + surface snapshot | por cambio; sondeo 1 s | Cubierto |
 | DOM/HTML | estructura, tags, atributos estructurales, roles, relaciones | content | platform surface snapshot | cambio/debounce | Cubierto |
 | CSS | stylesheets, medios, conteo de reglas, presencia de inline styles | content | platform surface snapshot | cambio de superficie | Cubierto |
@@ -24,10 +24,10 @@ Esta matriz define qué debe observar Signal Interpreter, dónde se observa, qu�
 | Disponibilidad | online/offline/unknown | content/background | eventos + estado reconciliado | cambio/heartbeat | Cubierto |
 | Performance | navigation timing, long tasks, layout shift, memoria, recursos | content | heartbeat estructurado | heartbeat | Cubierto |
 | Red | solicitudes y respuestas al dominio autorizado | background | ventanas agregadas y errores | 15 s | Cubierto |
-| Persistencia | DB writes/errors, spool, publicación, retries | background/reporter | health + eventos | continuo | Cubierto |
-| Sincronización | recepción, publicación Git, fallback, backlog | reporter | health + batches | <=30 s objetivo + sweep | Cubierto |
-| Recuperación | watchdog y reinicio | Windows task/reporter | health + watchdog log | cada 2 min / ante fallo | Cubierto |
-| Delta | cambios semánticos entre superficies | reporter | platform-deltas | por superficie nueva | Cubierto |
+| Persistencia | DB writes/errors, backlog local, publicación y retries | background + IndexedDB | health + eventos | continuo | Cubierto |
+| Sincronización | flush, recepción GitHub, aceptación, backlog | background + GitHub API | sync state + batches | ~1 min base + crítico/umbral | Cubierto |
+| Recuperación | suspensión/reanudación del service worker y reintentos | Chrome alarms + IndexedDB | sync state + health GitHub | continuo / backoff | Cubierto |
+| Delta | cambios semánticos entre superficies | GitHub Actions | platform-deltas | por batch procesado | Cubierto |
 | Privacidad | redacción de secretos y exclusión de audio/texto crudo | todos | flags privacy + scrubber | siempre | Cubierto |
 | Integridad ética | observación read-only y connect-only validado | content | PLATFORM_INTEGRITY_CHECK | startup/call/heartbeat | Cubierto |
 
@@ -66,7 +66,7 @@ Una señal se considera cubierta cuando:
 4. Tiene timestamp y contexto suficiente.
 5. Llega a IndexedDB o persistencia local equivalente.
 6. Está incluida en un batch sincronizable.
-7. El reporter puede reconstruir o consultar la evidencia.
+7. GitHub Actions puede reconstruir o consultar la evidencia.
 8. Existe una prueba o guard que detectaría su desaparición.
 
 La ausencia de una señal debe ser distinguible de la conclusión «la señal no ocurrió».
