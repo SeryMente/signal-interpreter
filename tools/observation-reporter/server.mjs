@@ -129,6 +129,9 @@ function ensurePublisherSyncRoot(){
   fs.mkdirSync(LATEST,{recursive:true});
   fs.mkdirSync(PLATFORM_SNAPSHOTS,{recursive:true});
   fs.mkdirSync(PLATFORM_DELTAS,{recursive:true});
+  if(!fs.existsSync(PLATFORM_INDEX))writePlatformIndexes();
+  if(!fs.existsSync(PLATFORM_LATEST))writePlatformIndexes();
+  if(!fs.existsSync(OBS_MANIFEST))writeObservabilityManifest(null);
 }
 async function ensurePublisher(){
   if(fs.existsSync(path.join(PUBLISH_ROOT,".git"))){
