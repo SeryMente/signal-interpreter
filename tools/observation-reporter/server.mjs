@@ -60,8 +60,7 @@ function rebuildPlatformStateFromPackage(){
             snapshotHash:snapshot.snapshotHash||value.snapshotHash||null,
             snapshotPath:value.snapshotPath,
             lastDeltaPath:value.lastDeltaPath||null,
-            observations:Number(value.observations||1),
-            surface:snapshot.surface||null
+            observations:Number(value.observations||1)
           };
           if(rebuilt.identities[identity].snapshotHash){
             rebuilt.seenHashes.push(identity+"|"+rebuilt.identities[identity].snapshotHash);
@@ -180,6 +179,8 @@ function scrubValue(value,key="",depth=0){
 }
 function sanitizeBatch(input){
   if(!input||input.schema!=="signal-interpreter-observation-batch/v1")throw new Error("Schema de batch no soportado");
+  const batchId=String(input.batchId||"");
+  if(!/^[A-Za-z0-9._-]{1,120}$/.test(batchId))throw new Error("batchId inválido");
   const events=Array.isArray(input.events)?input.events.slice(0,200):[];
   const safeEvents=events.map(e=>{
     const out={};
@@ -204,7 +205,7 @@ function sanitizeBatch(input){
   });
   return{
     schema:input.schema,
-    batchId:String(input.batchId||""),
+    batchId:batchId,
     createdAt:String(input.createdAt||iso()),
     trigger:String(input.trigger||"scheduled"),
     extensionVersion:String(input.extensionVersion||"unknown"),
@@ -271,7 +272,10 @@ function persistPlatformSnapshot(snapshot){
   const previous=platformState.identities[snapshot.identityKey]||null;
   let deltaPath=null,delta=null;
   if(!previous||previous.snapshotHash!==snapshot.snapshotHash){
-    const previousSnapshot=previous&&previous.surface?previous:null;
+    let previousSnapshot=null;
+    if(previous&&previous.snapshotPath){
+      try{previousSnapshot=JSON.parse(fs.readFileSync(path.join(OBS,previous.snapshotPath),"utf8"))}catch(_){}
+    }
     delta=semanticPlatformDelta(previousSnapshot,snapshot);
     const deltaFile=path.join(PLATFORM_DELTAS,day,fileToken(snapshot.route||"root")+"--"+snapshot.snapshotHash+".json");
     durableWrite(deltaFile,JSON.stringify(delta,null,2)+"\\n");
@@ -284,7 +288,7 @@ function persistPlatformSnapshot(snapshot){
   platformState.identities[snapshot.identityKey]={
     snapshotId:snapshot.snapshotId,capturedAt:snapshot.capturedAt,route:snapshot.route,url:snapshot.url,
     snapshotHash:snapshot.snapshotHash,snapshotPath:path.relative(OBS,snapshotPath).replace(/\\\\/g,"/"),
-    lastDeltaPath:deltaPath||previous&&previous.lastDeltaPath||null,observations:existingCount+1,surface:snapshot.surface
+    lastDeltaPath:deltaPath||previous&&previous.lastDeltaPath||null,observations:existingCount+1
   };
   platformState.observations=Number(platformState.observations||0)+(previous&&previous.snapshotHash===snapshot.snapshotHash?0:1);
   platformState.seenHashes=(platformState.seenHashes||[]).concat(snapshot.identityKey+"|"+snapshot.snapshotHash).slice(-20000);
@@ -443,10 +447,11 @@ server.requestTimeout=15000;server.headersTimeout=10000;
 server.on("error",error=>{log("server error: "+String(error));process.exitCode=1;setTimeout(()=>process.exit(1),100)});
 process.on("uncaughtException",error=>{log("uncaughtException: "+String(error));process.exit(1)});
 process.on("unhandledRejection",error=>{log("unhandledRejection: "+String(error));process.exit(1)});
-server.listen(PORT,"127.0.0.1",()=>{
+server.listen(PORT,"127.0.0.1",async()=>{
   ensurePublisherSyncRoot();
   health.startedAt=iso();saveHealth();
-  processUnpublishedPlatformBatches().finally(()=>writeObservabilityManifest(null));
+  await processUnpublishedPlatformBatches();
+  writeObservabilityManifest(null);
   log("listening on http://127.0.0.1:"+PORT+" repo="+ROOT);
   scheduleGitSync(true);
   setInterval(publishSweep,PUBLISH_SWEEP_MS).unref();
