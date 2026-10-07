@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - "observations/inbox/**"
+      - "docs/OBSERVABILITY-GITHUB-APP-SETUP.md"
+  schedule:
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 concurrency:
@@ -17,7 +20,6 @@ permissions:
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'diagnostic: enqueue observation batch')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,24 +27,44 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Detect pending inbox
+        id: pending
+        shell: bash
+        run: |
+          if find observations/inbox -maxdepth 1 -type f -name '*.json' -print -quit 2>/dev/null | grep -q .; then
+            echo "has_pending=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_pending=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip clean scheduled sweep
+        if: steps.pending.outputs.has_pending != 'true'
+        run: echo "OBSERVABILITY_INBOX_EMPTY"
+
       - name: Setup Node
+        if: steps.pending.outputs.has_pending == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Build observability package
+        if: steps.pending.outputs.has_pending == 'true'
         run: node tools/observability-github-pipeline.mjs "$GITHUB_WORKSPACE"
 
       - name: Audit observability package
+        if: steps.pending.outputs.has_pending == 'true'
         run: node tools/observability-package-audit.mjs observations
 
       - name: Test semantic cycle delta
+        if: steps.pending.outputs.has_pending == 'true'
         run: node tools/observability-cycle-delta-test.mjs
 
       - name: Test GitHub package pipeline
+        if: steps.pending.outputs.has_pending == 'true'
         run: node tools/observability-github-pipeline-test.mjs
 
       - name: Commit derived observability package
+        if: steps.pending.outputs.has_pending == 'true'
         shell: bash
         run: |
           git config user.name "Signal Interpreter Observability"
