@@ -180,7 +180,7 @@
   }
   function computedStyleSurface(style) {
     if (!style) return null;
-    var keys = ["display","position","boxSizing","flexDirection","justifyContent","alignItems","gridTemplateColumns","overflow","width","height","padding","margin"];
+    var keys = ["display","position","boxSizing","flexDirection","justifyContent","alignItems","gridTemplateColumns","overflow","width","height","padding","margin","color","backgroundColor","fontFamily","fontSize","fontWeight","lineHeight","letterSpacing","textTransform","border","borderRadius","boxShadow","opacity","zIndex","accentColor"];
     var output = {};
     keys.forEach(function (key) {
       var value = style.getPropertyValue(key);
