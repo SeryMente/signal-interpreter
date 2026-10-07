@@ -32,11 +32,17 @@ No es necesario ejecutar ningún proceso de bridge local.
 La prueba de transcripción está en tools/groq-transcriber-tests.mjs y valida endpoint, modelo, parámetros de Groq, segmentos y redacción de credenciales.
 ## Persistencia automática de observabilidad
 
-La observabilidad operativa de Signal Interpreter tiene un contrato de persistencia explícito:
+La observabilidad de Signal Interpreter tiene un contrato de persistencia explícito y cubre dos planos: telemetría de la propia extensión y observación superficial de Cloud Interpreter.
 
-- La extensión conserva los eventos en IndexedDB y dispara el envío por eventos críticos, umbral, ventana y una alarma periódica independiente de los reintentos, con cadencia de 1 minuto.
+- La extensión conserva eventos en IndexedDB y dispara el envío por eventos críticos, umbral, ventana y una alarma periódica independiente de los reintentos, con cadencia de 1 minuto.
 - Los batches enviados al reporter local se escriben primero de forma durable antes de confirmar su recepción.
-- El reporter mantiene un spool independiente del repositorio de desarrollo para que un reset, checkout o conflicto de código no destruya telemetría pendiente.
-- La publicación usa un repositorio Git aislado, reintenta los pushes y dispone de fallback mediante GitHub API para el batch más reciente.
-- Un Scheduled Task reinicia el reporter y un watchdog supervisa continuamente el endpoint local.
-- La ruta de desarrollo puede verificarse mediante el self-test de extremo a extremo que publica un batch deliberado en `main`.
+- La ruta de publicación usa un spool independiente del repositorio de desarrollo, un publisher Git aislado, reintentos, watchdog y fallback mediante GitHub API.
+- Los eventos de plataforma conservan payload estructurado suficiente para reconstruir contexto, URL, superficie DOM, CSS, JavaScript entregado al cliente, recursos y pistas de framework sin almacenar código server-side privado ni secretos.
+- El reporter genera snapshots de superficie en `observations/platform-snapshots/`, historial de deltas semánticos en `observations/platform-deltas/`, e índices en `observations/platform-index.json` y `observations/platform-latest.json`.
+- `observations/manifest.json` funciona como índice de paquete para el siguiente ciclo de desarrollo.
+- La observación de navegación es reactiva al uso real del usuario; no se ejecuta crawling masivo, fuzzing ni bypass de controles.
+- La captura distingue evidencia observada de inferencia y aplica minimización/redacción antes de publicar.
+- Un Scheduled Task reinicia el reporter y otro watchdog supervisa su salud y recuperación bajo el perfil operativo `fila4`.
+- El pipeline puede verificarse mediante el self-test de extremo a extremo sin contaminar el puntero `latest` de telemetría real.
+
+Consulta `docs/OBSERVABILITY-COVERAGE-MATRIX-v1.md` y `docs/OBSERVABILITY-DELTA-PROTOCOL-v1.md` para el contrato de cobertura y el protocolo de aprendizaje incremental.
