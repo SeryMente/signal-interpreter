@@ -3,9 +3,10 @@ param()
 $ErrorActionPreference="Stop"
 $root=(Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $server=Join-Path $PSScriptRoot "server.mjs"
+$supervisor=Join-Path $PSScriptRoot "run-supervised.ps1"
 $watchdog=Join-Path $PSScriptRoot "watchdog.ps1"
-$node=(Get-Command node -ErrorAction Stop).Source
 if(-not(Test-Path -LiteralPath $server)){throw "Reporter missing: $server"}
+if(-not(Test-Path -LiteralPath $supervisor)){throw "Supervisor missing: $supervisor"}
 if(-not(Test-Path -LiteralPath $watchdog)){throw "Watchdog missing: $watchdog"}
 
 $interactiveUser=(Get-CimInstance Win32_ComputerSystem).UserName
@@ -14,7 +15,7 @@ $interactiveName=($interactiveUser -split '\\')[-1]
 if($interactiveName -ne "fila4"){throw "Refusing to install outside the active fila4 profile. Detected: $interactiveUser"}
 $principal=New-ScheduledTaskPrincipal -UserId $interactiveUser -LogonType Interactive -RunLevel Highest
 
-$action=New-ScheduledTaskAction -Execute $node -Argument ('"' + $server + '"') -WorkingDirectory $root
+$action=New-ScheduledTaskAction -Execute "powershell.exe" -Argument ('-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $supervisor + '"') -WorkingDirectory $root
 $settings=New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1)
 $trigger=New-ScheduledTaskTrigger -AtLogOn
 $reporterName="Signal Interpreter Observation Reporter"
