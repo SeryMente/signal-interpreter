@@ -31,6 +31,8 @@ jobs:
           node --check tools/observation-reporter/platform-learning-test.mjs
           node --check tools/observability-package-audit.mjs
           node --check tools/observability-package-audit-test.mjs
+          node --check tools/observability-cycle-delta.mjs
+          node --check tools/observability-cycle-delta-test.mjs
           node --check tools/observation-reporter/self-test.mjs
       - name: PowerShell syntax
         shell: pwsh
@@ -43,5 +45,7 @@ jobs:
         run: node tools/observation-reporter/platform-learning-test.mjs
       - name: Observability package audit unit test
         run: node tools/observability-package-audit-test.mjs
+      - name: Observability cycle delta unit test
+        run: node tools/observability-cycle-delta-test.mjs
       - name: Observability static audit
         run: node tools/observability-static-audit.mjs
