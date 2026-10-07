@@ -1,5 +1,5 @@
 try{importScripts("groq-secret.local.js");}catch(_){/* Se genera localmente; no se versiona. */}
-importScripts("dialogue-engine.js","telemetry-db.js","observation-sync.js","groq-transcriber.js");
+importScripts("dialogue-engine.js","telemetry-db.js","github-observability.js","observation-sync.js","groq-transcriber.js");
 (function () {
   "use strict";
 
