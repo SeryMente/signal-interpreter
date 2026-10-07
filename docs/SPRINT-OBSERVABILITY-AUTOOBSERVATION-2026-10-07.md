@@ -319,3 +319,40 @@ El resultado del sprint debe convertir la observabilidad en una capacidad perman
 **la extensión se observa a sí misma, observa de manera superficial y no invasiva el entorno de Cloud Interpreter que el usuario realmente utiliza, conserva evidencia durable, la sincroniza automáticamente y convierte esa evidencia en insumo obligatorio para el siguiente ciclo de desarrollo.**
 
 Este documento constituye la definición inicial del sprint y podrá ampliarse con decisiones técnicas, hallazgos, métricas de cobertura y cambios de estrategia conforme avance la implementación.
+
+## 10. Implementación del sprint
+
+La primera implementación materializa el objetivo mediante:
+
+- captura reactiva de cambios de URL y navegación SPA en Cloud Interpreter;
+- snapshots estructurales de DOM/HTML renderizado;
+- inventario acotado de CSS, incluyendo hojas, selectores visibles y perfiles de estilo computado;
+- inventario de JavaScript entregado al navegador y fingerprints de scripts inline;
+- inventario de recursos y procedencia de red sin cuerpos, headers sensibles ni secretos;
+- contexto de pestaña, frame e iniciador en telemetría operacional;
+- persistencia de payloads estructurados dentro de los batches;
+- snapshots de plataforma y deltas semánticos por identidad de ruta;
+- reconstrucción del estado de aprendizaje desde el paquete publicado;
+- manifest, índices y auditoría de integridad del paquete;
+- protocolo ejecutable de delta entre ciclos de desarrollo;
+- self-test E2E con aislamiento respecto del estado real de plataforma;
+- límites de tamaño y minimización de datos antes de persistencia remota;
+- publicación durable con spool, retries, sweep, fallback y watchdog;
+- guardas estáticas y pruebas unitarias en CI.
+
+La implementación adopta la versión de extensión `0.10.0` por tratarse de una ampliación funcional del modelo de observabilidad.
+
+## 11. Evidencia de aceptación
+
+La aceptación técnica se apoya en cuatro capas:
+
+1. **Sintaxis/build:** todos los JavaScript/ESM relevantes, PowerShell y el host nativo deben compilar/analizar sin errores.
+2. **Pruebas unitarias:** el motor de delta y el auditor de paquete tienen fixtures reproducibles.
+3. **Auditoría estática:** CI verifica la presencia de contratos de captura, persistencia, privacidad, sincronización, recuperación y protocolo de ciclo.
+4. **E2E operacional:** el reporter debe aceptar, persistir y publicar batches; la publicación debe ser comprobable en GitHub y el self-test no debe contaminar `latest` ni el estado de aprendizaje.
+
+La evidencia de cada nueva ejecución CI y de cada E2E operativo deberá conservarse como parte del historial del proyecto.
+
+## 12. Estado de cierre
+
+El sprint no se considerará cerrado únicamente porque el código compile. El cierre exige además que la implementación publicada haya sido instalada y activada en el entorno operativo `fila4`, que el reporter activo pertenezca a ese usuario y que exista evidencia de publicación de observabilidad real posterior a la activación.
