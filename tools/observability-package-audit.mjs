@@ -36,7 +36,7 @@ export function auditObservabilityPackage(observationsRoot){
   }
   assert(manifest.schema==="signal-interpreter-observability-package/v1","invalid observability manifest schema");
   assert(index.schema==="signal-interpreter-platform-index/v1","invalid platform index schema");
-  assert(latest.schema==="signal-interpreter-platform-index/v1","invalid platform latest schema");
+  assert(latest.schema==="signal-interpreter-platform-latest/v1" || latest.schema==="signal-interpreter-platform-index/v1","invalid platform latest schema");
 
   for(const key of ["lastSequence","eventCount","platform.observations","platform.deltas","platform.identities"]){
     const value=key.split(".").reduce((object,part)=>object&&object[part],manifest);
