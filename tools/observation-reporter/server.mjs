@@ -231,6 +231,7 @@ function persistPlatformSnapshot(snapshot){
   return{snapshotPath:path.relative(OBS,snapshotPath).replace(/\\\\/g,"/"),delta,deltaPath};
 }
 function processBatchPlatformArtifacts(batch){
+  if(batch&&batch.trigger==="observability-self-test")return 0;
   let processed=0;
   for(const event of Array.isArray(batch&&batch.events)?batch.events:[]){
     if(String(event.action||"")!=="PLATFORM_SURFACE_SNAPSHOT")continue;
