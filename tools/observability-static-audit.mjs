@@ -206,7 +206,7 @@ assert.ok(reporterInstaller.includes("run-supervised.ps1"));
 assert.ok(supervisor.includes("git archive --format=zip"));
 assert.ok(supervisor.includes("origin/main"));
 assert.ok(supervisor.includes("SIGNAL_INTERPRETER_REPO"));
-assert.ok(supervisor.includes("proc.Kill($true)"));
+assert.ok(supervisor.includes("Stop-Process -Id $proc.Id -Force"));
 assert.ok(reporterInstaller.includes("Start-ScheduledTask"));
 assert.ok(reporterInstaller.includes("Get-CimInstance Win32_ComputerSystem"));
 assert.ok(reporterInstaller.includes("$interactiveUser"));
