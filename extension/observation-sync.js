@@ -18,7 +18,7 @@ function scrub(value,key,depth){
   if(/rawAudio|rawTranscript|transcriptText|captionText|utterance|innerText|textContent|outerHTML|innerHTML|inputValue|requestBody|responseBody|bodyText|htmlText|cssText|javascriptSource|audioBlob|base64/i.test(k))return"[OMITTED]";
   if(typeof value==="string"){
     return String(value)
-      .replace(/Bearers+[A-Za-z0-9._~+/=-]+/gi,"Bearer [REDACTED]")
+      .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi,"Bearer [REDACTED]")
       .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,"[EMAIL]")
       .slice(0,1200);
   }
@@ -29,12 +29,20 @@ function scrub(value,key,depth){
   keys.forEach(function(k2){o[k2]=scrub(value[k2],k2,depth+1)});
   return o;
 }
+function safeEventUrl(raw){
+  try{
+    var url=new URL(String(raw||""));
+    var path=url.pathname.replace(/\/call\/[^/]+/g,"/call/<ID>").replace(/\/profile\/[^/]+/g,"/profile/<ID>");
+    var keys=Array.from(url.searchParams.keys()).sort().slice(0,40);
+    return url.origin+path+(keys.length?"?"+keys.map(function(k){return encodeURIComponent(k)+"=<VALUE>"}).join("&"):"");
+  }catch(_){return String(raw||"").replace(/[?#].*$/,"").slice(0,500)}
+}
 function safeEvent(e){
   var out={
     schema:e.schema||"khora-effectif-event/v4",
     id:e.id||null,sequence:Number(e.sequence)||0,timestamp:e.timestamp||null,ingestedAt:e.ingestedAt||null,
     level:e.level||"info",category:e.category||"RUNTIME",component:e.component||e.source||"background",
-    extensionVersion:e.extensionVersion||null,host:e.host||null,url:e.url||null,
+    extensionVersion:e.extensionVersion||null,host:String(e.host||"").slice(0,180),url:safeEventUrl(e.url||""),
     phase:e.phase||"event",action:e.action||"UNKNOWN",outcome:e.outcome||"observed",
     traceId:e.traceId||null,operationId:e.operationId||null,parentEventId:e.parentEventId||null,
     attempt:Number(e.attempt)||1,durationMs:e.durationMs==null?null:Number(e.durationMs),
