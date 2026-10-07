@@ -204,6 +204,20 @@
       bbox: rect ? { width: Math.round(rect.width), height: Math.round(rect.height) } : null
     };
   }
+  function inlineStyleSurface() {
+    return Array.from(document.querySelectorAll("style")).slice(0, 80).map(function (style, index) {
+      var text = String(style.textContent || "");
+      return {
+        index: index,
+        type: structuralToken(style.getAttribute("type") || ""),
+        media: structuralToken(style.getAttribute("media") || ""),
+        noncePresent: !!style.getAttribute("nonce"),
+        disabled: !!style.disabled,
+        length: text.length,
+        inlineFingerprint: stableSurfaceToken(text)
+      };
+    });
+  }
   function stylesheetSurface() {
     var sheets = [];
     Array.from(document.styleSheets || []).slice(0, 100).forEach(function (sheet) {
@@ -339,7 +353,7 @@
       page: page,
       controls: { buttons: buttons, links: links, fields: fields, headings: headings },
       dom: { tagCounts: tagCounts, elements: elements },
-      css: { stylesheets: stylesheets, inlineStyleCount: document.querySelectorAll("[style]").length, styleElementCount: document.querySelectorAll("style").length },
+      css: { stylesheets: stylesheets, inlineStyles: inlineStyleSurface(), inlineStyleCount: document.querySelectorAll("[style]").length, styleElementCount: document.querySelectorAll("style").length },
       javascript: { scripts: scripts, scriptCount: scripts.length },
       resources: resourceSurface(),
       metadata: metadata,
@@ -373,6 +387,7 @@
     surface.controls.headings = surface.controls.headings.slice(0, 70);
     surface.resources.recent = surface.resources.recent.slice(-60);
     surface.css.stylesheets = surface.css.stylesheets.slice(0, 80);
+    surface.css.inlineStyles = surface.css.inlineStyles.slice(0, 60);
     surface.javascript.scripts = surface.javascript.scripts.slice(0, 100);
     surface.metadata = surface.metadata.slice(0, 80);
     var maxBytes = 48000;
@@ -385,7 +400,7 @@
       retainedCounts: {
         elements: surface.dom.elements.length, buttons: surface.controls.buttons.length, links: surface.controls.links.length,
         fields: surface.controls.fields.length, headings: surface.controls.headings.length, resources: surface.resources.recent.length,
-        stylesheets: surface.css.stylesheets.length, scripts: surface.javascript.scripts.length, metadata: surface.metadata.length
+        stylesheets: surface.css.stylesheets.length, inlineStyles: surface.css.inlineStyles.length, scripts: surface.javascript.scripts.length, metadata: surface.metadata.length
       }
     };
     return surface;
