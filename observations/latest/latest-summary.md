@@ -1,37 +1,44 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-297458b6-a5aa-4d18-8e16-124228197d7d
-- Creado: 2026-10-07T23:06:27.705Z
+- Batch: batch-37f50220-ecf8-4972-837b-47ab5cc025ca
+- Creado: 2026-10-07T23:07:01.287Z
 - Trigger: alarm
 - Extensión: 0.10.2
-- Eventos: 46
+- Eventos: 36
 - Errores: 0
 - Warnings: 0
-- Secuencia: 3640 → 3685
-- Identidades de plataforma: 3
-- Snapshots de plataforma: 11
-- Deltas de plataforma: 11
+- Secuencia: 3686 → 3721
+- Identidades de plataforma: 4
+- Snapshots de plataforma: 12
+- Deltas de plataforma: 12
 
 ## Categorías
 
 {
-  "RUNTIME": 43,
-  "PORTAL": 3
+  "RUNTIME": 29,
+  "PORTAL": 3,
+  "SESSION": 4
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 31,
-  "PERFORMANCE_HEARTBEAT": 2,
-  "PAGE_VISIBILITY_CHANGED": 2,
-  "PAGE_LIFECYCLE": 2,
-  "NETWORK_ACTIVITY_WINDOW": 2,
+  "PLATFORM_INTEGRITY_CHECK": 2,
+  "SCREEN_MAP": 5,
+  "INCOMING_RING_SIGNAL": 1,
+  "AUTO_ANSWER_READINESS": 13,
+  "CONNECT_ACCEPTED_PENDING": 1,
+  "AUTO_ANSWER_BOOTSTRAP_INJECTED": 1,
+  "NETWORK_ACTIVITY_WINDOW": 1,
+  "AVAILABILITY_STATE": 1,
+  "TAB_LIFECYCLE": 2,
+  "CALL_ALERT_PAGE_BEEP_REQUESTED": 1,
+  "CALL_ALERT_PAGE_BEEP_PLAYED": 1,
+  "CALL_ALERT_TTS_PLAYED": 1,
+  "ANSWER_FLOW_ROUTE_CONFIRMED": 1,
+  "EARNINGS_OVERLAY_STARTED": 1,
   "PLATFORM_SURFACE_SNAPSHOT": 1,
-  "AUTO_ANSWER_BOOTSTRAP_REQUESTED": 1,
-  "INCOMING_DIALOG_DETECTED": 1,
-  "CONNECT_BUTTON_FOUND": 1,
-  "AUTO_ANSWER_ELIGIBLE": 1,
-  "USER_INTERACTION": 1,
-  "CONNECT_CLICKED": 1
+  "MEDIA_HEALTH": 1,
+  "PLATFORM_URL_CHANGED": 1,
+  "CALL_ALERT_SOUND_SUPPRESSED_PAGE_BEEP": 1
 }
