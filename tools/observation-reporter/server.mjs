@@ -188,13 +188,27 @@ function sanitizeBatch(input){
     }
     return out;
   });
+  const sourceSummary=scrubValue(input.summary&&typeof input.summary==="object"?input.summary:{}, "summary",0);
+  const summary=Object.assign({},sourceSummary,{
+    eventsTotal:safeEvents.length,
+    errors:safeEvents.filter(e=>e.level==="error").length,
+    warnings:safeEvents.filter(e=>e.level==="warn").length,
+    critical:safeEvents.some(e=>e.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(String(e.action||""))),
+    scopeRejected:safeEvents.filter(e=>/SCOPE_REJECTED|DOMAIN_MISMATCH|SESSION_MISMATCH/.test(String(e.action||""))).length,
+    contextEvents:safeEvents.filter(e=>/CONTEXT/.test(String(e.action||""))).length,
+    invariantSignals:safeEvents.filter(e=>/INVARIANT|WITHOUT_VALID_SCOPE|AMBIGUOUS/.test(String(e.action||""))).length,
+    firstSequence:safeEvents.length?safeEvents[0].sequence:0,
+    lastSequence:safeEvents.length?safeEvents[safeEvents.length-1].sequence:0,
+    firstTimestamp:safeEvents.length?safeEvents[0].timestamp:null,
+    lastTimestamp:safeEvents.length?safeEvents[safeEvents.length-1].timestamp:null
+  });
   return{
     schema:input.schema,
     batchId:String(input.batchId||""),
     createdAt:String(input.createdAt||iso()),
     trigger:String(input.trigger||"scheduled"),
     extensionVersion:String(input.extensionVersion||"unknown"),
-    summary:scrubValue(input.summary&&typeof input.summary==="object"?input.summary:{}, "summary",0),
+    summary,
     events:safeEvents
   };
 }
