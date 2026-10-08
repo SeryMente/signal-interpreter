@@ -19,6 +19,7 @@ const relay=read("extension/observability-relay.js");
 const screenshotRelay=read("tools/observability-relay/api/screenshot.js");
 const screenshotRelayTest=read("tools/observability-screenshot-relay-test.mjs");
 const workflow=read(".github/workflows/observability-build.yml");
+const auditWorkflow=read(".github/workflows/observability-audit.yml");
 const packageAudit=read("tools/observability-package-audit.mjs");
 const packageAuditTest=read("tools/observability-package-audit-test.mjs");
 const cycleDelta=read("tools/observability-cycle-delta.mjs");
@@ -180,7 +181,8 @@ assert.ok(screenshotRelayTest.includes("OBSERVABILITY_SCREENSHOT_RELAY_TEST=PASS
 assert.ok(background.includes("SignalPlatformScreenshot.start()"));
 assert.ok(background.includes("SIGNAL_PLATFORM_SCREENSHOT_REQUEST"));
 assert.ok(platformScreenshotTest.includes("PLATFORM_SCREENSHOT_TEST=PASS"));
-assert.ok(workflow.includes("node tools/platform-screenshot-test.mjs"));
+assert.ok(auditWorkflow.includes("node tools/platform-screenshot-test.mjs"));
+assert.ok(auditWorkflow.includes("node tools/observability-screenshot-relay-test.mjs"));
 assert.ok(globalMouse.includes("muted:true")||globalMouse.includes("muted: true"));
 assert.ok(micGuardTest.includes("MICROPHONE_MAIN_GUARD_TEST=PASS"));
 assert.ok(globalMouseTest.includes("GLOBAL_MOUSE_MUTE_TEST=PASS"));
