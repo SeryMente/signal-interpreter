@@ -31,7 +31,7 @@ function safeRoute(value){
     const raw=String(value||"/");
     const url=new URL(raw.startsWith("/")?"https://app.cloudinterpreter.com"+raw:raw);
     if(url.origin!=="https://app.cloudinterpreter.com")throw new Error("Invalid screenshot origin");
-    return url.pathname.replace(/\\/g,"/").replace(/\/[^/]+\/????????/,"");
+    return url.pathname.replace(/\\/g,"/").replace(/^\/call\/[^/?#]+/,"/call/<ID>").replace(/^\/profile\/[^/?#]+/,"/profile/<ID>");
   }catch(error){throw Object.assign(new Error("Invalid screenshot route"),{status:400,cause:error});}
 }
 function routeToken(route){
