@@ -109,7 +109,7 @@ assert.ok(popup.includes("lastModelContextAccess"));
 assert.ok(workflow.includes("observations/inbox/**"));
 assert.ok(background.includes("SIGNAL_EXTENSION_MICROPHONE_TOGGLE"));
 assert.ok(background.includes("SIGNAL_GROQ_CAPTURE_MIC_OUTPUT_VERIFY_ERROR"));
-assert.ok(background.includes("source:" + String("capture-start")));
+assert.ok(background.includes('source:"capture-start"'));
 assert.ok(background.includes("setExtensionMicrophoneMuted"));
 assert.ok(background.includes("toggleExtensionMicrophoneMuted"));
 assert.ok(background.includes("toggle-extension-microphone"));
