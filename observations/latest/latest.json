@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-f93ec802-c2f3-4bae-9a47-2af334251aab",
-  "createdAt": "2026-10-08T09:08:31.732Z",
-  "trigger": "critical",
+  "batchId": "batch-b0e58de8-bbbd-47b7-a3a2-466f8e531f2b",
+  "createdAt": "2026-10-08T10:04:05.990Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.2",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "8c779549-8a3d-4ccd-86f1-d72828f3d168",
-      "sequence": 8643,
-      "timestamp": "2026-10-08T09:08:30.149Z",
-      "ingestedAt": "2026-10-08T09:08:30.149Z",
-      "level": "warn",
-      "category": "RUNTIME",
+      "id": "a29623a6-d133-46d6-9ad0-8b75d5ccbcc0",
+      "sequence": 8644,
+      "timestamp": "2026-10-08T10:03:35.735Z",
+      "ingestedAt": "2026-10-08T10:03:35.735Z",
+      "level": "info",
+      "category": "BILLING",
       "component": "background",
       "extensionVersion": "0.10.2",
       "host": "",
       "url": "",
-      "phase": "error",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
-      "outcome": "error",
-      "traceId": "e63ffed8-0e2d-4721-aa9e-c03fcb5b55c1",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
+      "outcome": "success",
+      "traceId": "e1aaffa2-03e9-41cb-aee0-c9d842a12485",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -34,8 +34,8 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
+      "reasonCode": "alarm",
+      "error": null,
       "metrics": {},
       "context": {},
       "privacy": {
@@ -44,28 +44,31 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
+        "pair": "USD/MXN",
+        "rate": 18.007676,
+        "rateDate": "[PHONE]",
+        "source": "ExchangeRate.fun / hourly snapshot",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
     "eventsTotal": 1,
     "errors": 0,
-    "warnings": 1,
-    "critical": true,
+    "warnings": 0,
+    "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 8643,
-    "lastSequence": 8643,
-    "firstTimestamp": "2026-10-08T09:08:30.149Z",
-    "lastTimestamp": "2026-10-08T09:08:30.149Z",
+    "firstSequence": 8644,
+    "lastSequence": 8644,
+    "firstTimestamp": "2026-10-08T10:03:35.735Z",
+    "lastTimestamp": "2026-10-08T10:03:35.735Z",
     "actions": {
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+      "EXCHANGE_RATE_UPDATED": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "BILLING": 1
     }
   }
 }
