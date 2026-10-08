@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-d47820c4-1200-4fa6-8d75-7a252e02e97f",
-  "createdAt": "2026-10-08T00:08:31.348Z",
-  "trigger": "critical",
+  "batchId": "batch-6b7b0a12-0283-422f-a3c0-c2d15d43b72b",
+  "createdAt": "2026-10-08T01:04:06.488Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.2",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "ff010368-db07-4e16-9fbd-b1f523fcae7c",
-      "sequence": 8598,
-      "timestamp": "2026-10-08T00:08:30.191Z",
-      "ingestedAt": "2026-10-08T00:08:30.191Z",
-      "level": "warn",
-      "category": "RUNTIME",
+      "id": "1b6d5cc4-62f5-4b7d-9c5c-ecaa98037c52",
+      "sequence": 8599,
+      "timestamp": "2026-10-08T01:03:36.228Z",
+      "ingestedAt": "2026-10-08T01:03:36.228Z",
+      "level": "info",
+      "category": "BILLING",
       "component": "background",
       "extensionVersion": "0.10.2",
       "host": "",
       "url": "",
-      "phase": "error",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
-      "outcome": "error",
-      "traceId": "4669e9dd-7958-4772-8ff7-2deb30503778",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
+      "outcome": "success",
+      "traceId": "40faade8-e3a3-4e1f-85f6-c4d56f355e90",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -34,8 +34,8 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
+      "reasonCode": "alarm",
+      "error": null,
       "metrics": {},
       "context": {},
       "privacy": {
@@ -44,28 +44,31 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
+        "pair": "USD/MXN",
+        "rate": 18.035,
+        "rateDate": "[PHONE]",
+        "source": "Frankfurter / blended daily",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
     "eventsTotal": 1,
     "errors": 0,
-    "warnings": 1,
-    "critical": true,
+    "warnings": 0,
+    "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 8598,
-    "lastSequence": 8598,
-    "firstTimestamp": "2026-10-08T00:08:30.191Z",
-    "lastTimestamp": "2026-10-08T00:08:30.191Z",
+    "firstSequence": 8599,
+    "lastSequence": 8599,
+    "firstTimestamp": "2026-10-08T01:03:36.228Z",
+    "lastTimestamp": "2026-10-08T01:03:36.228Z",
     "actions": {
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+      "EXCHANGE_RATE_UPDATED": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "BILLING": 1
     }
   }
 }
