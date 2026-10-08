@@ -2034,7 +2034,6 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       }
       appendEvent(event, function () { sendResponse({ ok: true }); });
       if (event.action === "PLATFORM_SESSION_STARTED" || event.action === "PLATFORM_SESSION_ENDED") handleSession(event);
-       if (event.action === "PLATFORM_SURFACE_SNAPSHOT" && sender.tab) scheduleCloudPlatformScreenshot(sender.tab.id, "platform-surface-change", 250);
       if (event.action === "AVAILABILITY_STATE") {
         var eventTabId = sender.tab && sender.tab.id;
         if (Number.isFinite(Number(eventTabId))) tabAvailability.set(Number(eventTabId), event.payload && event.payload.state || "unknown");
@@ -2283,6 +2282,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     if(details&&details.reason==="update"&&/^0\.4\./.test(String(details.previousVersion||"")))record("V050_TRANSCRIPTION_MIGRATION_ENABLED",{previousVersion:details.previousVersion,platformAudioAccess:true}, "info","background");
   });
   chrome.runtime.onStartup.addListener(function(){
+    try { SignalPlatformScreenshot.start(); } catch (error) { record("PLATFORM_SCREENSHOT_START_ERROR",{error:String(error)},"warn","platform-screenshot"); }
     refreshAllActionIndicators().catch(function () {});
     record("EXTENSION_RUNTIME_STARTED",{manifestVersion:chrome.runtime.getManifest().version},"info","runtime");
     hotloadExistingCloudTabs("onStartup").catch(function(error){ record("HOTLOAD_EXISTING_TABS_STARTUP_ERROR",{error:String(error)},"warn","runtime"); });
@@ -2480,7 +2480,6 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
   }
   chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     var url = changeInfo.url || tab.url || "";
-     if(isCloudInterpreterUrl(url) && (changeInfo.url || changeInfo.status === "complete")) scheduleCloudPlatformScreenshot(tabId, changeInfo.url ? "tab-url-change" : "tab-complete", 500);
     if (!/^https:\/\/app\.cloudinterpreter\.com\//.test(url)) return;
     if (changeInfo.url || changeInfo.status === "complete") {
       record("TAB_LIFECYCLE", {
@@ -2496,7 +2495,6 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     }
   });
   chrome.tabs.onActivated.addListener(function(activeInfo){
-     scheduleCloudPlatformScreenshot(activeInfo&&activeInfo.tabId,"tab-activated",250);
     reconcilePlatformTelemetry("tab-activated").catch(function(error){
       record("PLATFORM_TELEMETRY_RECONCILE_ERROR",{trigger:"tab-activated",tabId:activeInfo&&activeInfo.tabId||null,error:String(error)},"warn","background");
     });
