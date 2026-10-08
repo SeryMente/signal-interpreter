@@ -3,73 +3,142 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Signal Interpreter · Cloud</title>
+    <title>Signal Interpreter</title>
     <link rel="icon" type="image/png" sizes="16x16" href="../icons/icon16.png">
-    <link rel="icon" type="image/png" sizes="48x48" href="../icons/icon48.png">
     <link rel="stylesheet" href="popup.css">
   </head>
   <body>
-    <main>
-      <header><span>SIGNAL INTERPRETER · CLOUD</span><h1>Auto-Answer</h1></header>
-      <section class="hero transcription-control">
-        <div><strong>Transcripción</strong><small>CLIENTE + YO · Groq Whisper</small><small id="groqStatus">Clave local ✓ · whisper-large-v3-turbo</small></div>
-        <button id="openTranscript" class="secondary compact">Abrir consola</button>
+    <main class="shell">
+      <header class="appbar">
+        <div>
+          <span class="eyebrow">SIGNAL INTERPRETER</span>
+          <h1>Control</h1>
+        </div>
+        <span id="telemetryVersion" class="version">v—</span>
+      </header>
+
+      <section class="mic-card" aria-labelledby="mic-title">
+        <div class="mic-head">
+          <div>
+            <span class="eyebrow">SEGURIDAD DE AUDIO</span>
+            <h2 id="mic-title">Micrófono</h2>
+            <p id="micStatus" class="status-line" aria-live="polite">Verificando estado…</p>
+          </div>
+          <button id="micToggle" class="mic-button" type="button" aria-pressed="false">
+            <strong id="micToggleLabel">MIC ON</strong>
+            <span id="micToggleMeta">Silenciar</span>
+          </button>
+        </div>
+        <div class="safety-hints">
+          <div><kbd>Alt+Shift+M</kbd><span>Atajo de mute desde cualquier pestaña.</span></div>
+          <div><span class="mouse-hint">L + R</span><span>Mantén botón izquierdo + derecho ~240 ms para <strong>FORCE MUTE</strong>.</span></div>
+        </div>
       </section>
-      <section class="switch-grid">
-        <div class="switch-row"><div><strong>Contestador</strong><small>OPI · detector validado</small></div><label class="switch"><input id="enabled" type="checkbox"><i></i></label></div>
-        <div class="switch-row"><div><strong>Observador</strong><small>Señales del sitio</small></div><label class="switch"><input id="observation" type="checkbox"><i></i></label></div>
+
+      <section class="quick-controls" aria-label="Controles principales">
+        <label class="control-row">
+          <span><strong>Auto-Answer</strong><small>Detector y respuesta automática</small></span>
+          <span class="switch"><input id="enabled" type="checkbox"><i></i></span>
+        </label>
+        <label class="control-row">
+          <span><strong>Observador</strong><small>Observabilidad de Cloud Interpreter</small></span>
+          <span class="switch"><input id="observation" type="checkbox"><i></i></span>
+        </label>
+        <label class="control-row">
+          <span><strong>Overlay</strong><small>Resumen de ganancias sobre la llamada</small></span>
+          <span class="switch"><input id="overlayEnabled" type="checkbox"><i></i></span>
+        </label>
       </section>
-      <section class="timers"><div><span>Sesión</span><b id="sessionTimer">00:00:00</b></div><div><span>Online</span><b id="onlineTimer">00:00:00</b></div><div><span>Llamada</span><b id="callTimer">00:00:00</b></div></section>
-      <section class="metrics calls">
-        <div><span>Llamadas</span><b id="callsToday">0</b></div><div><span>Perdidas</span><b id="missedToday">0</b></div><div><span>Minutos</span><b id="minutesToday">0.0</b></div>
+
+      <section class="today-card">
+        <div class="section-heading"><div><span class="eyebrow">HOY</span><strong id="earningLabel">Ingreso estimado</strong></div><strong id="earningSummary">US$0.0000 · MX$0.0000</strong></div>
+        <div class="stats-grid">
+          <div><span>Llamadas</span><b id="callsToday">0</b></div>
+          <div><span>Perdidas</span><b id="missedToday">0</b></div>
+          <div><span>Minutos</span><b id="minutesToday">0.0</b></div>
+          <div><span>USD/MXN</span><b id="exchangeRate">—</b></div>
+        </div>
+        <small id="exchangeMeta">Tasa automática</small>
       </section>
-      <section class="earnings-panel">
-        <div class="earnings-line"><span id="earningLabel">Ingreso estimado hoy</span><strong id="earningSummary">US$0.0000 · MX$0.0000</strong></div>
-        <div class="rate-line"><span>OPI US$0.20/min · VRI US$0.25/min</span><span>USD/MXN <b id="exchangeRate">—</b></span></div>
-        <small id="exchangeMeta">Tipo de cambio automático · actualizado por fuente horaria</small>
+
+      <section class="publish-card" aria-labelledby="publish-title">
+        <div class="section-heading">
+          <div><span class="eyebrow">OBSERVABILIDAD</span><strong id="publish-title">Últimos envíos</strong></div>
+          <span id="githubSyncStatus" class="state-pill">Comprobando…</span>
+        </div>
+        <div class="publish-list">
+          <div class="publish-row primary"><span>Automático</span><output id="lastAutomaticPublish">Nunca registrada</output></div>
+          <div class="publish-row"><span>Manual</span><output id="lastManualPublish">Nunca registrada</output></div>
+          <div class="publish-row"><span>Acceso del constructor</span><output id="lastModelContextAccess">No registrado</output></div>
+        </div>
       </section>
-      <div class="inline-control switch-row">
-        <div><strong>Overlay de ganancias</strong><small>Visible sobre Cloud Interpreter</small></div>
-        <label class="switch"><input id="overlayEnabled" type="checkbox"><i></i></label>
+
+      <div class="action-grid">
+        <button id="openTranscript" class="button secondary">Abrir consola</button>
+        <button id="endCall" class="button danger" disabled>Finalizar llamada</button>
       </div>
-      <div class="action-row"><button id="endCall" class="danger" disabled>Finalizar llamada</button><button id="sound" class="secondary">Probar sonido</button></div>
-      <label class="volume-row">Volumen <output id="volumeValue">80%</output><input id="volume" type="range" min="0" max="1" step="0.05"></label>
-      <section class="official">
-        <div class="official-head"><div><span class="label">DATOS OFICIALES</span><small id="officialMeta">Cotejo con las pantallas de la plataforma</small></div><button id="syncOfficial" class="compact">Sincroniza</button></div>
-        <div id="officialSummary"><small>Aún no hay datos oficiales sincronizados.</small></div>
-        <details class="official-details"><summary><span>Ver detalle oficial</span><span>Statistics · Pre-Scheduled · Appointments</span></summary>
-          <nav class="quick"><button data-open="logs" class="secondary">Statistics</button><button data-open="logs/scheduled" class="secondary">Pre-Scheduled</button><button data-open="appointments" class="secondary">Appointments</button></nav>
-          <button id="refresh" class="secondary compact refresh-pages">Actualizar pantallas abiertas</button>
-          <div id="officialData"><small>Aún no hay pantallas sincronizadas.</small></div>
-        </details>
-      </section>
-      <details class="development">
-        <summary><span>Desarrollo</span><span id="telemetryCount">—</span></summary>
-        <div class="development-body">
-          <section class="telemetry-control">
-            <div class="telemetry-head"><div><strong>Observabilidad persistente</strong><small>Diagnóstico incremental · IndexedDB</small></div><b id="telemetryVersion">—</b></div>
+
+      <details class="more">
+        <summary><span>Más controles</span><span id="telemetryCount">—</span></summary>
+        <div class="more-body">
+          <section class="sub-card">
+            <div class="sub-head"><div><strong>Transcripción</strong><small id="groqStatus">Clave local · whisper-large-v3-turbo</small></div></div>
+            <label class="select-row"><span>Modelo</span><select id="groqModel"><option value="whisper-large-v3-turbo">whisper-large-v3-turbo</option><option value="whisper-large-v3">whisper-large-v3</option></select></label>
+            <div class="sound-row">
+              <button id="sound" class="button secondary">Probar sonido</button>
+              <label class="volume-row"><span>Volumen <output id="volumeValue">80%</output></span><input id="volume" type="range" min="0" max="1" step="0.05"></label>
+            </div>
+          </section>
+
+          <section class="sub-card">
+            <div class="sub-head"><div><strong>Sesión</strong><small>Estado operativo actual</small></div></div>
+            <div class="timer-grid">
+              <div><span>Sesión</span><b id="sessionTimer">00:00:00</b></div>
+              <div><span>Online</span><b id="onlineTimer">00:00:00</b></div>
+              <div><span>Llamada</span><b id="callTimer">00:00:00</b></div>
+            </div>
+          </section>
+
+          <section class="official">
+            <div class="official-head">
+              <div><span class="eyebrow">DATOS OFICIALES</span><small id="officialMeta">Cotejo con las pantallas de la plataforma</small></div>
+              <button id="syncOfficial" class="button compact">Sincroniza</button>
+            </div>
+            <div id="officialSummary"><small>Aún no hay datos oficiales sincronizados.</small></div>
+            <details class="official-details">
+              <summary><span>Ver detalle oficial</span><span>Statistics · Pre-Scheduled · Appointments</span></summary>
+              <nav class="quick"><button data-open="logs" class="button secondary">Statistics</button><button data-open="logs/scheduled" class="button secondary">Pre-Scheduled</button><button data-open="appointments" class="button secondary">Appointments</button></nav>
+              <button id="refresh" class="button secondary compact">Actualizar pantallas abiertas</button>
+              <div id="officialData"><small>Aún no hay pantallas sincronizadas.</small></div>
+            </details>
+          </section>
+
+          <section class="sub-card">
+            <div class="sub-head"><div><strong>Observabilidad persistente</strong><small id="telemetryMeta">Preparando base persistente…</small></div></div>
             <label class="mini-switch"><span>Red: ruta, estado y duración</span><input id="networkTelemetryEnabled" type="checkbox"></label>
             <label class="mini-switch"><span>Rendimiento y salud de interfaz</span><input id="performanceTelemetryEnabled" type="checkbox"></label>
             <label class="mini-switch"><span>Interacciones sin valores escritos</span><input id="interactionTelemetryEnabled" type="checkbox"></label>
-            <label class="model-row">MODELO<select id="groqModel"><option value="whisper-large-v3-turbo">whisper-large-v3-turbo</option><option value="whisper-large-v3">whisper-large-v3</option></select></label>
-            <div class="telemetry-grid"><label>RETENCIÓN (DÍAS)<input id="telemetryRetentionDays" type="number" min="7" max="730" step="1"></label><label>MÁX. EVENTOS<input id="telemetryMaxEvents" type="number" min="1000" max="1000000" step="1000"></label><label>HEARTBEAT (S)<input id="telemetryHeartbeatSeconds" type="number" min="10" max="300" step="5"></label></div>
-            <small id="telemetryMeta">Preparando base persistente…</small>
-          </section>
-          <section class="telemetry-control">
-            <div class="telemetry-head"><div><strong>Sincronización remota</strong><small id="githubSyncStatus">Relay Vercel · comprobando…</small></div><b>RELAY</b></div>
-            <small id="githubAuthInfo">Chrome → Vercel → GitHub Actions. No requiere GitHub App ni credenciales de GitHub en la extensión.</small>
             <div class="telemetry-grid">
-              <label>ÚLTIMA AUTOMÁTICA<output id="lastAutomaticPublish">Nunca registrada</output></label>
-              <label>ÚLTIMA MANUAL<output id="lastManualPublish">Nunca registrada</output></label>
-              <label>ÚLTIMO ACCESO DEL CONSTRUCTOR<output id="lastModelContextAccess">No registrado</output></label>
+              <label>RETENCIÓN<input id="telemetryRetentionDays" type="number" min="7" max="730" step="1"></label>
+              <label>MÁX. EVENTOS<input id="telemetryMaxEvents" type="number" min="1000" max="1000000" step="1000"></label>
+              <label>HEARTBEAT (S)<input id="telemetryHeartbeatSeconds" type="number" min="10" max="300" step="5"></label>
             </div>
           </section>
-          <small id="last">Sin eventos</small>
-          <button id="export" class="secondary">Publicar observabilidad pendiente</button>
+
+          <section class="sub-card sync-card">
+            <div class="sub-head"><div><strong>Sincronización remota</strong><small id="githubAuthInfo">Chrome → Vercel → GitHub Actions</small></div></div>
+            <button id="export" class="button secondary">Publicar observabilidad pendiente</button>
+          </section>
+
+          <small id="last" class="last-event">Sin eventos</small>
         </div>
       </details>
-      <p id="status" role="status"></p>
+
+      <p id="status" role="status" aria-live="polite"></p>
     </main>
-    <script src="../telemetry-db.js"></script><script src="../observability-relay.js"></script><script src="popup.js"></script>
+    <script src="../telemetry-db.js"></script>
+    <script src="../observability-relay.js"></script>
+    <script src="time-format.js"></script>
+    <script src="popup.js"></script>
   </body>
 </html>
