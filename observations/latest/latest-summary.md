@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-f66133fe-8c3f-4aaf-86d3-0a987b4d0bc4
-- Creado: 2026-10-08T16:04:30.508Z
-- Trigger: alarm
+- Batch: batch-063f1a56-169e-4744-90e3-efd4e9326dc3
+- Creado: 2026-10-08T16:08:31.893Z
+- Trigger: critical
 - Extensión: 0.10.2
 - Eventos: 1
 - Errores: 0
-- Warnings: 0
-- Secuencia: 8675 → 8675
+- Warnings: 1
+- Secuencia: 8678 → 8678
 - Identidades de plataforma: 5
 - Snapshots de plataforma: 98
 - Deltas de plataforma: 98
@@ -21,5 +21,5 @@
 ## Acciones
 
 {
-  "TELEMETRY_MAINTENANCE": 1
+  "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
 }
