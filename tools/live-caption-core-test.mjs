@@ -14,3 +14,6 @@ assert.equal(core.roleForLanguage("es"),"LEP");
 assert.equal(core.languageLabel("en"),"ENGLISH");
 assert.equal(core.languageLabel("es"),"ESPAÑOL");
 console.log("LIVE_CAPTION_CORE_TEST=PASS");
+assert.equal(core.roleForSource("chrome-live-caption","en"),"CLIENTE");
+assert.equal(core.roleForSource("cliente","en"),"CLIENTE");
+assert.equal(core.roleForSource("yo","es"),"LEP");
