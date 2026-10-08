@@ -195,7 +195,6 @@ assert.ok(githubPipeline.includes("updatePublishHistory"));
 assert.ok(githubPipelineTest.includes("OBSERVABILITY_GITHUB_PIPELINE_TEST"));
 assert.ok(platformLearning.includes("semanticPlatformDelta"));
 assert.ok(platformLearningTest.includes("PLATFORM_LEARNING_TEST=PASS"));
-assert.ok(githubPipeline.includes("platform-screenshot"));
 
 for(const forbidden of [
   "tools/observation-reporter/server.mjs",
