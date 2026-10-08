@@ -12,6 +12,11 @@ function isTarget(url){try{return new URL(String(url||"")).origin===TARGET_ORIGI
 function routeOf(url){try{var u=new URL(String(url||""));return u.pathname.replace(/\/call\/[^/]+/g,"/call/<ID>").replace(/\/profile\/[^/]+/g,"/profile/<ID>");}catch(_){return "/unknown";}}
 function identityOf(url){return TARGET_ORIGIN+"|"+routeOf(url);}
 function routeToken(route){return String(route||"platform").replace(/[^A-Za-z0-9_-]+/g,"_").replace(/^_+|_+$/g,"").slice(0,90)||"platform";}
+async function setPrivacyMask(tabId,enabled){
+  var response=await chrome.tabs.sendMessage(Number(tabId),{type:"EFFECTIF_PLATFORM_SCREENSHOT_PRIVACY_MASK",enabled:!!enabled});
+  if(!response||response.ok!==true||response.enabled!==!!enabled)throw new Error("No se pudo verificar la máscara de privacidad.");
+  return response;
+}
 function bytesFromBase64(value){return Math.floor(String(value||"").length*3/4)-((String(value||"").endsWith("=="))?2:(String(value||"").endsWith("=")?1:0));}
 function base64Bytes(value){var raw=atob(String(value||"")),out=new Uint8Array(raw.length);for(var i=0;i<raw.length;i+=1)out[i]=raw.charCodeAt(i);return out;}
 async function sha256(value){var bytes=base64Bytes(value),digest=await crypto.subtle.digest("SHA-256",bytes),arr=new Uint8Array(digest),hex="";for(var i=0;i<arr.length;i+=1)hex+=("00"+arr[i].toString(16)).slice(-2);return hex;}
@@ -26,70 +31,73 @@ async function saveState(state){await chrome.storage.local.set({signalPlatformSc
 function extractBase64(dataUrl){var comma=String(dataUrl||"").indexOf(",");return comma>=0?String(dataUrl).slice(comma+1):"";}
 async function captureOne(tab,reason){
   if(!tab||!isTarget(tab.url)||tab.active!==true)return{ok:false,skipped:"not-active-target"};
-  var beforeUrl=String(tab.url||""),dataUrl="",qualityUsed=null,lastSize=0,overlayHidden=false;
+  var beforeUrl=String(tab.url||""),dataUrl="",qualityUsed=null,lastSize=0;
+  await setPrivacyMask(Number(tab.id),true);
   try{
-    try{
-      var prep=await chrome.tabs.sendMessage(Number(tab.id),{type:"EFFECTIF_SCREENSHOT_PREPARE"});
-      overlayHidden=!!(prep&&prep.ok);
-      if(overlayHidden)await new Promise(function(resolve){setTimeout(resolve,80);});
-    }catch(_){}
     for(var i=0;i<QUALITY_STEPS.length;i+=1){
       dataUrl=await chrome.tabs.captureVisibleTab(Number(tab.windowId),{format:"jpeg",quality:QUALITY_STEPS[i]});
-      var b64=extractBase64(dataUrl);lastSize=bytesFromBase64(b64);qualityUsed=QUALITY_STEPS[i];
+      var b64Probe=extractBase64(dataUrl);lastSize=bytesFromBase64(b64Probe);qualityUsed=QUALITY_STEPS[i];
       if(lastSize<=MAX_RAW_BYTES)break;
     }
-    var current=await chrome.tabs.get(Number(tab.id));
-    if(!current||current.active!==true||!isTarget(current.url)||String(current.url||"")!==beforeUrl){
-      rec("PLATFORM_SCREENSHOT_DISCARDED_TAB_CHANGED",{tabId:Number(tab.id),windowId:Number(tab.windowId),reason:reason||"capture",beforeUrl:beforeUrl,afterUrl:String(current&&current.url||""),afterActive:!!(current&&current.active)},"warn");
-      return{ok:false,skipped:"tab-changed"};
-    }
-    var b64=extractBase64(dataUrl);
-    if(lastSize>MAX_RAW_BYTES){
-      rec("PLATFORM_SCREENSHOT_TOO_LARGE",{tabId:Number(tab.id),route:routeOf(beforeUrl),bytes:lastSize,maxBytes:MAX_RAW_BYTES,quality:qualityUsed,reason:reason||"capture"},"warn");
-      return{ok:false,error:"Screenshot exceeds upload size limit",bytes:lastSize};
-    }
-    var hash=await sha256(b64),route=routeOf(beforeUrl),identity=identityOf(beforeUrl),state=await loadState(),previous=state.lastByIdentity[identity]||null;
-    state.totalCaptures=Number(state.totalCaptures||0)+1;state.lastCaptureAt=iso();
-    if(previous&&previous.hash===hash){
-      state.lastByIdentity[identity]=Object.assign({},previous,{lastCapturedAt:state.lastCaptureAt,lastReason:reason||"capture"});
-      await saveState(state);
-      rec("PLATFORM_SCREENSHOT_UNCHANGED",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:route,hash:hash,bytes:lastSize,quality:qualityUsed,reason:reason||"capture"},"info");
-      return{ok:true,changed:false,hash:hash,bytes:lastSize,route:route};
-    }
-    var screenshot={
-      schema:"signal-interpreter-platform-screenshot/v1",
-      screenshotId:"screen-"+crypto.randomUUID(),
-      createdAt:state.lastCaptureAt,
-      extensionVersion:chrome.runtime.getManifest().version,
-      tabId:Number(tab.id),
-      windowId:Number(tab.windowId),
-      route:route,
-      url:TARGET_ORIGIN+route,
-      sha256:hash,
-      mimeType:"image/jpeg",
-      bytes:lastSize,
-      quality:qualityUsed,
-      captureReason:reason||"capture",
-      base64:b64
-    };
-    if(!configured.relay||typeof configured.relay.uploadScreenshot!=="function"){
-      rec("PLATFORM_SCREENSHOT_UPLOAD_ERROR",{route:route,hash:hash,error:"Screenshot relay unavailable"},"error");
-      return{ok:false,error:"Screenshot relay unavailable",hash:hash,route:route};
-    }
-    try{
-      var uploaded=await configured.relay.uploadScreenshot(screenshot);
-      state.lastByIdentity[identity]={hash:hash,route:route,uploadedAt:iso(),remotePath:uploaded&&uploaded.remotePath||null,bytes:lastSize,quality:qualityUsed};
-      state.totalUploads=Number(state.totalUploads||0)+1;state.lastUploadAt=iso();state.lastError=null;
-      await saveState(state);
-      rec("PLATFORM_SCREENSHOT_CHANGED",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:route,hash:hash,bytes:lastSize,quality:qualityUsed,remotePath:uploaded&&uploaded.remotePath||null,duplicate:!!(uploaded&&uploaded.duplicate),reason:reason||"capture"},"info");
-      return{ok:true,changed:true,hash:hash,bytes:lastSize,route:route,remotePath:uploaded&&uploaded.remotePath||null,duplicate:!!(uploaded&&uploaded.duplicate)};
-    }catch(error){
-      state.lastError=String(error);await saveState(state);
-      rec("PLATFORM_SCREENSHOT_UPLOAD_ERROR",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:route,hash:hash,bytes:lastSize,error:String(error),reason:reason||"capture"},"error");
-      return{ok:false,error:String(error),hash:hash,route:route};
-    }
-  }finally{
-    if(overlayHidden){try{await chrome.tabs.sendMessage(Number(tab.id),{type:"EFFECTIF_SCREENSHOT_RESTORE"});}catch(_){}}
+  }catch(error){
+    try{await setPrivacyMask(Number(tab.id),false);}catch(restoreError){rec("PLATFORM_SCREENSHOT_PRIVACY_MASK_RESTORE_ERROR",{tabId:Number(tab.id),error:String(restoreError)},"error");}
+    rec("PLATFORM_SCREENSHOT_CAPTURE_ERROR",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:routeOf(beforeUrl),error:String(error),reason:reason||"capture"},"error");
+    return{ok:false,error:String(error)};
+  }
+  try{await setPrivacyMask(Number(tab.id),false);}catch(error){
+    try{await setPrivacyMask(Number(tab.id),false);}catch(restoreError){rec("PLATFORM_SCREENSHOT_PRIVACY_MASK_RESTORE_ERROR",{tabId:Number(tab.id),error:String(restoreError)},"error");}
+    rec("PLATFORM_SCREENSHOT_PRIVACY_MASK_RESTORE_ERROR",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:routeOf(beforeUrl),error:String(error)},"error");
+    return{ok:false,error:"Screenshot blocked because privacy mask could not be restored."};
+  }
+  var current=await chrome.tabs.get(Number(tab.id));
+  if(!current||current.active!==true||!isTarget(current.url)||String(current.url||"")!==beforeUrl){
+    rec("PLATFORM_SCREENSHOT_DISCARDED_TAB_CHANGED",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:routeOf(beforeUrl),reason:reason||"capture",afterActive:!!(current&&current.active)},"warn");
+    return{ok:false,skipped:"tab-changed"};
+  }
+  var b64=extractBase64(dataUrl);
+  if(lastSize>MAX_RAW_BYTES){
+    rec("PLATFORM_SCREENSHOT_TOO_LARGE",{tabId:Number(tab.id),route:routeOf(beforeUrl),bytes:lastSize,maxBytes:MAX_RAW_BYTES,quality:qualityUsed,reason:reason||"capture"},"warn");
+    return{ok:false,error:"Screenshot exceeds upload size limit",bytes:lastSize};
+  }
+  var hash=await sha256(b64),route=routeOf(beforeUrl),identity=identityOf(beforeUrl),state=await loadState(),previous=state.lastByIdentity[identity]||null;
+  state.totalCaptures=Number(state.totalCaptures||0)+1;state.lastCaptureAt=iso();
+  if(previous&&previous.hash===hash){
+    state.lastByIdentity[identity]=Object.assign({},previous,{lastCapturedAt:state.lastCaptureAt,lastReason:reason||"capture"});
+    await saveState(state);
+    rec("PLATFORM_SCREENSHOT_UNCHANGED",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:route,hash:hash,bytes:lastSize,quality:qualityUsed,reason:reason||"capture"},"info");
+    return{ok:true,changed:false,hash:hash,bytes:lastSize,route:route};
+  }
+  var screenshot={
+    schema:"signal-interpreter-platform-screenshot/v1",
+    screenshotId:"screen-"+crypto.randomUUID(),
+    capturedAt:state.lastCaptureAt,
+    origin:TARGET_ORIGIN,
+    extensionVersion:chrome.runtime.getManifest().version,
+    tabId:Number(tab.id),
+    windowId:Number(tab.windowId),
+    route:route,
+    sha256:hash,
+    mimeType:"image/jpeg",
+    bytes:lastSize,
+    quality:qualityUsed,
+    reason:reason||"capture",
+    base64:b64
+  };
+  if(!configured.relay||typeof configured.relay.uploadScreenshot!=="function"){
+    rec("PLATFORM_SCREENSHOT_UPLOAD_ERROR",{route:route,hash:hash,error:"Screenshot relay unavailable"},"error");
+    return{ok:false,error:"Screenshot relay unavailable",hash:hash,route:route};
+  }
+  try{
+    var uploaded=await configured.relay.uploadScreenshot(screenshot);
+    state.lastByIdentity[identity]={hash:hash,route:route,uploadedAt:iso(),remotePath:uploaded&&uploaded.remotePath||null,bytes:lastSize,quality:qualityUsed};
+    state.totalUploads=Number(state.totalUploads||0)+1;state.lastUploadAt=iso();state.lastError=null;
+    await saveState(state);
+    rec("PLATFORM_SCREENSHOT_CHANGED",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:route,hash:hash,bytes:lastSize,quality:qualityUsed,remotePath:uploaded&&uploaded.remotePath||null,duplicate:!!(uploaded&&uploaded.duplicate),reason:reason||"capture"},"info");
+    return{ok:true,changed:true,hash:hash,bytes:lastSize,route:route,remotePath:uploaded&&uploaded.remotePath||null,duplicate:!!(uploaded&&uploaded.duplicate)};
+  }catch(error){
+    state.lastError=String(error);await saveState(state);
+    rec("PLATFORM_SCREENSHOT_UPLOAD_ERROR",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:route,hash:hash,bytes:lastSize,error:String(error),reason:reason||"capture"},"error");
+    return{ok:false,error:String(error),hash:hash,route:route};
   }
 }
 async function captureActive(reason){
