@@ -45,7 +45,48 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   var earningsSyncQueue = Promise.resolve();
   var microphoneMuteQueue = Promise.resolve();
   var captionPreviewQueue = Promise.resolve();
-  try { SignalCaptionBridge.onError = function (error) { record("SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR", { error: String(error || "unknown") }, "warn", "caption"); }; } catch (_) {}
+  async function setCaptionPreviewForActiveCall(tabEnabled) {
+    try {
+      var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
+      var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+      var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+      if (config.liveCaptionOverlayEnabled === false || !hasActiveCall(state)) return { ok: true, skipped: true };
+      if (!state.callSourceTabId) return { ok: false, error: "No hay pestaña de llamada para Live Caption." };
+      await ensureOffscreen();
+      var response = await chrome.runtime.sendMessage({
+        target: "offscreen",
+        type: "SIGNAL_SET_CAPTION_PREVIEW",
+        enabled: true,
+        tabEnabled: !!tabEnabled,
+        micEnabled: true
+      });
+      record("SIGNAL_CAPTION_PREVIEW_CONFIGURED", {
+        callId: state.callId || null,
+        tabId: state.callSourceTabId,
+        tabEnabled: !!tabEnabled,
+        micEnabled: true,
+        ok: !!(response && response.ok)
+      }, "info", "caption");
+      return response || { ok: false };
+    } catch (error) {
+      record("SIGNAL_CAPTION_PREVIEW_CONFIG_ERROR", { error: String(error || "unknown"), tabEnabled: !!tabEnabled }, "warn", "caption");
+      return { ok: false, error: String(error || "unknown") };
+    }
+  }
+
+  try {
+    SignalCaptionBridge.onStatus = function (status) {
+      if (status && status.active) {
+        setCaptionPreviewForActiveCall(false).catch(function () {});
+      } else {
+        setCaptionPreviewForActiveCall(true).catch(function () {});
+      }
+    };
+    SignalCaptionBridge.onError = function (error) {
+      record("SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR", { error: String(error || "unknown") }, "warn", "caption");
+      setCaptionPreviewForActiveCall(true).catch(function () {});
+    };
+  } catch (_) {}
   var HOTLOAD_SCHEMA = "signal-hotload/v1";
   var HOTLOAD_HEARTBEAT_MIN_MS = 15000;
   var hotloadLastHeartbeatAt = 0;
@@ -1907,7 +1948,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
         record("HOTLOAD_CAPTURE_LEASE_PREPARED",{callId:state.callId,tabId:state.callSourceTabId||null,sessionId:session.id,runtimeVersion:chrome.runtime.getManifest().version}, "info","runtime");
       }
-      await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id,muted:!!state.microphoneMuted,captionPreview:cachedConfig.liveCaptionOverlayEnabled !== false});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
+      await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id,muted:!!state.microphoneMuted,captionPreview:cachedConfig.liveCaptionOverlayEnabled !== false,tabId:state.callSourceTabId||session.tabId||session.sourceTabId||0});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
       signalActiveSessionId=session.id;
       try { if (cachedConfig.liveCaptionOverlayEnabled !== false) SignalCaptionBridge.start(state.callSourceTabId); } catch (_) {}
       state.microphoneMuteStatus="pending";
