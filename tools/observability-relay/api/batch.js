@@ -1,7 +1,8 @@
 const REPOSITORY = "SeryMente/signal-interpreter";
 const BRANCH = "main";
 const API_VERSION = "2022-11-28";
-const MAX_BODY_BYTES = 1500000;
+const MAX_BODY_BYTES = 4200000;
+const MAX_SCREENSHOT_BYTES = 2500000;
 const MAX_EVENTS = 200;
 const MODEL_CONTEXT_PATH = "observations/health/model-context-access.json";
 
@@ -24,6 +25,22 @@ async function githubRequest(path, init={}) {
 async function readBody(req) {
   if(req.body && typeof req.body === "object") return req.body;
   return new Promise((resolve,reject)=>{let total=0;const chunks=[];req.on("data",chunk=>{total+=Buffer.byteLength(chunk);if(total>MAX_BODY_BYTES){reject(Object.assign(new Error("Payload too large"),{status:413}));req.destroy();return;}chunks.push(chunk);});req.on("end",()=>{try{resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));}catch(_){reject(Object.assign(new Error("Invalid JSON"),{status:400}));}});req.on("error",reject);});
+}
+function validateScreenshot(screenshot) {
+  if(!screenshot || typeof screenshot !== "object") throw Object.assign(new Error("Screenshot must be an object"),{status:400});
+  if(screenshot.schema !== "signal-interpreter-platform-screenshot/v1") throw Object.assign(new Error("Unsupported screenshot schema"),{status:400});
+  if(!/^screen-[A-Za-z0-9._-]{1,120}$/.test(String(screenshot.screenshotId||""))) throw Object.assign(new Error("Invalid screenshotId"),{status:400});
+  if(!/^\/((?:call|profile)\/|selfcheck(?:$|\/))/.test(String(screenshot.route||""))) throw Object.assign(new Error("Invalid screenshot route"),{status:400});
+  if(!/^https:\/\/app\.cloudinterpreter\.com\//.test(String(screenshot.url||""))) throw Object.assign(new Error("Invalid screenshot URL"),{status:400});
+  if(!/^[a-f0-9]{64}$/i.test(String(screenshot.sha256||""))) throw Object.assign(new Error("Invalid screenshot hash"),{status:400});
+  if(String(screenshot.mimeType||"")!=="image/jpeg") throw Object.assign(new Error("Only image/jpeg screenshots are supported"),{status:400});
+  const imageBase64=String(screenshot.imageBase64||"");
+  if(!/^[A-Za-z0-9+/]+={0,2}$/.test(imageBase64)) throw Object.assign(new Error("Invalid screenshot encoding"),{status:400});
+  const bytes=Buffer.from(imageBase64,"base64");
+  if(!bytes.length) throw Object.assign(new Error("Empty screenshot"),{status:400});
+  if(bytes.length>MAX_SCREENSHOT_BYTES) throw Object.assign(new Error("Screenshot exceeds byte limit"),{status:413});
+  if(Number(screenshot.bytes||0)!==bytes.length) throw Object.assign(new Error("Screenshot byte count mismatch"),{status:400});
+  return {screenshot,bytes};
 }
 function validateBatch(batch) {
   if(!batch || typeof batch !== "object") throw Object.assign(new Error("Batch must be an object"),{status:400});
@@ -58,7 +75,21 @@ export default async function handler(req,res){
   if(req.method!=="POST") return res.status(405).json({ok:false,error:"Method not allowed"});
   if(!process.env.GITHUB_TOKEN) return res.status(503).json({ok:false,error:"Relay not configured"});
   try{
-    const batch=validateBatch(await readBody(req));
+    const raw=await readBody(req);
+    if(raw && raw.schema === "signal-interpreter-platform-screenshot/v1"){
+      const checked=validateScreenshot(raw);
+      const day=String(raw.createdAt||new Date().toISOString()).slice(0,10).replace(/[^0-9-]/g,"");
+      const routeToken=String(raw.route||"platform").replace(/[^A-Za-z0-9_-]+/g,"_").replace(/^_+|_+$/g,"").slice(0,90)||"platform";
+      const remotePath=`observations/screenshots/${day}/${routeToken}--${String(raw.sha256).toLowerCase()}.jpg`;
+      const existing=await getExisting(remotePath);
+      if(existing) return res.status(200).json({accepted:true,duplicate:true,screenshotId:raw.screenshotId,remotePath,contentSha:existing.sha||null});
+      const payload={message:`diagnostic: store platform screenshot ${String(raw.sha256).slice(0,16)}`,content:checked.bytes.toString("base64"),branch:BRANCH};
+      let created;
+      try{created=await githubRequest(`/repos/${REPOSITORY}/contents/${encodePath(remotePath)}`,{method:"PUT",body:JSON.stringify(payload)});}
+      catch(error){if(error.status===409){const raced=await getExisting(remotePath);if(raced)return res.status(200).json({accepted:true,duplicate:true,screenshotId:raw.screenshotId,remotePath,contentSha:raced.sha||null});}throw error;}
+      return res.status(200).json({accepted:true,duplicate:false,screenshotId:raw.screenshotId,remotePath,contentSha:created&&created.content&&created.content.sha||null,commitSha:created&&created.commit&&created.commit.sha||null});
+    }
+    const batch=validateBatch(raw);
     const remotePath=`observations/inbox/${batch.batchId}.json`;
     const existing=await getExisting(remotePath);
     if(existing) return res.status(200).json({accepted:true,duplicate:true,batchId:batch.batchId,remotePath,contentSha:existing.sha||null});
