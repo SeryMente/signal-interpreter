@@ -1664,6 +1664,18 @@
     schedulePlatformMirror("start");
     renderOverlay();
   }
+  function deactivateForHotload(reason) {
+    var stopReason = reason || "hotload-replace";
+    try { window[SIGNAL_RUNTIME_MARKER] = { extensionId: chrome.runtime.id, version: RUNTIME_VERSION, active: false, stoppedAt: iso(), reason: stopReason }; } catch (_) {}
+    if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; }
+    if (ratingConfirmationTimer) { clearTimeout(ratingConfirmationTimer); ratingConfirmationTimer = null; }
+    if (mirrorTimer) { clearTimeout(mirrorTimer); mirrorTimer = null; }
+    if (mediaTimer) { clearInterval(mediaTimer); mediaTimer = null; }
+    if (integrityTimer) { clearInterval(integrityTimer); integrityTimer = null; }
+    stopOverlay(stopReason);
+    stop(stopReason);
+  }
+
   function stop(reason) {
     if (observer) {
       observer.disconnect();
@@ -1705,6 +1717,11 @@
     if (changes.effectifConfig) apply(changes.effectifConfig.newValue);
   });
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+    if (message && message.type === "EFFECTIF_HOTLOAD_REPLACE") {
+      deactivateForHotload(message.reason || "hotload-replace");
+      if (sendResponse) sendResponse({ ok: true, reason: "deactivated-for-hotload" });
+      return true;
+    }
     if (message && message.type === "EFFECTIF_REQUEST_PLATFORM_SNAPSHOT") {
       capturePlatformMirror("popup-sync", true);
       portalStructureSnapshot("popup-sync", true);
