@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-4f49a307-bfdc-4cc9-acc6-422deb1669c5
-- Creado: 2026-10-08T01:10:09.711Z
+- Batch: batch-070a3b33-9f3b-40d3-ba95-9e3659615337
+- Creado: 2026-10-08T01:10:39.711Z
 - Trigger: event-window
 - Extensión: 0.10.5
-- Eventos: 1
+- Eventos: 2
 - Errores: 0
 - Warnings: 0
-- Secuencia: 38 → 38
+- Secuencia: 39 → 40
 - Identidades de plataforma: 5
 - Snapshots de plataforma: 67
 - Deltas de plataforma: 67
@@ -15,11 +15,11 @@
 ## Categorías
 
 {
-  "SESSION": 1
+  "SESSION": 2
 }
 
 ## Acciones
 
 {
-  "HOTLOAD_CALL_LEASE_HEARTBEAT": 1
+  "HOTLOAD_CALL_LEASE_HEARTBEAT": 2
 }
