@@ -1628,10 +1628,10 @@
       micButton.classList.toggle("live", !actualMuted && !muteError && muteStatus === "applied");
       micButton.setAttribute("aria-pressed", actualMuted ? "true" : "false");
       micButton.title = muteError
-        ? "Error: no se pudo verificar el mute del micrófono de Signal Interpreter · pulsa Ctrl+Shift+M para reintentar"
+        ? "Error: no se pudo verificar el mute del micrófono de Signal Interpreter · pulsa Ctrl+Shift+. para reintentar"
         : actualMuted
-          ? "Micrófono de Signal Interpreter desactivado · Ctrl+Shift+M para activar"
-          : "Micrófono de Signal Interpreter activo · Ctrl+Shift+M para silenciar";
+          ? "Micrófono de Signal Interpreter desactivado · Ctrl+Shift+. para activar"
+          : "Micrófono de Signal Interpreter activo · Ctrl+Shift+. para silenciar";
     }
     overlayRoot.getElementById("amount").textContent = totalText;
     overlayRoot.getElementById("live").textContent = state.callStartedAt && overlayPeriod !== "previousMonth"
