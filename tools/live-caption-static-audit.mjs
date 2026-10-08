@@ -20,6 +20,7 @@ const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
 assert.equal(manifest.version,"0.10.12");
+assert.ok(manifest.key && manifest.key.length > 300);
 assert.ok(manifest.key);
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://app.cloudinterpreter.com/*")&&Array.isArray(e.js)&&e.js[0]==="live-caption-core.js"&&e.js[1]==="live-caption-overlay.js"&&e.js[2]==="content.js"));
@@ -60,17 +61,20 @@ assert.ok(bridge.includes('type: "SIGNAL_CAPTION_UPDATE"')||bridge.includes('"SI
 
 assert.equal(hostManifest.name,"com.signalinterpreter.captionhost");
 assert.equal(hostManifest.type,"stdio");
-assert.equal(hostManifest.path,"SignalInterpreter.CaptionHost.exe");
+assert.equal(hostManifest.path,"__SIGNAL_CAPTION_HOST_EXE__");
 assert.ok(Array.isArray(hostManifest.allowed_origins));
 assert.equal(hostManifest.allowed_origins.length,1);
 assert.ok(hostManifest.allowed_origins[0].startsWith("chrome-extension://"));
+assert.equal(hostManifest.allowed_origins[0],"chrome-extension://ldpbjhobnfgmhdoehehdmnbhhjckebmj/");
 assert.ok(hostManifest.allowed_origins[0].endsWith("/"));
 assert.ok(register.includes("FromBase64String"));
 assert.ok(register.includes("551F2CCE3E6C2447C053573EBB97FD1C808FDB612C13876EFCA23D7FDEE0D2B5"));
 assert.ok(register.includes("HKCU:\\Software\\Google\\Chrome\\NativeMessagingHosts"));
+assert.ok(register.includes("SignalInterpreter.CaptionHost.exe"));
 assert.ok(hostSource.includes("System.Windows.Automation"));
 assert.ok(hostSource.includes("signal-caption-native/v1"));
 assert.ok(hostSource.includes("Live Caption"));
+assert.ok(hostSource.includes("LooksLikeCaptionSubtree"));
 assert.ok(payload.length>18000);
 
 assert.equal(exists("extension/native/main.go"),false);
