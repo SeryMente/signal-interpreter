@@ -1752,7 +1752,36 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
         record("HOTLOAD_CAPTURE_LEASE_PREPARED",{callId:state.callId,tabId:state.callSourceTabId||null,sessionId:session.id,runtimeVersion:chrome.runtime.getManifest().version}, "info","runtime");
       }
       await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id,muted:!!state.microphoneMuted});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
-      signalActiveSessionId=session.id;state.microphoneMuteStatus="applied";await updateGroqCaptureState({status:"connected",tabAudio:true,microphone:true,microphoneMuted:!!state.microphoneMuted,startedAt:iso(),lastChunkAt:null,error:null});
+      signalActiveSessionId=session.id;
+      state.microphoneMuteStatus="pending";
+      await updateGroqCaptureState({status:"connected",tabAudio:true,microphone:true,microphoneMuted:!!state.microphoneMuted,startedAt:iso(),lastChunkAt:null,error:null});
+      if(hasActiveCall(state)){
+        var callMuteResult=await setMainClientMicrophoneMuted(state.callSourceTabId,!!state.microphoneMuted,"capture-start");
+        if(callMuteResult&&callMuteResult.verified===true&&!!callMuteResult.muted===!!state.microphoneMuted){
+          state.microphoneOutputMuted=!!state.microphoneMuted;
+          state.microphoneOutputStatus="applied";
+          state.microphoneOutputTrackCount=Number(callMuteResult.trackCount||0);
+          state.microphoneOutputSenderCount=Number(callMuteResult.senderCount||0);
+          state.microphoneMuteStatus="applied";
+          await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+        }else{
+          state.microphoneMuted=true;
+          state.microphoneMuteStatus="error";
+          state.microphoneOutputMuted=true;
+          state.microphoneOutputStatus="error";
+          state.microphoneOutputTrackCount=Number(callMuteResult&&callMuteResult.trackCount||0);
+          state.microphoneOutputSenderCount=Number(callMuteResult&&callMuteResult.senderCount||0);
+          await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+          record("SIGNAL_GROQ_CAPTURE_MIC_OUTPUT_VERIFY_ERROR",{
+            sessionId:session.id,callId:state.callId||null,
+            error:callMuteResult&&callMuteResult.error||"verification-failed",
+            policy:"fail-closed"
+          },"error","microphone");
+        }
+      }else{
+        state.microphoneMuteStatus="applied";
+        await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+      }
       recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_STARTED",{sessionId:session.id,sourceTabId:session.sourceTabId,model:config.groqModel||GROQ_MODEL});broadcastSignalEvent({type:"signal.groq.status",sessionId:session.id,status:"connected",tabAudio:true,microphone:true,timestamp:iso()});
       if(sendResponse)sendResponse({ok:true,session:signalSessionCopy(session,true)});return{ok:true};
     }catch(error){await updateGroqCaptureState({status:"error",error:String(error)}).catch(function(){});recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_ERROR",{sessionId:sessionId,error:String(error)},"error");if(sendResponse)sendResponse({ok:false,error:String(error)});return{ok:false,error:String(error)}}
