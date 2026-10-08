@@ -30,7 +30,8 @@ function validateScreenshot(screenshot) {
   if(!screenshot || typeof screenshot !== "object") throw Object.assign(new Error("Screenshot must be an object"),{status:400});
   if(screenshot.schema !== "signal-interpreter-platform-screenshot/v1") throw Object.assign(new Error("Unsupported screenshot schema"),{status:400});
   if(!/^screen-[A-Za-z0-9._-]{1,120}$/.test(String(screenshot.screenshotId||""))) throw Object.assign(new Error("Invalid screenshotId"),{status:400});
-  if(!/^\/((?:call|profile)\/|selfcheck(?:$|\/))/.test(String(screenshot.route||""))) throw Object.assign(new Error("Invalid screenshot route"),{status:400});
+  const route=String(screenshot.route||"");
+  if(!route.startsWith("/") || route.includes("..")) throw Object.assign(new Error("Invalid screenshot route"),{status:400});
   if(!/^https:\/\/app\.cloudinterpreter\.com\//.test(String(screenshot.url||""))) throw Object.assign(new Error("Invalid screenshot URL"),{status:400});
   if(!/^[a-f0-9]{64}$/i.test(String(screenshot.sha256||""))) throw Object.assign(new Error("Invalid screenshot hash"),{status:400});
   if(String(screenshot.mimeType||"")!=="image/jpeg") throw Object.assign(new Error("Only image/jpeg screenshots are supported"),{status:400});
