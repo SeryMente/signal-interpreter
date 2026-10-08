@@ -79,13 +79,18 @@
     if (!button) return;
     var label = $("micToggleLabel");
     var meta = $("micToggleMeta");
+    var unmuteRetryPending = error && state.microphoneMuteRequested === false;
     if (error) {
       if (label) label.textContent = "MIC ERR";
-      if (meta) meta.textContent = "Permanece silenciado";
+      if (meta) meta.textContent = unmuteRetryPending
+        ? "Activación no verificada · pulsa para reintentar"
+        : "Mute solicitado · no verificado";
       button.classList.add("is-error");
       button.classList.remove("is-muted");
-      button.setAttribute("aria-pressed", "true");
-      button.title = "No se pudo verificar el micrófono. Permanece silenciado.";
+      button.setAttribute("aria-pressed", unmuteRetryPending ? "false" : "true");
+      button.title = unmuteRetryPending
+        ? "Activación no verificada. Signal Interpreter no volverá a aplicar mute automáticamente; pulsa para reintentar."
+        : "No se pudo verificar el mute. Pulsa para volver a solicitar el mute o usa el atajo para reintentar.";
     } else if (muted) {
       if (label) label.textContent = "MIC OFF";
       if (meta) meta.textContent = "Silenciado · verificado";
@@ -102,7 +107,7 @@
     }
     var statusNode = $("micStatus");
     if (statusNode) statusNode.textContent = error
-      ? "No se pudo verificar · estado seguro: silenciado"
+      ? (unmuteRetryPending ? "Activación solicitada; verificación pendiente" : "Mute solicitado; verificación pendiente")
       : muted ? "Entrada de audio desactivada" : "Entrada de audio activa";
   }
 
@@ -179,19 +184,31 @@
       if(response&&response.ok&&response.verified===true){
         state=Object.assign({},state,{
           microphoneMuted:!!response.muted,
+          microphoneMuteRequested:!!response.muted,
           microphoneMuteStatus:"applied",
           microphoneOutputMuted:!!response.muted,
           microphoneOutputStatus:"applied"
         });
         status(response.muted ? "MIC OFF · verificado" : "MIC ON · verificado");
       }else{
+        var requestedMuted = response && typeof response.requestedMuted === "boolean"
+          ? response.requestedMuted
+          : response && typeof response.muted === "boolean"
+            ? response.muted
+            : typeof state.microphoneMuteRequested === "boolean"
+              ? state.microphoneMuteRequested
+              : !!state.microphoneMuted;
         state=Object.assign({},state,{
-          microphoneMuted:true,
+          microphoneMuted:requestedMuted,
+          microphoneMuteRequested:requestedMuted,
           microphoneMuteStatus:"error",
-          microphoneOutputMuted:true,
+          microphoneOutputMuted:response && typeof response.outputMuted === "boolean"
+            ? response.outputMuted : !!state.microphoneOutputMuted,
           microphoneOutputStatus:"error"
         });
-        status("MIC ERR · permanece silenciado",true);
+        status(requestedMuted
+          ? "MIC ERR · mute solicitado, verificación pendiente"
+          : "MIC ERR · activación no verificada; pulsa para reintentar",true);
       }
       render();
     }catch(error){ status("MIC ERR · permanece silenciado",true); }
