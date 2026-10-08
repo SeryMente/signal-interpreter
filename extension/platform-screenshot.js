@@ -13,8 +13,8 @@ function routeOf(url){try{var u=new URL(String(url||""));return u.pathname.repla
 function identityOf(url){return TARGET_ORIGIN+"|"+routeOf(url);}
 function routeToken(route){return String(route||"platform").replace(/[^A-Za-z0-9_-]+/g,"_").replace(/^_+|_+$/g,"").slice(0,90)||"platform";}
 async function setPrivacyMask(tabId,enabled){
-  var response=await chrome.tabs.sendMessage(Number(tabId),{type:"EFFECTIF_PLATFORM_SCREENSHOT_PRIVACY_MASK",enabled:!!enabled});
-  if(!response||response.ok!==true||response.enabled!==!!enabled)throw new Error("No se pudo verificar la máscara de privacidad.");
+  var response=await chrome.tabs.sendMessage(Number(tabId),{type:enabled?"EFFECTIF_SCREENSHOT_PREPARE":"EFFECTIF_SCREENSHOT_RESTORE"});
+  if(!response||response.ok!==true)throw new Error("No se pudo preparar/restaurar la captura.");
   return response;
 }
 function bytesFromBase64(value){return Math.floor(String(value||"").length*3/4)-((String(value||"").endsWith("=="))?2:(String(value||"").endsWith("=")?1:0));}
