@@ -1805,6 +1805,24 @@
       portalStructureSnapshot("popup-sync", true);
       return false;
     }
+    if (message && message.type === "EFFECTIF_PLATFORM_SCREENSHOT_PRIVACY_MASK") {
+      var maskId = "__SIGNAL_INTERPRETER_SCREENSHOT_PRIVACY_MASK__";
+      var mask = document.getElementById(maskId);
+      var enabled = !!message.enabled;
+      if (enabled) {
+        if (mask) mask.remove();
+        mask = document.createElement("div");
+        mask.id = maskId;
+        mask.setAttribute("aria-hidden", "true");
+        mask.style.cssText = "position:fixed;z-index:2147483646;left:0;right:0;top:92px;bottom:124px;background:#111;pointer-events:none;";
+        (document.documentElement || document.body).appendChild(mask);
+      } else if (mask) {
+        mask.remove();
+      }
+      var applied = !!document.getElementById(maskId);
+      if (sendResponse) sendResponse({ ok: true, enabled: applied, requested: enabled });
+      return true;
+    }
     if (message && message.type === "EFFECTIF_REFRESH_OVERLAY") {
       if (message.callId && currentCallId() === message.callId) {
         emit("EARNINGS_OVERLAY_REFRESHED", { callId: message.callId, reason: message.reason || "background-request" });
