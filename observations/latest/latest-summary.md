@@ -1,16 +1,16 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-a16ef053-ca0d-4a82-9648-f03be99e8442
-- Creado: 2026-10-08T18:08:31.892Z
+- Batch: batch-411cd946-0221-4ffb-8038-4be0db28b919
+- Creado: 2026-10-08T18:09:12.491Z
 - Trigger: critical
-- Extensión: 0.10.2
+- Extensión: 0.10.10
 - Eventos: 1
 - Errores: 0
-- Warnings: 1
-- Secuencia: 8688 → 8688
-- Identidades de plataforma: 5
-- Snapshots de plataforma: 98
-- Deltas de plataforma: 98
+- Warnings: 0
+- Secuencia: 229 → 229
+- Identidades de plataforma: 6
+- Snapshots de plataforma: 103
+- Deltas de plataforma: 103
 
 ## Categorías
 
@@ -21,5 +21,5 @@
 ## Acciones
 
 {
-  "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+  "AUTO_ANSWER_READINESS": 1
 }
