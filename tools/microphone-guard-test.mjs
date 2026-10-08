@@ -1,0 +1,10 @@
+import fs from "node:fs";import vm from "node:vm";
+class E{constructor(){this.l=new Map()}addEventListener(t,f){let a=this.l.get(t)||[];a.push(f);this.l.set(t,a)}removeEventListener(t,f){this.l.set(t,(this.l.get(t)||[]).filter(x=>x!==f))}dispatchEvent(e){for(const f of(this.l.get(e.type)||[]).slice())f(e)}}
+class T extends E{constructor(id){super();this.kind="audio";this.id=id;this.enabled=true;this.readyState="live"}clone(){return new T(this.id+"-clone")}}
+class S{constructor(t){this.t=t}getAudioTracks(){return[this.t]}}
+class Sender{constructor(t){this.track=t}replaceTrack(t){this.track=t;return Promise.resolve()}}
+class PC{constructor(){this.s=[]}addTrack(t){const s=new Sender(t);this.s.push(s);return s}getSenders(){return this.s.slice()}}
+class CE{constructor(type,i){this.type=type;this.detail=i&&i.detail}}
+const document=new E(),ints=[],navigator={mediaDevices:{getUserMedia:async()=>new S(new T("mic"))}},sb={console,Map,Set,Array,Object,Promise,Date,JSON,String,Number,Boolean,Math,navigator,document,CustomEvent:CE,setInterval:f=>(ints.push(f),ints.length-1),clearInterval:i=>{ints[i]=null}};sb.window=sb;sb.RTCPeerConnection=PC;sb.RTCRtpSender=Sender;sb.MediaStreamTrack=T;vm.runInNewContext(fs.readFileSync("extension/mic-guard-main.js","utf8"),sb);
+const a=[];document.addEventListener("__SIGNAL_INTERPRETER_MIC_ACK_V1__",e=>a.push(JSON.parse(e.detail)));function cmd(m,id){document.dispatchEvent(new CE("__SIGNAL_INTERPRETER_MIC_COMMAND_V1__",{detail:JSON.stringify({schema:"signal-main-mic-command/v1",op:"set",requestId:id,muted:m})}));return a.at(-1)}
+const st=await navigator.mediaDevices.getUserMedia({audio:true}),tr=st.getAudioTracks()[0],pc=new sb.RTCPeerConnection(),se=pc.addTrack(tr,st);let x=cmd(true,"1");if(!(x.verified&&x.muted&&!tr.enabled&&x.senderCount===1))throw Error("mute");tr.enabled=true;for(const f of ints)if(f)f();if(tr.enabled)throw Error("enforce");x=cmd(false,"2");if(!(x.verified&&!x.muted&&tr.enabled&&se.track.enabled))throw Error("unmute");const cl=tr.clone();await se.replaceTrack(cl);x=cmd(true,"3");if(!(x.verified&&x.muted&&!cl.enabled))throw Error("replace");console.log("MICROPHONE_MAIN_GUARD_TEST=PASS");

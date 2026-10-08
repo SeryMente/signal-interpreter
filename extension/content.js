@@ -87,6 +87,8 @@
   var mirrorTimer = null;
   var mediaTimer = null;
   var integrityTimer = null;
+  var micMainCommandEvent = "__SIGNAL_INTERPRETER_MIC_COMMAND_V1__";
+  var micMainAckEvent = "__SIGNAL_INTERPRETER_MIC_ACK_V1__";
   var integrity = {
     extensionDomWrites: 0,
     extensionMediaApiCalls: 0,
@@ -1481,6 +1483,19 @@
     });
     return starLike.length >= 3;
   }
+  function requestMainMicrophoneMute(muted, reason) {
+    return new Promise(function(resolve){
+      var requestId=crypto.randomUUID(),settled=false,timeout=null;
+      function cleanup(){if(timeout)clearTimeout(timeout);window.removeEventListener(micMainAckEvent,onAck,true);}
+      function finish(result){if(settled)return;settled=true;cleanup();resolve(result);}
+      function onAck(event){var ack=null;try{ack=JSON.parse(String(event&&event.detail||""));}catch(_){}if(!ack||ack.requestId!==requestId)return;finish(ack);}
+      window.addEventListener(micMainAckEvent,onAck,true);
+      try{document.dispatchEvent(new CustomEvent(micMainCommandEvent,{detail:JSON.stringify({schema:"signal-main-mic-command/v1",op:"set",requestId:requestId,muted:!!muted,reason:reason||"background"})}));}
+      catch(error){finish({ok:false,muted:!!muted,verified:false,error:String(error)});return;}
+      timeout=setTimeout(function(){finish({ok:false,muted:!!muted,verified:false,error:"MAIN microphone guard did not acknowledge the request."});},900);
+    });
+  }
+
   function activateOverlayForCall(callId, reason) {
     if (!callId) return;
     overlayLifecycleActive = true;
@@ -1589,13 +1604,14 @@
     var micButton = overlayRoot.getElementById("mic");
     if (micButton) {
       var activeCapture = !!(state.groqCapture && state.groqCapture.status === "connected");
-      var actualMuted = activeCapture ? !!state.groqCapture.microphoneMuted : !!state.microphoneMuted;
+      var actualMuted = !!state.microphoneMuted || !!state.microphoneOutputMuted || (activeCapture && !!state.groqCapture.microphoneMuted);
       var muteStatus = String(state.microphoneMuteStatus || "");
-      var muteError = activeCapture && muteStatus === "error";
+      var outputStatus = String(state.microphoneOutputStatus || "");
+      var muteError = outputStatus === "error" || (activeCapture && muteStatus === "error");
       micButton.textContent = muteError ? "MIC ERR" : (actualMuted ? "MIC OFF" : "MIC ON");
       micButton.classList.toggle("muted", actualMuted && !muteError);
       micButton.classList.toggle("live", !actualMuted && !muteError && muteStatus === "applied");
-      micButton.setAttribute("aria-pressed", muted ? "true" : "false");
+      micButton.setAttribute("aria-pressed", actualMuted ? "true" : "false");
       micButton.title = muteError
         ? "Error: no se pudo verificar el mute del micrófono de Signal Interpreter · pulsa Ctrl+Shift+M para reintentar"
         : actualMuted
@@ -1745,6 +1761,10 @@
     if (message && message.type === "EFFECTIF_HOTLOAD_REPLACE") {
       deactivateForHotload(message.reason || "hotload-replace");
       if (sendResponse) sendResponse({ ok: true, reason: "deactivated-for-hotload" });
+      return true;
+    }
+    if (message && message.type === "SIGNAL_MAIN_MICROPHONE_SET") {
+      requestMainMicrophoneMute(!!message.muted,message.source||message.reason||"background").then(function(result){if(sendResponse)sendResponse(result);}).catch(function(error){if(sendResponse)sendResponse({ok:false,muted:!!message.muted,verified:false,error:String(error)});});
       return true;
     }
     if (message && message.type === "EFFECTIF_REQUEST_PLATFORM_SNAPSHOT") {

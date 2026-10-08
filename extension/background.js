@@ -173,7 +173,21 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
               try { window.__SIGNAL_INTERPRETER_CLOUD_RUNTIME__ = null; } catch (_) {}
             }
           });
-          await chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED" });
+          await chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
+          await chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
+          if (isCloudCallUrl(tab.url) && hotloadState.microphoneMuted === true && Number(hotloadState.callSourceTabId) === tabId) {
+            try {
+              var muteSync = await chrome.tabs.sendMessage(tabId, { type: "SIGNAL_MAIN_MICROPHONE_SET", muted: true, source: "hotload-sync" });
+              record(muteSync && muteSync.verified === true ? "HOTLOAD_MICROPHONE_OUTPUT_VERIFIED" : "HOTLOAD_MICROPHONE_OUTPUT_VERIFY_ERROR", {
+                tabId: tabId, callId: hotloadState.callId || null,
+                trackCount: Number(muteSync && muteSync.trackCount || 0),
+                senderCount: Number(muteSync && muteSync.senderCount || 0),
+                error: muteSync && muteSync.error || null
+              }, muteSync && muteSync.verified === true ? "info" : "error", "microphone");
+            } catch (muteError) {
+              record("HOTLOAD_MICROPHONE_OUTPUT_VERIFY_ERROR", { tabId: tabId, callId: hotloadState.callId || null, error: String(muteError) }, "error", "microphone");
+            }
+          }
           success = true;
           result.injected += 1;
           record("HOTLOAD_EXISTING_TAB_REHYDRATED", {
@@ -216,7 +230,8 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       try {
         var tab = await chrome.tabs.get(callTabId);
         if (tab && isAuthorizedCloudUrl(tab.url) && isCloudCallUrl(tab.url)) {
-          await chrome.scripting.executeScript({ target: { tabId: callTabId }, files: ["content.js"], world: "ISOLATED" });
+          await chrome.scripting.executeScript({ target: { tabId: callTabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
+          await chrome.scripting.executeScript({ target: { tabId: callTabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
           record("HOTLOAD_CONTENT_RUNTIME_REHYDRATED", { callId: state.callId, tabId: callTabId }, "info", "runtime");
         }
       } catch (error) {
@@ -347,6 +362,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       },
       microphoneMuted: false,
       microphoneMuteStatus: "unapplied",
+      microphoneOutputMuted: false,
+      microphoneOutputStatus: "unapplied",
+      microphoneOutputTrackCount: 0,
+      microphoneOutputSenderCount: 0,
       groqCapture:{status:"idle",tabAudio:false,microphone:false,microphoneMuted:false,startedAt:null,lastChunkAt:null,error:null},
       groqTranscript:{active:false,segments:0,lastTimestamp:null,model:GROQ_MODEL},
       eventSequence:0,
@@ -379,6 +398,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     normalizeHotloadState(state);
     if (typeof state.microphoneMuted !== "boolean") state.microphoneMuted = false;
     if (typeof state.microphoneMuteStatus !== "string") state.microphoneMuteStatus = "unapplied";
+    if (typeof state.microphoneOutputMuted !== "boolean") state.microphoneOutputMuted = !!state.microphoneMuted;
+    if (typeof state.microphoneOutputStatus !== "string") state.microphoneOutputStatus = "unapplied";
+    if (!Number.isFinite(Number(state.microphoneOutputTrackCount))) state.microphoneOutputTrackCount = 0;
+    if (!Number.isFinite(Number(state.microphoneOutputSenderCount))) state.microphoneOutputSenderCount = 0;
     if (!state.groqCapture || typeof state.groqCapture !== "object" || Array.isArray(state.groqCapture)) state.groqCapture = baseState().groqCapture;
     if (typeof state.groqCapture.microphoneMuted !== "boolean") state.groqCapture.microphoneMuted = !!state.microphoneMuted;
     if (!state.groqUsage || typeof state.groqUsage !== "object" || Array.isArray(state.groqUsage)) state.groqUsage = {requests:0,successes:0,errors:0,audioSeconds:0,bytesSent:0,charactersReturned:0,totalLatencyMs:0,estimatedUsd:0};
@@ -1734,55 +1757,88 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       if(sendResponse)sendResponse({ok:true,session:signalSessionCopy(session,true)});return{ok:true};
     }catch(error){await updateGroqCaptureState({status:"error",error:String(error)}).catch(function(){});recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_ERROR",{sessionId:sessionId,error:String(error)},"error");if(sendResponse)sendResponse({ok:false,error:String(error)});return{ok:false,error:String(error)}}
   }
-  async function setExtensionMicrophoneMutedInternal(muted, source) {
-    var desired = !!muted;
-    var stored = await chrome.storage.local.get(["effectifState"]);
-    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
-    state.microphoneMuted = desired;
-    state.microphoneMuteStatus = "pending";
-    await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
-    record("EXTENSION_MICROPHONE_MUTE_REQUESTED", {
-      muted: desired, source: source || "unknown",
-      activeCapture: !!(state.groqCapture && state.groqCapture.status === "connected"),
-      callId: state.callId || null
-    }, "info", "microphone");
-    var response = { ok: true, muted: desired, applied: false, verified: false, inactive: true };
-    if (state.groqCapture && state.groqCapture.status === "connected") {
-      var lastError = null;
-      for (var attempt = 1; attempt <= 3; attempt += 1) {
-        try {
-          await ensureOffscreen();
-          var applied = await chrome.runtime.sendMessage({
-            target: "offscreen", type: "SIGNAL_SET_MICROPHONE_MUTED", muted: desired
-          });
-          if (applied && applied.ok && !!applied.muted === desired && applied.verified === true) {
-            response = Object.assign({}, applied, { inactive: false, applied: true, verified: true, attempts: attempt });
-            break;
-          }
-          lastError = applied && applied.error || "El estado físico del micrófono no pudo verificarse.";
-        } catch (error) {
-          lastError = String(error);
+  async function setMainClientMicrophoneMuted(tabId, muted, source) {
+    var targetTabId=Number(tabId);
+    if(!Number.isFinite(targetTabId))return{ok:false,muted:!!muted,verified:false,inactive:true,error:"No hay una pestaña de llamada controlable."};
+    var lastError=null;
+    for(var attempt=1;attempt<=3;attempt+=1){
+      try{
+        var response=await chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:!!muted,source:source||"background"});
+        if(response&&response.verified===true&&!!response.muted===!!muted){
+          record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(response.trackCount||0),senderCount:Number(response.senderCount||0),attempts:attempt},"info","microphone");
+          return Object.assign({},response,{ok:true,inactive:false,attempts:attempt});
         }
-      }
-      if (!response.verified) {
-        state.microphoneMuteStatus = "error";
-        state.groqCapture = Object.assign({}, state.groqCapture || {}, { microphoneMuted: !desired });
-        await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
-        record("EXTENSION_MICROPHONE_MUTE_ERROR", {
-          muted: desired, source: source || "unknown", callId: state.callId || null,
-          error: lastError || "verification-failed", attempts: 3
-        }, "error", "microphone");
-        return { ok: false, muted: desired, verified: false, error: lastError || "verification-failed" };
-      }
+        lastError=response&&response.error||"La salida del micrófono no pudo verificarse.";
+      }catch(error){lastError=String(error);}
     }
-    state.microphoneMuteStatus = response.verified ? "applied" : "unapplied";
-    state.groqCapture = Object.assign({}, state.groqCapture || {}, { microphoneMuted: response.verified ? desired : !!state.groqCapture.microphoneMuted });
-    await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
-    record("EXTENSION_MICROPHONE_MUTE_APPLIED", {
-      muted: desired, source: source || "unknown", callId: state.callId || null,
-      activeCapture: !response.inactive, verified: response.verified, attempts: response.attempts || 0
-    }, "info", "microphone");
-    return Object.assign({}, response, { microphoneMuted: desired });
+    record("EXTENSION_MICROPHONE_OUTPUT_VERIFY_ERROR",{tabId:targetTabId,muted:!!muted,source:source||"background",error:lastError||"verification-failed",attempts:3},"error","microphone");
+    return{ok:false,muted:!!muted,verified:false,inactive:false,error:lastError||"verification-failed",attempts:3};
+  }
+
+  async function setExtensionMicrophoneMutedInternal(muted, source) {
+    var desired=!!muted;
+    var stored=await chrome.storage.local.get(["effectifState"]);
+    var state=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
+
+    state.microphoneMuted=true;
+    state.microphoneMuteStatus="pending";
+    state.microphoneOutputMuted=true;
+    state.microphoneOutputStatus="pending";
+    state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
+    await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+
+    record("EXTENSION_MICROPHONE_MUTE_REQUESTED",{
+      desired:desired,source:source||"unknown",activeCall:hasActiveCall(state),
+      activeCapture:!!(state.groqCapture&&state.groqCapture.status==="connected"),
+      callId:state.callId||null,policy:"fail-closed-until-verified"
+    },"info","microphone");
+
+    var captureActive=!!(state.groqCapture&&state.groqCapture.status==="connected");
+    var captureResult={ok:true,verified:!captureActive,muted:desired,inactive:!captureActive};
+    if(captureActive){
+      var captureError=null;
+      for(var ca=1;ca<=3&&!captureResult.verified;ca+=1){
+        try{
+          await ensureOffscreen();
+          var cr=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_SET_MICROPHONE_MUTED",muted:desired});
+          if(cr&&cr.verified===true&&!!cr.muted===desired)captureResult=Object.assign({},cr,{ok:true,inactive:false,attempts:ca});
+          else captureError=cr&&cr.error||"No se verificó la captura del micrófono.";
+        }catch(error){captureError=String(error);}
+      }
+      if(!captureResult.verified)captureResult.error=captureError||"verification-failed";
+    }
+
+    var outputRequired=hasActiveCall(state);
+    var outputResult=outputRequired
+      ? await setMainClientMicrophoneMuted(state.callSourceTabId,desired,source||"background")
+      : {ok:true,muted:desired,verified:true,inactive:true,trackCount:0,senderCount:0};
+    var allVerified=captureResult.verified&&(!outputRequired||outputResult.verified===true);
+
+    if(!allVerified){
+      if(captureActive){try{await ensureOffscreen();await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_SET_MICROPHONE_MUTED",muted:true});}catch(_){}}
+      if(outputRequired){try{await setMainClientMicrophoneMuted(state.callSourceTabId,true,"fail-closed");}catch(_){}}
+      state.microphoneMuted=true;
+      state.microphoneMuteStatus="error";
+      state.microphoneOutputMuted=true;
+      state.microphoneOutputStatus="error";
+      state.microphoneOutputTrackCount=Number(outputResult.trackCount||0);
+      state.microphoneOutputSenderCount=Number(outputResult.senderCount||0);
+      state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
+      await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+      record("EXTENSION_MICROPHONE_MUTE_ERROR",{desired:desired,source:source||"unknown",callId:state.callId||null,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,error:captureResult.error||outputResult.error||"verification-failed",policy:"fail-closed"},"error","microphone");
+      return{ok:false,muted:true,verified:false,error:captureResult.error||outputResult.error||"verification-failed"};
+    }
+
+    state.microphoneMuted=desired;
+    state.microphoneMuteStatus="applied";
+    state.microphoneOutputMuted=desired;
+    state.microphoneOutputStatus=outputRequired?"applied":"unapplied";
+    state.microphoneOutputTrackCount=Number(outputResult.trackCount||0);
+    state.microphoneOutputSenderCount=Number(outputResult.senderCount||0);
+    state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:desired});
+    await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+    record("EXTENSION_MICROPHONE_MUTE_APPLIED",{desired:desired,source:source||"unknown",callId:state.callId||null,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)},"info","microphone");
+    return{ok:true,muted:desired,verified:true,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)};
   }
   function setExtensionMicrophoneMuted(muted, source) {
     var run = microphoneMuteQueue.then(function () {
@@ -1820,7 +1876,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId,session=data.sessions.find(function(s){return s.id===id});if(!session)return;
       if(message.source==="yo"){
         var micState=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),(await chrome.storage.local.get(["effectifState"])).effectifState||{})));
-        if(micState.microphoneMuted===true){
+        if(micState.microphoneMuted===true || micState.microphoneMuteStatus!=="applied" || micState.microphoneOutputStatus==="error"){
           recordSignalDiagnostic("EXTENSION_MICROPHONE_AUDIO_CHUNK_SUPPRESSED_MUTED",{sessionId:id,sequence:Number(message.sequence||0),bytes:Number(message.bytes||0)}, "info","microphone");
           return;
         }
@@ -1882,7 +1938,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     if (!message) return false;
     if(message.type==="SIGNAL_OBSERVATION_SYNC_NOW"){try{SignalObservationSync.flush("manual").then(function(r){sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})})}catch(e){sendResponse({ok:false,error:String(e)})}return true;}
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_AUDIO_CHUNK") { handleGroqAudioChunk(message); return false; }
-    if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_CAPTURE_STATUS") { updateGroqCaptureState({status:String(message.status||"idle"),tabAudio:!!message.tabAudio,microphone:!!message.microphone,error:message.error||null,lastChunkAt:message.status==="connected"?null:undefined}).catch(function(){}); broadcastSignalEvent({type:"signal.groq.status",sessionId:signalActiveSessionId,status:message.status||"idle",tabAudio:!!message.tabAudio,microphone:!!message.microphone,error:message.error||null,timestamp:message.timestamp||iso()}); return false; }
+    if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_CAPTURE_STATUS") { updateGroqCaptureState({status:String(message.status||"idle"),tabAudio:!!message.tabAudio,microphone:!!message.microphone,microphoneMuted:!!message.microphoneMuted,error:message.error||null,lastChunkAt:message.status==="connected"?null:undefined}).catch(function(){}); broadcastSignalEvent({type:"signal.groq.status",sessionId:signalActiveSessionId,status:message.status||"idle",tabAudio:!!message.tabAudio,microphone:!!message.microphone,error:message.error||null,timestamp:message.timestamp||iso()}); return false; }
     if (message.type === "OPEN_SIGNAL_LIVE_WINDOW") { recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_REQUESTED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",hasSuppliedStream:!!message.audioStreamId}); openSignalLiveWindow(message.audioStreamId||null,message.tabId||null,message.sourceUrl||"",message.sourceTitle||"").then(function(response){if(response&&response.ok)recordSignalDiagnostic("SIGNAL_CONSOLE_OPENED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",windowId:response.windowId,reused:!!response.reused,sessionId:response.session&&response.session.id||null,audioOk:!!(response.audio&&response.audio.ok)});else recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_ERROR",{tabId:message.tabId||null,error:response&&response.error||"unknown"},"error");sendResponse(response)}).catch(function(error){recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_EXCEPTION",{tabId:message.tabId||null,error:String(error)},"error");sendResponse({ok:false,error:String(error)});});return true; }
     if (message.type === "ACTIVATE_SIGNAL_SESSION") { activateSignalSession(message.sessionId,null).then(sendResponse);return true; }
     if (message.type === "UPDATE_SIGNAL_SESSION") { updateSignalSession(message,sendResponse);return true; }
