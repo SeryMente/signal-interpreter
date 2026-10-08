@@ -36,7 +36,7 @@ assert.ok(manifest.host_permissions.includes("https://app.cloudinterpreter.com/*
 assert.ok(manifest.host_permissions.includes("https://signal-interpreter-observability-re.vercel.app/*"));
 assert.match(manifest.content_security_policy.extension_pages,/https:\/\/signal-interpreter-observability-re\.vercel\.app/);
 
-assert.ok(background.includes('importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js")'));
+assert.ok(background.includes('importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js","platform-screenshot.js")'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync"'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync-retry"'));
 assert.ok(background.includes('SignalObservationSync.flush("startup"'));
@@ -95,6 +95,8 @@ assert.ok(relay.includes("uploadBatch"));
 assert.ok(relay.includes("getStatus"));
 assert.ok(relay.includes("publishHistory"));
 assert.ok(relay.includes("modelContextAccess"));
+assert.ok(relay.includes("uploadScreenshot"));
+assert.ok(relay.includes("screenshotEndpoint"));
 assert.equal(/client_secret|device.?flow|githubApp/i.test(relay),false);
 assert.equal(/127\.0\.0\.1/.test(relay),false);
 
@@ -161,7 +163,12 @@ assert.ok(platformScreenshot.includes("PLATFORM_SCREENSHOT_CHANGED"));
 assert.ok(platformScreenshot.includes("PLATFORM_SCREENSHOT_UNCHANGED"));
 assert.ok(platformScreenshot.includes("sha256"));
 assert.ok(platformScreenshot.includes("MAX_RAW_BYTES"));
+assert.ok(platformScreenshot.includes("EFFECTIF_SCREENSHOT_PREPARE"));
+assert.ok(platformScreenshot.includes("EFFECTIF_SCREENSHOT_RESTORE"));
+assert.ok(background.includes("SignalPlatformScreenshot.start()"));
+assert.ok(background.includes("SIGNAL_PLATFORM_SCREENSHOT_REQUEST"));
 assert.ok(platformScreenshotTest.includes("PLATFORM_SCREENSHOT_TEST=PASS"));
+assert.ok(workflow.includes("node tools/platform-screenshot-test.mjs"));
 assert.ok(globalMouse.includes("muted:true")||globalMouse.includes("muted: true"));
 assert.ok(micGuardTest.includes("MICROPHONE_MAIN_GUARD_TEST=PASS"));
 assert.ok(globalMouseTest.includes("GLOBAL_MOUSE_MUTE_TEST=PASS"));
@@ -188,6 +195,7 @@ assert.ok(githubPipeline.includes("updatePublishHistory"));
 assert.ok(githubPipelineTest.includes("OBSERVABILITY_GITHUB_PIPELINE_TEST"));
 assert.ok(platformLearning.includes("semanticPlatformDelta"));
 assert.ok(platformLearningTest.includes("PLATFORM_LEARNING_TEST=PASS"));
+assert.ok(githubPipeline.includes("platform-screenshot"));
 
 for(const forbidden of [
   "tools/observation-reporter/server.mjs",
