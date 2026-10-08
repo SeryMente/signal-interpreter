@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 
 const root=process.cwd();
 const read=(p)=>fs.readFileSync(path.join(root,p),"utf8");
@@ -76,6 +77,10 @@ assert.ok(hostSource.includes("signal-caption-native/v1"));
 assert.ok(hostSource.includes("Live Caption"));
 assert.ok(hostSource.includes("LooksLikeCaptionSubtree"));
 assert.ok(payload.length>18000);
+const decoded=Buffer.from(payload,"base64");
+assert.ok(decoded.length>10000);
+assert.equal(decoded.subarray(0,2).toString("ascii"),"MZ");
+assert.equal(crypto.createHash("sha256").update(decoded).digest("hex").toUpperCase(),"551F2CCE3E6C2447C053573EBB97FD1C808FDB612C13876EFCA23D7FDEE0D2B5");
 
 assert.equal(exists("extension/native/main.go"),false);
 assert.equal(exists("extension/native/SignalInterpreter.CaptionHost.ps1"),false);
