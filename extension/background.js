@@ -2028,6 +2028,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var captureActive=!!(state.groqCapture&&state.groqCapture.status==="connected");
     var outputRequired=hasActiveCall(state);
     state.microphoneMuted=desired;
+    state.microphoneMuteRequested=desired;
     state.microphoneMuteStatus="pending";
     state.microphoneOutputMuted=desired;
     state.microphoneOutputStatus=outputRequired?"pending":"unapplied";
@@ -2059,12 +2060,10 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var allVerified=captureResult.verified&&(!outputRequired||outputResult.verified===true);
 
     if(!allVerified){
-      var recoveryMuted=previousMuted;
-      var recoveryPolicy="restore-previous-user-intent";
-      if(desired){
-        recoveryMuted=true;
-        recoveryPolicy="fail-closed-on-explicit-mute";
-      }
+      var recoveryMuted=desired ? true : false;
+      var recoveryPolicy=desired
+        ? "fail-closed-on-explicit-mute"
+        : "never-reapply-stale-mute-on-unmute-failure";
       if(captureActive){
         try{
           await ensureOffscreen();
@@ -2072,25 +2071,38 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         }catch(_){}
       }
       if(outputRequired){
-        try{await setMainClientMicrophoneMuted(state.callSourceTabId,recoveryMuted,desired?"fail-closed-explicit-mute":"restore-after-verify-error");}catch(_){}
+        try{
+          await setMainClientMicrophoneMuted(
+            state.callSourceTabId,
+            recoveryMuted,
+            desired ? "fail-closed-explicit-mute" : "unmute-recovery-no-remute"
+          );
+        }catch(_){}
       }
       state.microphoneMuted=recoveryMuted;
+      state.microphoneMuteRequested=desired;
       state.microphoneMuteStatus="error";
-      state.microphoneOutputMuted=recoveryMuted;
+      state.microphoneOutputMuted=desired ? true : (outputResult.verified===true ? false : previousOutputMuted);
       state.microphoneOutputStatus="error";
       state.microphoneOutputTrackCount=Number(outputResult.trackCount||0);
       state.microphoneOutputSenderCount=Number(outputResult.senderCount||0);
       state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:recoveryMuted});
       await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
       record("EXTENSION_MICROPHONE_MUTE_ERROR",{
-        desired:desired,previousMuted:previousMuted,recoveryMuted:recoveryMuted,source:source||"unknown",callId:state.callId||null,
+        desired:desired,previousMuted:previousMuted,recoveryMuted:recoveryMuted,
+        source:source||"unknown",callId:state.callId||null,
         captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,
         error:captureResult.error||outputResult.error||"verification-failed",
         policy:recoveryPolicy,
         previousMuteStatus:previousMuteStatus,
-        previousOutputStatus:previousOutputStatus
+        previousOutputStatus:previousOutputStatus,
+        invariant:"unmute-errors-never-send-a-follow-up-mute"
       },"error","microphone");
-      return{ok:false,muted:recoveryMuted,verified:false,error:captureResult.error||outputResult.error||"verification-failed"};
+      return{
+        ok:false,muted:recoveryMuted,requestedMuted:desired,
+        outputMuted:state.microphoneOutputMuted,verified:false,
+        error:captureResult.error||outputResult.error||"verification-failed"
+      };
     }
 
     state.microphoneMuted=desired;
@@ -2127,11 +2139,27 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var run = microphoneMuteQueue.then(async function () {
       var stored = await chrome.storage.local.get(["effectifState"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
-      return setExtensionMicrophoneMutedInternal(!state.microphoneMuted, source || "toggle");
+      var recovering = state.microphoneMuteStatus === "error" || state.microphoneOutputStatus === "error";
+      var desired = recovering
+        ? (typeof state.microphoneMuteRequested === "boolean" ? state.microphoneMuteRequested : false)
+        : !state.microphoneMuted;
+      if (recovering) record("EXTENSION_MICROPHONE_TOGGLE_RECOVERY_RETRY", {
+        source: source || "toggle", desired: desired, previousMuted: !!state.microphoneMuted,
+        policy: "retry-last-request; legacy-error-defaults-to-unmute"
+      }, "warn", "microphone");
+      return setExtensionMicrophoneMutedInternal(desired, source || "toggle");
     }, async function () {
       var stored = await chrome.storage.local.get(["effectifState"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
-      return setExtensionMicrophoneMutedInternal(!state.microphoneMuted, source || "toggle");
+      var recovering = state.microphoneMuteStatus === "error" || state.microphoneOutputStatus === "error";
+      var desired = recovering
+        ? (typeof state.microphoneMuteRequested === "boolean" ? state.microphoneMuteRequested : false)
+        : !state.microphoneMuted;
+      if (recovering) record("EXTENSION_MICROPHONE_TOGGLE_RECOVERY_RETRY", {
+        source: source || "toggle", desired: desired, previousMuted: !!state.microphoneMuted,
+        policy: "retry-last-request; legacy-error-defaults-to-unmute"
+      }, "warn", "microphone");
+      return setExtensionMicrophoneMutedInternal(desired, source || "toggle");
     });
     microphoneMuteQueue = run.catch(function (error) {
       record("EXTENSION_MICROPHONE_TOGGLE_QUEUE_ERROR", { error: String(error), source: source || "toggle" }, "error", "microphone");
@@ -2412,9 +2440,26 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       });
       return true;
     }
+    if (message.type === "SIGNAL_EXTENSION_MICROPHONE_KEYBOARD_FALLBACK") {
+      requestKeyboardMicrophoneToggle(message.source || "keyboard-content-fallback")
+        .then(sendResponse)
+        .catch(function (error) { sendResponse({ ok: false, error: String(error), verified: false }); });
+      return true;
+    }
     if (message.type === "SIGNAL_EXTENSION_MICROPHONE_TOGGLE") {
+      if (message.gesture) record("EXTENSION_MICROPHONE_GESTURE_TRIGGERED", {
+        source: message.source || "unknown", gesture: String(message.gesture),
+        holdMs: Number(message.holdMs || 0), tabId: sender && sender.tab ? sender.tab.id : null
+      }, "info", "microphone");
       toggleExtensionMicrophoneMuted(message.source || "ui").then(sendResponse).catch(function (error) {
-        sendResponse({ ok: false, error: String(error), verified: false });
+        chrome.storage.local.get(["effectifState"]).then(function(stored){
+          var current=stored.effectifState||{};
+          sendResponse({
+            ok:false, error:String(error), verified:false,
+            muted:typeof current.microphoneMuted==="boolean"?current.microphoneMuted:false,
+            requestedMuted:typeof current.microphoneMuteRequested==="boolean"?current.microphoneMuteRequested:false
+          });
+        }).catch(function(){sendResponse({ok:false,error:String(error),verified:false,muted:false,requestedMuted:false});});
       });
       return true;
     }
@@ -2717,21 +2762,34 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     });
   }
 
+  var lastKeyboardMicrophoneToggleAt = 0;
+  function requestKeyboardMicrophoneToggle(source) {
+    var now=Date.now();
+    if(now-lastKeyboardMicrophoneToggleAt<450){
+      record("EXTENSION_MICROPHONE_KEYBOARD_DUPLICATE_SUPPRESSED",{
+        source:source||"keyboard",windowMs:450,policy:"one-toggle-per-physical-hotkey"
+      },"info","microphone");
+      return Promise.resolve({ok:true,verified:true,duplicateSuppressed:true,muted:null});
+    }
+    lastKeyboardMicrophoneToggleAt=now;
+    return toggleExtensionMicrophoneMuted(source||"keyboard").then(function(result){
+      record("EXTENSION_MICROPHONE_KEYBOARD_TOGGLE",{
+        source:source||"keyboard",hotkey:"Ctrl+Shift+.",
+        desired:result&&typeof result.muted==="boolean"?!!result.muted:null,
+        verified:!!(result&&result.verified),ok:!!(result&&result.ok),
+        error:result&&result.error||null
+      },result&&result.ok&&result.verified?"info":"error","microphone");
+      broadcastSignalEvent({type:"signal.extension.microphone",muted:!!(result&&result.muted),verified:!!(result&&result.verified),timestamp:iso()});
+      return result;
+    }).catch(function(error){
+      record("EXTENSION_MICROPHONE_KEYBOARD_ERROR",{source:source||"keyboard",hotkey:"Ctrl+Shift+.",error:String(error)},"error","microphone");
+      return{ok:false,verified:false,error:String(error),muted:false};
+    });
+  }
+
   chrome.commands.onCommand.addListener(function (command) {
     if (command === "toggle-extension-microphone") {
-      toggleExtensionMicrophoneMuted("keyboard-toggle").then(function (result) {
-        record("EXTENSION_MICROPHONE_KEYBOARD_TOGGLE", {
-          source: "keyboard-toggle",
-          hotkey: "Ctrl+Shift+.",
-          desired: result&&typeof result.muted==="boolean" ? !!result.muted : null,
-          verified: !!(result&&result.verified),
-          ok: !!(result&&result.ok),
-          error: result&&result.error||null
-        }, result&&result.ok&&result.verified ? "info" : "error", "microphone");
-        broadcastSignalEvent({ type: "signal.extension.microphone", muted: !!(result&&result.muted), verified: !!(result&&result.verified), timestamp: iso() });
-      }).catch(function (error) {
-        record("EXTENSION_MICROPHONE_KEYBOARD_ERROR", { source: "keyboard-toggle", hotkey: "Ctrl+Shift+.", error: String(error) }, "error", "microphone");
-      });
+      requestKeyboardMicrophoneToggle("keyboard-command");
       return;
     }
     if (command !== "toggle-auto-answer") return;
