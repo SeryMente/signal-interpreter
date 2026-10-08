@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "minimum_chrome_version": "116",
   "name": "Signal Interpreter",
-  "version": "0.10.11",
+  "version": "0.10.12",
   "description": "Asistente independiente para interpretación médica en tiempo real; Auto-Answer, observabilidad y métricas para Cloud Interpreter.",
   "permissions": [
     "storage",
@@ -13,7 +13,8 @@
     "alarms",
     "unlimitedStorage",
     "webRequest",
-    "scripting"
+    "scripting",
+    "nativeMessaging"
   ],
   "host_permissions": [
     "http://*/*",
@@ -46,6 +47,8 @@
         "https://app.cloudinterpreter.com/*"
       ],
       "js": [
+        "live-caption-core.js",
+        "live-caption-overlay.js",
         "content.js"
       ],
       "run_at": "document_start",
@@ -95,5 +98,6 @@
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; connect-src https://signal-interpreter-observability-re.vercel.app https://api.exchangerate.fun https://api.groq.com https://api.frankfurter.app https://api.frankfurter.dev https://open.er-api.com"
-  }
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoaibtH1Gp0jbus+WiW0AaX0n9tft1M9hv4W1yLy3e31Hb3uP6EUDtVZobrPCy4jTbkdNAJTtrG11jy+jUrGtbcBPpHeeI+VyXn8hwRepoWnrX9vVS/rQr45DjNFh7M01NeepAEuDyJv1KoUexZLj+qFpYeU/p0nAKMj97wmJESH/1wzv8g23O8zjTy7fftClozDDVlREOUoLYEMaD+mQGQzva2dtpIPnOtdCmVXoUBSqlyWO0H2PraEzPzOSV1IuouSBJkB2UN3bF33uEpFv4nQdmfVZZLZzuD+ihvWu2S93draTjjOov3T+hZm0WP2r30yOycs4JNuiRC/Yagi+bwIDAQAB"
 }

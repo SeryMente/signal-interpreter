@@ -4,11 +4,19 @@ Asistente independiente para interpretación médica en tiempo real sobre Cloud 
 
 ## Arquitectura de transcripción
 
-La ruta de transcripción ya no utiliza Chrome Live Caption, Windows UI Automation ni un bridge local.
-
-El flujo activo es:
+La transcripción durable de Signal Interpreter sigue esta ruta:
 
 **Audio de pestaña + micrófono → MediaRecorder → Groq Whisper → CLIENTE / YO → persistencia por sesión → consola LIVE**
+
+Además, el overlay de subtítulos de llamada utiliza una ruta híbrida:
+
+**Chrome Live Caption → puente nativo mínimo (cuando la burbuja expone texto) → overlay**
+
+y, cuando Chrome no expone texto accesible (incluido el caso en que el usuario cierra la burbuja), usa:
+
+**Audio de pestaña → preview Groq de baja latencia → overlay**
+
+El preview es efímero: no se persiste en el timeline ni se incorpora al paquete de observabilidad.
 
 - **CLIENTE:** audio de la pestaña activa.
 - **YO:** micrófono físico.
@@ -25,7 +33,9 @@ Auto-Answer, OPI/VRI, Online/Offline, llamadas perdidas, cronómetros, ingresos,
 
 En chrome://extensions activa Developer mode y usa Load unpacked sobre la carpeta extension/.
 
-No es necesario ejecutar ningún proceso de bridge local.
+Para el overlay de Live Caption, los artefactos adicionales viven íntegramente en extension/native/. El registro del host se realiza una vez por usuario con extension/native/register-caption-host.ps1.
+
+No se instala un servicio de Windows, Scheduled Task, watchdog ni servidor localhost.
 
 ## Pruebas
 

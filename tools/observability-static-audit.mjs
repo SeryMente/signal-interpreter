@@ -31,8 +31,8 @@ const githubPipelineTest=read("tools/observability-github-pipeline-test.mjs");
 const platformLearning=read("tools/observability/platform-learning.mjs");
 const platformLearningTest=read("tools/observability/platform-learning-test.mjs");
 
-assert.equal(manifest.version,"0.10.11");
-assert.equal(manifest.permissions.includes("nativeMessaging"),false);
+assert.equal(manifest.version,"0.10.12");
+assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
 assert.ok(manifest.permissions.includes("unlimitedStorage"));
@@ -43,13 +43,14 @@ assert.ok(manifest.commands["toggle-extension-microphone"].description.includes(
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 assert.match(manifest.content_security_policy.extension_pages,/https:\/\/signal-interpreter-observability-re\.vercel\.app/);
 
-assert.ok(background.includes('importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js","platform-screenshot.js")'));
+assert.ok(background.includes('importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js","platform-screenshot.js")'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync"'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync-retry"'));
 assert.ok(background.includes('SignalObservationSync.flush("startup"'));
 assert.ok(background.includes('SignalObservationSync.flush("alarm"'));
 assert.ok(content.includes("PLATFORM_INTEGRITY_CHECK"));
 assert.ok(background.includes("readOfficialStatsViaTrpc"));
+assert.ok(background.includes("SignalCaptionBridge"));
 assert.ok(background.includes("no-tab-create-no-navigation-no-reload"));
 
 assert.ok(content.includes("PLATFORM_SURFACE_SNAPSHOT"));
@@ -238,9 +239,12 @@ for(const forbidden of [
   assert.equal(exists(forbidden),false,"Windows/local observability artifact remains: "+forbidden);
 }
 
-for(const value of [background,content,popup,observationSync,relay]){
+for(const value of [content,popup,observationSync,relay]){
   assert.equal(value.includes("127.0.0.1:8788"),false,"Local observability endpoint remains.");
   assert.equal(value.includes("sendNativeMessage"),false,"Native messaging observability path remains.");
+  assert.equal(value.includes("connectNative("),false,"Native messaging observability path remains.");
 }
+assert.equal(observationSync.includes("com.signalinterpreter.captionhost"),false,"Live Caption host leaked into observability sync.");
+assert.equal(relay.includes("com.signalinterpreter.captionhost"),false,"Live Caption host leaked into observability relay.");
 
 console.log("OBSERVABILITY_STATIC_AUDIT=PASS");

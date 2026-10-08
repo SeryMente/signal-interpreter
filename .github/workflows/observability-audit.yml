@@ -25,6 +25,9 @@ jobs:
           node --check tools/observability-relay/api/screenshot.js
           node --check extension/offscreen.js
           node --check extension/groq-transcriber.js
+          node --check extension/live-caption-core.js
+          node --check extension/live-caption-bridge.js
+          node --check extension/live-caption-overlay.js
           node --check extension/ui/popup.js
           node --check extension/observability-relay.js
           node --check tools/observability-relay/api/batch.js
@@ -55,5 +58,9 @@ jobs:
         run: node tools/observability-package-audit.mjs observations
       - name: Observability cycle delta unit test
         run: node tools/observability-cycle-delta-test.mjs
+      - name: Live Caption core unit test
+        run: node tools/live-caption-core-test.mjs
+      - name: Live Caption static audit
+        run: node tools/live-caption-static-audit.mjs
       - name: Observability static audit
         run: node tools/observability-static-audit.mjs
