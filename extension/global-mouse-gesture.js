@@ -65,7 +65,7 @@
   }, true);
 
   document.addEventListener("pointercancel", reset, true);
-  window.addEventListener("blur", reset, true);
+  if (window && typeof window.addEventListener === "function") window.addEventListener("blur", reset, true);
 
   document.addEventListener("contextmenu", function (e) {
     if ((left && right) || fired) {
