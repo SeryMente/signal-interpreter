@@ -31,6 +31,7 @@ const manifest={schema:"signal-interpreter-observability-package/v1",generatedAt
 fs.writeFileSync(path.join(obs,"platform-index.json"),JSON.stringify(index));
 fs.writeFileSync(path.join(obs,"platform-latest.json"),JSON.stringify(index));
 fs.writeFileSync(path.join(obs,"manifest.json"),JSON.stringify(manifest));
+fs.writeFileSync(path.join(obs,"screenshots-index.json"),JSON.stringify({schema:"signal-interpreter-platform-screenshot-index/v1",generatedAt:manifest.generatedAt,totalEvents:0,changed:0,unchanged:0,errors:0,routeCount:0,latestByRoute:{}}));
 const result=auditObservabilityPackage(obs);
 assert.equal(result.ok,true);
 assert.equal(result.identityCount,1);
