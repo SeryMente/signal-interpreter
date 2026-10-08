@@ -37,6 +37,8 @@ assert.ok(manifest.permissions.includes("unlimitedStorage"));
 assert.ok(manifest.permissions.includes("scripting"));
 assert.ok(manifest.host_permissions.includes("https://app.cloudinterpreter.com/*"));
 assert.ok(manifest.host_permissions.includes("https://signal-interpreter-observability-re.vercel.app/*"));
+assert.ok(manifest.commands["toggle-extension-microphone"].description.includes("Ctrl+Shift+."));
+assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 assert.match(manifest.content_security_policy.extension_pages,/https:\/\/signal-interpreter-observability-re\.vercel\.app/);
 
 assert.ok(background.includes('importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js","platform-screenshot.js")'));
@@ -113,7 +115,7 @@ assert.ok(popup.includes("lastAutomaticPublish"));
 assert.ok(popup.includes("lastManualPublish"));
 assert.ok(popup.includes("lastModelContextAccess"));
 assert.ok(popup.includes("micToggle"));
-assert.ok(popup.includes("Ctrl+Shift+M"));
+assert.ok(popup.includes("Ctrl+Shift+."));
 assert.ok(popup.includes("SignalInterpreterTime"));
 
 assert.ok(workflow.includes("observations/inbox/**"));
@@ -122,6 +124,8 @@ assert.ok(background.includes("SIGNAL_GROQ_CAPTURE_MIC_OUTPUT_VERIFY_ERROR"));
 assert.ok(background.includes('"capture-start"'));
 assert.ok(background.includes("setExtensionMicrophoneMuted"));
 assert.ok(background.includes("toggleExtensionMicrophoneMuted"));
+assert.ok(background.includes("keyboard-force-mute"));
+assert.ok(background.includes("checkMicrophoneCommandShortcut"));
 assert.ok(background.includes("toggle-extension-microphone"));
 assert.ok(background.includes("EXTENSION_MICROPHONE_MUTE_APPLIED"));
 assert.ok(background.includes("EXTENSION_MICROPHONE_MUTE_ERROR"));
