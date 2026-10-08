@@ -81,7 +81,8 @@ async function captureOne(tab,reason){
     bytes:lastSize,
     quality:qualityUsed,
     reason:reason||"capture",
-    base64:b64
+    base64:b64,
+    imageBase64:b64
   };
   if(!configured.relay||typeof configured.relay.uploadScreenshot!=="function"){
     rec("PLATFORM_SCREENSHOT_UPLOAD_ERROR",{route:route,hash:hash,error:"Screenshot relay unavailable"},"error");
