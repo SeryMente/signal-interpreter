@@ -75,12 +75,18 @@
       port.onMessage.addListener(handleMessage);
       port.onDisconnect.addListener(function () {
         var error = chrome.runtime.lastError;
+        var lostTabId = targetTabId;
         port = null;
-        sendToTab("SIGNAL_CAPTION_NATIVE_STATUS", {
-          active: false,
-          visible: false,
-          error: error ? String(error.message || error) : null
-        });
+        if (Number.isFinite(Number(lostTabId))) {
+          try {
+            chrome.tabs.sendMessage(Number(lostTabId), {
+              type: "SIGNAL_CAPTION_NATIVE_STATUS",
+              active: false,
+              visible: false,
+              error: error ? String(error.message || error) : null
+            }).catch(function () {});
+          } catch (_) {}
+        }
         if (error) markError(error.message || error);
       });
       port.postMessage({ type: "start" });
