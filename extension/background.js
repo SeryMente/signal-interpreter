@@ -22,6 +22,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     volume: 0.8,
     transcriptionAvailable: true,
     transcriptionEnabled: true,
+    liveCaptionOverlayEnabled: true,
     instantPreviewEnabled: false,
     audioSafetyMode: true,
     opiRatePerMinute: 0.20,
@@ -60,16 +61,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         tabEnabled: !!tabEnabled,
         micEnabled: true
       });
-      record("SIGNAL_CAPTION_PREVIEW_CONFIGURED", {
-        callId: state.callId || null,
-        tabId: state.callSourceTabId,
-        tabEnabled: !!tabEnabled,
-        micEnabled: true,
-        ok: !!(response && response.ok)
-      }, "info", "caption");
       return response || { ok: false };
     } catch (error) {
-      record("SIGNAL_CAPTION_PREVIEW_CONFIG_ERROR", { error: String(error || "unknown"), tabEnabled: !!tabEnabled }, "warn", "caption");
       return { ok: false, error: String(error || "unknown") };
     }
   }
