@@ -1,6 +1,6 @@
 (function(){
 "use strict";
-var tabStream=null,micStream=null,tabRecorder=null,micRecorder=null,tabTimer=null,micTimer=null,audioContext=null,running=false,chunkSeq=0,captureSessionId=null;
+var tabStream=null,micStream=null,tabRecorder=null,micRecorder=null,tabTimer=null,micTimer=null,audioContext=null,running=false,chunkSeq=0,captureSessionId=null,micMuteWatchdog=null,micMuteDesired=false;
 function send(message){try{var p=chrome.runtime.sendMessage(Object.assign({target:"offscreen"},message));if(p&&p.catch)p.catch(function(){});}catch(_){} }
 async function playTone(volume){
   if(!audioContext || audioContext.state==="closed") audioContext=new AudioContext();
@@ -49,6 +49,12 @@ async function startCapture(streamId,sessionId,muted){
     if(!micApplied.ok)throw new Error("No se pudo verificar el estado inicial del micrófono de la extensión.");
     tabRecorder=arm("cliente",tabStream);micRecorder=arm("yo",micStream);if(!tabRecorder||!micRecorder)throw new Error("No se pudieron iniciar los dos grabadores.");
     startTimer("cliente",tabRecorder);startTimer("yo",micRecorder);
+    if(micMuteWatchdog)clearInterval(micMuteWatchdog);
+    micMuteWatchdog=setInterval(function(){
+      if(!running||!micStream)return;
+      var watchdogTracks=micStream.getAudioTracks?micStream.getAudioTracks():[];
+      watchdogTracks.forEach(function(track){try{track.enabled=!micMuteDesired}catch(_){}});
+    },50);
     send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"connected",tabAudio:true,microphone:true,microphoneMuted:initialMute,timestamp:new Date().toISOString()});return{ok:true};
   }catch(error){await stopCapture();return{ok:false,error:String(error)}}
 }
