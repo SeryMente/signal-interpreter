@@ -1483,6 +1483,18 @@
     });
     return starLike.length >= 3;
   }
+  function requestMainMicrophoneProbe(reason) {
+    return new Promise(function(resolve){
+      var requestId=crypto.randomUUID(),settled=false,timeout=null;
+      function cleanup(){if(timeout)clearTimeout(timeout);window.removeEventListener(micMainAckEvent,onAck,true);}
+      function finish(result){if(settled)return;settled=true;cleanup();resolve(result);}
+      function onAck(event){var ack=null;try{ack=JSON.parse(String(event&&event.detail||""));}catch(_){}if(!ack||ack.requestId!==requestId)return;finish(ack);}
+      window.addEventListener(micMainAckEvent,onAck,true);
+      try{document.dispatchEvent(new CustomEvent(micMainCommandEvent,{detail:JSON.stringify({schema:"signal-main-mic-command/v1",op:"probe",requestId:requestId,reason:reason||"background-probe"})}));}
+      catch(error){finish({ok:false,muted:false,verified:false,error:String(error)});return;}
+      timeout=setTimeout(function(){finish({ok:false,muted:false,verified:false,error:"MAIN microphone guard probe timed out."});},1200);
+    });
+  }
   function requestMainMicrophoneMute(muted, reason) {
     return new Promise(function(resolve){
       var requestId=crypto.randomUUID(),settled=false,timeout=null;
@@ -1765,6 +1777,10 @@
     }
     if (message && message.type === "SIGNAL_MAIN_MICROPHONE_SET") {
       requestMainMicrophoneMute(!!message.muted,message.source||message.reason||"background").then(function(result){if(sendResponse)sendResponse(result);}).catch(function(error){if(sendResponse)sendResponse({ok:false,muted:!!message.muted,verified:false,error:String(error)});});
+      return true;
+    }
+    if (message && message.type === "SIGNAL_MAIN_MICROPHONE_PROBE") {
+      requestMainMicrophoneProbe(message.source||message.reason||"background-probe").then(function(result){if(sendResponse)sendResponse(result);}).catch(function(error){if(sendResponse)sendResponse({ok:false,muted:false,verified:false,error:String(error)});});
       return true;
     }
     if (message && message.type === "EFFECTIF_REQUEST_PLATFORM_SNAPSHOT") {
