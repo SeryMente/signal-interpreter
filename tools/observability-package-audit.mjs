@@ -10,6 +10,7 @@ export function auditObservabilityPackage(observationsRoot){
   const manifestFile=path.join(root,"manifest.json");
   const indexFile=path.join(root,"platform-index.json");
   const latestFile=path.join(root,"platform-latest.json");
+  const screenshotIndexFile=path.join(root,"screenshots-index.json");
   const latestObservationFile=path.join(root,"latest","latest.json");
   const latestSummaryFile=path.join(root,"latest","latest-summary.md");
   assert(fs.existsSync(root),"observations directory missing");
@@ -20,8 +21,9 @@ export function auditObservabilityPackage(observationsRoot){
   assert(fs.existsSync(manifestFile),"observations/manifest.json missing");
   assert(fs.existsSync(indexFile),"observations/platform-index.json missing");
   assert(fs.existsSync(latestFile),"observations/platform-latest.json missing");
+  assert(fs.existsSync(screenshotIndexFile),"observations/screenshots-index.json missing");
 
-  const manifest=readJson(manifestFile),index=readJson(indexFile),latest=readJson(latestFile);
+  const manifest=readJson(manifestFile),index=readJson(indexFile),latest=readJson(latestFile),screenshots=readJson(screenshotIndexFile);
   if(fs.existsSync(latestObservationFile)){
     const latestObservation=readJson(latestObservationFile);
     assert(latestObservation.schema==="signal-interpreter-observation-batch/v1","latest observation schema invalid");
@@ -37,6 +39,12 @@ export function auditObservabilityPackage(observationsRoot){
   assert(manifest.schema==="signal-interpreter-observability-package/v1","invalid observability manifest schema");
   assert(index.schema==="signal-interpreter-platform-index/v1","invalid platform index schema");
   assert(latest.schema==="signal-interpreter-platform-latest/v1" || latest.schema==="signal-interpreter-platform-index/v1","invalid platform latest schema");
+  assert(screenshots.schema==="signal-interpreter-platform-screenshot-index/v1","invalid screenshot index schema");
+  assert(Number.isFinite(Number(screenshots.changed)),"screenshot index changed count missing");
+  assert(Number.isFinite(Number(screenshots.errors)),"screenshot index errors count missing");
+  assert(Number.isFinite(Number(screenshots.routeCount)),"screenshot index routeCount missing");
+  assert(Number(manifest.platform&&manifest.platform.screenshotsChanged||0)===Number(screenshots.changed||0),"manifest screenshot change count mismatch");
+  assert(Number(manifest.platform&&manifest.platform.screenshotErrors||0)===Number(screenshots.errors||0),"manifest screenshot error count mismatch");
 
   for(const key of ["lastSequence","eventCount","platform.observations","platform.deltas","platform.identities"]){
     const value=key.split(".").reduce((object,part)=>object&&object[part],manifest);
