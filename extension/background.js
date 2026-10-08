@@ -1,5 +1,5 @@
 try{importScripts("groq-secret.local.js");}catch(_){/* Se genera localmente; no se versiona. */}
-importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js");
+importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js","platform-screenshot.js");
 (function () {
   "use strict";
 
@@ -495,6 +495,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
   function record(action, payload, level, source) {
     appendEvent({ action: action, payload: payload || {}, level: level || "info", source: source || "background" });
   }
+  try { SignalPlatformScreenshot.configure({ record: record, relay: SignalObservabilityRelay }); } catch (error) { console.error("[SIGNAL-INTERPRETER] PLATFORM_SCREENSHOT_INIT_ERROR", String(error)); }
   function checkpointCallObservability(reason, callId, stateSnapshot) {
     var checkpoint = reason === "call-answered" ? "call-answered" : "call-ended";
     var payload = {
@@ -1971,6 +1972,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
   signalGroqQueue=Promise.resolve();
   chrome.tabs.onActivated.addListener(function (activeInfo) {
     refreshActionIndicator(activeInfo.tabId).catch(function () {});
+    try { SignalPlatformScreenshot.request("tab-activated").catch(function () {}); } catch (_) {}
   });
   async function refreshAllActionIndicators() {
     try {
@@ -1989,6 +1991,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
         tabReadiness.delete(Number(tabId));
       }
       refreshActionIndicator(tabId, changeInfo.url || tab.url).catch(function () {});
+      if (changeInfo.url || changeInfo.status === "complete") {
+        try { SignalPlatformScreenshot.request(changeInfo.url ? "tab-url-changed" : "tab-loaded").catch(function () {}); } catch (_) {}
+      }
     }
   });
   chrome.tabs.onRemoved.addListener(function (tabId) {
@@ -2150,6 +2155,11 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     if (message.type === "EFFECTIF_PLATFORM_SNAPSHOT") {
       savePlatformSnapshot(message, sender, sendResponse); return true;
     }
+    if (message.type === "SIGNAL_PLATFORM_SCREENSHOT_REQUEST") {
+      if (!sender.tab || !isAuthorizedCloudUrl(sender.tab.url || "")) { sendResponse({ ok: false, error: "Origen no autorizado" }); return false; }
+      try { SignalPlatformScreenshot.request(message.reason || "content-hint").then(sendResponse).catch(function (error) { sendResponse({ ok: false, error: String(error) }); }); } catch (error) { sendResponse({ ok: false, error: String(error) }); }
+      return true;
+    }
     if (message.type === "SYNC_OFFICIAL_PLATFORM_DATA") { syncOfficialPlatformData().then(sendResponse).catch(function(error){record("PLATFORM_OFFICIAL_SYNC_ERROR",{url:OFFICIAL_STATS_URL,error:String(error)},"error","popup");sendResponse({ok:false,error:String(error)});}); return true; }
     if (message.type === "SIGNAL_EXTENSION_MICROPHONE_SET") {
       setExtensionMicrophoneMuted(message.muted, message.source || "ui").then(sendResponse).catch(function (error) {
@@ -2265,6 +2275,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
     chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
     chrome.alarms.create("effectif-platform-reconcile",{delayInMinutes:0.1,periodInMinutes:0.5});
+  try { SignalPlatformScreenshot.start(); } catch (error) { record("PLATFORM_SCREENSHOT_START_ERROR",{error:String(error)},"warn","platform-screenshot"); }
     chrome.alarms.create("signal-observation-sync",{delayInMinutes:1,periodInMinutes:1});
     chrome.alarms.create("signal-network-window",{delayInMinutes:0.25,periodInMinutes:0.25});
     refreshExchangeRate("installed").catch(function(){});
