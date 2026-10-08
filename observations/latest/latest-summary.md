@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-b71c4fd2-689a-48c8-a042-f393c4781d11
-- Creado: 2026-10-08T01:04:30.503Z
-- Trigger: alarm
-- Extensión: 0.10.2
-- Eventos: 1
+- Batch: batch-6f5fe7a3-db95-4006-a4e5-92adb7689f5a
+- Creado: 2026-10-08T01:06:00.290Z
+- Trigger: critical
+- Extensión: 0.10.5
+- Eventos: 13
 - Errores: 0
-- Warnings: 0
-- Secuencia: 8600 → 8600
+- Warnings: 1
+- Secuencia: 8 → 20
 - Identidades de plataforma: 5
 - Snapshots de plataforma: 67
 - Deltas de plataforma: 67
@@ -15,11 +15,27 @@
 ## Categorías
 
 {
-  "RUNTIME": 1
+  "SESSION": 5,
+  "TRANSCRIPT": 1,
+  "RUNTIME": 4,
+  "PORTAL": 2,
+  "BILLING": 1
 }
 
 ## Acciones
 
 {
-  "TELEMETRY_MAINTENANCE": 1
+  "CALL_ANSWERED_OVERLAY_REFRESH_REQUESTED": 1,
+  "TRANSCRIPTION_MODULE_READY": 1,
+  "EARNINGS_OVERLAY_REFRESH_DELIVERY_ERROR": 1,
+  "CALL_ALERT_SOUND_REQUESTED": 1,
+  "PLATFORM_OFFICIAL_SYNC_REQUESTED": 1,
+  "EXCHANGE_RATE_UPDATED": 1,
+  "PLATFORM_OFFICIAL_SYNC_COMPLETED": 1,
+  "CALL_START_EARNINGS_SYNC_COMPLETED": 1,
+  "PLATFORM_EARNINGS_RANGE_REQUESTED": 1,
+  "CALL_ALERT_SOUND_PLAYED": 1,
+  "PLATFORM_EARNINGS_RANGE_COMPLETED": 1,
+  "CALL_START_MONTH_SYNC_COMPLETED": 1,
+  "PLATFORM_TELEMETRY_RECONCILED": 1
 }
