@@ -136,12 +136,16 @@ assert.ok(manifest.content_scripts.some(function(e){return e.js.includes("global
 assert.ok(manifest.host_permissions.includes("http://*/*"));
 assert.ok(manifest.host_permissions.includes("https://*/*"));
 assert.ok(background.includes("setMainClientMicrophoneMuted"));
+assert.ok(background.includes("probeMainClientMicrophone"));
+assert.ok(background.includes("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFIED"));
+assert.ok(background.includes("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_FAIL_CLOSED"));
 assert.ok(background.includes("fail-closed-until-verified"));
 assert.ok(background.includes("fail-closed"));
 assert.ok(background.includes("microphoneOutputStatus"));
 assert.ok(background.includes("files: [\"mic-guard-main.js\"]"));
 assert.ok(content.includes("requestMainMicrophoneMute"));
 assert.ok(content.includes("SIGNAL_MAIN_MICROPHONE_SET"));
+assert.ok(content.includes("SIGNAL_MAIN_MICROPHONE_PROBE"));
 assert.ok(micGuard.includes("RTCPeerConnection"));
 assert.ok(micGuard.includes("RTCRtpSender"));
 assert.ok(micGuard.includes("replaceTrack"));
