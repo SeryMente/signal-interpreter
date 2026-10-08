@@ -22,6 +22,7 @@ jobs:
           node --check extension/mic-guard-main.js
           node --check extension/global-mouse-gesture.js
           node --check extension/platform-screenshot.js
+          node --check tools/observability-relay/api/screenshot.js
           node --check extension/offscreen.js
           node --check extension/groq-transcriber.js
           node --check extension/ui/popup.js
@@ -38,6 +39,8 @@ jobs:
           node --check tools/observability-cycle-delta-test.mjs
       - name: Platform learning unit test
         run: node tools/observability/platform-learning-test.mjs
+      - name: Screenshot relay unit test
+        run: node tools/observability-screenshot-relay-test.mjs
       - name: Microphone guard unit test
         run: node tools/microphone-guard-test.mjs
       - name: Global mouse mute unit test
