@@ -48,6 +48,12 @@
     return "INTERVENCIÓN";
   }
 
+  function roleForSource(source, language) {
+    if (source === "yo") return "LEP";
+    if (source === "cliente" || source === "chrome-live-caption") return "CLIENTE";
+    return roleForLanguage(language);
+  }
+
   function languageLabel(language) {
     if (language === "en") return "ENGLISH";
     if (language === "es") return "ESPAÑOL";
@@ -68,6 +74,7 @@
     normalizeText: normalizeText,
     detectLanguage: detectLanguage,
     roleForLanguage: roleForLanguage,
+    roleForSource: roleForSource,
     languageLabel: languageLabel,
     overlapRatio: overlapRatio
   };
