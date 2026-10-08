@@ -16,8 +16,8 @@ const input={
 };
 const normalized=validateScreenshot(input);
 assert.equal(normalized.route,"/call/<ID>");
-assert.equal(normalized.sha256,sha256);
-assert.equal(normalized.bytes.length,bytes.length);
+assert.equal(normalized.hash,sha256);
+assert.equal(normalized.base64,base64);
 assert.throws(()=>validateScreenshot({...input,sha256:"0".repeat(64)}),/does not match image bytes/);
 assert.throws(()=>validateScreenshot({...input,base64:Buffer.from([0,1,2,3]).toString("base64")}),/Invalid JPEG screenshot bytes/);
 assert.throws(()=>validateScreenshot({...input,origin:"https://example.com"}),/Screenshot origin rejected/);
