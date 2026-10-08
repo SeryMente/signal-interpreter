@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-e06d8731-c2e5-412d-91b9-f59d4133d73c",
-  "createdAt": "2026-10-08T01:07:24.674Z",
+  "batchId": "batch-2cfca86d-db1f-448a-a473-354ae75762b9",
+  "createdAt": "2026-10-08T01:07:54.685Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.5",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "ec3b4ac9-cad8-4923-980f-737eb970ef71",
-      "sequence": 30,
-      "timestamp": "2026-10-08T01:07:09.667Z",
-      "ingestedAt": "2026-10-08T01:07:09.667Z",
+      "id": "0a8fe367-0487-4e2d-8629-ead821e4d88c",
+      "sequence": 32,
+      "timestamp": "2026-10-08T01:07:24.676Z",
+      "ingestedAt": "2026-10-08T01:07:24.676Z",
       "level": "info",
-      "category": "PORTAL",
-      "component": "webRequest",
+      "category": "SESSION",
+      "component": "runtime",
       "extensionVersion": "0.10.5",
       "host": "",
       "url": "",
       "phase": "event",
-      "action": "NETWORK_ACTIVITY_WINDOW",
+      "action": "HOTLOAD_CALL_LEASE_HEARTBEAT",
       "outcome": "observed",
-      "traceId": "b55b9faf-b22f-4cd7-99d8-3555cca2f037",
+      "traceId": "e77f90e2-1c4b-4a2c-a777-15e1c64a1b6c",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -44,28 +44,21 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "windowSeconds": 15,
-        "endpointCount": 1,
-        "endpoints": [
-          {
-            "method": "POST",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 100,
-            "maxDurationMs": 100,
-            "avgDurationMs": 100
-          }
-        ]
+        "callId": "WT014ec51dad1d3c08486c47223c74c273",
+        "leaseId": "2dabc326-6e12-406f-9199-5abe24829c50",
+        "trigger": "alarm",
+        "runtimeVersion": "0.10.5",
+        "transcriptionActive": false,
+        "captureStatus": "idle",
+        "updatePhase": "steady"
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "4799b788-35f5-4bed-9536-106174b86afa",
-      "sequence": 31,
-      "timestamp": "2026-10-08T01:07:09.674Z",
-      "ingestedAt": "2026-10-08T01:07:09.674Z",
+      "id": "514b36f6-02c5-46ac-a769-42600b669b45",
+      "sequence": 33,
+      "timestamp": "2026-10-08T01:07:54.671Z",
+      "ingestedAt": "2026-10-08T01:07:54.671Z",
       "level": "info",
       "category": "SESSION",
       "component": "runtime",
@@ -75,7 +68,7 @@
       "phase": "event",
       "action": "HOTLOAD_CALL_LEASE_HEARTBEAT",
       "outcome": "observed",
-      "traceId": "f55a9f2e-0860-482e-bd9d-a225733b9c77",
+      "traceId": "07ff2f27-a5d1-452e-8977-8f0bbe331796",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -117,17 +110,15 @@
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 30,
-    "lastSequence": 31,
-    "firstTimestamp": "2026-10-08T01:07:09.667Z",
-    "lastTimestamp": "2026-10-08T01:07:09.674Z",
+    "firstSequence": 32,
+    "lastSequence": 33,
+    "firstTimestamp": "2026-10-08T01:07:24.676Z",
+    "lastTimestamp": "2026-10-08T01:07:54.671Z",
     "actions": {
-      "NETWORK_ACTIVITY_WINDOW": 1,
-      "HOTLOAD_CALL_LEASE_HEARTBEAT": 1
+      "HOTLOAD_CALL_LEASE_HEARTBEAT": 2
     },
     "categories": {
-      "PORTAL": 1,
-      "SESSION": 1
+      "SESSION": 2
     }
   }
 }
