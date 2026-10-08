@@ -47,10 +47,10 @@ assert.ok(overlay.includes("pointer-events:none"));
 assert.ok(overlay.includes("attachShadow({ mode: \"closed\" })"));
 assert.ok(overlay.includes("interactiveRects"));
 assert.ok(overlay.includes("core.overlapRatio"));
-assert.ok(overlay.includes("CLIENTE"));
-assert.ok(overlay.includes("LEP"));
-assert.ok(overlay.includes("ENGLISH"));
-assert.ok(overlay.includes("ESPAÑOL"));
+assert.ok(core.includes("CLIENTE"));
+assert.ok(core.includes("LEP"));
+assert.ok(core.includes("ENGLISH"));
+assert.ok(core.includes("ESPAÑOL"));
 assert.ok(core.includes("roleForLanguage"));
 assert.ok(core.includes("detectLanguage"));
 
