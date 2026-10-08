@@ -29,7 +29,7 @@ const githubPipelineTest=read("tools/observability-github-pipeline-test.mjs");
 const platformLearning=read("tools/observability/platform-learning.mjs");
 const platformLearningTest=read("tools/observability/platform-learning-test.mjs");
 
-assert.equal(manifest.version,"0.10.10");
+assert.equal(manifest.version,"0.10.11");
 assert.equal(manifest.permissions.includes("nativeMessaging"),false);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
@@ -112,6 +112,9 @@ assert.ok(popup.includes("Publicando observabilidad pendiente"));
 assert.ok(popup.includes("lastAutomaticPublish"));
 assert.ok(popup.includes("lastManualPublish"));
 assert.ok(popup.includes("lastModelContextAccess"));
+assert.ok(popup.includes("micToggle"));
+assert.ok(popup.includes("Ctrl+Shift+M"));
+assert.ok(popup.includes("SignalInterpreterTime"));
 
 assert.ok(workflow.includes("observations/inbox/**"));
 assert.ok(background.includes("SIGNAL_EXTENSION_MICROPHONE_TOGGLE"));
@@ -142,6 +145,7 @@ assert.ok(manifest.content_scripts.some(function(e){return e.world==="MAIN"&&e.j
 assert.ok(manifest.content_scripts.some(function(e){return e.js.includes("global-mouse-gesture.js")&&e.run_at==="document_start";}));
 assert.ok(manifest.host_permissions.includes("http://*/*"));
 assert.ok(manifest.host_permissions.includes("https://*/*"));
+assert.ok(background.includes("executeMainMicrophoneCommand"));
 assert.ok(background.includes("setMainClientMicrophoneMuted"));
 assert.ok(background.includes("probeMainClientMicrophone"));
 assert.ok(background.includes("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFIED"));
@@ -161,6 +165,11 @@ assert.ok(micGuard.includes("stableReport"));
 assert.ok(micGuard.includes("stableSamples"));
 assert.ok(micGuard.includes("},50);"));
 assert.ok(globalMouse.includes("left+right-hold"));
+assert.ok(globalMouse.includes("__SIGNAL_INTERPRETER_GLOBAL_MOUSE_GESTURE_V1__"));
+assert.ok(globalMouse.includes("240"));
+assert.ok(offscreen.includes('"mute-on"'));
+assert.ok(offscreen.includes('"mute-off"'));
+assert.ok(offscreen.includes('frequency,at,duration'));
 assert.ok(platformScreenshot.includes("captureVisibleTab"));
 assert.ok(platformScreenshot.includes("PLATFORM_SCREENSHOT_CHANGED"));
 assert.ok(platformScreenshot.includes("PLATFORM_SCREENSHOT_UNCHANGED"));
