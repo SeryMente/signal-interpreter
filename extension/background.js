@@ -244,6 +244,49 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       updatePhase: state.hotLoadUpdate && state.hotLoadUpdate.phase || "steady"
     }, "info", "runtime");
   }
+  var hotloadLastExistingWebTabScanAt = 0;
+
+  async function hotloadExistingWebTabs(trigger) {
+    var now = Date.now();
+    if (now - hotloadLastExistingWebTabScanAt < 5000) {
+      record("HOTLOAD_EXISTING_WEB_TABS_SCAN_DEDUPED", { trigger: trigger || "runtime-start" }, "info", "runtime");
+      return { ok: true, skipped: "recent-scan" };
+    }
+    hotloadLastExistingWebTabScanAt = now;
+    var tabs;
+    try {
+      tabs = await chrome.tabs.query({ url: ["http://*/*", "https://*/*"] });
+    } catch (error) {
+      record("HOTLOAD_EXISTING_WEB_TABS_QUERY_ERROR", { trigger: trigger || "runtime-start", error: String(error) }, "error", "runtime");
+      return { ok: false, error: String(error) };
+    }
+    var result = { scanned: tabs.length, injected: 0, errors: 0 };
+    for (var i = 0; i < tabs.length; i += 1) {
+      var tab = tabs[i];
+      var tabId = Number(tab && tab.id);
+      if (!Number.isFinite(tabId)) continue;
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: tabId, allFrames: true },
+          world: "ISOLATED",
+          files: ["global-mouse-gesture.js"],
+          injectImmediately: true
+        });
+        result.injected += 1;
+      } catch (error) {
+        result.errors += 1;
+        record("HOTLOAD_EXISTING_WEB_TAB_GESTURE_ERROR", {
+          trigger: trigger || "runtime-start",
+          tabId: tabId,
+          url: tab && tab.url ? safePlatformUrl(tab.url) : null,
+          error: String(error)
+        }, "warn", "microphone");
+      }
+    }
+    record("HOTLOAD_EXISTING_WEB_TABS_SCAN_COMPLETED", Object.assign({ trigger: trigger || "runtime-start" }, result), result.errors ? "warn" : "info", "runtime");
+    return { ok: result.errors === 0, result: result };
+  }
+
   async function hotloadExistingCloudTabs(trigger) {
     var now = Date.now();
     if (now - hotloadLastExistingTabScanAt < HOTLOAD_EXISTING_TAB_SCAN_MIN_MS) {
@@ -2308,7 +2351,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
 
   async function markObservabilityBuildCheckpoint(reason, previousVersion) {
     try {
-      var files=["manifest.json","background.js","content.js","offscreen.js","groq-transcriber.js","ui/popup.js"];
+      var files=["manifest.json","background.js","content.js","offscreen.js","groq-transcriber.js","ui/popup.js","ui/popup.html","ui/popup.css","ui/time-format.js"];
       var texts=await Promise.all(files.map(function(file){return fetch(chrome.runtime.getURL(file),{cache:"no-store"}).then(function(response){if(!response.ok)throw new Error("No se pudo leer "+file);return response.text();});}));
       var bytes=new TextEncoder().encode(texts.join("\n/* SIGNAL OBSERVABILITY BUILD BOUNDARY */\n"));
       var digest=await crypto.subtle.digest("SHA-256",bytes);
@@ -2343,11 +2386,11 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
         priorState.hotLoadUpdate = Object.assign({}, priorState.hotLoadUpdate || {}, { schema: HOTLOAD_SCHEMA, phase: "post-install-active-call", currentVersion: chrome.runtime.getManifest().version });
         return chrome.storage.local.set({ effectifState: cloneStateForStorage(priorState) }).then(function () {
           record("HOTLOAD_INSTALL_BOUNDARY_ACTIVE_CALL", { callId: priorState.callId, currentVersion: chrome.runtime.getManifest().version, action: "no-offscreen-close-no-transcription-reset" }, "warn", "runtime");
-          return initialize().then(function () { return recoverAfterRuntimeBoundary("onInstalled-active-call"); }).then(function () { return hotloadExistingCloudTabs("onInstalled-active-call"); });
+          return initialize().then(function () { return recoverAfterRuntimeBoundary("onInstalled-active-call"); }).then(function () { return hotloadExistingCloudTabs("onInstalled-active-call"); }).then(function () { return hotloadExistingWebTabs("onInstalled-active-call"); });
         });
       }
       chrome.offscreen.closeDocument().catch(function(){});
-      return initialize().then(function () { return hotloadExistingCloudTabs("onInstalled"); });
+      return initialize().then(function () { return hotloadExistingCloudTabs("onInstalled"); }).then(function () { return hotloadExistingWebTabs("onInstalled"); });
     }).then(function () {
       return refreshAllActionIndicators().catch(function(error){
         record("ACTION_INDICATOR_INSTALL_REFRESH_ERROR",{error:String(error)},"warn","action");
@@ -2384,7 +2427,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     }).then(function(){
       try{SignalObservationSync.start()}catch(_){};
       SignalObservationSync.flush("startup").catch(function(error){ record("OBSERVATION_SYNC_STARTUP_ERROR",{error:String(error)},"warn","background"); });
-      return recoverAfterRuntimeBoundary("runtime-start").catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");}).then(function(){ return hotloadExistingCloudTabs("runtime-start"); }).catch(function(error){record("HOTLOAD_EXISTING_TABS_RUNTIME_ERROR",{error:String(error)},"warn","runtime");});
+      return recoverAfterRuntimeBoundary("runtime-start").catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");}).then(function(){ return hotloadExistingCloudTabs("runtime-start"); }).then(function(){ return hotloadExistingWebTabs("runtime-start"); }).catch(function(error){record("HOTLOAD_EXISTING_TABS_RUNTIME_ERROR",{error:String(error)},"warn","runtime");});
     });
   }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
   markObservabilityBuildCheckpoint("runtime-start").catch(function(){});
