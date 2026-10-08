@@ -111,7 +111,7 @@ assert.ok(background.includes("EXTENSION_MICROPHONE_MUTE_APPLIED"));
 assert.ok(background.includes("EXTENSION_MICROPHONE_MUTE_ERROR"));
 assert.ok(background.includes("EXTENSION_MICROPHONE_AUDIO_CHUNK_SUPPRESSED_MUTED"));
 assert.ok(background.includes("microphoneMuted:!!state.microphoneMuted"));
-assert.ok(background.includes('type === "SIGNAL_SET_MICROPHONE_MUTED"') || background.includes('type==="SIGNAL_SET_MICROPHONE_MUTED"'));
+assert.ok(offscreen.includes('message.type==="SIGNAL_SET_MICROPHONE_MUTED"') || offscreen.includes('message.type === "SIGNAL_SET_MICROPHONE_MUTED"'));
 assert.ok(content.includes("id=\"mic\""));
 assert.ok(content.includes("SIGNAL_EXTENSION_MICROPHONE_TOGGLE"));
 assert.ok(content.includes("state.microphoneMuted"));
