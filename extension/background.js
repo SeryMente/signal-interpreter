@@ -2116,7 +2116,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var currentState=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
       if(!hasActiveCall(currentState))return;
       if(String(currentState.callSourceTabId)!==String(message.tabId||currentState.callSourceTabId))return;
-      if(SignalCaptionBridge.isFresh(4500))return;
+      if(message.source==="yo" && (currentState.microphoneMuted===true || currentState.microphoneMuteStatus!=="applied" || currentState.microphoneOutputStatus==="error"))return;
+      if(message.source!=="yo" && SignalCaptionBridge.isFresh(4500))return;
       if(!(await SignalGroqTranscriber.ready()))return;
       var raw=atob(String(message.base64||"")),bytes=new Uint8Array(raw.length);
       for(var bi=0;bi<raw.length;bi++)bytes[bi]=raw.charCodeAt(bi);
@@ -2136,7 +2137,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       if(!Number.isFinite(tabId))return;
       try{
         await chrome.tabs.sendMessage(tabId,{type:"SIGNAL_CAPTION_UPDATE",caption:{
-          text:text.slice(0,4000),language:language||"unknown",source:"groq-caption-preview",live:false,native:false
+          text:text.slice(0,4000),language:language||"unknown",source:message.source||"cliente",live:false,native:false
         }});
       }catch(_){}
     }).catch(function(error){
