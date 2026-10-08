@@ -50,3 +50,25 @@ Toda propuesta o implementación futura de esta función deberá indicar explíc
 ## Estado
 
 **Especificación canónica ampliada y autorizada por el usuario.**
+
+
+## VERBATIM — criterio adicional de UX, distribución y calidad
+
+> Bien, mientras no sea intrusivo viualmente, y todo luzca comoe xtension normnal. Y siempre se incluya en la carpeta de la extension que el entorno persistente descarga a escritoriuo, me doy por satisfecho. SIempre y cauando resuelvas la implemetntacion elegantemente, armonizando con la UI de la plataforma, y que funcione agil ygracilmente, y que sea pulida maxima calidad de vida para mi como usuario, sin bloat.
+
+## Criterios de aceptación derivados
+
+La implementación futura deberá cumplir simultáneamente:
+
+- **No intrusión visual:** el overlay no debe percibirse como una ventana ajena, flotante invasiva o herramienta superpuesta de terceros.
+- **Apariencia de extensión normal:** todo componente visible debe integrarse como parte coherente de Signal Interpreter.
+- **Armonización con Cloud Interpreter:** tipografía, proporciones, espaciado, bordes, jerarquía visual, estados y comportamiento deben procurar coherencia con la interfaz observada de la plataforma.
+- **No obstrucción funcional:** el overlay debe evitar keypad, controles de llamada, mute, colgar, transferencia y cualquier otra función relevante de la plataforma.
+- **Distribución persistente:** cualquier componente necesario para esta función debe quedar incluido en la **carpeta de la extensión** que el entorno persistente descarga/materializa en el Escritorio. No debe existir una segunda carpeta de instalación escondida o separada para completar la función.
+- **Agilidad:** actualización del texto y respuesta visual con la menor latencia razonable, sin esperas artificiales ni animaciones innecesarias.
+- **Graceful behavior:** el sistema debe comportarse de forma estable ante aparición, desaparición, cambios de idioma, cierre de la burbuja nativa, navegación y llamadas sucesivas.
+- **Máxima calidad de vida:** priorizar legibilidad, bajo esfuerzo cognitivo, contexto útil y operación natural durante una llamada real.
+- **Sin bloat:** no introducir controles, paneles, preferencias, procesos, dependencias o infraestructura que no aporten directamente al objetivo.
+- **Calidad de acabado:** la implementación debe considerarse terminada solo cuando la interacción, estados de error, persistencia, posicionamiento y comportamiento en uso real estén suficientemente pulidos.
+
+Estos criterios complementan, y no sustituyen, los bloques **VERBATIM** anteriores.
