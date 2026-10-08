@@ -64,7 +64,7 @@ async function captureOne(tab,reason){
   if(previous&&previous.hash===hash){
     state.lastByIdentity[identity]=Object.assign({},previous,{lastCapturedAt:state.lastCaptureAt,lastReason:reason||"capture"});
     await saveState(state);
-    rec("PLATFORM_SCREENSHOT_UNCHANGED",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:route,hash:hash,bytes:lastSize,quality:qualityUsed,reason:reason||"capture"},"info");
+    rec("PLATFORM_SCREENSHOT_UNCHANGED",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:route,hash:hash,bytes:lastSize,quality:qualityUsed,capturedAt:state.lastCaptureAt,reason:reason||"capture"},"info");
     return{ok:true,changed:false,hash:hash,bytes:lastSize,route:route};
   }
   var screenshot={
@@ -92,7 +92,7 @@ async function captureOne(tab,reason){
     state.lastByIdentity[identity]={hash:hash,route:route,uploadedAt:iso(),remotePath:uploaded&&uploaded.remotePath||null,bytes:lastSize,quality:qualityUsed};
     state.totalUploads=Number(state.totalUploads||0)+1;state.lastUploadAt=iso();state.lastError=null;
     await saveState(state);
-    rec("PLATFORM_SCREENSHOT_CHANGED",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:route,hash:hash,bytes:lastSize,quality:qualityUsed,remotePath:uploaded&&uploaded.remotePath||null,duplicate:!!(uploaded&&uploaded.duplicate),reason:reason||"capture"},"info");
+    rec("PLATFORM_SCREENSHOT_CHANGED",{tabId:Number(tab.id),windowId:Number(tab.windowId),route:route,hash:hash,bytes:lastSize,quality:qualityUsed,capturedAt:state.lastCaptureAt,remotePath:uploaded&&uploaded.remotePath||null,duplicate:!!(uploaded&&uploaded.duplicate),reason:reason||"capture"},"info");
     return{ok:true,changed:true,hash:hash,bytes:lastSize,route:route,remotePath:uploaded&&uploaded.remotePath||null,duplicate:!!(uploaded&&uploaded.duplicate)};
   }catch(error){
     state.lastError=String(error);await saveState(state);
