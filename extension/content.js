@@ -39,6 +39,7 @@
   var activeCallEarnings = {};
   var overlayHost = null;
   var overlayRoot = null;
+  var screenshotOverlayPreviousVisibility=null;
   var overlayTimer = null;
   var overlayLifecycleActive = false;
   var overlayLifecycleCallId = null;
@@ -1772,6 +1773,20 @@
     if (changes.effectifConfig) apply(changes.effectifConfig.newValue);
   });
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+     if (message && message.type === "EFFECTIF_SCREENSHOT_PREPARE") {
+       if (overlayHost && overlayHost.isConnected) {
+         screenshotOverlayPreviousVisibility=overlayHost.style.visibility;
+         overlayHost.style.visibility="hidden";
+       }
+       if (sendResponse) sendResponse({ok:true,hidden:!!(overlayHost&&overlayHost.isConnected)});
+       return true;
+     }
+     if (message && message.type === "EFFECTIF_SCREENSHOT_RESTORE") {
+       if (overlayHost && overlayHost.isConnected) overlayHost.style.visibility=screenshotOverlayPreviousVisibility===null?"":screenshotOverlayPreviousVisibility;
+       screenshotOverlayPreviousVisibility=null;
+       if (sendResponse) sendResponse({ok:true});
+       return true;
+     }
     if (message && message.type === "EFFECTIF_HOTLOAD_REPLACE") {
       deactivateForHotload(message.reason || "hotload-replace");
       if (sendResponse) sendResponse({ ok: true, reason: "deactivated-for-hotload" });
