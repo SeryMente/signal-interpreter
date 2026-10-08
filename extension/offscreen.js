@@ -1,6 +1,6 @@
 (function(){
 "use strict";
-var tabStream=null,micStream=null,tabRecorder=null,micRecorder=null,previewRecorder=null,tabTimer=null,micTimer=null,audioContext=null,running=false,chunkSeq=0,previewSeq=0,captureSessionId=null,previewSessionId=null,previewTabId=null,micMuteWatchdog=null,micMuteDesired=false;
+var tabStream=null,micStream=null,tabRecorder=null,micRecorder=null,previewTabRecorder=null,previewMicRecorder=null,tabTimer=null,micTimer=null,audioContext=null,running=false,chunkSeq=0,previewSeq=0,captureSessionId=null,previewSessionId=null,previewTabId=null,captionPreviewEnabled=false,micMuteWatchdog=null,micMuteDesired=false;
 function send(message){try{var p=chrome.runtime.sendMessage(Object.assign({target:"offscreen"},message));if(p&&p.catch)p.catch(function(){});}catch(_){} }
 async function playTone(volume, cue){
   if(!audioContext || audioContext.state==="closed") audioContext=new AudioContext();
@@ -44,33 +44,43 @@ function arm(source,stream){
   r.start();setTimeout(function(){try{if(r&&r.state!=="inactive")r.stop()}catch(_){}},18000);return r;
 }
 function stopCaptionPreview(){
-  try{if(previewRecorder&&previewRecorder.state!=="inactive")previewRecorder.stop();}catch(_){}
-  previewRecorder=null;previewSeq=0;previewSessionId=null;previewTabId=null;
+  captionPreviewEnabled=false;
+  try{if(previewTabRecorder&&previewTabRecorder.state!=="inactive")previewTabRecorder.stop();}catch(_){}
+  try{if(previewMicRecorder&&previewMicRecorder.state!=="inactive")previewMicRecorder.stop();}catch(_){}
+  previewTabRecorder=null;previewMicRecorder=null;previewSeq=0;previewSessionId=null;previewTabId=null;
 }
-function startCaptionPreview(stream,sessionId,tabId){
-  stopCaptionPreview();
+function startCaptionPreviewRecorder(source,stream,sessionId,tabId){
   if(!stream||!sessionId)return null;
   var recorder=null,session=String(sessionId),targetTabId=Number(tabId),startedAt=Date.now();
-  try{recorder=new MediaRecorder(stream,{mimeType:"audio/webm;codecs=opus"});}catch(_){try{recorder=new MediaRecorder(stream)}catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview",error:String(error)});return null;}}
+  try{recorder=new MediaRecorder(stream,{mimeType:"audio/webm;codecs=opus"});}catch(_){try{recorder=new MediaRecorder(stream)}catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});return null;}}
   recorder.ondataavailable=function(e){
-    if(!running||e.data==null||!e.data.size)return;
+    if(!captionPreviewEnabled||!running||e.data==null||!e.data.size)return;
     var chunkStartedAt=startedAt;startedAt=Date.now();var sequence=++previewSeq;
     try{
       var reader=new FileReader();
       reader.onloadend=function(){
         try{
           var dataUrl=String(reader.result||""),base64=dataUrl.split(",")[1]||"";
-          if(base64)send({type:"SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK",sessionId:session,tabId:targetTabId,base64:base64,bytes:e.data.size,startedAt:chunkStartedAt,endedAt:Date.now(),sequence:sequence});
-        }catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview",error:String(error)})}
+          if(base64)send({type:"SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK",sessionId:session,tabId:targetTabId,source:source,base64:base64,bytes:e.data.size,startedAt:chunkStartedAt,endedAt:Date.now(),sequence:sequence});
+        }catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)})}
       };
       reader.readAsDataURL(e.data);
-    }catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview",error:String(error)})}
+    }catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)})}
   };
-  recorder.onerror=function(e){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview",error:String(e&&e.error||e)})};
-  try{recorder.start(2800);}catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview",error:String(error)});return null;}
-  previewRecorder=recorder;previewSessionId=session;previewTabId=targetTabId;return recorder;
+  recorder.onerror=function(e){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(e&&e.error||e)})};
+  try{recorder.start(2800);}catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});return null;}
+  return recorder;
 }
-
+function startCaptionPreview(){
+  stopCaptionPreview();
+  if(!running||!captureSessionId)return false;
+  captionPreviewEnabled=true;
+  previewSessionId=captureSessionId;
+  previewTabId=previewTabId||0;
+  previewTabRecorder=startCaptionPreviewRecorder("cliente",tabStream,captureSessionId,previewTabId);
+  previewMicRecorder=startCaptionPreviewRecorder("yo",micStream,captureSessionId,previewTabId);
+  return !!(previewTabRecorder||previewMicRecorder);
+}
 function startTimer(source,rec){var timer=setTimeout(function(){try{if(rec&&rec.state!=="inactive")rec.stop()}catch(_){}},18000);if(source==="cliente")tabTimer=timer;else micTimer=timer;}
 async function applyMicMute(muted){
   var desired=!!muted;
@@ -83,7 +93,7 @@ async function applyMicMute(muted){
 }
 async function startCapture(streamId,sessionId,muted,captionPreview,tabId){
   await stopCapture();
-  captureSessionId=String(sessionId||"");
+  captureSessionId=String(sessionId||""); previewTabId=Number(tabId||0);
   if(!streamId||!captureSessionId)return{ok:false,error:"Falta la sesión o el identificador de audio de la pestaña."};
   try{
     tabStream=await navigator.mediaDevices.getUserMedia({audio:{mandatory:{chromeMediaSource:"tab",chromeMediaSourceId:streamId}}});
@@ -93,7 +103,7 @@ async function startCapture(streamId,sessionId,muted,captionPreview,tabId){
     var micApplied=await applyMicMute(initialMute);
     if(!micApplied.ok)throw new Error("No se pudo verificar el estado inicial del micrófono de la extensión.");
     tabRecorder=arm("cliente",tabStream);micRecorder=arm("yo",micStream);if(!tabRecorder||!micRecorder)throw new Error("No se pudieron iniciar los dos grabadores.");
-    if(captionPreview===true){startCaptionPreview(tabStream,captureSessionId,tabId);}
+    if(captionPreview===true){startCaptionPreview();}
     startTimer("cliente",tabRecorder);startTimer("yo",micRecorder);
     if(micMuteWatchdog)clearInterval(micMuteWatchdog);
     micMuteWatchdog=setInterval(function(){
@@ -119,6 +129,16 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
       }
       sendResponse(result);
     }).catch(function(error){sendResponse({ok:false,muted:!!message.muted,verified:false,error:String(error)})});
+    return true;
+  }
+  if(message.type==="SIGNAL_SET_CAPTION_PREVIEW"){
+    if(message.enabled===true){
+      var previewResult=startCaptionPreview();
+      sendResponse({ok:previewResult||!running,enabled:captionPreviewEnabled});
+    }else{
+      stopCaptionPreview();
+      sendResponse({ok:true,enabled:false});
+    }
     return true;
   }
   if(message.type==="SIGNAL_START_GROQ_CAPTURE"){
