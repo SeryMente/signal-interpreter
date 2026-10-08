@@ -32,7 +32,7 @@ function safeRoute(value){
 function routeToken(route){
   return safeRoute(route).replace(/^\/+/,"").replace(/[^A-Za-z0-9._-]+/g,"_").replace(/^_+|_+$/g,"")||"root";
 }
-function validateScreenshot(screenshot){
+export function validateScreenshot(screenshot){
   if(!screenshot||typeof screenshot!=="object")throw Object.assign(new Error("Screenshot must be an object"),{status:400});
   if(screenshot.schema!=="signal-interpreter-platform-screenshot/v1")throw Object.assign(new Error("Unsupported screenshot schema"),{status:400});
   const origin=String(screenshot.origin||"");
