@@ -33,7 +33,7 @@ assert.ok(background.includes("SignalCaptionBridge.stop()"));
 assert.ok(background.includes("SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK"));
 assert.ok(background.includes("handleGroqCaptionPreviewChunk"));
 assert.ok(background.includes("SignalCaptionBridge.isFresh(4500)"));
-assert.ok(background.includes("groq-caption-preview"));
+assert.ok(background.includes("SIGNAL_CAPTION_UPDATE"));
 
 assert.ok(offscreen.includes("previewTabRecorder"));
 assert.ok(offscreen.includes("previewMicRecorder"));
