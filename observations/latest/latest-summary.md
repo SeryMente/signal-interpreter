@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-a412ca84-0e26-4e0d-bec5-bbe91620d5fd
-- Creado: 2026-10-08T22:11:02.852Z
-- Trigger: critical
+- Batch: batch-4e1a6fdb-30b5-4c78-b0b7-50f168d2cd77
+- Creado: 2026-10-08T22:11:24.084Z
+- Trigger: startup
 - Extensión: 0.10.12
-- Eventos: 12
+- Eventos: 14
 - Errores: 0
-- Warnings: 1
-- Secuencia: 242 → 253
+- Warnings: 3
+- Secuencia: 254 → 267
 - Identidades de plataforma: 7
 - Snapshots de plataforma: 244
 - Deltas de plataforma: 244
@@ -16,18 +16,21 @@
 
 {
   "RUNTIME": 11,
-  "PORTAL": 1
+  "PORTAL": 1,
+  "BILLING": 2
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 5,
-  "PLATFORM_INTEGRITY_CHECK": 1,
-  "PLATFORM_SESSION_ENDED": 1,
-  "PERFORMANCE_HEARTBEAT": 1,
-  "OBSERVER_STOPPED": 1,
-  "PAGE_LIFECYCLE": 1,
-  "PAGE_VISIBILITY_CHANGED": 1,
-  "NETWORK_REQUEST_ERROR": 1
+  "PLATFORM_SESSION_RECONCILED_ENDED": 1,
+  "PLATFORM_TELEMETRY_RECONCILED": 1,
+  "NETWORK_ACTIVITY_WINDOW": 1,
+  "EXTENSION_MICROPHONE_SHORTCUT_UNASSIGNED": 3,
+  "EXTENSION_RUNTIME_STARTED": 1,
+  "HOTLOAD_EXISTING_TABS_SCAN_COMPLETED": 1,
+  "EXTENSION_VERSION_BOUNDARY": 1,
+  "EXCHANGE_RATE_UPDATED": 2,
+  "HOTLOAD_EXISTING_TABS_SCAN_DEDUPED": 2,
+  "HOTLOAD_EXISTING_WEB_TABS_SCAN_COMPLETED": 1
 }
