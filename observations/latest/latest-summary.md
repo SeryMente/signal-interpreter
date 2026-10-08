@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-08815643-34ce-4a7c-bad9-ca5b47be8f49
-- Creado: 2026-10-08T04:08:31.479Z
+- Batch: batch-2e92f503-6f1b-4d6a-9aae-5ffbd2d492d2
+- Creado: 2026-10-08T05:03:36.581Z
 - Trigger: critical
 - Extensión: 0.10.2
 - Eventos: 1
 - Errores: 0
 - Warnings: 1
-- Secuencia: 8618 → 8618
+- Secuencia: 8619 → 8619
 - Identidades de plataforma: 5
 - Snapshots de plataforma: 98
 - Deltas de plataforma: 98
@@ -15,11 +15,11 @@
 ## Categorías
 
 {
-  "RUNTIME": 1
+  "BILLING": 1
 }
 
 ## Acciones
 
 {
-  "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+  "EXCHANGE_RATE_ERROR": 1
 }
