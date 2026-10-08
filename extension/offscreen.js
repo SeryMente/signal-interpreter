@@ -27,7 +27,15 @@ function arm(source,stream){
   r.start();setTimeout(function(){try{if(r&&r.state!=="inactive")r.stop()}catch(_){}},18000);return r;
 }
 function startTimer(source,rec){var timer=setTimeout(function(){try{if(rec&&rec.state!=="inactive")rec.stop()}catch(_){}},18000);if(source==="cliente")tabTimer=timer;else micTimer=timer;}
-async function startCapture(streamId,sessionId){
+async function applyMicMute(muted){
+  var desired=!!muted;
+  var tracks=micStream&&typeof micStream.getAudioTracks==="function"?micStream.getAudioTracks():[];
+  if(!tracks.length)return{ok:!running,muted:desired,verified:!running,trackCount:0,inactive:!running,error:running?"La pista del micrófono no está disponible.":null};
+  tracks.forEach(function(track){track.enabled=!desired;});
+  var verified=tracks.every(function(track){return track.enabled===!desired;});
+  return{ok:verified,muted:desired,verified:verified,trackCount:tracks.length,enabled:tracks.every(function(track){return track.enabled;})};
+}
+async function startCapture(streamId,sessionId,muted){
   await stopCapture();
   captureSessionId=String(sessionId||"");
   if(!streamId||!captureSessionId)return{ok:false,error:"Falta la sesión o el identificador de audio de la pestaña."};
@@ -35,9 +43,12 @@ async function startCapture(streamId,sessionId){
     tabStream=await navigator.mediaDevices.getUserMedia({audio:{mandatory:{chromeMediaSource:"tab",chromeMediaSourceId:streamId}}});
     audioContext=new AudioContext();var input=audioContext.createMediaStreamSource(tabStream);input.connect(audioContext.destination);await audioContext.resume();
     micStream=await navigator.mediaDevices.getUserMedia({audio:true});running=true;chunkSeq=0;
+    var initialMute=!!muted;
+    var micApplied=await applyMicMute(initialMute);
+    if(!micApplied.ok)throw new Error("No se pudo verificar el estado inicial del micrófono de la extensión.");
     tabRecorder=arm("cliente",tabStream);micRecorder=arm("yo",micStream);if(!tabRecorder||!micRecorder)throw new Error("No se pudieron iniciar los dos grabadores.");
     startTimer("cliente",tabRecorder);startTimer("yo",micRecorder);
-    send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"connected",tabAudio:true,microphone:true,timestamp:new Date().toISOString()});return{ok:true};
+    send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"connected",tabAudio:true,microphone:true,microphoneMuted:initialMute,timestamp:new Date().toISOString()});return{ok:true};
   }catch(error){await stopCapture();return{ok:false,error:String(error)}}
 }
 async function stopCapture(){running=false;try{if(tabTimer)clearTimeout(tabTimer);if(micTimer)clearTimeout(micTimer)}catch(_){}tabTimer=null;micTimer=null;try{if(tabRecorder&&tabRecorder.state!=="inactive")tabRecorder.stop()}catch(_){}try{if(micRecorder&&micRecorder.state!=="inactive")micRecorder.stop()}catch(_){}tabRecorder=null;micRecorder=null;stopStream(tabStream);stopStream(micStream);tabStream=null;micStream=null;captureSessionId=null;if(audioContext){try{await audioContext.close()}catch(_){}audioContext=null}send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"stopped",timestamp:new Date().toISOString()});return{ok:true}}
@@ -48,8 +59,17 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 
     return true;
   }
+  if(message.type==="SIGNAL_SET_MICROPHONE_MUTED"){
+    applyMicMute(!!message.muted).then(function(result){
+      if(result.verified){
+        send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:running?"connected":"idle",tabAudio:!!tabStream,microphone:!!micStream,microphoneMuted:!!message.muted,timestamp:new Date().toISOString()});
+      }
+      sendResponse(result);
+    }).catch(function(error){sendResponse({ok:false,muted:!!message.muted,verified:false,error:String(error)})});
+    return true;
+  }
   if(message.type==="SIGNAL_START_GROQ_CAPTURE"){
-    startCapture(message.streamId,message.sessionId).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)})});
+    startCapture(message.streamId,message.sessionId,!!message.muted).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)})});
     return true;
   }
   if(message.type==="SIGNAL_STOP_GROQ_CAPTURE"){
