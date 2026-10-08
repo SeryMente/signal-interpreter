@@ -31,6 +31,7 @@ async function applyMicMute(muted){
   var desired=!!muted;
   var tracks=micStream&&typeof micStream.getAudioTracks==="function"?micStream.getAudioTracks():[];
   if(!tracks.length)return{ok:!running,muted:desired,verified:!running,trackCount:0,inactive:!running,error:running?"La pista del micrófono no está disponible.":null};
+  micMuteDesired=desired;
   tracks.forEach(function(track){track.enabled=!desired;});
   var verified=tracks.every(function(track){return track.enabled===!desired;});
   return{ok:verified,muted:desired,verified:verified,trackCount:tracks.length,enabled:tracks.every(function(track){return track.enabled;})};
@@ -51,7 +52,7 @@ async function startCapture(streamId,sessionId,muted){
     send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"connected",tabAudio:true,microphone:true,microphoneMuted:initialMute,timestamp:new Date().toISOString()});return{ok:true};
   }catch(error){await stopCapture();return{ok:false,error:String(error)}}
 }
-async function stopCapture(){running=false;try{if(tabTimer)clearTimeout(tabTimer);if(micTimer)clearTimeout(micTimer)}catch(_){}tabTimer=null;micTimer=null;try{if(tabRecorder&&tabRecorder.state!=="inactive")tabRecorder.stop()}catch(_){}try{if(micRecorder&&micRecorder.state!=="inactive")micRecorder.stop()}catch(_){}tabRecorder=null;micRecorder=null;stopStream(tabStream);stopStream(micStream);tabStream=null;micStream=null;captureSessionId=null;if(audioContext){try{await audioContext.close()}catch(_){}audioContext=null}send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"stopped",timestamp:new Date().toISOString()});return{ok:true}}
+async function stopCapture(){running=false;try{if(tabTimer)clearTimeout(tabTimer);if(micTimer)clearTimeout(micTimer);if(micMuteWatchdog)clearInterval(micMuteWatchdog)}catch(_){}tabTimer=null;micTimer=null;micMuteWatchdog=null;try{if(tabRecorder&&tabRecorder.state!=="inactive")tabRecorder.stop()}catch(_){}try{if(micRecorder&&micRecorder.state!=="inactive")micRecorder.stop()}catch(_){}tabRecorder=null;micRecorder=null;stopStream(tabStream);stopStream(micStream);tabStream=null;micStream=null;captureSessionId=null;if(audioContext){try{await audioContext.close()}catch(_){}audioContext=null}send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"stopped",timestamp:new Date().toISOString()});return{ok:true}}
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
   if(!message||message.target!=="offscreen")return false;
   if(message.type==="EFFECTIF_PLAY_SOUND"){
