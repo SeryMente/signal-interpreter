@@ -43,11 +43,15 @@
     }
 
     if (message.type === "status") {
-      sendToTab("SIGNAL_CAPTION_NATIVE_STATUS", {
+      var status = {
         active: !!message.active,
         visible: !!message.visible,
         error: message.error || null
-      });
+      };
+      sendToTab("SIGNAL_CAPTION_NATIVE_STATUS", status);
+      try {
+        if (root.SignalCaptionBridge.onStatus) root.SignalCaptionBridge.onStatus(status);
+      } catch (_) {}
     }
   }
 
@@ -102,6 +106,7 @@
     stop: disconnect,
     isFresh: isFresh,
     getLastCaptionAt: getLastCaptionAt,
-    onError: null
+    onError: null,
+    onStatus: null
   };
 })(typeof globalThis !== "undefined" ? globalThis : self);
