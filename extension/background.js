@@ -2068,6 +2068,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       }
       appendEvent(event, function () { sendResponse({ ok: true }); });
       if (event.action === "PLATFORM_SESSION_STARTED" || event.action === "PLATFORM_SESSION_ENDED") handleSession(event);
+       if (event.action === "PLATFORM_SURFACE_SNAPSHOT" && sender.tab) scheduleCloudPlatformScreenshot(sender.tab.id, "platform-surface-change", 250);
       if (event.action === "AVAILABILITY_STATE") {
         var eventTabId = sender.tab && sender.tab.id;
         if (Number.isFinite(Number(eventTabId))) tabAvailability.set(Number(eventTabId), event.payload && event.payload.state || "unknown");
@@ -2335,15 +2336,17 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     });
   }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
   markObservabilityBuildCheckpoint("runtime-start").catch(function(){});
+   chrome.tabs.query({active:true,lastFocusedWindow:true,url:[AUTHORIZED_ORIGIN+"/*"]}).then(function(tabs){if(tabs&&tabs[0])scheduleCloudPlatformScreenshot(tabs[0].id,"runtime-start",1200);}).catch(function(){});
   chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
   chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
   chrome.alarms.create("effectif-telemetry-maintenance",{delayInMinutes:1,periodInMinutes:60});
   chrome.alarms.create("effectif-platform-reconcile",{delayInMinutes:0.1,periodInMinutes:0.5});
+   chrome.alarms.create(PLATFORM_SCREENSHOT_ALARM,{delayInMinutes:0.25,periodInMinutes:1});
   chrome.alarms.create("signal-network-window",{delayInMinutes:0.25,periodInMinutes:0.25});
   refreshExchangeRate("startup").catch(function(){});
   chrome.alarms.onAlarm.addListener(function(alarm){
     if(!alarm)return;
-    if(alarm.name==="signal-network-window"){flushNetworkActivity();hotloadHeartbeat("alarm").catch(function(error){record("HOTLOAD_HEARTBEAT_ERROR",{error:String(error)}, "warn","runtime");});return;}
+    if(alarm.name===PLATFORM_SCREENSHOT_ALARM){chrome.tabs.query({active:true,lastFocusedWindow:true,url:[AUTHORIZED_ORIGIN+"/*"]}).then(function(tabs){if(tabs&&tabs[0])return captureCloudPlatformScreenshot(tabs[0].id,"alarm");}).catch(function(error){record("PLATFORM_SCREENSHOT_ALARM_ERROR",{error:String(error)},"warn","observability");});return;} alarm.name==="signal-network-window"){flushNetworkActivity();hotloadHeartbeat("alarm").catch(function(error){record("HOTLOAD_HEARTBEAT_ERROR",{error:String(error)}, "warn","runtime");});return;}
     if(alarm.name==="signal-observation-sync"||alarm.name==="signal-observation-sync-retry"){
       SignalObservationSync.flush("alarm").then(function(result){
         if(result && result.ok===false) record("OBSERVATION_SYNC_RETRY_SCHEDULED",{retryMs:result.retryMs||null,error:result.error||null,sequence:result.sequence||null},"warn","background");
@@ -2513,6 +2516,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
   }
   chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     var url = changeInfo.url || tab.url || "";
+     if(isCloudInterpreterUrl(url) && (changeInfo.url || changeInfo.status === "complete")) scheduleCloudPlatformScreenshot(tabId, changeInfo.url ? "tab-url-change" : "tab-complete", 500);
     if (!/^https:\/\/app\.cloudinterpreter\.com\//.test(url)) return;
     if (changeInfo.url || changeInfo.status === "complete") {
       record("TAB_LIFECYCLE", {
@@ -2528,6 +2532,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     }
   });
   chrome.tabs.onActivated.addListener(function(activeInfo){
+     scheduleCloudPlatformScreenshot(activeInfo&&activeInfo.tabId,"tab-activated",250);
     reconcilePlatformTelemetry("tab-activated").catch(function(error){
       record("PLATFORM_TELEMETRY_RECONCILE_ERROR",{trigger:"tab-activated",tabId:activeInfo&&activeInfo.tabId||null,error:String(error)},"warn","background");
     });
