@@ -1,5 +1,5 @@
 try{importScripts("groq-secret.local.js");}catch(_){/* Se genera localmente; no se versiona. */}
-importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js","platform-screenshot.js");
+importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js","platform-screenshot.js");
 (function () {
   "use strict";
 
@@ -44,6 +44,8 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
   var signalGroqQueue = Promise.resolve();
   var earningsSyncQueue = Promise.resolve();
   var microphoneMuteQueue = Promise.resolve();
+  var captionPreviewQueue = Promise.resolve();
+  try { SignalCaptionBridge.onError = function (error) { record("SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR", { error: String(error || "unknown") }, "warn", "caption"); }; } catch (_) {}
   var HOTLOAD_SCHEMA = "signal-hotload/v1";
   var HOTLOAD_HEARTBEAT_MIN_MS = 15000;
   var hotloadLastHeartbeatAt = 0;
@@ -1905,8 +1907,9 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
         await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
         record("HOTLOAD_CAPTURE_LEASE_PREPARED",{callId:state.callId,tabId:state.callSourceTabId||null,sessionId:session.id,runtimeVersion:chrome.runtime.getManifest().version}, "info","runtime");
       }
-      await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id,muted:!!state.microphoneMuted});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
+      await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id,muted:!!state.microphoneMuted,captionPreview:cachedConfig.liveCaptionOverlayEnabled !== false});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
       signalActiveSessionId=session.id;
+      try { if (cachedConfig.liveCaptionOverlayEnabled !== false) SignalCaptionBridge.start(state.callSourceTabId); } catch (_) {}
       state.microphoneMuteStatus="pending";
       await updateGroqCaptureState({status:"connected",tabAudio:true,microphone:true,microphoneMuted:!!state.microphoneMuted,startedAt:iso(),lastChunkAt:null,error:null});
       if(hasActiveCall(state)){
@@ -2064,10 +2067,49 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     return run;
   }
   async function stopGroqCapture(reason){
+    try { SignalCaptionBridge.stop(); } catch (_) {}
     try{await ensureOffscreen();await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_STOP_GROQ_CAPTURE"});}catch(_){};
     await updateGroqCaptureState({status:"stopped",tabAudio:false,microphone:false,error:null}).catch(function(){});recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_STOPPED",{reason:reason||"manual"});broadcastSignalEvent({type:"signal.groq.status",sessionId:signalActiveSessionId,status:"stopped",reason:reason||"manual",timestamp:iso()});return{ok:true};
   }
   function broadcastSignalEvent(event){try{var p=chrome.runtime.sendMessage({type:"SIGNAL_INTERPRETER_EVENT",event:event});if(p&&p.catch)p.catch(function(){});}catch(_){}}
+  async function handleGroqCaptionPreviewChunk(message){
+    captionPreviewQueue=captionPreviewQueue.then(async function(){
+      if(!message||!message.base64)return;
+      var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId;
+      var session=data.sessions.find(function(s){return s.id===id});
+      if(!session)return;
+      var stored=await chrome.storage.local.get(["effectifState"]);
+      var currentState=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
+      if(!hasActiveCall(currentState))return;
+      if(String(currentState.callSourceTabId)!==String(message.tabId||currentState.callSourceTabId))return;
+      if(SignalCaptionBridge.isFresh(4500))return;
+      if(!(await SignalGroqTranscriber.ready()))return;
+      var raw=atob(String(message.base64||"")),bytes=new Uint8Array(raw.length);
+      for(var bi=0;bi<raw.length;bi++)bytes[bi]=raw.charCodeAt(bi);
+      var blob=new Blob([bytes],{type:"audio/webm"});
+      var seq=Number(message.sequence||0);
+      var result=await SignalGroqTranscriber.transcribe(blob,{
+        model:cachedConfig.groqModel||GROQ_MODEL,
+        language:"",
+        filename:"signal-caption-preview-"+(seq||Date.now())+".webm",
+        prompt:"Transcripción breve para interpretación médica. Detecta automáticamente inglés o español. Conserva nombres propios y términos clínicos.",
+        timeoutMs:12000
+      });
+      if(!result.ok||!String(result.text||"").trim())return;
+      var text=String(result.text||"").trim(),language=String(result.language||"");
+      if(language!=="en"&&language!=="es")language=SignalCaptionCore.detectLanguage(text);
+      var tabId=Number(currentState.callSourceTabId);
+      if(!Number.isFinite(tabId))return;
+      try{
+        await chrome.tabs.sendMessage(tabId,{type:"SIGNAL_CAPTION_UPDATE",caption:{
+          text:text.slice(0,4000),language:language||"unknown",source:"groq-caption-preview",live:false,native:false
+        }});
+      }catch(_){}
+    }).catch(function(error){
+      record("SIGNAL_CAPTION_PREVIEW_ERROR",{error:String(error||"unknown")},"warn","caption");
+    });
+    return captionPreviewQueue;
+  }
   function handleGroqAudioChunk(message){
     signalGroqQueue=signalGroqQueue.then(async function(){
       var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId,session=data.sessions.find(function(s){return s.id===id});if(!session)return;
@@ -2139,6 +2181,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     if (!message) return false;
     if(message.type==="SIGNAL_OBSERVATION_SYNC_NOW"){try{SignalObservationSync.flush("manual").then(function(r){sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})})}catch(e){sendResponse({ok:false,error:String(e)})}return true;}
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_AUDIO_CHUNK") { handleGroqAudioChunk(message); return false; }
+    if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK") { handleGroqCaptionPreviewChunk(message); return false; }
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_CAPTURE_STATUS") { updateGroqCaptureState({status:String(message.status||"idle"),tabAudio:!!message.tabAudio,microphone:!!message.microphone,microphoneMuted:!!message.microphoneMuted,error:message.error||null,lastChunkAt:message.status==="connected"?null:undefined}).catch(function(){}); broadcastSignalEvent({type:"signal.groq.status",sessionId:signalActiveSessionId,status:message.status||"idle",tabAudio:!!message.tabAudio,microphone:!!message.microphone,error:message.error||null,timestamp:message.timestamp||iso()}); return false; }
     if (message.type === "OPEN_SIGNAL_LIVE_WINDOW") { recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_REQUESTED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",hasSuppliedStream:!!message.audioStreamId}); openSignalLiveWindow(message.audioStreamId||null,message.tabId||null,message.sourceUrl||"",message.sourceTitle||"").then(function(response){if(response&&response.ok)recordSignalDiagnostic("SIGNAL_CONSOLE_OPENED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",windowId:response.windowId,reused:!!response.reused,sessionId:response.session&&response.session.id||null,audioOk:!!(response.audio&&response.audio.ok)});else recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_ERROR",{tabId:message.tabId||null,error:response&&response.error||"unknown"},"error");sendResponse(response)}).catch(function(error){recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_EXCEPTION",{tabId:message.tabId||null,error:String(error)},"error");sendResponse({ok:false,error:String(error)});});return true; }
     if (message.type === "ACTIVATE_SIGNAL_SESSION") { activateSignalSession(message.sessionId,null).then(sendResponse);return true; }
