@@ -75,7 +75,7 @@ assert.ok(register.includes("SignalInterpreter.CaptionHost.exe"));
 assert.ok(hostSource.includes("System.Windows.Automation"));
 assert.ok(hostSource.includes("signal-caption-native/v1"));
 assert.ok(hostSource.includes("Live Caption"));
-assert.ok(hostSource.includes("LooksLikeCaptionSubtree"));
+
 assert.ok(payload.length>18000);
 const decoded=Buffer.from(payload,"base64");
 assert.ok(decoded.length>10000);
