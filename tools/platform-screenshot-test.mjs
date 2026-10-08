@@ -7,6 +7,7 @@ const state={signalPlatformScreenshotState:null};
 const uploads=[];
 let imageData="data:image/jpeg;base64,/9j/AA==";
 const chrome={
+  runtime:{getManifest:()=>({version:"test"})},
   storage:{local:{
     async get(){return{signalPlatformScreenshotState:state.signalPlatformScreenshotState};},
     async set(value){state.signalPlatformScreenshotState=value.signalPlatformScreenshotState;}
