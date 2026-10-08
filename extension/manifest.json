@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "minimum_chrome_version": "116",
   "name": "Signal Interpreter",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "description": "Asistente independiente para interpretación médica en tiempo real; Auto-Answer, observabilidad y métricas para Cloud Interpreter.",
   "permissions": [
     "storage",
@@ -48,6 +48,12 @@
     }
   },
   "commands": {
+    "toggle-extension-microphone": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+M"
+      },
+      "description": "Silenciar o reactivar el micrófono de Signal Interpreter"
+    },
     "toggle-auto-answer": {
       "suggested_key": {
         "default": "Ctrl+Shift+9"
