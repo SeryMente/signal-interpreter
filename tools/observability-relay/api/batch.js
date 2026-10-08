@@ -1,3 +1,4 @@
+import {createHash} from "node:crypto";
 const REPOSITORY = "SeryMente/signal-interpreter";
 const BRANCH = "main";
 const API_VERSION = "2022-11-28";
@@ -24,6 +25,38 @@ async function githubRequest(path, init={}) {
 async function readBody(req) {
   if(req.body && typeof req.body === "object") return req.body;
   return new Promise((resolve,reject)=>{let total=0;const chunks=[];req.on("data",chunk=>{total+=Buffer.byteLength(chunk);if(total>MAX_BODY_BYTES){reject(Object.assign(new Error("Payload too large"),{status:413}));req.destroy();return;}chunks.push(chunk);});req.on("end",()=>{try{resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));}catch(_){reject(Object.assign(new Error("Invalid JSON"),{status:400}));}});req.on("error",reject);});
+}
+function safeRoute(value){
+  try{
+    const raw=String(value||"/");
+    const url=new URL(raw.startsWith("/")?"https://app.cloudinterpreter.com"+raw:raw);
+    if(url.origin!=="https://app.cloudinterpreter.com")throw new Error("Invalid screenshot origin");
+    return url.pathname.replace(/\\/g,"/").replace(/\/[^/]+\/????????/,"");
+  }catch(error){throw Object.assign(new Error("Invalid screenshot route"),{status:400,cause:error});}
+}
+function routeToken(route){
+  return String(route||"/").replace(/^\//,"").replace(/[^A-Za-z0-9._-]+/g,"_").replace(/^_+|_+$/g,"").slice(0,120)||"root";
+}
+function validateScreenshot(input){
+  if(!input||typeof input!=="object")throw Object.assign(new Error("Screenshot must be an object"),{status:400});
+  if(input.schema!=="signal-interpreter-platform-screenshot/v1")throw Object.assign(new Error("Unsupported screenshot schema"),{status:400});
+  const route=safeRoute(input.route||"/");
+  const capturedAt=new Date(String(input.capturedAt||""));
+  if(!Number.isFinite(capturedAt.getTime()))throw Object.assign(new Error("Invalid screenshot capturedAt"),{status:400});
+  const mime=String(input.mimeType||"image/jpeg");
+  if(mime!=="image/jpeg"&&mime!=="image/png")throw Object.assign(new Error("Unsupported screenshot image type"),{status:400});
+  const base64=String(input.base64||"");
+  if(!/^[A-Za-z0-9+/]+={0,2}$/.test(base64))throw Object.assign(new Error("Invalid screenshot base64"),{status:400});
+  const bytes=Buffer.from(base64,"base64");
+  if(bytes.length<100)throw Object.assign(new Error("Screenshot is empty"),{status:400});
+  if(bytes.length>900000)throw Object.assign(new Error("Screenshot image exceeds 900000 bytes"),{status:413});
+  const serialized=JSON.stringify(input);
+  if(Buffer.byteLength(serialized,"utf8")>MAX_BODY_BYTES)throw Object.assign(new Error("Screenshot payload exceeds size limit"),{status:413});
+  const sha256=createHash("sha256").update(bytes).digest("hex");
+  const day=capturedAt.toISOString().slice(0,10);
+  const extension=mime==="image/png"?"png":"jpg";
+  const remotePath="observations/screenshots/"+day+"/"+routeToken(route)+"--"+sha256+"."+extension;
+  return {route,capturedAt:capturedAt.toISOString(),mime,bytes,sha256,remotePath};
 }
 function validateBatch(batch) {
   if(!batch || typeof batch !== "object") throw Object.assign(new Error("Batch must be an object"),{status:400});
@@ -58,7 +91,24 @@ export default async function handler(req,res){
   if(req.method!=="POST") return res.status(405).json({ok:false,error:"Method not allowed"});
   if(!process.env.GITHUB_TOKEN) return res.status(503).json({ok:false,error:"Relay not configured"});
   try{
-    const batch=validateBatch(await readBody(req));
+    const body=await readBody(req);
+    if(body&&body.schema==="signal-interpreter-platform-screenshot/v1"){
+      const shot=validateScreenshot(body);
+      const existing=await getExisting(shot.remotePath);
+      if(existing)return res.status(200).json({accepted:true,duplicate:true,schema:body.schema,remotePath:shot.remotePath,imageSha256:shot.sha256,bytes:shot.bytes.length});
+      const payload={message:"diagnostic: store platform screenshot "+shot.sha256,content:shot.bytes.toString("base64"),branch:BRANCH};
+      let created;
+      try{created=await githubRequest("/repos/"+REPOSITORY+"/contents/"+encodePath(shot.remotePath),{method:"PUT",body:JSON.stringify(payload)});}
+      catch(error){
+        if(error.status===409){
+          const raced=await getExisting(shot.remotePath);
+          if(raced)return res.status(200).json({accepted:true,duplicate:true,schema:body.schema,remotePath:shot.remotePath,imageSha256:shot.sha256,bytes:shot.bytes.length});
+        }
+        throw error;
+      }
+      return res.status(200).json({accepted:true,duplicate:false,schema:body.schema,remotePath:shot.remotePath,imageSha256:shot.sha256,bytes:shot.bytes.length,commitSha:created&&created.commit&&created.commit.sha||null});
+    }
+    const batch=validateBatch(body);
     const remotePath=`observations/inbox/${batch.batchId}.json`;
     const existing=await getExisting(remotePath);
     if(existing) return res.status(200).json({accepted:true,duplicate:true,batchId:batch.batchId,remotePath,contentSha:existing.sha||null});
