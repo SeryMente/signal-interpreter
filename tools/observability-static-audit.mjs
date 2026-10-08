@@ -124,7 +124,7 @@ assert.ok(content.includes("state.microphoneMuted"));
 assert.ok(offscreen.includes("track.enabled=!desired"));
 assert.ok(offscreen.includes("verified:verified"));
 assert.ok(offscreen.includes("micMuteWatchdog"));
-assert.ok(offscreen.includes("setInterval(function(){"));
+assert.ok(offscreen.includes("micMuteWatchdog=setInterval(function(){"));
 assert.ok(background.includes("microphoneMuteQueue"));
 assert.ok(background.includes("setExtensionMicrophoneMutedInternal"));
 assert.ok(background.includes("EXTENSION_MICROPHONE_MUTE_QUEUE_ERROR"));
