@@ -1,3 +1,4 @@
+import {createHash} from "node:crypto";
 const REPOSITORY = "SeryMente/signal-interpreter";
 const BRANCH = "main";
 const API_VERSION = "2022-11-28";
@@ -45,6 +46,10 @@ function validateScreenshot(screenshot){
   const base64=String(screenshot.base64||"").replace(/\s+/g,"");
   if(!base64||base64.length>MAX_BASE64_BYTES)throw Object.assign(new Error("Screenshot payload too large"),{status:413});
   const decodedBytes=Math.floor(base64.length*3/4)-(base64.endsWith("==")?2:base64.endsWith("=")?1:0);
+  const bytes=Buffer.from(base64,"base64");
+  const computedHash=createHash("sha256").update(bytes).digest("hex");
+  if(computedHash!==hash)throw Object.assign(new Error("Screenshot hash does not match image bytes"),{status:400});
+  if(bytes.length<4||bytes[0]!==0xFF||bytes[1]!==0xD8||bytes[bytes.length-2]!==0xFF||bytes[bytes.length-1]!==0xD9)throw Object.assign(new Error("Invalid JPEG screenshot bytes"),{status:400});
   if(decodedBytes<1||decodedBytes>MAX_BODY_BYTES)throw Object.assign(new Error("Screenshot binary exceeds size limit"),{status:413});
   return {origin,hash,capturedAt,mime,base64,route:safeRoute(screenshot.route),reason:String(screenshot.reason||"scheduled").slice(0,120),extensionVersion:String(screenshot.extensionVersion||"unknown").slice(0,40),tabId:Number.isFinite(Number(screenshot.tabId))?Number(screenshot.tabId):null,windowId:Number.isFinite(Number(screenshot.windowId))?Number(screenshot.windowId):null};
 }
