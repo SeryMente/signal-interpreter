@@ -36,11 +36,17 @@
       fired = true;
       try {
         chrome.runtime.sendMessage({
-          type: "SIGNAL_EXTENSION_MICROPHONE_SET",
-          muted: true,
+          type: "SIGNAL_EXTENSION_MICROPHONE_TOGGLE",
           source: "mouse-chord-global",
           gesture: "left+right-hold",
           holdMs: Date.now() - start
+        }, function (response) {
+          var runtimeError = chrome.runtime && chrome.runtime.lastError;
+          if (runtimeError) {
+            console.warn("[SIGNAL-INTERPRETER] MICROPHONE_GESTURE_DELIVERY_ERROR", String(runtimeError.message || runtimeError));
+          } else if (!response || response.ok !== true || response.verified !== true) {
+            console.warn("[SIGNAL-INTERPRETER] MICROPHONE_GESTURE_NOT_VERIFIED", response && response.error || "no verified response");
+          }
         });
       } catch (_) {}
     }, 240);
