@@ -1,7 +1,12 @@
 import fs from "node:fs";import vm from "node:vm";
 const background=fs.readFileSync("extension/background.js","utf8");
+const content=fs.readFileSync("extension/content.js","utf8");
 if(!background.includes("if(cachedConfig.soundEnabled!==false){"))throw Error("microphone-toggle-sound-config-regression");
 if(background.includes("if(config.soundEnabled!==false){"))throw Error("microphone-toggle-undefined-config-regression");
+if(!background.includes("function requestKeyboardMicrophoneToggle(source)"))throw Error("hotkey-command-and-fallback-dispatch-missing");
+if(!background.includes("never-reapply-stale-mute-on-unmute-failure"))throw Error("stale-remute-regression");
+if(background.includes("var recoveryMuted=previousMuted;"))throw Error("previous-muted-state-can-lock-an-unmute");
+if(!content.includes("EXTENSION_MICROPHONE_KEYBOARD_FALLBACK_TRIGGERED"))throw Error("content-hotkey-fallback-missing");
 class E{constructor(){this.l=new Map()}addEventListener(t,f){let a=this.l.get(t)||[];a.push(f);this.l.set(t,a)}removeEventListener(t,f){this.l.set(t,(this.l.get(t)||[]).filter(x=>x!==f))}dispatchEvent(e){for(const f of(this.l.get(e.type)||[]).slice())f(e)}}
 class T extends E{constructor(id){super();this.kind="audio";this.id=id;this.enabled=true;this.readyState="live"}clone(){return new T(this.id+"-clone")}}
 class S{constructor(t){this.t=t}getAudioTracks(){return[this.t]}}
