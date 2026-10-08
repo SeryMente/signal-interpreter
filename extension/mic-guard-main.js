@@ -13,7 +13,7 @@ function audio(t){return!!t&&t.kind==="audio"&&typeof t.id==="string"}
 function known(t){return audio(t)&&tracks.has(t.id)}
 function remember(t){if(!audio(t))return;tracks.set(t.id,t);try{if(muted)t.enabled=false}catch(_){}}
 function stream(s){try{s.getAudioTracks().forEach(remember)}catch(_){}return s}
-function sender(s){if(!s)return;try{if(known(s.track))senders.add(s)}catch(_){}}
+function sender(s){if(!s)return;try{if(audio(s.track))remember(s.track);if(known(s.track))senders.add(s)}catch(_) {}}
 function patchGum(){try{var md=navigator.mediaDevices;if(!md||typeof md.getUserMedia!=="function")return;var cur=md.getUserMedia;if(cur.__signalMicWrapped){patches.gum=true;return}var orig=cur.bind(md),wrap=function(c){return orig(c).then(function(s){if(c&&c.audio)stream(s);return s})};Object.defineProperty(wrap,"__signalMicWrapped",{value:true});Object.defineProperty(md,"getUserMedia",{value:wrap,configurable:true,writable:true});patches.gum=true}catch(_){}}
 function patchPC(){try{var C=window.RTCPeerConnection;if(!C||!C.prototype)return;var p=C.prototype;
 if(typeof p.getSenders==="function"&&!p.getSenders.__signalMicWrapped){var og=p.getSenders,gw=function(){var a=og.apply(this,arguments)||[];a.forEach(sender);return a};Object.defineProperty(gw,"__signalMicWrapped",{value:true});Object.defineProperty(p,"getSenders",{value:gw,configurable:true,writable:true})}
