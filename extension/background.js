@@ -121,6 +121,19 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     }, active ? "info" : "info", "runtime");
     if (!active) await scheduleSafeRuntimeReload("update-available-no-call");
   }
+  async function probeMainClientMicrophone(tabId, source) {
+    var targetTabId=Number(tabId);
+    if(!Number.isFinite(targetTabId))return{ok:false,verified:false,muted:false,trackCount:0,senderCount:0,error:"No hay una pestaña de llamada controlable."};
+    var lastError=null;
+    for(var attempt=1;attempt<=2;attempt+=1){
+      try{
+        var response=await chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_PROBE",source:source||"heartbeat"});
+        if(response&&response.verified===true)return Object.assign({},response,{ok:true,attempts:attempt});
+        lastError=response&&response.error||"La sonda del micrófono no pudo verificar la salida.";
+      }catch(error){lastError=String(error);}
+    }
+    return{ok:false,verified:false,muted:false,trackCount:0,senderCount:0,error:lastError||"probe-failed",attempts:2};
+  }
   async function hotloadHeartbeat(trigger) {
     var now = Date.now();
     if (now - hotloadLastHeartbeatAt < HOTLOAD_HEARTBEAT_MIN_MS) return;
@@ -131,11 +144,36 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     state.hotLoadLease = Object.assign({}, state.hotLoadLease || baseState().hotLoadLease, {
       schema: HOTLOAD_SCHEMA, phase: "active-call", lastHeartbeatAt: iso(), runtimeVersion: chrome.runtime.getManifest().version
     });
+    var expectedMuted=!!state.microphoneMuted;
+    var micProbe=await probeMainClientMicrophone(state.callSourceTabId,"hotload-heartbeat").catch(function(error){return{ok:false,verified:false,muted:false,trackCount:0,senderCount:0,error:String(error)}});
+    state.microphoneOutputTrackCount=Number(micProbe&&micProbe.trackCount||0);
+    state.microphoneOutputSenderCount=Number(micProbe&&micProbe.senderCount||0);
+    var micProbeMatches=micProbe&&micProbe.verified===true&&!!micProbe.muted===expectedMuted;
+    if(micProbeMatches){
+      state.microphoneOutputMuted=expectedMuted;
+      state.microphoneOutputStatus="applied";
+      record("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFIED",{callId:state.callId,tabId:state.callSourceTabId,muted:expectedMuted,trackCount:state.microphoneOutputTrackCount,senderCount:state.microphoneOutputSenderCount,attempts:Number(micProbe.attempts||1),trigger:trigger||"alarm"},"info","microphone");
+    }else{
+      record("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFY_ERROR",{callId:state.callId,tabId:state.callSourceTabId,expectedMuted:expectedMuted,observedMuted:micProbe&&typeof micProbe.muted==="boolean"?micProbe.muted:null,verified:!!(micProbe&&micProbe.verified),trackCount:state.microphoneOutputTrackCount,senderCount:state.microphoneOutputSenderCount,error:micProbe&&micProbe.error||"verification-failed",trigger:trigger||"alarm"},"error","microphone");
+      var failClosedOutput=await setMainClientMicrophoneMuted(state.callSourceTabId,true,"heartbeat-fail-closed").catch(function(error){return{ok:false,verified:false,error:String(error)}});
+      var failClosedCapture={verified:!state.groqCapture||state.groqCapture.status!=="connected"};
+      if(!failClosedCapture.verified){
+        try{await ensureOffscreen();var cap=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_SET_MICROPHONE_MUTED",muted:true});failClosedCapture=cap||{verified:false};}catch(error){failClosedCapture={verified:false,error:String(error)}}
+      }
+      state.microphoneMuted=true;
+      state.microphoneOutputMuted=!!(failClosedOutput&&failClosedOutput.verified===true);
+      state.microphoneOutputStatus=state.microphoneOutputMuted?"applied":"error";
+      state.microphoneMuteStatus=(state.microphoneOutputMuted&&failClosedCapture.verified===true)?"applied":"error";
+      state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
+      record("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_FAIL_CLOSED",{callId:state.callId,tabId:state.callSourceTabId,outputVerified:state.microphoneOutputMuted,captureVerified:!!failClosedCapture.verified,policy:"force-muted-until-verified"},"error","microphone");
+    }
     await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
     record("HOTLOAD_CALL_LEASE_HEARTBEAT", {
       callId: state.callId, leaseId: state.hotLoadLease.leaseId || null,
       trigger: trigger || "alarm", runtimeVersion: chrome.runtime.getManifest().version,
       transcriptionActive: !!state.transcriptionActive, captureStatus: state.groqCapture && state.groqCapture.status || "idle",
+      microphoneMuted: !!state.microphoneMuted, microphoneOutputMuted: !!state.microphoneOutputMuted, microphoneOutputStatus: state.microphoneOutputStatus || "unknown",
+      microphoneOutputTrackCount: Number(state.microphoneOutputTrackCount||0), microphoneOutputSenderCount: Number(state.microphoneOutputSenderCount||0),
       updatePhase: state.hotLoadUpdate && state.hotLoadUpdate.phase || "steady"
     }, "info", "runtime");
   }
