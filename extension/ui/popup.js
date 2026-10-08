@@ -58,6 +58,54 @@
     var rest = seconds % 60;
     return [hours, minutes, rest].map(function (value) { return String(value).padStart(2, "0"); }).join(":");
   }
+  function renderMicrophoneShortcut() {
+    var node = $("micShortcutStatus");
+    if (!node || !chrome.commands || typeof chrome.commands.getAll !== "function") return;
+    chrome.commands.getAll(function (commands) {
+      var item = (commands || []).find(function (command) { return command.name === "toggle-extension-microphone"; });
+      var shortcut = item && item.shortcut ? item.shortcut : "";
+      node.textContent = shortcut
+        ? "Atajo activo · " + shortcut.replace("Period", ".")
+        : "Atajo no asignado · configúralo en chrome://extensions/shortcuts";
+    });
+  }
+
+  function renderMicrophone() {
+    var muted = !!state.microphoneMuted;
+    var muteStatus = String(state.microphoneMuteStatus || "");
+    var outputStatus = String(state.microphoneOutputStatus || "");
+    var error = muteStatus === "error" || outputStatus === "error";
+    var button = $("micToggle");
+    if (!button) return;
+    var label = $("micToggleLabel");
+    var meta = $("micToggleMeta");
+    if (error) {
+      if (label) label.textContent = "MIC ERR";
+      if (meta) meta.textContent = "Permanece silenciado";
+      button.classList.add("is-error");
+      button.classList.remove("is-muted");
+      button.setAttribute("aria-pressed", "true");
+      button.title = "No se pudo verificar el micrófono. Permanece silenciado.";
+    } else if (muted) {
+      if (label) label.textContent = "MIC OFF";
+      if (meta) meta.textContent = "Silenciado · verificado";
+      button.classList.add("is-muted");
+      button.classList.remove("is-error");
+      button.setAttribute("aria-pressed", "true");
+      button.title = "Micrófono silenciado. Pulsa para solicitar activación verificada.";
+    } else {
+      if (label) label.textContent = "MIC ON";
+      if (meta) meta.textContent = muteStatus === "applied" ? "Activo · verificado" : "Activo";
+      button.classList.remove("is-muted", "is-error");
+      button.setAttribute("aria-pressed", "false");
+      button.title = "Micrófono activo. Pulsa para silenciar.";
+    }
+    var statusNode = $("micStatus");
+    if (statusNode) statusNode.textContent = error
+      ? "No se pudo verificar · estado seguro: silenciado"
+      : muted ? "Entrada de audio desactivada" : "Entrada de audio activa";
+  }
+
   function render() {
     $("enabled").checked = !!config.autoAnswerEnabled;
     $("observation").checked = !!config.observationEnabled;
@@ -312,10 +360,19 @@
     });
   }
   function formatMoment(value, emptyLabel) {
+    if (window.SignalInterpreterTime && typeof window.SignalInterpreterTime.formatMoment === "function") {
+      return window.SignalInterpreterTime.formatMoment(value, emptyLabel);
+    }
     if (!value) return emptyLabel;
     var date = new Date(value);
     if (!Number.isFinite(date.getTime())) return emptyLabel;
     return date.toLocaleString("es-MX", {hour12:false});
+  }
+
+  function renderRelayMomentLabels() {
+    if ($("lastAutomaticPublish")) $("lastAutomaticPublish").textContent = formatMoment(relayMomentState.automatic, "Nunca registrada");
+    if ($("lastManualPublish")) $("lastManualPublish").textContent = formatMoment(relayMomentState.manual, "Nunca registrada");
+    if ($("lastModelContextAccess")) $("lastModelContextAccess").textContent = formatMoment(relayMomentState.model, "No registrado");
   }
   async function renderRelayStatus() {
     try {
@@ -323,10 +380,12 @@
       var stored=await new Promise(function(resolve){chrome.storage.local.get(["signalObservationSyncState"],resolve);});
       var syncState=stored.signalObservationSyncState||{};
       var history=info.publishHistory||{};
-      if($("githubSyncStatus")) $("githubSyncStatus").textContent=info.reachable ? "Relay Vercel · operativo" : "Relay no disponible";
-      if($("githubAuthInfo")) $("githubAuthInfo").textContent=info.reachable ? "Chrome → Vercel → GitHub Actions · "+info.repository : String(info.error||"No se pudo contactar al relay");
-      if($("lastAutomaticPublish")) $("lastAutomaticPublish").textContent=formatMoment(history.lastAutomaticPublishAt||syncState.lastAutomaticPublishAt,"Nunca registrada");
-      if($("lastManualPublish")) $("lastManualPublish").textContent=formatMoment(history.lastManualPublishAt||syncState.lastManualPublishAt,"Nunca registrada");
+       relayMomentState.automatic=history.lastAutomaticPublishAt||syncState.lastAutomaticPublishAt||null;
+       relayMomentState.manual=history.lastManualPublishAt||syncState.lastManualPublishAt||null;
+       relayMomentState.model=info.modelContextAccess&&info.modelContextAccess.accessedAt||null;
+       if($("githubSyncStatus")) $("githubSyncStatus").textContent=info.reachable ? "Relay operativo" : "Relay no disponible";
+       if($("githubAuthInfo")) $("githubAuthInfo").textContent=info.reachable ? "Chrome → Vercel → GitHub Actions · "+info.repository : String(info.error||"No se pudo contactar al relay");
+       renderRelayMomentLabels();
       if($("lastModelContextAccess")) $("lastModelContextAccess").textContent=formatMoment(info.modelContextAccess&&info.modelContextAccess.accessedAt,"No registrado");
     } catch(error) {
       if($("githubSyncStatus")) $("githubSyncStatus").textContent="Error";
@@ -347,6 +406,7 @@
     finally{button.disabled=false; await renderRelayStatus();}
   });
   renderRelayStatus();
+  renderMicrophoneShortcut();
   function renderEarningsOnly() {
     var today = localDay();
     var completed = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) { return localDay(call.startedAt || call.endedAt) === today; }) : [];
@@ -402,5 +462,7 @@
     $("sessionTimer").textContent = duration(state.sessionStartedAt); $("onlineTimer").textContent = duration(state.onlineStartedAt); $("callTimer").textContent = duration(state.callStartedAt); renderEarningsOnly();
   }, 1000);
   setInterval(refreshTelemetryStats, 30000);
+  setInterval(renderRelayMomentLabels, 10000);
+  setInterval(renderMicrophoneShortcut, 10000);
   setInterval(renderRelayMomentLabels, 10000);
 })();
