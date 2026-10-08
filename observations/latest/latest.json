@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-4db6c5b6-efb1-4225-9179-3f3a5d95dd42",
-  "createdAt": "2026-10-08T03:08:31.616Z",
+  "batchId": "batch-562eb159-e6f7-4e29-b53a-5f75c4227881",
+  "createdAt": "2026-10-08T04:03:37.063Z",
   "trigger": "critical",
   "extensionVersion": "0.10.2",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "c48772ea-b41f-4a76-8ef4-c1654ee6d69c",
-      "sequence": 8613,
-      "timestamp": "2026-10-08T03:08:30.183Z",
-      "ingestedAt": "2026-10-08T03:08:30.183Z",
+      "id": "6499f333-4f7f-42fd-9edf-472d9db136c5",
+      "sequence": 8614,
+      "timestamp": "2026-10-08T04:03:36.826Z",
+      "ingestedAt": "2026-10-08T04:03:36.826Z",
       "level": "warn",
-      "category": "RUNTIME",
+      "category": "BILLING",
       "component": "background",
       "extensionVersion": "0.10.2",
       "host": "",
       "url": "",
       "phase": "error",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
+      "action": "EXCHANGE_RATE_ERROR",
       "outcome": "error",
-      "traceId": "4e89fca9-ce78-4731-9b7b-450d95531468",
+      "traceId": "af817426-29f1-4fed-945f-a24fa64aa7a8",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -34,8 +34,8 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
+      "reasonCode": "alarm",
+      "error": "Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy.",
       "metrics": {},
       "context": {},
       "privacy": {
@@ -44,8 +44,9 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
+        "pair": "USD/MXN",
+        "message": "Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy.",
+        "reason": "alarm"
       }
     }
   ],
@@ -57,15 +58,15 @@
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 8613,
-    "lastSequence": 8613,
-    "firstTimestamp": "2026-10-08T03:08:30.183Z",
-    "lastTimestamp": "2026-10-08T03:08:30.183Z",
+    "firstSequence": 8614,
+    "lastSequence": 8614,
+    "firstTimestamp": "2026-10-08T04:03:36.826Z",
+    "lastTimestamp": "2026-10-08T04:03:36.826Z",
     "actions": {
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+      "EXCHANGE_RATE_ERROR": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "BILLING": 1
     }
   }
 }
