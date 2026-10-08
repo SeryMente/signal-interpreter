@@ -48,6 +48,8 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
   var hotloadLastHeartbeatAt = 0;
   var hotloadLastRecoveryAt = 0;
   var hotloadReloadScheduled = false;
+  var HOTLOAD_EXISTING_TAB_SCAN_MIN_MS = 5000;
+  var hotloadLastExistingTabScanAt = 0;
   var tabAvailability = new Map();
   var tabReadiness = new Map();
   var actionIconCache = new Map();
@@ -135,6 +137,63 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       transcriptionActive: !!state.transcriptionActive, captureStatus: state.groqCapture && state.groqCapture.status || "idle",
       updatePhase: state.hotLoadUpdate && state.hotLoadUpdate.phase || "steady"
     }, "info", "runtime");
+  }
+  async function hotloadExistingCloudTabs(trigger) {
+    var now = Date.now();
+    if (now - hotloadLastExistingTabScanAt < HOTLOAD_EXISTING_TAB_SCAN_MIN_MS) {
+      record("HOTLOAD_EXISTING_TABS_SCAN_DEDUPED", { trigger: trigger || "runtime-start", ageMs: now - hotloadLastExistingTabScanAt }, "info", "runtime");
+      return { ok: true, skipped: "recent-scan" };
+    }
+    hotloadLastExistingTabScanAt = now;
+    var tabs;
+    try {
+      tabs = await chrome.tabs.query({ url: [AUTHORIZED_ORIGIN + "/*"] });
+    } catch (error) {
+      record("HOTLOAD_EXISTING_TABS_QUERY_ERROR", { trigger: trigger || "runtime-start", error: String(error) }, "error", "runtime");
+      return { ok: false, error: String(error) };
+    }
+    var result = { scanned: tabs.length, eligible: 0, injected: 0, errors: 0 };
+    for (var i = 0; i < tabs.length; i += 1) {
+      var tab = tabs[i];
+      var tabId = Number(tab && tab.id);
+      if (!Number.isFinite(tabId) || !isAuthorizedCloudUrl(tab.url)) continue;
+      result.eligible += 1;
+      var success = false;
+      var lastError = null;
+      for (var attempt = 1; attempt <= 3 && !success; attempt += 1) {
+        try {
+          try {
+            await chrome.tabs.sendMessage(tabId, { type: "EFFECTIF_HOTLOAD_REPLACE", reason: trigger || "runtime-start" });
+          } catch (_) {}
+          await chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            world: "ISOLATED",
+            func: function () {
+              try { window.__SIGNAL_INTERPRETER_CLOUD_RUNTIME__ = null; } catch (_) {}
+            }
+          });
+          await chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED" });
+          success = true;
+          result.injected += 1;
+          record("HOTLOAD_EXISTING_TAB_REHYDRATED", {
+            trigger: trigger || "runtime-start", tabId: tabId, attempt: attempt,
+            isCall: isCloudCallUrl(tab.url), route: isCloudCallUrl(tab.url) ? "/call/<ID>" : "/other"
+          }, "info", "runtime");
+        } catch (error) {
+          lastError = String(error);
+          if (attempt < 3) await new Promise(function (resolve) { setTimeout(resolve, 250); });
+        }
+      }
+      if (!success) {
+        result.errors += 1;
+        record("HOTLOAD_EXISTING_TAB_REHYDRATE_ERROR", {
+          trigger: trigger || "runtime-start", tabId: tabId,
+          isCall: isCloudCallUrl(tab.url), error: lastError
+        }, "error", "runtime");
+      }
+    }
+    record("HOTLOAD_EXISTING_TABS_SCAN_COMPLETED", Object.assign({ trigger: trigger || "runtime-start" }, result), result.errors ? "warn" : "info", "runtime");
+    return { ok: result.errors === 0, result: result };
   }
   async function recoverAfterRuntimeBoundary(trigger) {
     if (Date.now() - hotloadLastRecoveryAt < 5000) {
@@ -1963,11 +2022,11 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
         priorState.hotLoadUpdate = Object.assign({}, priorState.hotLoadUpdate || {}, { schema: HOTLOAD_SCHEMA, phase: "post-install-active-call", currentVersion: chrome.runtime.getManifest().version });
         return chrome.storage.local.set({ effectifState: cloneStateForStorage(priorState) }).then(function () {
           record("HOTLOAD_INSTALL_BOUNDARY_ACTIVE_CALL", { callId: priorState.callId, currentVersion: chrome.runtime.getManifest().version, action: "no-offscreen-close-no-transcription-reset" }, "warn", "runtime");
-          return initialize().then(function () { return recoverAfterRuntimeBoundary("onInstalled-active-call"); });
+          return initialize().then(function () { return recoverAfterRuntimeBoundary("onInstalled-active-call"); }).then(function () { return hotloadExistingCloudTabs("onInstalled-active-call"); });
         });
       }
       chrome.offscreen.closeDocument().catch(function(){});
-      return initialize();
+      return initialize().then(function () { return hotloadExistingCloudTabs("onInstalled"); });
     }).then(function () {
       return refreshAllActionIndicators().catch(function(error){
         record("ACTION_INDICATOR_INSTALL_REFRESH_ERROR",{error:String(error)},"warn","action");
@@ -1989,6 +2048,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
   chrome.runtime.onStartup.addListener(function(){
     refreshAllActionIndicators().catch(function () {});
     record("EXTENSION_RUNTIME_STARTED",{manifestVersion:chrome.runtime.getManifest().version},"info","runtime");
+    hotloadExistingCloudTabs("onStartup").catch(function(error){ record("HOTLOAD_EXISTING_TABS_STARTUP_ERROR",{error:String(error)},"warn","runtime"); });
     markObservabilityBuildCheckpoint("startup").catch(function(){});
     reconcilePlatformTelemetry("runtime-startup").catch(function(error){
       record("PLATFORM_TELEMETRY_RECONCILE_ERROR",{trigger:"runtime-startup",error:String(error)},"warn","background");
@@ -2001,7 +2061,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     }).then(function(){
       try{SignalObservationSync.start()}catch(_){};
       SignalObservationSync.flush("startup").catch(function(error){ record("OBSERVATION_SYNC_STARTUP_ERROR",{error:String(error)},"warn","background"); });
-      return recoverAfterRuntimeBoundary("runtime-start").catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");});
+      return recoverAfterRuntimeBoundary("runtime-start").catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");}).then(function(){ return hotloadExistingCloudTabs("runtime-start"); }).catch(function(error){record("HOTLOAD_EXISTING_TABS_RUNTIME_ERROR",{error:String(error)},"warn","runtime");});
     });
   }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
   markObservabilityBuildCheckpoint("runtime-start").catch(function(){});
