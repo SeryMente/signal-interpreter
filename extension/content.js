@@ -980,6 +980,7 @@
       snapshotHash: stableSurfaceToken(signature),
       platformSurface: platformSurface
     }, "info");
+    try { chrome.runtime.sendMessage({ type: "SIGNAL_PLATFORM_SCREENSHOT_REQUEST", reason: "platform-surface-change" }).catch(function () {}); } catch (_) {}
   }
   function portalStructureSnapshot(reason, force) {
     if (!isTarget() || !config.observationEnabled) return;
@@ -1027,6 +1028,7 @@
       navigationType: (performance.getEntriesByType("navigation")[0] || {}).type || "unknown"
     }, "info");
     portalStructureSnapshot("url-change:" + (reason || "poll"), true);
+    try { chrome.runtime.sendMessage({ type: "SIGNAL_PLATFORM_SCREENSHOT_REQUEST", reason: "platform-url-change" }).catch(function () {}); } catch (_) {}
     return true;
   }
 
