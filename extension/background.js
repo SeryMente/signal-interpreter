@@ -255,20 +255,35 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     if(micProbeMatches){
       state.microphoneOutputMuted=expectedMuted;
       state.microphoneOutputStatus="applied";
+      if(state.microphoneMuteStatus==="pending")state.microphoneMuteStatus="applied";
+      state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:expectedMuted});
       record("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFIED",{callId:state.callId,tabId:state.callSourceTabId,muted:expectedMuted,trackCount:state.microphoneOutputTrackCount,senderCount:state.microphoneOutputSenderCount,attempts:Number(micProbe.attempts||1),trigger:trigger||"alarm"},"info","microphone");
     }else{
-      record("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFY_ERROR",{callId:state.callId,tabId:state.callSourceTabId,expectedMuted:expectedMuted,observedMuted:micProbe&&typeof micProbe.muted==="boolean"?micProbe.muted:null,verified:!!(micProbe&&micProbe.verified),trackCount:state.microphoneOutputTrackCount,senderCount:state.microphoneOutputSenderCount,error:micProbe&&micProbe.error||"verification-failed",trigger:trigger||"alarm"},"error","microphone");
-      var failClosedOutput=await setMainClientMicrophoneMuted(state.callSourceTabId,true,"heartbeat-fail-closed").catch(function(error){return{ok:false,verified:false,error:String(error)}});
-      var failClosedCapture={verified:!state.groqCapture||state.groqCapture.status!=="connected"};
-      if(!failClosedCapture.verified){
-        try{await ensureOffscreen();var cap=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_SET_MICROPHONE_MUTED",muted:true});failClosedCapture=cap||{verified:false};}catch(error){failClosedCapture={verified:false,error:String(error)}}
+      state.microphoneOutputMuted=expectedMuted;
+      state.microphoneOutputStatus="pending";
+      if(state.microphoneMuteStatus!=="error")state.microphoneMuteStatus="pending";
+      state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:expectedMuted});
+      record("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFY_DEFERRED",{
+        callId:state.callId,
+        tabId:state.callSourceTabId,
+        expectedMuted:expectedMuted,
+        observedMuted:micProbe&&typeof micProbe.muted==="boolean"?micProbe.muted:null,
+        verified:!!(micProbe&&micProbe.verified),
+        trackCount:state.microphoneOutputTrackCount,
+        senderCount:state.microphoneOutputSenderCount,
+        error:micProbe&&micProbe.error||"verification-pending",
+        trigger:trigger||"alarm",
+        policy:"verify-only-no-state-change"
+      },"warn","microphone");
+      if(expectedMuted){
+        var reaffirm=await setMainClientMicrophoneMuted(state.callSourceTabId,true,"heartbeat-reaffirm-muted").catch(function(error){return{ok:false,verified:false,error:String(error)}});
+        if(reaffirm&&reaffirm.verified===true){
+          state.microphoneOutputMuted=true;
+          state.microphoneOutputStatus="applied";
+          state.microphoneMuteStatus="applied";
+          record("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_REASSERTED",{callId:state.callId,tabId:state.callSourceTabId,muted:true,trackCount:Number(reaffirm.trackCount||0),senderCount:Number(reaffirm.senderCount||0)},"info","microphone");
+        }
       }
-      state.microphoneMuted=true;
-      state.microphoneOutputMuted=!!(failClosedOutput&&failClosedOutput.verified===true);
-      state.microphoneOutputStatus=state.microphoneOutputMuted?"applied":"error";
-      state.microphoneMuteStatus=(state.microphoneOutputMuted&&failClosedCapture.verified===true)?"applied":"error";
-      state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
-      record("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_FAIL_CLOSED",{callId:state.callId,tabId:state.callSourceTabId,outputVerified:state.microphoneOutputMuted,captureVerified:!!failClosedCapture.verified,policy:"force-muted-until-verified"},"error","microphone");
     }
     await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
     record("HOTLOAD_CALL_LEASE_HEARTBEAT", {
@@ -2006,20 +2021,24 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var stored=await chrome.storage.local.get(["effectifState"]);
     var state=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
 
-    state.microphoneMuted=true;
+    var previousMuted=!!state.microphoneMuted;
+    var previousOutputMuted=!!state.microphoneOutputMuted;
+    var previousMuteStatus=String(state.microphoneMuteStatus||"unapplied");
+    var previousOutputStatus=String(state.microphoneOutputStatus||"unapplied");
+    var captureActive=!!(state.groqCapture&&state.groqCapture.status==="connected");
+    var outputRequired=hasActiveCall(state);
+    state.microphoneMuted=desired;
     state.microphoneMuteStatus="pending";
-    state.microphoneOutputMuted=true;
-    state.microphoneOutputStatus="pending";
-    state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
+    state.microphoneOutputMuted=desired;
+    state.microphoneOutputStatus=outputRequired?"pending":"unapplied";
+    state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:desired});
     await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
 
     record("EXTENSION_MICROPHONE_MUTE_REQUESTED",{
-      desired:desired,source:source||"unknown",activeCall:hasActiveCall(state),
-      activeCapture:!!(state.groqCapture&&state.groqCapture.status==="connected"),
-      callId:state.callId||null,policy:"fail-closed-until-verified"
+      desired:desired,source:source||"unknown",activeCall:outputRequired,
+      activeCapture:captureActive,
+      callId:state.callId||null,policy:"preserve-user-intent-until-verified"
     },"info","microphone");
-
-    var captureActive=!!(state.groqCapture&&state.groqCapture.status==="connected");
     var captureResult={ok:true,verified:!captureActive,muted:desired,inactive:!captureActive};
     if(captureActive){
       var captureError=null;
@@ -2034,25 +2053,38 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       if(!captureResult.verified)captureResult.error=captureError||"verification-failed";
     }
 
-    var outputRequired=hasActiveCall(state);
     var outputResult=outputRequired
       ? await setMainClientMicrophoneMuted(state.callSourceTabId,desired,source||"background")
       : {ok:true,muted:desired,verified:true,inactive:true,trackCount:0,senderCount:0};
     var allVerified=captureResult.verified&&(!outputRequired||outputResult.verified===true);
 
     if(!allVerified){
-      if(captureActive){try{await ensureOffscreen();await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_SET_MICROPHONE_MUTED",muted:true});}catch(_){}}
-      if(outputRequired){try{await setMainClientMicrophoneMuted(state.callSourceTabId,true,"fail-closed");}catch(_){}}
-      state.microphoneMuted=true;
+      if(captureActive){
+        try{
+          await ensureOffscreen();
+          await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_SET_MICROPHONE_MUTED",muted:previousMuted});
+        }catch(_){}
+      }
+      if(outputRequired){
+        try{await setMainClientMicrophoneMuted(state.callSourceTabId,previousMuted,"restore-after-verify-error");}catch(_){}
+      }
+      state.microphoneMuted=previousMuted;
       state.microphoneMuteStatus="error";
-      state.microphoneOutputMuted=true;
+      state.microphoneOutputMuted=previousOutputMuted;
       state.microphoneOutputStatus="error";
       state.microphoneOutputTrackCount=Number(outputResult.trackCount||0);
       state.microphoneOutputSenderCount=Number(outputResult.senderCount||0);
-      state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
+      state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:previousMuted});
       await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
-      record("EXTENSION_MICROPHONE_MUTE_ERROR",{desired:desired,source:source||"unknown",callId:state.callId||null,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,error:captureResult.error||outputResult.error||"verification-failed",policy:"fail-closed"},"error","microphone");
-      return{ok:false,muted:true,verified:false,error:captureResult.error||outputResult.error||"verification-failed"};
+      record("EXTENSION_MICROPHONE_MUTE_ERROR",{
+        desired:desired,previousMuted:previousMuted,source:source||"unknown",callId:state.callId||null,
+        captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,
+        error:captureResult.error||outputResult.error||"verification-failed",
+        policy:"restore-previous-user-intent",
+        previousMuteStatus:previousMuteStatus,
+        previousOutputStatus:previousOutputStatus
+      },"error","microphone");
+      return{ok:false,muted:previousMuted,verified:false,error:captureResult.error||outputResult.error||"verification-failed"};
     }
 
     state.microphoneMuted=desired;
@@ -2681,15 +2713,18 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
 
   chrome.commands.onCommand.addListener(function (command) {
     if (command === "toggle-extension-microphone") {
-      setExtensionMicrophoneMuted(true, "keyboard-force-mute").then(function (result) {
-        if (result && result.ok && result.verified) {
-          record("EXTENSION_MICROPHONE_MUTED", {
-            source: "keyboard-force-mute", hotkey: "Ctrl+Shift+.", verified: true
-          }, "info", "microphone");
-        }
-        broadcastSignalEvent({ type: "signal.extension.microphone", muted: true, verified: !!(result && result.verified), timestamp: iso() });
+      toggleExtensionMicrophoneMuted("keyboard-toggle").then(function (result) {
+        record("EXTENSION_MICROPHONE_KEYBOARD_TOGGLE", {
+          source: "keyboard-toggle",
+          hotkey: "Ctrl+Shift+.",
+          desired: result&&typeof result.muted==="boolean" ? !!result.muted : null,
+          verified: !!(result&&result.verified),
+          ok: !!(result&&result.ok),
+          error: result&&result.error||null
+        }, result&&result.ok&&result.verified ? "info" : "error", "microphone");
+        broadcastSignalEvent({ type: "signal.extension.microphone", muted: !!(result&&result.muted), verified: !!(result&&result.verified), timestamp: iso() });
       }).catch(function (error) {
-        record("EXTENSION_MICROPHONE_KEYBOARD_ERROR", { source: "keyboard-force-mute", hotkey: "Ctrl+Shift+.", error: String(error) }, "error", "microphone");
+        record("EXTENSION_MICROPHONE_KEYBOARD_ERROR", { source: "keyboard-toggle", hotkey: "Ctrl+Shift+.", error: String(error) }, "error", "microphone");
       });
       return;
     }
