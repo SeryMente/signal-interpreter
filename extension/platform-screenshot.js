@@ -70,7 +70,6 @@ async function captureOne(tab,reason){
       bytes:lastSize,
       quality:qualityUsed,
       captureReason:reason||"capture",
-      imageBase64:b64,
       base64:b64
     };
     if(!configured.relay||typeof configured.relay.uploadScreenshot!=="function"){
