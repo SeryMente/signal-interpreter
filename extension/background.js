@@ -2140,21 +2140,17 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var stored = await chrome.storage.local.get(["effectifState"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       var recovering = state.microphoneMuteStatus === "error" || state.microphoneOutputStatus === "error";
-      var desired = recovering
-        ? (typeof state.microphoneMuteRequested === "boolean" ? state.microphoneMuteRequested : false)
-        : !state.microphoneMuted;
+      var desired = recovering ? false : !state.microphoneMuted;
       if (recovering) record("EXTENSION_MICROPHONE_TOGGLE_RECOVERY_RETRY", {
         source: source || "toggle", desired: desired, previousMuted: !!state.microphoneMuted,
-        policy: "retry-last-request; legacy-error-defaults-to-unmute"
+        policy: "error-state-prioritizes-unmute-to-avoid-stuck-muted"
       }, "warn", "microphone");
       return setExtensionMicrophoneMutedInternal(desired, source || "toggle");
     }, async function () {
       var stored = await chrome.storage.local.get(["effectifState"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       var recovering = state.microphoneMuteStatus === "error" || state.microphoneOutputStatus === "error";
-      var desired = recovering
-        ? (typeof state.microphoneMuteRequested === "boolean" ? state.microphoneMuteRequested : false)
-        : !state.microphoneMuted;
+      var desired = recovering ? false : !state.microphoneMuted;
       if (recovering) record("EXTENSION_MICROPHONE_TOGGLE_RECOVERY_RETRY", {
         source: source || "toggle", desired: desired, previousMuted: !!state.microphoneMuted,
         policy: "retry-last-request; legacy-error-defaults-to-unmute"
