@@ -169,7 +169,7 @@ assert.ok(globalMouse.includes("__SIGNAL_INTERPRETER_GLOBAL_MOUSE_GESTURE_V1__")
 assert.ok(globalMouse.includes("240"));
 assert.ok(offscreen.includes('"mute-on"'));
 assert.ok(offscreen.includes('"mute-off"'));
-assert.ok(offscreen.includes('frequency,at,duration'));
+assert.ok(offscreen.includes('function tone(frequency, at, duration)'));
 assert.ok(platformScreenshot.includes("captureVisibleTab"));
 assert.ok(platformScreenshot.includes("PLATFORM_SCREENSHOT_CHANGED"));
 assert.ok(platformScreenshot.includes("PLATFORM_SCREENSHOT_UNCHANGED"));
