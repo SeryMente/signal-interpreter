@@ -2399,6 +2399,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       SignalObservationSync.flush("startup").catch(function(error){ record("OBSERVATION_SYNC_STARTUP_ERROR",{error:String(error)},"warn","background"); });
     });
     }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+    checkMicrophoneCommandShortcut("onInstalled");
     markObservabilityBuildCheckpoint(details&&details.reason||"installed",details&&details.previousVersion).catch(function(){});
     chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
     chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
@@ -2414,6 +2415,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     try { SignalPlatformScreenshot.start(); } catch (error) { record("PLATFORM_SCREENSHOT_START_ERROR",{error:String(error)},"warn","platform-screenshot"); }
     refreshAllActionIndicators().catch(function () {});
     record("EXTENSION_RUNTIME_STARTED",{manifestVersion:chrome.runtime.getManifest().version},"info","runtime");
+    checkMicrophoneCommandShortcut("onStartup");
     hotloadExistingCloudTabs("onStartup").catch(function(error){ record("HOTLOAD_EXISTING_TABS_STARTUP_ERROR",{error:String(error)},"warn","runtime"); });
     markObservabilityBuildCheckpoint("startup").catch(function(){});
     reconcilePlatformTelemetry("runtime-startup").catch(function(error){
@@ -2430,6 +2432,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       return recoverAfterRuntimeBoundary("runtime-start").catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");}).then(function(){ return hotloadExistingCloudTabs("runtime-start"); }).then(function(){ return hotloadExistingWebTabs("runtime-start"); }).catch(function(error){record("HOTLOAD_EXISTING_TABS_RUNTIME_ERROR",{error:String(error)},"warn","runtime");});
     });
   }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+  checkMicrophoneCommandShortcut("runtime-start");
   markObservabilityBuildCheckpoint("runtime-start").catch(function(){});
   chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
   chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
@@ -2578,17 +2581,37 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     }
   });
 
+  function checkMicrophoneCommandShortcut(trigger) {
+    if (!chrome.commands || typeof chrome.commands.getAll !== "function") return;
+    chrome.commands.getAll(function (commands) {
+      var item = (commands || []).find(function (command) { return command.name === "toggle-extension-microphone"; });
+      var shortcut = item && item.shortcut ? item.shortcut : "";
+      chrome.storage.local.set({
+        signalMicrophoneShortcutStatus: {
+          expected: "Ctrl+Shift+Period",
+          assigned: shortcut,
+          available: !!shortcut,
+          checkedAt: iso(),
+          trigger: trigger || "runtime"
+        }
+      }).catch(function () {});
+      record(shortcut ? "EXTENSION_MICROPHONE_SHORTCUT_AVAILABLE" : "EXTENSION_MICROPHONE_SHORTCUT_UNASSIGNED", {
+        expected: "Ctrl+Shift+Period", assigned: shortcut || null, trigger: trigger || "runtime"
+      }, shortcut ? "info" : "warn", "microphone");
+    });
+  }
+
   chrome.commands.onCommand.addListener(function (command) {
     if (command === "toggle-extension-microphone") {
-      toggleExtensionMicrophoneMuted("keyboard").then(function (result) {
+      setExtensionMicrophoneMuted(true, "keyboard-force-mute").then(function (result) {
         if (result && result.ok && result.verified) {
-          record(result.muted ? "EXTENSION_MICROPHONE_MUTED" : "EXTENSION_MICROPHONE_UNMUTED", {
-            source: "keyboard", hotkey: "Ctrl+Shift+M", verified: true
+          record("EXTENSION_MICROPHONE_MUTED", {
+            source: "keyboard-force-mute", hotkey: "Ctrl+Shift+.", verified: true
           }, "info", "microphone");
         }
-        broadcastSignalEvent({ type: "signal.extension.microphone", muted: !!(result && result.muted), verified: !!(result && result.verified), timestamp: iso() });
+        broadcastSignalEvent({ type: "signal.extension.microphone", muted: true, verified: !!(result && result.verified), timestamp: iso() });
       }).catch(function (error) {
-        record("EXTENSION_MICROPHONE_KEYBOARD_ERROR", { source: "keyboard", hotkey: "Ctrl+Shift+M", error: String(error) }, "error", "microphone");
+        record("EXTENSION_MICROPHONE_KEYBOARD_ERROR", { source: "keyboard-force-mute", hotkey: "Ctrl+Shift+.", error: String(error) }, "error", "microphone");
       });
       return;
     }
