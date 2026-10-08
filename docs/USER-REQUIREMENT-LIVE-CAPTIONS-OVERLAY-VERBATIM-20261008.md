@@ -17,3 +17,36 @@
 ## Nota de control
 
 Este archivo es una **fuente de requisitos**, no una autorización para introducir todavía cambios de arquitectura. Cualquier implementación futura de esta función debe contrastarse explícitamente con los textos VERBATIM anteriores y no debe reemplazar los requisitos del usuario por una interpretación resumida.
+
+
+## AUTORIZACIÓN ARQUITECTÓNICA AÑADIDA POR EL USUARIO — 2026-10-08
+
+El usuario autoriza explícitamente **expandir esta especificación canónica** para admitir la posibilidad de utilizar componentes o mecanismos adicionales cuando sean técnicamente necesarios para cumplir el objetivo funcional.
+
+Esta autorización está condicionada a una regla arquitectónica prioritaria:
+
+> **La arquitectura debe tender siempre a la mínima expresión posible en términos de sencillez y simplicidad.**
+
+Por tanto, cualquier componente adicional debe justificar su existencia por necesidad técnica real y debe evaluarse contra alternativas más simples. No se debe introducir infraestructura, procesos, servicios residentes, dependencias o capas adicionales por conveniencia si el mismo objetivo puede alcanzarse con una solución más pequeña.
+
+La preferencia arquitectónica queda ordenada así:
+
+1. **Solo extensión + Chrome**, cuando sea suficiente.
+2. **Extensión + el componente adicional mínimo indispensable**, cuando la plataforma de Chrome no exponga una capacidad necesaria.
+3. Evitar componentes residentes, servidores locales, puentes complejos o infraestructura persistente salvo que sean estrictamente necesarios para satisfacer el requisito y no exista una alternativa más simple.
+
+Esta ampliación **no modifica ni sustituye ningún bloque VERBATIM anterior**. Los bloques VERBATIM continúan siendo la referencia primaria para el comportamiento solicitado.
+
+## Criterio de cumplimiento
+
+Toda propuesta o implementación futura de esta función deberá indicar explícitamente:
+
+- qué parte del requisito VERBATIM satisface;
+- qué componentes utiliza;
+- por qué cada componente es necesario;
+- cuál es la alternativa más simple que fue considerada;
+- y por qué la solución elegida representa la **mínima expresión arquitectónica viable**.
+
+## Estado
+
+**Especificación canónica ampliada y autorizada por el usuario.**
