@@ -2,19 +2,36 @@
 "use strict";
 var tabStream=null,micStream=null,tabRecorder=null,micRecorder=null,tabTimer=null,micTimer=null,audioContext=null,running=false,chunkSeq=0,captureSessionId=null,micMuteWatchdog=null,micMuteDesired=false;
 function send(message){try{var p=chrome.runtime.sendMessage(Object.assign({target:"offscreen"},message));if(p&&p.catch)p.catch(function(){});}catch(_){} }
-async function playTone(volume){
+async function playTone(volume, cue){
   if(!audioContext || audioContext.state==="closed") audioContext=new AudioContext();
   if(audioContext.state==="suspended") await audioContext.resume();
-  var c=audioContext,o=c.createOscillator(),g=c.createGain(),t=c.currentTime;
-  o.frequency.setValueAtTime(880,t);o.frequency.setValueAtTime(1174.66,t+.12);
-  g.gain.setValueAtTime(.0001,t);
-  g.gain.exponentialRampToValueAtTime(Math.max(.0001,volume*.45),t+.015);
-  g.gain.exponentialRampToValueAtTime(.0001,t+.35);
-  o.connect(g);g.connect(c.destination);
-  return new Promise(function(resolve,reject){
-    o.onended=function(){resolve(true)};
-    try{o.start(t);o.stop(t+.37)}catch(error){reject(error)}
-  });
+  var c=audioContext;
+  var start=c.currentTime;
+  var peak=Math.max(.0001,volume*.36);
+  function tone(frequency, at, duration){
+    return new Promise(function(resolve,reject){
+      var o=c.createOscillator(),g=c.createGain();
+      o.type="sine";
+      o.frequency.setValueAtTime(frequency,at);
+      g.gain.setValueAtTime(.0001,at);
+      g.gain.exponentialRampToValueAtTime(peak,at+.012);
+      g.gain.exponentialRampToValueAtTime(.0001,at+duration-.02);
+      o.connect(g);g.connect(c.destination);
+      o.onended=resolve;
+      try{o.start(at);o.stop(at+duration)}catch(error){reject(error)}
+    });
+  }
+  if(cue==="mute-on"){
+    await tone(880,start,.11);
+    await tone(622.25,start+.12,.13);
+  }else if(cue==="mute-off"){
+    await tone(622.25,start,.11);
+    await tone(880,start+.12,.13);
+  }else{
+    await tone(880,start,.11);
+    await tone(1174.66,start+.12,.13);
+  }
+  return true;
 }
 function stopStream(s){try{if(s)s.getTracks().forEach(function(t){t.stop()})}catch(_){} }
 function arm(source,stream){

@@ -121,18 +121,85 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     }, active ? "info" : "info", "runtime");
     if (!active) await scheduleSafeRuntimeReload("update-available-no-call");
   }
+  async function executeMainMicrophoneCommand(tabId, op, muted, source) {
+    var targetTabId=Number(tabId);
+    if(!Number.isFinite(targetTabId))return{ok:false,verified:false,muted:!!muted,trackCount:0,senderCount:0,error:"No hay una pestaña de llamada controlable."};
+    try{
+      await chrome.scripting.executeScript({
+        target:{tabId:targetTabId,frameIds:[0]},
+        world:"MAIN",
+        files:["mic-guard-main.js"],
+        injectImmediately:true
+      });
+    }catch(error){
+      return{ok:false,verified:false,muted:!!muted,trackCount:0,senderCount:0,error:"No se pudo inicializar el guard del micrófono: "+String(error)};
+    }
+    try{
+      var executions=await chrome.scripting.executeScript({
+        target:{tabId:targetTabId,frameIds:[0]},
+        world:"MAIN",
+        func:async function(input){
+          var commandEvent="__SIGNAL_INTERPRETER_MIC_COMMAND_V1__";
+          var ackEvent="__SIGNAL_INTERPRETER_MIC_ACK_V1__";
+          var requestId=crypto.randomUUID();
+          return await new Promise(function(resolve){
+            var settled=false;
+            var timeout=null;
+            function finish(value){
+              if(settled)return;
+              settled=true;
+              if(timeout)clearTimeout(timeout);
+              window.removeEventListener(ackEvent,onAck,true);
+              resolve(value);
+            }
+            function onAck(event){
+              var ack=null;
+              try{ack=JSON.parse(String(event&&event.detail||""));}catch(_){}
+              if(!ack||ack.requestId!==requestId)return;
+              finish(ack);
+            }
+            window.addEventListener(ackEvent,onAck,true);
+            try{
+              document.dispatchEvent(new CustomEvent(commandEvent,{detail:JSON.stringify({
+                schema:"signal-main-mic-command/v1",
+                op:input.op,
+                requestId:requestId,
+                muted:!!input.muted,
+                reason:input.source||"background-direct"
+              })}));
+            }catch(error){
+              finish({ok:false,verified:false,muted:!!input.muted,error:String(error)});
+              return;
+            }
+            timeout=setTimeout(function(){
+              finish({ok:false,verified:false,muted:!!input.muted,error:"MAIN microphone guard did not acknowledge the direct request."});
+            },1500);
+          });
+        },
+        args:[{op:op,muted:!!muted,source:source||"background-direct"}]
+      });
+      var result=executions&&executions[0]&&executions[0].result;
+      return result||{ok:false,verified:false,muted:!!muted,trackCount:0,senderCount:0,error:"Direct microphone command returned no result."};
+    }catch(error){
+      return{ok:false,verified:false,muted:!!muted,trackCount:0,senderCount:0,error:String(error)};
+    }
+  }
+
   async function probeMainClientMicrophone(tabId, source) {
     var targetTabId=Number(tabId);
     if(!Number.isFinite(targetTabId))return{ok:false,verified:false,muted:false,trackCount:0,senderCount:0,error:"No hay una pestaña de llamada controlable."};
     var lastError=null;
-    for(var attempt=1;attempt<=2;attempt+=1){
+    for(var attempt=1;attempt<=3;attempt+=1){
       try{
         var response=await chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_PROBE",source:source||"heartbeat"});
-        if(response&&response.verified===true)return Object.assign({},response,{ok:true,attempts:attempt});
+        if(response&&response.verified===true)return Object.assign({},response,{ok:true,attempts:attempt,transport:"content"});
         lastError=response&&response.error||"La sonda del micrófono no pudo verificar la salida.";
       }catch(error){lastError=String(error);}
+      var direct=await executeMainMicrophoneCommand(targetTabId,"probe",false,source||"background-direct");
+      if(direct&&direct.verified===true)return Object.assign({},direct,{ok:true,attempts:attempt,transport:"direct-main"});
+      lastError=direct&&direct.error||lastError;
     }
-    return{ok:false,verified:false,muted:false,trackCount:0,senderCount:0,error:lastError||"probe-failed",attempts:2};
+    return{ok:false,verified:false,muted:false,trackCount:0,senderCount:0,error:lastError||"probe-failed",attempts:3};
   }
   async function hotloadHeartbeat(trigger) {
     var now = Date.now();
@@ -177,6 +244,49 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       updatePhase: state.hotLoadUpdate && state.hotLoadUpdate.phase || "steady"
     }, "info", "runtime");
   }
+  var hotloadLastExistingWebTabScanAt = 0;
+
+  async function hotloadExistingWebTabs(trigger) {
+    var now = Date.now();
+    if (now - hotloadLastExistingWebTabScanAt < 5000) {
+      record("HOTLOAD_EXISTING_WEB_TABS_SCAN_DEDUPED", { trigger: trigger || "runtime-start" }, "info", "runtime");
+      return { ok: true, skipped: "recent-scan" };
+    }
+    hotloadLastExistingWebTabScanAt = now;
+    var tabs;
+    try {
+      tabs = await chrome.tabs.query({ url: ["http://*/*", "https://*/*"] });
+    } catch (error) {
+      record("HOTLOAD_EXISTING_WEB_TABS_QUERY_ERROR", { trigger: trigger || "runtime-start", error: String(error) }, "error", "runtime");
+      return { ok: false, error: String(error) };
+    }
+    var result = { scanned: tabs.length, injected: 0, errors: 0 };
+    for (var i = 0; i < tabs.length; i += 1) {
+      var tab = tabs[i];
+      var tabId = Number(tab && tab.id);
+      if (!Number.isFinite(tabId)) continue;
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: tabId, allFrames: true },
+          world: "ISOLATED",
+          files: ["global-mouse-gesture.js"],
+          injectImmediately: true
+        });
+        result.injected += 1;
+      } catch (error) {
+        result.errors += 1;
+        record("HOTLOAD_EXISTING_WEB_TAB_GESTURE_ERROR", {
+          trigger: trigger || "runtime-start",
+          tabId: tabId,
+          url: tab && tab.url ? safePlatformUrl(tab.url) : null,
+          error: String(error)
+        }, "warn", "microphone");
+      }
+    }
+    record("HOTLOAD_EXISTING_WEB_TABS_SCAN_COMPLETED", Object.assign({ trigger: trigger || "runtime-start" }, result), result.errors ? "warn" : "info", "runtime");
+    return { ok: result.errors === 0, result: result };
+  }
+
   async function hotloadExistingCloudTabs(trigger) {
     var now = Date.now();
     if (now - hotloadLastExistingTabScanAt < HOTLOAD_EXISTING_TAB_SCAN_MIN_MS) {
@@ -628,9 +738,14 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     }
     await offscreenCreation;
   }
-  async function playSound(volume){
+  async function playSound(volume, cue){
     await ensureOffscreen();
-    var response=await chrome.runtime.sendMessage({target:"offscreen",type:"EFFECTIF_PLAY_SOUND",volume:Math.max(0,Math.min(1,Number(volume)||0))});
+    var response=await chrome.runtime.sendMessage({
+      target:"offscreen",
+      type:"EFFECTIF_PLAY_SOUND",
+      volume:Math.max(0,Math.min(1,Number(volume)||0)),
+      cue:String(cue||"")
+    });
     if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo reproducir la alerta sonora");
     return response;
   }
@@ -1833,11 +1948,17 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       try{
         var response=await chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:!!muted,source:source||"background"});
         if(response&&response.verified===true&&!!response.muted===!!muted){
-          record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(response.trackCount||0),senderCount:Number(response.senderCount||0),attempts:attempt},"info","microphone");
-          return Object.assign({},response,{ok:true,inactive:false,attempts:attempt});
+          record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(response.trackCount||0),senderCount:Number(response.senderCount||0),attempts:attempt,transport:"content"},"info","microphone");
+          return Object.assign({},response,{ok:true,inactive:false,attempts:attempt,transport:"content"});
         }
         lastError=response&&response.error||"La salida del micrófono no pudo verificarse.";
       }catch(error){lastError=String(error);}
+      var direct=await executeMainMicrophoneCommand(targetTabId,"set",!!muted,source||"background-direct");
+      if(direct&&direct.verified===true&&!!direct.muted===!!muted){
+        record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(direct.trackCount||0),senderCount:Number(direct.senderCount||0),attempts:attempt,transport:"direct-main"},"info","microphone");
+        return Object.assign({},direct,{ok:true,inactive:false,attempts:attempt,transport:"direct-main"});
+      }
+      lastError=direct&&direct.error||lastError;
     }
     record("EXTENSION_MICROPHONE_OUTPUT_VERIFY_ERROR",{tabId:targetTabId,muted:!!muted,source:source||"background",error:lastError||"verification-failed",attempts:3},"error","microphone");
     return{ok:false,muted:!!muted,verified:false,inactive:false,error:lastError||"verification-failed",attempts:3};
@@ -1906,6 +2027,14 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:desired});
     await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
     record("EXTENSION_MICROPHONE_MUTE_APPLIED",{desired:desired,source:source||"unknown",callId:state.callId||null,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)},"info","microphone");
+    if(config.soundEnabled!==false){
+      try{
+        await playSound(Math.max(0.05,Number(config.volume||0.8)),desired?"mute-on":"mute-off");
+        record("EXTENSION_MICROPHONE_SOUND_PLAYED",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",volume:Number(config.volume||0.8)},"info","microphone");
+      }catch(soundError){
+        record("EXTENSION_MICROPHONE_SOUND_ERROR",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",error:String(soundError)},"warn","microphone");
+      }
+    }
     return{ok:true,muted:desired,verified:true,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)};
   }
   function setExtensionMicrophoneMuted(muted, source) {
@@ -2222,7 +2351,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
 
   async function markObservabilityBuildCheckpoint(reason, previousVersion) {
     try {
-      var files=["manifest.json","background.js","content.js","offscreen.js","groq-transcriber.js","ui/popup.js"];
+      var files=["manifest.json","background.js","content.js","offscreen.js","groq-transcriber.js","ui/popup.js","ui/popup.html","ui/popup.css","ui/time-format.js"];
       var texts=await Promise.all(files.map(function(file){return fetch(chrome.runtime.getURL(file),{cache:"no-store"}).then(function(response){if(!response.ok)throw new Error("No se pudo leer "+file);return response.text();});}));
       var bytes=new TextEncoder().encode(texts.join("\n/* SIGNAL OBSERVABILITY BUILD BOUNDARY */\n"));
       var digest=await crypto.subtle.digest("SHA-256",bytes);
@@ -2257,11 +2386,11 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
         priorState.hotLoadUpdate = Object.assign({}, priorState.hotLoadUpdate || {}, { schema: HOTLOAD_SCHEMA, phase: "post-install-active-call", currentVersion: chrome.runtime.getManifest().version });
         return chrome.storage.local.set({ effectifState: cloneStateForStorage(priorState) }).then(function () {
           record("HOTLOAD_INSTALL_BOUNDARY_ACTIVE_CALL", { callId: priorState.callId, currentVersion: chrome.runtime.getManifest().version, action: "no-offscreen-close-no-transcription-reset" }, "warn", "runtime");
-          return initialize().then(function () { return recoverAfterRuntimeBoundary("onInstalled-active-call"); }).then(function () { return hotloadExistingCloudTabs("onInstalled-active-call"); });
+          return initialize().then(function () { return recoverAfterRuntimeBoundary("onInstalled-active-call"); }).then(function () { return hotloadExistingCloudTabs("onInstalled-active-call"); }).then(function () { return hotloadExistingWebTabs("onInstalled-active-call"); });
         });
       }
       chrome.offscreen.closeDocument().catch(function(){});
-      return initialize().then(function () { return hotloadExistingCloudTabs("onInstalled"); });
+      return initialize().then(function () { return hotloadExistingCloudTabs("onInstalled"); }).then(function () { return hotloadExistingWebTabs("onInstalled"); });
     }).then(function () {
       return refreshAllActionIndicators().catch(function(error){
         record("ACTION_INDICATOR_INSTALL_REFRESH_ERROR",{error:String(error)},"warn","action");
@@ -2270,6 +2399,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
       SignalObservationSync.flush("startup").catch(function(error){ record("OBSERVATION_SYNC_STARTUP_ERROR",{error:String(error)},"warn","background"); });
     });
     }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+    checkMicrophoneCommandShortcut("onInstalled");
     markObservabilityBuildCheckpoint(details&&details.reason||"installed",details&&details.previousVersion).catch(function(){});
     chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
     chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
@@ -2285,6 +2415,7 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     try { SignalPlatformScreenshot.start(); } catch (error) { record("PLATFORM_SCREENSHOT_START_ERROR",{error:String(error)},"warn","platform-screenshot"); }
     refreshAllActionIndicators().catch(function () {});
     record("EXTENSION_RUNTIME_STARTED",{manifestVersion:chrome.runtime.getManifest().version},"info","runtime");
+    checkMicrophoneCommandShortcut("onStartup");
     hotloadExistingCloudTabs("onStartup").catch(function(error){ record("HOTLOAD_EXISTING_TABS_STARTUP_ERROR",{error:String(error)},"warn","runtime"); });
     markObservabilityBuildCheckpoint("startup").catch(function(){});
     reconcilePlatformTelemetry("runtime-startup").catch(function(error){
@@ -2298,9 +2429,10 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     }).then(function(){
       try{SignalObservationSync.start()}catch(_){};
       SignalObservationSync.flush("startup").catch(function(error){ record("OBSERVATION_SYNC_STARTUP_ERROR",{error:String(error)},"warn","background"); });
-      return recoverAfterRuntimeBoundary("runtime-start").catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");}).then(function(){ return hotloadExistingCloudTabs("runtime-start"); }).catch(function(error){record("HOTLOAD_EXISTING_TABS_RUNTIME_ERROR",{error:String(error)},"warn","runtime");});
+      return recoverAfterRuntimeBoundary("runtime-start").catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");}).then(function(){ return hotloadExistingCloudTabs("runtime-start"); }).then(function(){ return hotloadExistingWebTabs("runtime-start"); }).catch(function(error){record("HOTLOAD_EXISTING_TABS_RUNTIME_ERROR",{error:String(error)},"warn","runtime");});
     });
   }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
+  checkMicrophoneCommandShortcut("runtime-start");
   markObservabilityBuildCheckpoint("runtime-start").catch(function(){});
   chrome.alarms.create("effectif-exchange-rate",{delayInMinutes:0.1,periodInMinutes:60});
   chrome.alarms.create("effectif-official-sync",{delayInMinutes:5,periodInMinutes:60});
@@ -2449,17 +2581,37 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
     }
   });
 
+  function checkMicrophoneCommandShortcut(trigger) {
+    if (!chrome.commands || typeof chrome.commands.getAll !== "function") return;
+    chrome.commands.getAll(function (commands) {
+      var item = (commands || []).find(function (command) { return command.name === "toggle-extension-microphone"; });
+      var shortcut = item && item.shortcut ? item.shortcut : "";
+      chrome.storage.local.set({
+        signalMicrophoneShortcutStatus: {
+          expected: "Ctrl+Shift+Period",
+          assigned: shortcut,
+          available: !!shortcut,
+          checkedAt: iso(),
+          trigger: trigger || "runtime"
+        }
+      }).catch(function () {});
+      record(shortcut ? "EXTENSION_MICROPHONE_SHORTCUT_AVAILABLE" : "EXTENSION_MICROPHONE_SHORTCUT_UNASSIGNED", {
+        expected: "Ctrl+Shift+Period", assigned: shortcut || null, trigger: trigger || "runtime"
+      }, shortcut ? "info" : "warn", "microphone");
+    });
+  }
+
   chrome.commands.onCommand.addListener(function (command) {
     if (command === "toggle-extension-microphone") {
-      toggleExtensionMicrophoneMuted("keyboard").then(function (result) {
+      setExtensionMicrophoneMuted(true, "keyboard-force-mute").then(function (result) {
         if (result && result.ok && result.verified) {
-          record(result.muted ? "EXTENSION_MICROPHONE_MUTED" : "EXTENSION_MICROPHONE_UNMUTED", {
-            source: "keyboard", hotkey: "Ctrl+Shift+M", verified: true
+          record("EXTENSION_MICROPHONE_MUTED", {
+            source: "keyboard-force-mute", hotkey: "Ctrl+Shift+.", verified: true
           }, "info", "microphone");
         }
-        broadcastSignalEvent({ type: "signal.extension.microphone", muted: !!(result && result.muted), verified: !!(result && result.verified), timestamp: iso() });
+        broadcastSignalEvent({ type: "signal.extension.microphone", muted: true, verified: !!(result && result.verified), timestamp: iso() });
       }).catch(function (error) {
-        record("EXTENSION_MICROPHONE_KEYBOARD_ERROR", { source: "keyboard", hotkey: "Ctrl+Shift+M", error: String(error) }, "error", "microphone");
+        record("EXTENSION_MICROPHONE_KEYBOARD_ERROR", { source: "keyboard-force-mute", hotkey: "Ctrl+Shift+.", error: String(error) }, "error", "microphone");
       });
       return;
     }

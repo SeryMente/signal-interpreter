@@ -23,7 +23,7 @@ const chrome={
 const relay={async uploadScreenshot(s){uploads.push(s);return{accepted:true,duplicate:false,remotePath:"observations/screenshots/2026-10-08/_call_ID_--"+s.sha256+".jpg"};}};
 const recorded=[];
 const eventsSent=[];
-const sandbox={chrome,crypto:webcrypto,atob,console,Promise,Date,Math,Uint8Array,Set,Map};
+const sandbox={chrome,crypto:webcrypto,atob,console,Promise,Date,Math,Uint8Array,Set,Map,URL};
 sandbox.window=sandbox;
 vm.runInNewContext(fs.readFileSync("extension/platform-screenshot.js","utf8"),sandbox);
 sandbox.SignalPlatformScreenshot.configure({record:(a,p,l,c)=>recorded.push({a,p,l,c}),relay});

@@ -28,6 +28,7 @@
   var config = Object.assign({}, DEFAULT_CONFIG);
   var state = {};
   var mirror = {};
+  var relayMomentState = { automatic: null, manual: null, model: null };
   var $ = function (id) { return document.getElementById(id); };
   var BUILD_VERSION = chrome.runtime.getManifest().version;
   var BUILD_LABEL = "v" + BUILD_VERSION;
@@ -57,6 +58,54 @@
     var rest = seconds % 60;
     return [hours, minutes, rest].map(function (value) { return String(value).padStart(2, "0"); }).join(":");
   }
+  function renderMicrophoneShortcut() {
+    var node = $("micShortcutStatus");
+    if (!node || !chrome.commands || typeof chrome.commands.getAll !== "function") return;
+    chrome.commands.getAll(function (commands) {
+      var item = (commands || []).find(function (command) { return command.name === "toggle-extension-microphone"; });
+      var shortcut = item && item.shortcut ? item.shortcut : "";
+      node.textContent = shortcut
+        ? "Atajo activo · " + shortcut.replace("Period", ".")
+        : "Atajo no asignado · configúralo en chrome://extensions/shortcuts";
+    });
+  }
+
+  function renderMicrophone() {
+    var muted = !!state.microphoneMuted;
+    var muteStatus = String(state.microphoneMuteStatus || "");
+    var outputStatus = String(state.microphoneOutputStatus || "");
+    var error = muteStatus === "error" || outputStatus === "error";
+    var button = $("micToggle");
+    if (!button) return;
+    var label = $("micToggleLabel");
+    var meta = $("micToggleMeta");
+    if (error) {
+      if (label) label.textContent = "MIC ERR";
+      if (meta) meta.textContent = "Permanece silenciado";
+      button.classList.add("is-error");
+      button.classList.remove("is-muted");
+      button.setAttribute("aria-pressed", "true");
+      button.title = "No se pudo verificar el micrófono. Permanece silenciado.";
+    } else if (muted) {
+      if (label) label.textContent = "MIC OFF";
+      if (meta) meta.textContent = "Silenciado · verificado";
+      button.classList.add("is-muted");
+      button.classList.remove("is-error");
+      button.setAttribute("aria-pressed", "true");
+      button.title = "Micrófono silenciado. Pulsa para solicitar activación verificada.";
+    } else {
+      if (label) label.textContent = "MIC ON";
+      if (meta) meta.textContent = muteStatus === "applied" ? "Activo · verificado" : "Activo";
+      button.classList.remove("is-muted", "is-error");
+      button.setAttribute("aria-pressed", "false");
+      button.title = "Micrófono activo. Pulsa para silenciar.";
+    }
+    var statusNode = $("micStatus");
+    if (statusNode) statusNode.textContent = error
+      ? "No se pudo verificar · estado seguro: silenciado"
+      : muted ? "Entrada de audio desactivada" : "Entrada de audio activa";
+  }
+
   function render() {
     $("enabled").checked = !!config.autoAnswerEnabled;
     $("observation").checked = !!config.observationEnabled;
@@ -76,6 +125,7 @@
     $("onlineTimer").textContent = duration(state.onlineStartedAt);
     $("callTimer").textContent = duration(state.callStartedAt);
     $("endCall").disabled = !state.callStartedAt;
+    renderMicrophone();
     var today = localDay();
     var completed = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) {
       return localDay(call.startedAt || call.endedAt) === today;
@@ -114,6 +164,39 @@
       : ((state.exchangeRateError || "Reintentando automÃ¡ticamente").slice(0, 90));
     renderOfficial();
   }
+  var micToggleButton=$("micToggle");
+  if(micToggleButton) micToggleButton.addEventListener("click",async function(){
+    var button=this;
+    button.disabled=true;
+    status("Verificando micrófono…");
+    try{
+      var response=await new Promise(function(resolve){
+        chrome.runtime.sendMessage({type:"SIGNAL_EXTENSION_MICROPHONE_TOGGLE",source:"popup-button"},function(result){
+          if(chrome.runtime.lastError) resolve({ok:false,verified:false,muted:true,error:chrome.runtime.lastError.message});
+          else resolve(result||{ok:false,verified:false,muted:true,error:"Sin respuesta del worker"});
+        });
+      });
+      if(response&&response.ok&&response.verified===true){
+        state=Object.assign({},state,{
+          microphoneMuted:!!response.muted,
+          microphoneMuteStatus:"applied",
+          microphoneOutputMuted:!!response.muted,
+          microphoneOutputStatus:"applied"
+        });
+        status(response.muted ? "MIC OFF · verificado" : "MIC ON · verificado");
+      }else{
+        state=Object.assign({},state,{
+          microphoneMuted:true,
+          microphoneMuteStatus:"error",
+          microphoneOutputMuted:true,
+          microphoneOutputStatus:"error"
+        });
+        status("MIC ERR · permanece silenciado",true);
+      }
+      render();
+    }catch(error){ status("MIC ERR · permanece silenciado",true); }
+    finally{ button.disabled=false; renderMicrophone(); }
+  });
   var openTranscript=$("openTranscript");
   if(openTranscript)openTranscript.addEventListener("click",function(){openTranscript.disabled=true;status("Preparando captura de audioâ€¦");chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab||tab.id==null)throw new Error("No hay pestaÃ±a activa.");return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){return{tab:tab,streamId:streamId}})}).then(function(x){var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:x.tab.id,audioStreamId:x.streamId,sourceUrl:x.tab.url||"",sourceTitle:x.tab.title||""};return chrome.runtime.sendMessage(payload)}).then(function(response){status(response&&response.ok?"Groq: consola abierta y captura iniciada":"No se pudo iniciar: "+String(response&&response.error||"desconocido"),!(response&&response.ok));}).catch(function(error){status("No se pudo iniciar la captura: "+String(error),true);}).finally(function(){openTranscript.disabled=false;});});
   $("groqModel").addEventListener("change",function(){save({groqModel:this.value});});
@@ -277,21 +360,33 @@
     });
   }
   function formatMoment(value, emptyLabel) {
+    if (window.SignalInterpreterTime && typeof window.SignalInterpreterTime.formatMoment === "function") {
+      return window.SignalInterpreterTime.formatMoment(value, emptyLabel);
+    }
     if (!value) return emptyLabel;
     var date = new Date(value);
     if (!Number.isFinite(date.getTime())) return emptyLabel;
     return date.toLocaleString("es-MX", {hour12:false});
   }
+
+  function renderRelayMomentLabels() {
+    if ($("lastAutomaticPublish")) $("lastAutomaticPublish").textContent = formatMoment(relayMomentState.automatic, "Nunca registrada");
+    if ($("lastManualPublish")) $("lastManualPublish").textContent = formatMoment(relayMomentState.manual, "Nunca registrada");
+    if ($("lastModelContextAccess")) $("lastModelContextAccess").textContent = formatMoment(relayMomentState.model, "No registrado");
+  }
+
   async function renderRelayStatus() {
     try {
       var info=await SignalObservabilityRelay.getStatus();
       var stored=await new Promise(function(resolve){chrome.storage.local.get(["signalObservationSyncState"],resolve);});
       var syncState=stored.signalObservationSyncState||{};
       var history=info.publishHistory||{};
-      if($("githubSyncStatus")) $("githubSyncStatus").textContent=info.reachable ? "Relay Vercel · operativo" : "Relay no disponible";
-      if($("githubAuthInfo")) $("githubAuthInfo").textContent=info.reachable ? "Chrome → Vercel → GitHub Actions · "+info.repository : String(info.error||"No se pudo contactar al relay");
-      if($("lastAutomaticPublish")) $("lastAutomaticPublish").textContent=formatMoment(history.lastAutomaticPublishAt||syncState.lastAutomaticPublishAt,"Nunca registrada");
-      if($("lastManualPublish")) $("lastManualPublish").textContent=formatMoment(history.lastManualPublishAt||syncState.lastManualPublishAt,"Nunca registrada");
+       relayMomentState.automatic=history.lastAutomaticPublishAt||syncState.lastAutomaticPublishAt||null;
+       relayMomentState.manual=history.lastManualPublishAt||syncState.lastManualPublishAt||null;
+       relayMomentState.model=info.modelContextAccess&&info.modelContextAccess.accessedAt||null;
+       if($("githubSyncStatus")) $("githubSyncStatus").textContent=info.reachable ? "Relay operativo" : "Relay no disponible";
+       if($("githubAuthInfo")) $("githubAuthInfo").textContent=info.reachable ? "Chrome → Vercel → GitHub Actions · "+info.repository : String(info.error||"No se pudo contactar al relay");
+       renderRelayMomentLabels();
       if($("lastModelContextAccess")) $("lastModelContextAccess").textContent=formatMoment(info.modelContextAccess&&info.modelContextAccess.accessedAt,"No registrado");
     } catch(error) {
       if($("githubSyncStatus")) $("githubSyncStatus").textContent="Error";
@@ -312,6 +407,7 @@
     finally{button.disabled=false; await renderRelayStatus();}
   });
   renderRelayStatus();
+  renderMicrophoneShortcut();
   function renderEarningsOnly() {
     var today = localDay();
     var completed = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) { return localDay(call.startedAt || call.endedAt) === today; }) : [];
@@ -367,4 +463,7 @@
     $("sessionTimer").textContent = duration(state.sessionStartedAt); $("onlineTimer").textContent = duration(state.onlineStartedAt); $("callTimer").textContent = duration(state.callStartedAt); renderEarningsOnly();
   }, 1000);
   setInterval(refreshTelemetryStats, 30000);
+  setInterval(renderRelayMomentLabels, 10000);
+  setInterval(renderMicrophoneShortcut, 10000);
+  setInterval(renderRelayMomentLabels, 10000);
 })();

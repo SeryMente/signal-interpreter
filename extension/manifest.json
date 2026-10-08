@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "minimum_chrome_version": "116",
   "name": "Signal Interpreter",
-  "version": "0.10.10",
+  "version": "0.10.11",
   "description": "Asistente independiente para interpretación médica en tiempo real; Auto-Answer, observabilidad y métricas para Cloud Interpreter.",
   "permissions": [
     "storage",
@@ -31,21 +31,34 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://app.cloudinterpreter.com/*"],
-      "js": ["mic-guard-main.js"],
+      "matches": [
+        "https://app.cloudinterpreter.com/*"
+      ],
+      "js": [
+        "mic-guard-main.js"
+      ],
       "run_at": "document_start",
       "world": "MAIN",
       "all_frames": true
     },
     {
-      "matches": ["https://app.cloudinterpreter.com/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://app.cloudinterpreter.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_start",
       "world": "ISOLATED"
     },
     {
-      "matches": ["http://*/*","https://*/*"],
-      "js": ["global-mouse-gesture.js"],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "global-mouse-gesture.js"
+      ],
       "run_at": "document_start",
       "world": "ISOLATED",
       "all_frames": true
@@ -63,9 +76,9 @@
   "commands": {
     "toggle-extension-microphone": {
       "suggested_key": {
-        "default": "Ctrl+Shift+M"
+        "default": "Ctrl+Shift+Period"
       },
-      "description": "Silenciar o reactivar el micrófono de Signal Interpreter"
+      "description": "FORCE MUTE del micrófono de Signal Interpreter. Ctrl+Shift+."
     },
     "toggle-auto-answer": {
       "suggested_key": {
