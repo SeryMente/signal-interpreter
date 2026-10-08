@@ -13,12 +13,12 @@
   var active = false;
   var positionRaf = null;
 
-  function isCallRoute() {
-    return /^\/call\/[^/?#]+(?:\/[^/?#]+)?\/?$/.test(location.pathname);
+  function isCloudInterpreterPage() {
+    return location.hostname === "app.cloudinterpreter.com";
   }
 
   function ensureHost() {
-    if (!enabled || !isCallRoute() || !document.documentElement) return;
+    if (!enabled || !isCloudInterpreterPage() || !document.documentElement) return;
     if (host && host.isConnected) return;
 
     host = document.createElement("div");
@@ -184,7 +184,7 @@
       if (host) host.style.display = "none";
       return;
     }
-    if (isCallRoute()) ensureHost();
+    if (isCloudInterpreterPage()) ensureHost();
     render();
   }
 
@@ -226,7 +226,7 @@
 
   var routeTimer = setInterval(function () {
     if (!enabled) return;
-    if (isCallRoute()) {
+    if (isCloudInterpreterPage()) {
       ensureHost();
       if (rows.length && active) render();
     } else if (host) {
