@@ -2102,10 +2102,10 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:desired});
     await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
     record("EXTENSION_MICROPHONE_MUTE_APPLIED",{desired:desired,source:source||"unknown",callId:state.callId||null,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)},"info","microphone");
-    if(config.soundEnabled!==false){
+    if(cachedConfig.soundEnabled!==false){
       try{
-        await playSound(Math.max(0.05,Number(config.volume||0.8)),desired?"mute-on":"mute-off");
-        record("EXTENSION_MICROPHONE_SOUND_PLAYED",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",volume:Number(config.volume||0.8)},"info","microphone");
+        await playSound(Math.max(0.05,Number(cachedConfig.volume||0.8)),desired?"mute-on":"mute-off");
+        record("EXTENSION_MICROPHONE_SOUND_PLAYED",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",volume:Number(cachedConfig.volume||0.8)},"info","microphone");
       }catch(soundError){
         record("EXTENSION_MICROPHONE_SOUND_ERROR",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",error:String(soundError)},"warn","microphone");
       }
