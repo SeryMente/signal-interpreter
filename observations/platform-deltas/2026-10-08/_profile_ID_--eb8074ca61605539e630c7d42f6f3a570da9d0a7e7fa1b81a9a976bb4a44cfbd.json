@@ -2,37 +2,33 @@
   "schema": "signal-interpreter-platform-delta/v1",
   "type": "changed",
   "identityKey": "https://app.cloudinterpreter.com|/profile/<ID>|",
-  "fromSnapshotId": "snap-339abaaf-514c-4dcb-aab6-f80dd6743ea3",
-  "toSnapshotId": "snap-b043c836-c019-4a0b-a754-5756461e7de1",
-  "fromHash": "2d6a33989dc269051cc7daee1b637dd0da0d680952693039cd88bf7f76f001b8",
+  "fromSnapshotId": "snap-aa9840a0-cb50-4eee-9aa4-5332daafc628",
+  "toSnapshotId": "snap-b0eb5c0f-a860-4ce3-93e2-2dc151493c6f",
+  "fromHash": "1fd57d107b6ca575871a8cf636372ed69d9611591b38f8d1a72966893eb5ac2b",
   "toHash": "eb8074ca61605539e630c7d42f6f3a570da9d0a7e7fa1b81a9a976bb4a44cfbd",
-  "capturedAt": "2026-10-08T01:35:54.806Z",
+  "capturedAt": "2026-10-08T01:37:00.253Z",
   "summary": {
-    "added": 1,
-    "removed": 1,
-    "changed": 78,
+    "added": 56,
+    "removed": 9,
+    "changed": 15,
     "sections": [
       "page",
       "dom",
-      "controls",
-      "css",
-      "javascript"
+      "controls"
     ]
   },
   "changes": [
     {
       "kind": "changed",
-      "path": "page.viewport",
-      "before": {
-        "devicePixelRatio": 1,
-        "height": 911,
-        "width": 1920
-      },
-      "after": {
-        "width": 1920,
-        "height": 911,
-        "devicePixelRatio": 1
-      }
+      "path": "page.nodeCount",
+      "before": 169,
+      "after": 551
+    },
+    {
+      "kind": "changed",
+      "path": "page.title",
+      "before": "Self-check - Cloud Interpreter",
+      "after": "My Profile - Cloud Interpreter"
     },
     {
       "kind": "changed",
@@ -41,39 +37,131 @@
       "after": "hidden"
     },
     {
+      "kind": "added",
+      "path": "dom.tagCounts.a",
+      "value": 14
+    },
+    {
       "kind": "changed",
+      "path": "dom.tagCounts.button",
+      "before": 5,
+      "after": 4
+    },
+    {
+      "kind": "removed",
+      "path": "dom.tagCounts.circle",
+      "value": 2
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.div",
+      "before": 39,
+      "after": 211
+    },
+    {
+      "kind": "removed",
+      "path": "dom.tagCounts.g",
+      "value": 1
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.h3",
+      "value": 1
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.h4",
+      "value": 4
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.h5",
+      "value": 1
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.h6",
+      "value": 1
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.i",
+      "before": 3,
+      "after": 51
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.input",
+      "value": 11
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.label",
+      "value": 4
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.li",
+      "value": 14
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.nav",
+      "value": 1
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.p",
+      "before": 1,
+      "after": 5
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.path",
+      "before": 3,
+      "after": 13
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.span",
+      "before": 10,
+      "after": 75
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.svg",
+      "before": 3,
+      "after": 12
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.table",
+      "value": 1
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.tbody",
+      "value": 1
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.td",
+      "value": 13
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.tr",
+      "value": 7
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.ul",
+      "value": 4
+    },
+    {
+      "kind": "added",
       "path": "dom.elements[div#__next>div:nth-child(1)>div:nth-child(2)>main:nth-child(2)|main]",
-      "before": {
-        "attributes": {},
-        "bbox": {
-          "height": 1679,
-          "width": 1585
-        },
-        "childCount": 2,
-        "classes": [
-          "Layout_right__RURWl"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(21, 0, 48)",
-          "color": "rgb(21, 0, 48)",
-          "display": "block",
-          "height": "1678.62px",
-          "margin": "0px 0px 0px 320px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "1585px"
-        },
-        "disabled": false,
-        "selector": "div#__next>div:nth-child(1)>div:nth-child(2)>main:nth-child(2)",
-        "tag": "main",
-        "text": "[TEXT:19:08ce8cfe]",
-        "textFingerprint": "08ce8cfe",
-        "textLength": 19,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div#__next>div:nth-child(1)>div:nth-child(2)>main:nth-child(2)",
         "tag": "main",
         "attributes": {},
@@ -105,44 +193,44 @@
       }
     },
     {
-      "kind": "changed",
-      "path": "dom.elements[div#call-bar-portal>div:nth-child(1)>div:nth-child(1)>div:nth-child(4)>button:nth-child(2)|button]",
-      "before": {
-        "attributes": {
-          "aria-label": "Click to go Online"
+      "kind": "removed",
+      "path": "dom.elements[div#__next>div:nth-child(1)>main:nth-child(2)|main]",
+      "value": {
+        "selector": "div#__next>div:nth-child(1)>main:nth-child(2)",
+        "tag": "main",
+        "attributes": {},
+        "classes": [
+          "min-h-screen",
+          "overflow-y-auto"
+        ],
+        "text": "[TEXT:19:44e2ce4c]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 1,
+        "textLength": 19,
+        "textFingerprint": "44e2ce4c",
+        "computedStyle": {
+          "display": "block",
+          "position": "static",
+          "overflow": "auto",
+          "width": "1920px",
+          "height": "911px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(21, 0, 48)",
+          "border": "0px none rgb(21, 0, 48)",
+          "opacity": "1"
         },
         "bbox": {
-          "height": 43,
-          "width": 161
-        },
-        "childCount": 1,
-        "classes": [
-          "p-button-sm",
-          "p-button",
-          "p-component",
-          "p-button-outlined"
-        ],
-        "computedStyle": {
-          "border": "1px solid rgb(243, 234, 255)",
-          "color": "rgb(111, 56, 183)",
-          "display": "flex",
-          "height": "43px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "hidden",
-          "padding": "10.5px 17.5px",
-          "position": "relative",
-          "width": "160.766px"
-        },
-        "disabled": false,
-        "selector": "div#call-bar-portal>div:nth-child(1)>div:nth-child(1)>div:nth-child(4)>button:nth-child(2)",
-        "tag": "button",
-        "text": "[TEXT:18:72d1f2fd]",
-        "textFingerprint": "72d1f2fd",
-        "textLength": 18,
-        "visible": true
-      },
-      "after": {
+          "width": 1920,
+          "height": 911
+        }
+      }
+    },
+    {
+      "kind": "added",
+      "path": "dom.elements[div#call-bar-portal>div:nth-child(1)>div:nth-child(1)>div:nth-child(4)>button:nth-child(2)|button]",
+      "value": {
         "selector": "div#call-bar-portal>div:nth-child(1)>div:nth-child(1)>div:nth-child(4)>button:nth-child(2)",
         "tag": "button",
         "attributes": {
@@ -179,48 +267,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div#call-widget-portal>div:nth-child(2)>div:nth-child(3)>button:nth-child(1)|button]",
-      "before": {
-        "attributes": {
-          "aria-label": "Click to go Online"
-        },
-        "bbox": {
-          "height": 60,
-          "width": 248
-        },
-        "childCount": 1,
-        "classes": [
-          "CallWidget_button__gX9Vy",
-          "bg-greyscale-white",
-          "py-3",
-          "w-full",
-          "p-button",
-          "p-component",
-          "p-button-outlined",
-          "p-button-danger"
-        ],
-        "computedStyle": {
-          "border": "1px solid rgb(225, 87, 115)",
-          "color": "rgb(225, 87, 115)",
-          "display": "flex",
-          "height": "60px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "hidden",
-          "padding": "16px 20px",
-          "position": "relative",
-          "width": "248px"
-        },
-        "disabled": false,
-        "selector": "div#call-widget-portal>div:nth-child(2)>div:nth-child(3)>button:nth-child(1)",
-        "tag": "button",
-        "text": "[TEXT:18:72d1f2fd]",
-        "textFingerprint": "72d1f2fd",
-        "textLength": 18,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div#call-widget-portal>div:nth-child(2)>div:nth-child(3)>button:nth-child(1)",
         "tag": "button",
         "attributes": {
@@ -261,45 +310,206 @@
       }
     },
     {
-      "kind": "changed",
-      "path": "dom.elements[div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>button:nth-child(1)|button]",
-      "before": {
+      "kind": "removed",
+      "path": "dom.elements[div#telecom-portal>div:nth-child(1)>div:nth-child(4)>div:nth-child(1)>button:nth-child(1)|button]",
+      "value": {
+        "selector": "div#telecom-portal>div:nth-child(1)>div:nth-child(4)>div:nth-child(1)>button:nth-child(1)",
+        "tag": "button",
         "attributes": {},
-        "bbox": {
-          "height": 48,
-          "width": 310
-        },
+        "classes": [
+          "flex",
+          "justify-content-center",
+          "p-button-sm",
+          "font-semibold",
+          "p-button",
+          "p-component",
+          "p-button-outlined"
+        ],
+        "text": "[TEXT:7:6e781f45]",
+        "visible": true,
+        "disabled": false,
         "childCount": 2,
+        "textLength": 7,
+        "textFingerprint": "6e781f45",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "108.219px",
+          "height": "40px",
+          "padding": "10.5px 17.5px",
+          "margin": "0px",
+          "color": "rgb(111, 56, 183)",
+          "border": "1px solid rgb(243, 234, 255)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 108,
+          "height": 40
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div#telecom-portal>div:nth-child(1)>div:nth-child(4)>div:nth-child(1)>button:nth-child(2)|button]",
+      "value": {
+        "selector": "div#telecom-portal>div:nth-child(1)>div:nth-child(4)>div:nth-child(1)>button:nth-child(2)",
+        "tag": "button",
+        "attributes": {},
+        "classes": [
+          "flex",
+          "justify-content-center",
+          "p-button-sm",
+          "font-semibold",
+          "p-button",
+          "p-component",
+          "p-disabled",
+          "p-button-outlined"
+        ],
+        "text": "[TEXT:8:148e384d]",
+        "visible": true,
+        "disabled": true,
+        "childCount": 1,
+        "textLength": 8,
+        "textFingerprint": "148e384d",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "101.344px",
+          "height": "40px",
+          "padding": "10.5px 17.5px",
+          "margin": "0px",
+          "color": "rgb(171, 166, 176)",
+          "border": "1px solid rgb(244, 244, 244)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 101,
+          "height": 40
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div#telecom-portal>div:nth-child(1)>div:nth-child(4)>div:nth-child(1)>button:nth-child(3)|button]",
+      "value": {
+        "selector": "div#telecom-portal>div:nth-child(1)>div:nth-child(4)>div:nth-child(1)>button:nth-child(3)",
+        "tag": "button",
+        "attributes": {},
         "classes": [
           "p-button-sm",
-          "flex",
-          "gap-3",
-          "h-3rem",
           "p-button",
           "p-component",
           "p-button-text"
         ],
-        "computedStyle": {
-          "border": "1px solid rgba(0, 0, 0, 0)",
-          "color": "rgb(111, 56, 183)",
-          "display": "flex",
-          "height": "48px",
-          "margin": "0px 0px 0px 9.6px",
-          "opacity": "1",
-          "overflow": "hidden",
-          "padding": "10.5px 17.5px",
-          "position": "relative",
-          "width": "310.406px"
-        },
+        "text": "[TEXT:8:4b058728]",
+        "visible": true,
         "disabled": false,
-        "selector": "div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>button:nth-child(1)",
+        "childCount": 2,
+        "textLength": 8,
+        "textFingerprint": "4b058728",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "94.2031px",
+          "height": "40px",
+          "padding": "10.5px 17.5px",
+          "margin": "0px",
+          "color": "rgb(111, 56, 183)",
+          "border": "1px solid rgba(0, 0, 0, 0)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 94,
+          "height": 40
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div#telecom-portal>div:nth-child(1)>div:nth-child(4)>div:nth-child(2)>button:nth-child(1)|button]",
+      "value": {
+        "selector": "div#telecom-portal>div:nth-child(1)>div:nth-child(4)>div:nth-child(2)>button:nth-child(1)",
         "tag": "button",
-        "text": "[TEXT:13:8e4bc3bd]",
-        "textFingerprint": "8e4bc3bd",
-        "textLength": 13,
-        "visible": true
-      },
-      "after": {
+        "attributes": {
+          "aria-label": "Click to go Online"
+        },
+        "classes": [
+          "p-button-sm",
+          "p-button",
+          "p-component",
+          "p-disabled",
+          "p-button-success"
+        ],
+        "text": "[TEXT:18:72d1f2fd]",
+        "visible": true,
+        "disabled": true,
+        "childCount": 1,
+        "textLength": 18,
+        "textFingerprint": "72d1f2fd",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "160.766px",
+          "height": "40px",
+          "padding": "10.5px 17.5px",
+          "margin": "0px",
+          "color": "rgb(174, 170, 179)",
+          "border": "1px solid rgb(235, 239, 237)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 161,
+          "height": 40
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div#telecom-portal>div:nth-child(1)>div:nth-child(4)>div:nth-child(3)>button:nth-child(1)|button]",
+      "value": {
+        "selector": "div#telecom-portal>div:nth-child(1)>div:nth-child(4)>div:nth-child(3)>button:nth-child(1)",
+        "tag": "button",
+        "attributes": {
+          "aria-label": "Cancel"
+        },
+        "classes": [
+          "p-button-sm",
+          "p-button",
+          "p-component",
+          "p-button-outlined"
+        ],
+        "text": "[TEXT:6:35afca3b]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 2,
+        "textLength": 6,
+        "textFingerprint": "35afca3b",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "108.812px",
+          "height": "40px",
+          "padding": "10.5px 17.5px",
+          "margin": "0px",
+          "color": "rgb(111, 56, 183)",
+          "border": "1px solid rgb(243, 234, 255)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 109,
+          "height": 40
+        }
+      }
+    },
+    {
+      "kind": "added",
+      "path": "dom.elements[div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>button:nth-child(1)|button]",
+      "value": {
         "selector": "div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>button:nth-child(1)",
         "tag": "button",
         "attributes": {},
@@ -337,39 +547,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>nav:nth-child(3)|nav]",
-      "before": {
-        "attributes": {},
-        "bbox": {
-          "height": 180,
-          "width": 320
-        },
-        "childCount": 3,
-        "classes": [
-          "SidebarMenu_container__HBJE5"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(21, 0, 48)",
-          "color": "rgb(21, 0, 48)",
-          "display": "block",
-          "height": "180px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "auto scroll",
-          "padding": "0px",
-          "position": "static",
-          "width": "320px"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>nav:nth-child(3)",
-        "tag": "nav",
-        "text": "[TEXT:32:aba555a7]",
-        "textFingerprint": "aba555a7",
-        "textLength": 32,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>nav:nth-child(3)",
         "tag": "nav",
         "attributes": {},
@@ -401,42 +581,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(1)>ul:nth-child(2)>li:nth-child(1)>div:nth-child(2)>a:nth-child(1)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://cloud-interpreter-files.s3.amazonaws.com",
-          "target": "_self"
-        },
-        "bbox": {
-          "height": 20,
-          "width": 139
-        },
-        "childCount": 0,
-        "classes": [
-          "LinkBlock_container__rGgzx"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(111, 56, 183)",
-          "color": "rgb(111, 56, 183)",
-          "display": "inline",
-          "height": "auto",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "auto"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(1)>ul:nth-child(2)>li:nth-child(1)>div:nth-child(2)>a:nth-child(1)",
-        "tag": "a",
-        "text": "[TEXT:17:b52f0b93]",
-        "textFingerprint": "b52f0b93",
-        "textLength": 17,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(1)>ul:nth-child(2)>li:nth-child(1)>div:nth-child(2)>a:nth-child(1)",
         "tag": "a",
         "attributes": {
@@ -471,42 +618,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(1)>ul:nth-child(2)>li:nth-child(3)>div:nth-child(2)>a:nth-child(1)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://cloud-interpreter-files.s3.amazonaws.com",
-          "target": "_self"
-        },
-        "bbox": {
-          "height": 20,
-          "width": 212
-        },
-        "childCount": 0,
-        "classes": [
-          "LinkBlock_container__rGgzx"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(111, 56, 183)",
-          "color": "rgb(111, 56, 183)",
-          "display": "inline",
-          "height": "auto",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "auto"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(1)>ul:nth-child(2)>li:nth-child(3)>div:nth-child(2)>a:nth-child(1)",
-        "tag": "a",
-        "text": "[TEXT:25:7e2b0cb6]",
-        "textFingerprint": "7e2b0cb6",
-        "textLength": 25,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(1)>ul:nth-child(2)>li:nth-child(3)>div:nth-child(2)>a:nth-child(1)",
         "tag": "a",
         "attributes": {
@@ -541,39 +655,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>div:nth-child(2)>a:nth-child(1)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://app.cloudinterpreter.com/"
-        },
-        "bbox": {
-          "height": 20,
-          "width": 272
-        },
-        "childCount": 1,
-        "classes": [],
-        "computedStyle": {
-          "border": "0px none rgb(21, 0, 48)",
-          "color": "rgb(21, 0, 48)",
-          "display": "inline",
-          "height": "auto",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "auto"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>div:nth-child(2)>a:nth-child(1)",
-        "tag": "a",
-        "text": "",
-        "textFingerprint": "811c9dc5",
-        "textLength": 0,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>div:nth-child(2)>a:nth-child(1)",
         "tag": "a",
         "attributes": {
@@ -605,43 +689,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>div:nth-child(2)>a:nth-child(4)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://maps.google.com",
-          "target": "_blank"
-        },
-        "bbox": {
-          "height": 20,
-          "width": 95
-        },
-        "childCount": 0,
-        "classes": [
-          "LinkBlock_container__rGgzx",
-          "mt-1"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(111, 56, 183)",
-          "color": "rgb(111, 56, 183)",
-          "display": "block",
-          "height": "20px",
-          "margin": "4px 0px 0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "94.9219px"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>div:nth-child(2)>a:nth-child(4)",
-        "tag": "a",
-        "text": "[TEXT:11:f51b5247]",
-        "textFingerprint": "f51b5247",
-        "textLength": 11,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>div:nth-child(2)>a:nth-child(4)",
         "tag": "a",
         "attributes": {
@@ -677,41 +727,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>nav:nth-child(3)>a:nth-child(1)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://app.cloudinterpreter.com/profile/<ID>"
-        },
-        "bbox": {
-          "height": 60,
-          "width": 320
-        },
-        "childCount": 2,
-        "classes": [
-          "SidebarMenuItem_link__hPsUG",
-          "SidebarMenuItem_link_active__DgaHi"
-        ],
-        "computedStyle": {
-          "color": "rgb(63, 22, 116)",
-          "display": "flex",
-          "height": "60px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "320px"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>nav:nth-child(3)>a:nth-child(1)",
-        "tag": "a",
-        "text": "[TEXT:10:bbf9687a]",
-        "textFingerprint": "bbf9687a",
-        "textLength": 10,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>nav:nth-child(3)>a:nth-child(1)",
         "tag": "a",
         "attributes": {
@@ -745,41 +763,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>nav:nth-child(3)>a:nth-child(2)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://app.cloudinterpreter.com/profile/<ID>/appointments"
-        },
-        "bbox": {
-          "height": 60,
-          "width": 320
-        },
-        "childCount": 2,
-        "classes": [
-          "SidebarMenuItem_link__hPsUG",
-          "false"
-        ],
-        "computedStyle": {
-          "color": "rgba(63, 22, 116, 0.4)",
-          "display": "flex",
-          "height": "60px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "320px"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>nav:nth-child(3)>a:nth-child(2)",
-        "tag": "a",
-        "text": "[TEXT:12:d78e710b]",
-        "textFingerprint": "d78e710b",
-        "textLength": 12,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>nav:nth-child(3)>a:nth-child(2)",
         "tag": "a",
         "attributes": {
@@ -813,41 +799,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>nav:nth-child(3)>a:nth-child(3)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://app.cloudinterpreter.com/profile/<ID>/logs"
-        },
-        "bbox": {
-          "height": 60,
-          "width": 320
-        },
-        "childCount": 2,
-        "classes": [
-          "SidebarMenuItem_link__hPsUG",
-          "false"
-        ],
-        "computedStyle": {
-          "color": "rgba(63, 22, 116, 0.4)",
-          "display": "flex",
-          "height": "60px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "320px"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>nav:nth-child(3)>a:nth-child(3)",
-        "tag": "a",
-        "text": "[TEXT:10:9e6fb02a]",
-        "textFingerprint": "9e6fb02a",
-        "textLength": 10,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>nav:nth-child(3)>a:nth-child(3)",
         "tag": "a",
         "attributes": {
@@ -881,45 +835,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(2)>div:nth-child(1)>ul:nth-child(3)>li:nth-child(1)>a:nth-child(1)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://app.cloudinterpreter.com/profile/<ID>",
-          "target": "_self"
-        },
-        "bbox": {
-          "height": 20,
-          "width": 66
-        },
-        "childCount": 0,
-        "classes": [
-          "LinkBlock_container__rGgzx",
-          "HeaderMenu_link__YwYtf",
-          "font-medium",
-          "text-color-purple-dark"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(63, 22, 116)",
-          "color": "rgb(63, 22, 116)",
-          "display": "block",
-          "height": "20px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "65.6719px"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(2)>div:nth-child(1)>ul:nth-child(3)>li:nth-child(1)>a:nth-child(1)",
-        "tag": "a",
-        "text": "[TEXT:8:6a494fba]",
-        "textFingerprint": "6a494fba",
-        "textLength": 8,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(2)>div:nth-child(1)>ul:nth-child(3)>li:nth-child(1)>a:nth-child(1)",
         "tag": "a",
         "attributes": {
@@ -957,44 +875,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(2)>div:nth-child(1)>ul:nth-child(3)>li:nth-child(2)>a:nth-child(1)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://app.cloudinterpreter.com/profile/<ID>/finance",
-          "target": "_self"
-        },
-        "bbox": {
-          "height": 20,
-          "width": 55
-        },
-        "childCount": 0,
-        "classes": [
-          "LinkBlock_container__rGgzx",
-          "HeaderMenu_link__YwYtf",
-          "font-medium"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(111, 56, 183)",
-          "color": "rgb(111, 56, 183)",
-          "display": "block",
-          "height": "20px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "55.3125px"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(2)>div:nth-child(1)>ul:nth-child(3)>li:nth-child(2)>a:nth-child(1)",
-        "tag": "a",
-        "text": "[TEXT:7:c5dd218d]",
-        "textFingerprint": "c5dd218d",
-        "textLength": 7,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(2)>div:nth-child(1)>ul:nth-child(3)>li:nth-child(2)>a:nth-child(1)",
         "tag": "a",
         "attributes": {
@@ -1031,45 +914,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(2)>main:nth-child(2)>div:nth-child(2)>div:nth-child(1)>button:nth-child(1)|button]",
-      "before": {
-        "attributes": {
-          "aria-label": "[EMAIL]"
-        },
-        "bbox": {
-          "height": 40,
-          "width": 299
-        },
-        "childCount": 2,
-        "classes": [
-          "p-button-sm",
-          "border-noround",
-          "p-button",
-          "p-component",
-          "p-button-text"
-        ],
-        "computedStyle": {
-          "border": "1px solid rgba(0, 0, 0, 0)",
-          "color": "rgb(111, 56, 183)",
-          "display": "flex",
-          "height": "40px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "hidden",
-          "padding": "10.5px 17.5px",
-          "position": "relative",
-          "width": "299.344px"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(2)>main:nth-child(2)>div:nth-child(2)>div:nth-child(1)>button:nth-child(1)",
-        "tag": "button",
-        "text": "[TEXT:7:60075021]",
-        "textFingerprint": "60075021",
-        "textLength": 7,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(2)>main:nth-child(2)>div:nth-child(2)>div:nth-child(1)>button:nth-child(1)",
         "tag": "button",
         "attributes": {
@@ -1107,42 +954,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(2)>ul:nth-child(2)>li:nth-child(1)>div:nth-child(2)>a:nth-child(1)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://cloud-interpreter-files.s3.amazonaws.com",
-          "target": "_self"
-        },
-        "bbox": {
-          "height": 20,
-          "width": 149
-        },
-        "childCount": 0,
-        "classes": [
-          "LinkBlock_container__rGgzx"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(111, 56, 183)",
-          "color": "rgb(111, 56, 183)",
-          "display": "inline",
-          "height": "auto",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "auto"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(2)>ul:nth-child(2)>li:nth-child(1)>div:nth-child(2)>a:nth-child(1)",
-        "tag": "a",
-        "text": "[TEXT:19:981de3c3]",
-        "textFingerprint": "981de3c3",
-        "textLength": 19,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(2)>ul:nth-child(2)>li:nth-child(1)>div:nth-child(2)>a:nth-child(1)",
         "tag": "a",
         "attributes": {
@@ -1177,42 +991,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(2)>ul:nth-child(2)>li:nth-child(2)>div:nth-child(2)>a:nth-child(1)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://cloud-interpreter-files.s3.amazonaws.com",
-          "target": "_self"
-        },
-        "bbox": {
-          "height": 20,
-          "width": 64
-        },
-        "childCount": 0,
-        "classes": [
-          "LinkBlock_container__rGgzx"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(111, 56, 183)",
-          "color": "rgb(111, 56, 183)",
-          "display": "inline",
-          "height": "auto",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "auto"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(2)>ul:nth-child(2)>li:nth-child(2)>div:nth-child(2)>a:nth-child(1)",
-        "tag": "a",
-        "text": "[TEXT:6:454d1d8a]",
-        "textFingerprint": "454d1d8a",
-        "textLength": 6,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(2)>ul:nth-child(2)>li:nth-child(2)>div:nth-child(2)>a:nth-child(1)",
         "tag": "a",
         "attributes": {
@@ -1247,42 +1028,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(2)>ul:nth-child(2)>li:nth-child(3)>div:nth-child(2)>a:nth-child(1)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://cloud-interpreter-files.s3.amazonaws.com",
-          "target": "_self"
-        },
-        "bbox": {
-          "height": 40,
-          "width": 199
-        },
-        "childCount": 0,
-        "classes": [
-          "LinkBlock_container__rGgzx"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(111, 56, 183)",
-          "color": "rgb(111, 56, 183)",
-          "display": "inline",
-          "height": "auto",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "auto"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(2)>ul:nth-child(2)>li:nth-child(3)>div:nth-child(2)>a:nth-child(1)",
-        "tag": "a",
-        "text": "[TEXT:44:ba4fc5e1]",
-        "textFingerprint": "ba4fc5e1",
-        "textLength": 44,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(2)>ul:nth-child(2)>li:nth-child(3)>div:nth-child(2)>a:nth-child(1)",
         "tag": "a",
         "attributes": {
@@ -1317,44 +1065,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(3)>div:nth-child(1)>div:nth-child(1)>div:nth-child(1)>a:nth-child(2)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://app.cloudinterpreter.com/profile/<ID>/settings/languages",
-          "target": "_self"
-        },
-        "bbox": {
-          "height": 20,
-          "width": 47
-        },
-        "childCount": 2,
-        "classes": [
-          "LinkBlock_container__rGgzx",
-          "font-medium",
-          "ci-text-small"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(111, 56, 183)",
-          "color": "rgb(111, 56, 183)",
-          "display": "block",
-          "height": "20px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "46.7188px"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(3)>div:nth-child(1)>div:nth-child(1)>div:nth-child(1)>a:nth-child(2)",
-        "tag": "a",
-        "text": "[TEXT:4:c2c76cb1]",
-        "textFingerprint": "c2c76cb1",
-        "textLength": 4,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(3)>div:nth-child(1)>div:nth-child(1)>div:nth-child(1)>a:nth-child(2)",
         "tag": "a",
         "attributes": {
@@ -1391,44 +1104,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(3)>div:nth-child(1)>div:nth-child(3)>div:nth-child(1)>a:nth-child(2)|a]",
-      "before": {
-        "attributes": {
-          "href": "https://app.cloudinterpreter.com/profile/<ID>/settings/personal",
-          "target": "_self"
-        },
-        "bbox": {
-          "height": 20,
-          "width": 47
-        },
-        "childCount": 2,
-        "classes": [
-          "LinkBlock_container__rGgzx",
-          "font-medium",
-          "ci-text-small"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(111, 56, 183)",
-          "color": "rgb(111, 56, 183)",
-          "display": "block",
-          "height": "20px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "46.7188px"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(3)>div:nth-child(1)>div:nth-child(3)>div:nth-child(1)>a:nth-child(2)",
-        "tag": "a",
-        "text": "[TEXT:4:c2c76cb1]",
-        "textFingerprint": "c2c76cb1",
-        "textLength": 4,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(3)>div:nth-child(1)>div:nth-child(3)>div:nth-child(1)>a:nth-child(2)",
         "tag": "a",
         "attributes": {
@@ -1465,45 +1143,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[div:nth-child(3)>div:nth-child(1)>div:nth-child(3)>div:nth-child(2)>div:nth-child(3)|div]",
-      "before": {
-        "attributes": {
-          "role": "separator"
-        },
-        "bbox": {
-          "height": 0,
-          "width": 1089
-        },
-        "childCount": 1,
-        "classes": [
-          "p-divider",
-          "p-component",
-          "p-divider-horizontal",
-          "p-divider-solid",
-          "p-divider-left"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(21, 0, 48)",
-          "color": "rgb(21, 0, 48)",
-          "display": "flex",
-          "height": "0px",
-          "margin": "20px 0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px 20px",
-          "position": "relative",
-          "width": "1089px"
-        },
-        "disabled": false,
-        "selector": "div:nth-child(3)>div:nth-child(1)>div:nth-child(3)>div:nth-child(2)>div:nth-child(3)",
-        "tag": "div",
-        "text": "",
-        "textFingerprint": "811c9dc5",
-        "textLength": 0,
-        "visible": false
-      },
-      "after": {
+      "value": {
         "selector": "div:nth-child(3)>div:nth-child(1)>div:nth-child(3)>div:nth-child(2)>div:nth-child(3)",
         "tag": "div",
         "attributes": {
@@ -1544,32 +1186,32 @@
       "kind": "changed",
       "path": "dom.elements[html:nth-child(1)>body:nth-child(2)|body]",
       "before": {
-        "attributes": {},
-        "bbox": {
-          "height": 1679,
-          "width": 1905
-        },
-        "childCount": 19,
-        "classes": [],
-        "computedStyle": {
-          "border": "0px none rgb(21, 0, 48)",
-          "color": "rgb(21, 0, 48)",
-          "display": "block",
-          "height": "1678.62px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "1905px"
-        },
-        "disabled": false,
         "selector": "html:nth-child(1)>body:nth-child(2)",
         "tag": "body",
-        "text": "[TEXT:19:b0e6caef]",
-        "textFingerprint": "b0e6caef",
+        "attributes": {},
+        "classes": [],
+        "text": "[TEXT:19:2e7644b7]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 19,
         "textLength": 19,
-        "visible": true
+        "textFingerprint": "2e7644b7",
+        "computedStyle": {
+          "display": "block",
+          "position": "static",
+          "overflow": "visible",
+          "width": "1920px",
+          "height": "911px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(21, 0, 48)",
+          "border": "0px none rgb(21, 0, 48)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 1920,
+          "height": 911
+        }
       },
       "after": {
         "selector": "html:nth-child(1)>body:nth-child(2)",
@@ -1604,32 +1246,32 @@
       "kind": "changed",
       "path": "dom.elements[html:nth-child(1)>head:nth-child(1)|head]",
       "before": {
-        "attributes": {},
-        "bbox": {
-          "height": 0,
-          "width": 0
-        },
-        "childCount": 81,
-        "classes": [],
-        "computedStyle": {
-          "border": "0px none rgb(0, 0, 0)",
-          "color": "rgb(0, 0, 0)",
-          "display": "none",
-          "height": "auto",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "auto"
-        },
-        "disabled": false,
         "selector": "html:nth-child(1)>head:nth-child(1)",
         "tag": "head",
-        "text": "[TEXT:19:ad4c041a]",
-        "textFingerprint": "ad4c041a",
+        "attributes": {},
+        "classes": [],
+        "text": "[TEXT:19:ece3a36c]",
+        "visible": false,
+        "disabled": false,
+        "childCount": 80,
         "textLength": 19,
-        "visible": false
+        "textFingerprint": "ece3a36c",
+        "computedStyle": {
+          "display": "none",
+          "position": "static",
+          "overflow": "visible",
+          "width": "auto",
+          "height": "auto",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(0, 0, 0)",
+          "border": "0px none rgb(0, 0, 0)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 0,
+          "height": 0
+        }
       },
       "after": {
         "selector": "html:nth-child(1)>head:nth-child(1)",
@@ -1664,32 +1306,32 @@
       "kind": "changed",
       "path": "dom.elements[html:nth-child(1)|html]",
       "before": {
-        "attributes": {},
-        "bbox": {
-          "height": 1679,
-          "width": 1905
-        },
-        "childCount": 2,
-        "classes": [],
-        "computedStyle": {
-          "border": "0px none rgb(0, 0, 0)",
-          "color": "rgb(0, 0, 0)",
-          "display": "block",
-          "height": "1678.62px",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "static",
-          "width": "1905px"
-        },
-        "disabled": false,
         "selector": "html:nth-child(1)",
         "tag": "html",
-        "text": "[TEXT:19:ad4c041a]",
-        "textFingerprint": "ad4c041a",
+        "attributes": {},
+        "classes": [],
+        "text": "[TEXT:19:ece3a36c]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 2,
         "textLength": 19,
-        "visible": true
+        "textFingerprint": "ece3a36c",
+        "computedStyle": {
+          "display": "block",
+          "position": "static",
+          "overflow": "visible",
+          "width": "1920px",
+          "height": "911px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(0, 0, 0)",
+          "border": "0px none rgb(0, 0, 0)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 1920,
+          "height": 911
+        }
       },
       "after": {
         "selector": "html:nth-child(1)",
@@ -1721,42 +1363,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[input#bar-tel|input]",
-      "before": {
-        "attributes": {
-          "id": "bar-tel",
-          "type": "checkbox"
-        },
-        "bbox": {
-          "height": 22,
-          "width": 22
-        },
-        "childCount": 0,
-        "classes": [
-          "p-checkbox-input"
-        ],
-        "computedStyle": {
-          "border": "2px solid rgb(229, 231, 235)",
-          "color": "rgb(171, 166, 176)",
-          "display": "block",
-          "height": "22px",
-          "margin": "0px",
-          "opacity": "0",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "absolute",
-          "width": "22px"
-        },
-        "disabled": true,
-        "selector": "input#bar-tel",
-        "tag": "input",
-        "text": "",
-        "textFingerprint": "811c9dc5",
-        "textLength": 0,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "input#bar-tel",
         "tag": "input",
         "attributes": {
@@ -1791,42 +1400,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[input#bar-vid|input]",
-      "before": {
-        "attributes": {
-          "id": "bar-vid",
-          "type": "checkbox"
-        },
-        "bbox": {
-          "height": 22,
-          "width": 22
-        },
-        "childCount": 0,
-        "classes": [
-          "p-checkbox-input"
-        ],
-        "computedStyle": {
-          "border": "2px solid rgb(229, 231, 235)",
-          "color": "rgb(171, 166, 176)",
-          "display": "block",
-          "height": "22px",
-          "margin": "0px",
-          "opacity": "0",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "absolute",
-          "width": "22px"
-        },
-        "disabled": true,
-        "selector": "input#bar-vid",
-        "tag": "input",
-        "text": "",
-        "textFingerprint": "811c9dc5",
-        "textLength": 0,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "input#bar-vid",
         "tag": "input",
         "attributes": {
@@ -1861,42 +1437,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[input#widget-tel|input]",
-      "before": {
-        "attributes": {
-          "id": "widget-tel",
-          "type": "checkbox"
-        },
-        "bbox": {
-          "height": 22,
-          "width": 22
-        },
-        "childCount": 0,
-        "classes": [
-          "p-checkbox-input"
-        ],
-        "computedStyle": {
-          "border": "2px solid rgb(229, 231, 235)",
-          "color": "rgb(171, 166, 176)",
-          "display": "block",
-          "height": "22px",
-          "margin": "0px",
-          "opacity": "0",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "absolute",
-          "width": "22px"
-        },
-        "disabled": true,
-        "selector": "input#widget-tel",
-        "tag": "input",
-        "text": "",
-        "textFingerprint": "811c9dc5",
-        "textLength": 0,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "input#widget-tel",
         "tag": "input",
         "attributes": {
@@ -1931,42 +1474,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[input#widget-vid|input]",
-      "before": {
-        "attributes": {
-          "id": "widget-vid",
-          "type": "checkbox"
-        },
-        "bbox": {
-          "height": 22,
-          "width": 22
-        },
-        "childCount": 0,
-        "classes": [
-          "p-checkbox-input"
-        ],
-        "computedStyle": {
-          "border": "2px solid rgb(229, 231, 235)",
-          "color": "rgb(171, 166, 176)",
-          "display": "block",
-          "height": "22px",
-          "margin": "0px",
-          "opacity": "0",
-          "overflow": "visible",
-          "padding": "0px",
-          "position": "absolute",
-          "width": "22px"
-        },
-        "disabled": true,
-        "selector": "input#widget-vid",
-        "tag": "input",
-        "text": "",
-        "textFingerprint": "811c9dc5",
-        "textLength": 0,
-        "visible": true
-      },
-      "after": {
+      "value": {
         "selector": "input#widget-vid",
         "tag": "input",
         "attributes": {
@@ -2004,35 +1514,35 @@
       "kind": "changed",
       "path": "dom.elements[p#__next-route-announcer__|p]",
       "before": {
+        "selector": "p#__next-route-announcer__",
+        "tag": "p",
         "attributes": {
           "id": "__next-route-announcer__",
           "role": "alert"
         },
-        "bbox": {
-          "height": 1,
-          "width": 1
-        },
-        "childCount": 0,
         "classes": [],
-        "computedStyle": {
-          "border": "0px none rgb(21, 0, 48)",
-          "color": "rgb(21, 0, 48)",
-          "display": "block",
-          "height": "1px",
-          "margin": "-1px",
-          "opacity": "1",
-          "overflow": "hidden",
-          "padding": "0px",
-          "position": "absolute",
-          "width": "1px"
-        },
+        "text": "[TEXT:30:46b39fa2]",
+        "visible": true,
         "disabled": false,
-        "selector": "p#__next-route-announcer__",
-        "tag": "p",
-        "text": "[TEXT:30:b4179aa6]",
-        "textFingerprint": "b4179aa6",
+        "childCount": 0,
         "textLength": 30,
-        "visible": true
+        "textFingerprint": "46b39fa2",
+        "computedStyle": {
+          "display": "block",
+          "position": "absolute",
+          "overflow": "hidden",
+          "width": "1px",
+          "height": "1px",
+          "padding": "0px",
+          "margin": "-1px",
+          "color": "rgb(21, 0, 48)",
+          "border": "0px none rgb(21, 0, 48)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 1,
+          "height": 1
+        }
       },
       "after": {
         "selector": "p#__next-route-announcer__",
@@ -2067,45 +1577,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[table:nth-child(4)>tbody:nth-child(1)>tr:nth-child(3)>td:nth-child(1)>div:nth-child(1)|div]",
-      "before": {
-        "attributes": {
-          "role": "separator"
-        },
-        "bbox": {
-          "height": 0,
-          "width": 1089
-        },
-        "childCount": 1,
-        "classes": [
-          "p-divider",
-          "p-component",
-          "p-divider-horizontal",
-          "p-divider-solid",
-          "p-divider-left"
-        ],
-        "computedStyle": {
-          "border": "0px none rgb(21, 0, 48)",
-          "color": "rgb(21, 0, 48)",
-          "display": "flex",
-          "height": "0px",
-          "margin": "20px 0px",
-          "opacity": "1",
-          "overflow": "visible",
-          "padding": "0px 20px",
-          "position": "relative",
-          "width": "1089px"
-        },
-        "disabled": false,
-        "selector": "table:nth-child(4)>tbody:nth-child(1)>tr:nth-child(3)>td:nth-child(1)>div:nth-child(1)",
-        "tag": "div",
-        "text": "",
-        "textFingerprint": "811c9dc5",
-        "textLength": 0,
-        "visible": false
-      },
-      "after": {
+      "value": {
         "selector": "table:nth-child(4)>tbody:nth-child(1)>tr:nth-child(3)>td:nth-child(1)>div:nth-child(1)",
         "tag": "div",
         "attributes": {
@@ -2143,39 +1617,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[ul:nth-child(2)>li:nth-child(1)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)|input]",
-      "before": {
-        "attributes": {
-          "type": "file"
-        },
-        "bbox": {
-          "height": 0,
-          "width": 0
-        },
-        "childCount": 0,
-        "classes": [],
-        "computedStyle": {
-          "border": "0px none rgb(255, 255, 255)",
-          "color": "rgb(255, 255, 255)",
-          "display": "none",
-          "height": "auto",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "clip",
-          "padding": "0px",
-          "position": "static",
-          "width": "auto"
-        },
-        "disabled": false,
-        "selector": "ul:nth-child(2)>li:nth-child(1)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)",
-        "tag": "input",
-        "text": "",
-        "textFingerprint": "811c9dc5",
-        "textLength": 0,
-        "visible": false
-      },
-      "after": {
+      "value": {
         "selector": "ul:nth-child(2)>li:nth-child(1)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)",
         "tag": "input",
         "attributes": {
@@ -2207,39 +1651,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[ul:nth-child(2)>li:nth-child(2)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)|input]",
-      "before": {
-        "attributes": {
-          "type": "file"
-        },
-        "bbox": {
-          "height": 0,
-          "width": 0
-        },
-        "childCount": 0,
-        "classes": [],
-        "computedStyle": {
-          "border": "0px none rgb(255, 255, 255)",
-          "color": "rgb(255, 255, 255)",
-          "display": "none",
-          "height": "auto",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "clip",
-          "padding": "0px",
-          "position": "static",
-          "width": "auto"
-        },
-        "disabled": false,
-        "selector": "ul:nth-child(2)>li:nth-child(2)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)",
-        "tag": "input",
-        "text": "",
-        "textFingerprint": "811c9dc5",
-        "textLength": 0,
-        "visible": false
-      },
-      "after": {
+      "value": {
         "selector": "ul:nth-child(2)>li:nth-child(2)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)",
         "tag": "input",
         "attributes": {
@@ -2271,39 +1685,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[ul:nth-child(2)>li:nth-child(3)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)|input]",
-      "before": {
-        "attributes": {
-          "type": "file"
-        },
-        "bbox": {
-          "height": 0,
-          "width": 0
-        },
-        "childCount": 0,
-        "classes": [],
-        "computedStyle": {
-          "border": "0px none rgb(255, 255, 255)",
-          "color": "rgb(255, 255, 255)",
-          "display": "none",
-          "height": "auto",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "clip",
-          "padding": "0px",
-          "position": "static",
-          "width": "auto"
-        },
-        "disabled": false,
-        "selector": "ul:nth-child(2)>li:nth-child(3)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)",
-        "tag": "input",
-        "text": "",
-        "textFingerprint": "811c9dc5",
-        "textLength": 0,
-        "visible": false
-      },
-      "after": {
+      "value": {
         "selector": "ul:nth-child(2)>li:nth-child(3)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)",
         "tag": "input",
         "attributes": {
@@ -2335,39 +1719,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[ul:nth-child(2)>li:nth-child(4)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)|input]",
-      "before": {
-        "attributes": {
-          "type": "file"
-        },
-        "bbox": {
-          "height": 0,
-          "width": 0
-        },
-        "childCount": 0,
-        "classes": [],
-        "computedStyle": {
-          "border": "0px none rgb(255, 255, 255)",
-          "color": "rgb(255, 255, 255)",
-          "display": "none",
-          "height": "auto",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "clip",
-          "padding": "0px",
-          "position": "static",
-          "width": "auto"
-        },
-        "disabled": false,
-        "selector": "ul:nth-child(2)>li:nth-child(4)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)",
-        "tag": "input",
-        "text": "",
-        "textFingerprint": "811c9dc5",
-        "textLength": 0,
-        "visible": false
-      },
-      "after": {
+      "value": {
         "selector": "ul:nth-child(2)>li:nth-child(4)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)",
         "tag": "input",
         "attributes": {
@@ -2399,39 +1753,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "dom.elements[ul:nth-child(2)>li:nth-child(5)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)|input]",
-      "before": {
-        "attributes": {
-          "type": "file"
-        },
-        "bbox": {
-          "height": 0,
-          "width": 0
-        },
-        "childCount": 0,
-        "classes": [],
-        "computedStyle": {
-          "border": "0px none rgb(255, 255, 255)",
-          "color": "rgb(255, 255, 255)",
-          "display": "none",
-          "height": "auto",
-          "margin": "0px",
-          "opacity": "1",
-          "overflow": "clip",
-          "padding": "0px",
-          "position": "static",
-          "width": "auto"
-        },
-        "disabled": false,
-        "selector": "ul:nth-child(2)>li:nth-child(5)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)",
-        "tag": "input",
-        "text": "",
-        "textFingerprint": "811c9dc5",
-        "textLength": 0,
-        "visible": false
-      },
-      "after": {
+      "value": {
         "selector": "ul:nth-child(2)>li:nth-child(5)>div:nth-child(2)>span:nth-child(2)>input:nth-child(3)",
         "tag": "input",
         "attributes": {
@@ -2460,16 +1784,26 @@
           "width": 0,
           "height": 0
         }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "controls.buttons[button||Cancel]",
+      "value": {
+        "tag": "button",
+        "role": "",
+        "label": "Cancel",
+        "disabled": false
       }
     },
     {
       "kind": "changed",
       "path": "controls.buttons[button||Click to go Online]",
       "before": {
-        "disabled": false,
-        "label": "Click to go Online",
+        "tag": "button",
         "role": "",
-        "tag": "button"
+        "label": "Click to go Online",
+        "disabled": true
       },
       "after": {
         "tag": "button",
@@ -2479,15 +1813,9 @@
       }
     },
     {
-      "kind": "changed",
+      "kind": "added",
       "path": "controls.buttons[button||[EMAIL]]",
-      "before": {
-        "disabled": false,
-        "label": "[EMAIL]",
-        "role": "",
-        "tag": "button"
-      },
-      "after": {
+      "value": {
         "tag": "button",
         "role": "",
         "label": "[EMAIL]",
@@ -2495,13 +1823,75 @@
       }
     },
     {
-      "kind": "removed",
-      "path": "controls.fields[{\"aria\":\"\",\"name\":\"\",\"tag\":\"input\",\"type\":\"checkbox\"}]",
+      "kind": "added",
+      "path": "controls.links[https://app.cloudinterpreter.com/profile/<ID>/appointments|]",
       "value": {
-        "aria": "",
-        "name": "",
-        "tag": "input",
-        "type": "checkbox"
+        "label": "",
+        "path": "https://app.cloudinterpreter.com/profile/<ID>/appointments"
+      }
+    },
+    {
+      "kind": "added",
+      "path": "controls.links[https://app.cloudinterpreter.com/profile/<ID>/finance|]",
+      "value": {
+        "label": "",
+        "path": "https://app.cloudinterpreter.com/profile/<ID>/finance"
+      }
+    },
+    {
+      "kind": "added",
+      "path": "controls.links[https://app.cloudinterpreter.com/profile/<ID>/logs|]",
+      "value": {
+        "label": "",
+        "path": "https://app.cloudinterpreter.com/profile/<ID>/logs"
+      }
+    },
+    {
+      "kind": "added",
+      "path": "controls.links[https://app.cloudinterpreter.com/profile/<ID>/settings/languages|]",
+      "value": {
+        "label": "",
+        "path": "https://app.cloudinterpreter.com/profile/<ID>/settings/languages"
+      }
+    },
+    {
+      "kind": "added",
+      "path": "controls.links[https://app.cloudinterpreter.com/profile/<ID>/settings/personal|]",
+      "value": {
+        "label": "",
+        "path": "https://app.cloudinterpreter.com/profile/<ID>/settings/personal"
+      }
+    },
+    {
+      "kind": "added",
+      "path": "controls.links[https://app.cloudinterpreter.com/profile/<ID>|]",
+      "value": {
+        "label": "",
+        "path": "https://app.cloudinterpreter.com/profile/<ID>"
+      }
+    },
+    {
+      "kind": "added",
+      "path": "controls.links[https://app.cloudinterpreter.com/|]",
+      "value": {
+        "label": "",
+        "path": "https://app.cloudinterpreter.com/"
+      }
+    },
+    {
+      "kind": "added",
+      "path": "controls.links[https://cloud-interpreter-files.s3.amazonaws.com|]",
+      "value": {
+        "label": "",
+        "path": "https://cloud-interpreter-files.s3.amazonaws.com"
+      }
+    },
+    {
+      "kind": "added",
+      "path": "controls.links[https://maps.google.com|]",
+      "value": {
+        "label": "",
+        "path": "https://maps.google.com"
       }
     },
     {
@@ -2512,1016 +1902,6 @@
         "type": "checkbox",
         "name": "",
         "aria": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.stylesheets[https://app.cloudinterpreter.com/_next/static/css/1fff65dc75ce1586.css|]",
-      "before": {
-        "atRuleCount": 30,
-        "disabled": false,
-        "href": "https://app.cloudinterpreter.com/_next/static/css/1fff65dc75ce1586.css",
-        "media": "",
-        "ownerTag": "link",
-        "ruleCount": 3658,
-        "sameOriginReadable": true,
-        "selectorCount": 90,
-        "selectors": [
-          ":root",
-          ".text-color-greyscale-black",
-          ".text-color-greyscale-dark",
-          ".text-color-greyscale-middle",
-          ".text-color-greyscale-light",
-          ".text-color-greyscale-extralight",
-          ".text-color-greyscale-white",
-          ".text-color-purple-dark",
-          ".text-color-purple-main",
-          ".text-color-purple-middle",
-          ".text-color-purple-light",
-          ".text-color-purple-extralight",
-          ".text-color-red-main",
-          ".text-color-green-main",
-          ".text-color-mint-main",
-          ".text-color-mint-dark",
-          ".bg-greyscale-black",
-          ".bg-greyscale-dark",
-          ".bg-greyscale-middle",
-          ".bg-greyscale-light",
-          ".bg-greyscale-extralight",
-          ".bg-greyscale-white",
-          ".bg-purple-dark",
-          ".bg-purple-main",
-          ".bg-purple-middle",
-          ".bg-purple-light",
-          ".bg-purple-extralight",
-          ".bg-red-main",
-          ".bg-red-extralight",
-          ".bg-green-main",
-          ".bg-mint-main",
-          ".bg-mint-dark",
-          ".border-color-greyscale-black",
-          ".border-color-greyscale-dark",
-          ".border-color-greyscale-middle",
-          ".border-color-greyscale-light",
-          ".border-color-greyscale-extralight",
-          ".border-color-greyscale-white",
-          ".border-color-purple-dark",
-          ".border-color-purple-main"
-        ]
-      },
-      "after": {
-        "href": "https://app.cloudinterpreter.com/_next/static/css/1fff65dc75ce1586.css",
-        "disabled": false,
-        "media": "",
-        "ownerTag": "link",
-        "ruleCount": 3658,
-        "selectorCount": 90,
-        "atRuleCount": 30,
-        "selectors": [
-          ":root",
-          ".text-color-greyscale-black",
-          ".text-color-greyscale-dark",
-          ".text-color-greyscale-middle",
-          ".text-color-greyscale-light",
-          ".text-color-greyscale-extralight",
-          ".text-color-greyscale-white",
-          ".text-color-purple-dark",
-          ".text-color-purple-main",
-          ".text-color-purple-middle",
-          ".text-color-purple-light",
-          ".text-color-purple-extralight",
-          ".text-color-red-main",
-          ".text-color-green-main",
-          ".text-color-mint-main",
-          ".text-color-mint-dark",
-          ".bg-greyscale-black",
-          ".bg-greyscale-dark",
-          ".bg-greyscale-middle",
-          ".bg-greyscale-light",
-          ".bg-greyscale-extralight",
-          ".bg-greyscale-white",
-          ".bg-purple-dark",
-          ".bg-purple-main",
-          ".bg-purple-middle",
-          ".bg-purple-light",
-          ".bg-purple-extralight",
-          ".bg-red-main",
-          ".bg-red-extralight",
-          ".bg-green-main",
-          ".bg-mint-main",
-          ".bg-mint-dark",
-          ".border-color-greyscale-black",
-          ".border-color-greyscale-dark",
-          ".border-color-greyscale-middle",
-          ".border-color-greyscale-light",
-          ".border-color-greyscale-extralight",
-          ".border-color-greyscale-white",
-          ".border-color-purple-dark",
-          ".border-color-purple-main"
-        ],
-        "sameOriginReadable": true
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.stylesheets[|]",
-      "before": {
-        "atRuleCount": 0,
-        "disabled": false,
-        "href": "",
-        "media": "",
-        "ownerTag": "style",
-        "ruleCount": 16,
-        "sameOriginReadable": true,
-        "selectorCount": 16,
-        "selectors": [
-          ".LanguagePair_language__CGPks",
-          ".LanguagePairs_container__oNuJC",
-          "[TEXT:120:0ba1794f]",
-          ".LanguagePairs_item__9Muda:not(:first-child)",
-          ".Modalities_container__L18OJ",
-          "[TEXT:120:bcffbe67]",
-          ".Modalities_item__l7vHt:not(:first-child)",
-          ".PersonalInfoTable_table__MDr3n td",
-          ".PersonalInfoTable_label__wZVaZ",
-          ".PersonalInfoTable_label__wZVaZ::after",
-          ".DocumentsItemUpload_upload__AV2jB",
-          ".DocumentsItemUpload_upload__AV2jB, .DocumentsItemUpload_upload__AV2jB .p-button",
-          ".NavigationProfileHeader_container__V3Jd0",
-          "[TEXT:120:53a25aef]",
-          ".NavigationProfileHeader_container__V3Jd0 .NavigationProfileHeader_badge__OUJsX",
-          ".ProfileHeaderActivity_container__gv0db"
-        ]
-      },
-      "after": {
-        "href": "",
-        "disabled": false,
-        "media": "",
-        "ownerTag": "style",
-        "ruleCount": 16,
-        "selectorCount": 16,
-        "atRuleCount": 0,
-        "selectors": [
-          ".LanguagePair_language__CGPks",
-          ".LanguagePairs_container__oNuJC",
-          "[TEXT:120:0ba1794f]",
-          ".LanguagePairs_item__9Muda:not(:first-child)",
-          ".Modalities_container__L18OJ",
-          "[TEXT:120:bcffbe67]",
-          ".Modalities_item__l7vHt:not(:first-child)",
-          ".PersonalInfoTable_table__MDr3n td",
-          ".PersonalInfoTable_label__wZVaZ",
-          ".PersonalInfoTable_label__wZVaZ::after",
-          ".DocumentsItemUpload_upload__AV2jB",
-          ".DocumentsItemUpload_upload__AV2jB, .DocumentsItemUpload_upload__AV2jB .p-button",
-          ".NavigationProfileHeader_container__V3Jd0",
-          "[TEXT:120:53a25aef]",
-          ".NavigationProfileHeader_container__V3Jd0 .NavigationProfileHeader_badge__OUJsX",
-          ".ProfileHeaderActivity_container__gv0db"
-        ],
-        "sameOriginReadable": true
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[0||b1a428ad]",
-      "before": {
-        "disabled": false,
-        "index": 0,
-        "inlineFingerprint": "b1a428ad",
-        "length": 1870,
-        "media": "",
-        "noncePresent": false,
-        "type": ""
-      },
-      "after": {
-        "index": 0,
-        "type": "",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 1870,
-        "inlineFingerprint": "b1a428ad"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[10||c4a8edd8]",
-      "before": {
-        "disabled": false,
-        "index": 10,
-        "inlineFingerprint": "c4a8edd8",
-        "length": 989,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 10,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 989,
-        "inlineFingerprint": "c4a8edd8"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[11||140c107b]",
-      "before": {
-        "disabled": false,
-        "index": 11,
-        "inlineFingerprint": "140c107b",
-        "length": 6857,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 11,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 6857,
-        "inlineFingerprint": "140c107b"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[12||41dfc23c]",
-      "before": {
-        "disabled": false,
-        "index": 12,
-        "inlineFingerprint": "41dfc23c",
-        "length": 923,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 12,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 923,
-        "inlineFingerprint": "41dfc23c"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[13||f1231acf]",
-      "before": {
-        "disabled": false,
-        "index": 13,
-        "inlineFingerprint": "f1231acf",
-        "length": 768,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 13,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 768,
-        "inlineFingerprint": "f1231acf"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[14||677e61ec]",
-      "before": {
-        "disabled": false,
-        "index": 14,
-        "inlineFingerprint": "677e61ec",
-        "length": 4545,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 14,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 4545,
-        "inlineFingerprint": "677e61ec"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[15||bf205396]",
-      "before": {
-        "disabled": false,
-        "index": 15,
-        "inlineFingerprint": "bf205396",
-        "length": 1440,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 15,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 1440,
-        "inlineFingerprint": "bf205396"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[16||b6f647ff]",
-      "before": {
-        "disabled": false,
-        "index": 16,
-        "inlineFingerprint": "b6f647ff",
-        "length": 4896,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 16,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 4896,
-        "inlineFingerprint": "b6f647ff"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[17||49d8ce4d]",
-      "before": {
-        "disabled": false,
-        "index": 17,
-        "inlineFingerprint": "49d8ce4d",
-        "length": 295,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 17,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 295,
-        "inlineFingerprint": "49d8ce4d"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[18||3749ef5f]",
-      "before": {
-        "disabled": false,
-        "index": 18,
-        "inlineFingerprint": "3749ef5f",
-        "length": 1833,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 18,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 1833,
-        "inlineFingerprint": "3749ef5f"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[19||3ffe95d8]",
-      "before": {
-        "disabled": false,
-        "index": 19,
-        "inlineFingerprint": "3ffe95d8",
-        "length": 1140,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 19,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 1140,
-        "inlineFingerprint": "3ffe95d8"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[1||5da02dc5]",
-      "before": {
-        "disabled": false,
-        "index": 1,
-        "inlineFingerprint": "5da02dc5",
-        "length": 335,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 1,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 335,
-        "inlineFingerprint": "5da02dc5"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[20||811c9dc5]",
-      "before": {
-        "disabled": false,
-        "index": 20,
-        "inlineFingerprint": "811c9dc5",
-        "length": 0,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 20,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 0,
-        "inlineFingerprint": "811c9dc5"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[21||6c43f299]",
-      "before": {
-        "disabled": false,
-        "index": 21,
-        "inlineFingerprint": "6c43f299",
-        "length": 291,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 21,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 291,
-        "inlineFingerprint": "6c43f299"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[22||66989b07]",
-      "before": {
-        "disabled": false,
-        "index": 22,
-        "inlineFingerprint": "66989b07",
-        "length": 1656,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 22,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 1656,
-        "inlineFingerprint": "66989b07"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[2||811c9dc5]",
-      "before": {
-        "disabled": false,
-        "index": 2,
-        "inlineFingerprint": "811c9dc5",
-        "length": 0,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 2,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 0,
-        "inlineFingerprint": "811c9dc5"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[3||2ba32d78]",
-      "before": {
-        "disabled": false,
-        "index": 3,
-        "inlineFingerprint": "2ba32d78",
-        "length": 7456,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 3,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 7456,
-        "inlineFingerprint": "2ba32d78"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[4||dcc3af51]",
-      "before": {
-        "disabled": false,
-        "index": 4,
-        "inlineFingerprint": "dcc3af51",
-        "length": 1665,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 4,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 1665,
-        "inlineFingerprint": "dcc3af51"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[5||deefcf2c]",
-      "before": {
-        "disabled": false,
-        "index": 5,
-        "inlineFingerprint": "deefcf2c",
-        "length": 646,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 5,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 646,
-        "inlineFingerprint": "deefcf2c"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[6||1129e371]",
-      "before": {
-        "disabled": false,
-        "index": 6,
-        "inlineFingerprint": "1129e371",
-        "length": 1503,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 6,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 1503,
-        "inlineFingerprint": "1129e371"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[7||1deed6f3]",
-      "before": {
-        "disabled": false,
-        "index": 7,
-        "inlineFingerprint": "1deed6f3",
-        "length": 736,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 7,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 736,
-        "inlineFingerprint": "1deed6f3"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[8||92f05bcd]",
-      "before": {
-        "disabled": false,
-        "index": 8,
-        "inlineFingerprint": "92f05bcd",
-        "length": 1803,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 8,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 1803,
-        "inlineFingerprint": "92f05bcd"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.inlineStyles[9||811c9dc5]",
-      "before": {
-        "disabled": false,
-        "index": 9,
-        "inlineFingerprint": "811c9dc5",
-        "length": 0,
-        "media": "",
-        "noncePresent": false,
-        "type": "text/css"
-      },
-      "after": {
-        "index": 9,
-        "type": "text/css",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 0,
-        "inlineFingerprint": "811c9dc5"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/%3CID%3E/_buildManifest.js|module-or-js|0|]",
-      "before": {
-        "async": false,
-        "defer": true,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/%3CID%3E/_buildManifest.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/%3CID%3E/_buildManifest.js",
-        "type": "module-or-js",
-        "async": false,
-        "defer": true,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/%3CID%3E/_ssgManifest.js|module-or-js|0|]",
-      "before": {
-        "async": false,
-        "defer": true,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/%3CID%3E/_ssgManifest.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/%3CID%3E/_ssgManifest.js",
-        "type": "module-or-js",
-        "async": false,
-        "defer": true,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/chunks/2910-d09f672b306d0c90.js|module-or-js|0|]",
-      "before": {
-        "async": true,
-        "defer": false,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/2910-d09f672b306d0c90.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/2910-d09f672b306d0c90.js",
-        "type": "module-or-js",
-        "async": true,
-        "defer": false,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/chunks/2972-a8c9189dadd5fb06.js|module-or-js|0|]",
-      "before": {
-        "async": true,
-        "defer": false,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/2972-a8c9189dadd5fb06.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/2972-a8c9189dadd5fb06.js",
-        "type": "module-or-js",
-        "async": true,
-        "defer": false,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/chunks/3449-7cbd018a543f3559.js|module-or-js|0|]",
-      "before": {
-        "async": true,
-        "defer": false,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/3449-7cbd018a543f3559.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/3449-7cbd018a543f3559.js",
-        "type": "module-or-js",
-        "async": true,
-        "defer": false,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/chunks/4419-c58971fd26d7d5a0.js|module-or-js|0|]",
-      "before": {
-        "async": true,
-        "defer": false,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/4419-c58971fd26d7d5a0.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/4419-c58971fd26d7d5a0.js",
-        "type": "module-or-js",
-        "async": true,
-        "defer": false,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/chunks/508-461e306b49b86f27.js|module-or-js|0|]",
-      "before": {
-        "async": true,
-        "defer": false,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/508-461e306b49b86f27.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/508-461e306b49b86f27.js",
-        "type": "module-or-js",
-        "async": true,
-        "defer": false,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/chunks/6336-503bc0b4df253147.js|module-or-js|0|]",
-      "before": {
-        "async": false,
-        "defer": true,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/6336-503bc0b4df253147.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/6336-503bc0b4df253147.js",
-        "type": "module-or-js",
-        "async": false,
-        "defer": true,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/chunks/7689-b27e299eac026db1.js|module-or-js|0|]",
-      "before": {
-        "async": false,
-        "defer": true,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/7689-b27e299eac026db1.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/7689-b27e299eac026db1.js",
-        "type": "module-or-js",
-        "async": false,
-        "defer": true,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/chunks/7934-2e33df73ccadbc23.js|module-or-js|0|]",
-      "before": {
-        "async": true,
-        "defer": false,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/7934-2e33df73ccadbc23.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/7934-2e33df73ccadbc23.js",
-        "type": "module-or-js",
-        "async": true,
-        "defer": false,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/chunks/7962-8c26d48dca579334.js|module-or-js|0|]",
-      "before": {
-        "async": true,
-        "defer": false,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/7962-8c26d48dca579334.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/7962-8c26d48dca579334.js",
-        "type": "module-or-js",
-        "async": true,
-        "defer": false,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/chunks/framework-7927654ade4763e9.js|module-or-js|0|]",
-      "before": {
-        "async": false,
-        "defer": true,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/framework-7927654ade4763e9.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/framework-7927654ade4763e9.js",
-        "type": "module-or-js",
-        "async": false,
-        "defer": true,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/chunks/main-275155bb18c5f254.js|module-or-js|0|]",
-      "before": {
-        "async": false,
-        "defer": true,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/main-275155bb18c5f254.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/main-275155bb18c5f254.js",
-        "type": "module-or-js",
-        "async": false,
-        "defer": true,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "javascript.scripts[https://app.cloudinterpreter.com/_next/static/chunks/pages/_app-8a3c7468cd5d2d47.js|module-or-js|0|]",
-      "before": {
-        "async": false,
-        "defer": true,
-        "inlineFingerprint": "",
-        "inlineLength": 0,
-        "integrityPresent": false,
-        "noModule": false,
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/pages/_app-8a3c7468cd5d2d47.js",
-        "type": "module-or-js"
-      },
-      "after": {
-        "src": "https://app.cloudinterpreter.com/_next/static/chunks/pages/_app-8a3c7468cd5d2d47.js",
-        "type": "module-or-js",
-        "async": false,
-        "defer": true,
-        "noModule": false,
-        "integrityPresent": false,
-        "inlineLength": 0,
-        "inlineFingerprint": ""
       }
     }
   ],

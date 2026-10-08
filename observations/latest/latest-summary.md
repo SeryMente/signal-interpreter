@@ -1,39 +1,37 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-2089ab96-41f3-4ff4-a6b4-45d96baee048
-- Creado: 2026-10-08T01:36:45.725Z
-- Trigger: event-threshold
+- Batch: batch-5fda23e2-8f70-48b6-b57c-d8a132a7f803
+- Creado: 2026-10-08T01:37:12.688Z
+- Trigger: alarm
 - Extensión: 0.10.7
-- Eventos: 51
+- Eventos: 36
 - Errores: 0
 - Warnings: 0
-- Secuencia: 2020 → 2070
+- Secuencia: 2071 → 2106
 - Identidades de plataforma: 5
-- Snapshots de plataforma: 97
-- Deltas de plataforma: 97
+- Snapshots de plataforma: 98
+- Deltas de plataforma: 98
 
 ## Categorías
 
 {
-  "RUNTIME": 44,
-  "PORTAL": 7
+  "RUNTIME": 32,
+  "PORTAL": 4
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 26,
-  "PAGE_VISIBILITY_CHANGED": 1,
-  "PAGE_LIFECYCLE": 2,
-  "SCREEN_MAP": 4,
-  "USER_INTERACTION": 2,
-  "TAB_LIFECYCLE": 4,
-  "PLATFORM_SURFACE_SNAPSHOT": 3,
-  "PLATFORM_URL_CHANGED": 2,
-  "PERFORMANCE_HEARTBEAT": 1,
+  "AUTO_ANSWER_READINESS": 19,
+  "PAGE_LIFECYCLE": 4,
+  "PAGE_VISIBILITY_CHANGED": 3,
+  "NETWORK_ACTIVITY_WINDOW": 2,
+  "TELEMETRY_MAINTENANCE": 1,
+  "USER_INTERACTION": 1,
   "AVAILABILITY_STATE": 1,
-  "PLATFORM_ONLINE_RECONCILED_STARTED": 1,
-  "PLATFORM_TELEMETRY_RECONCILED": 2,
-  "PLATFORM_MIRROR_UPDATED": 1,
-  "NETWORK_ACTIVITY_WINDOW": 1
+  "PERFORMANCE_HEARTBEAT": 1,
+  "PLATFORM_ONLINE_RECONCILED_ENDED": 1,
+  "PLATFORM_TELEMETRY_RECONCILED": 1,
+  "PLATFORM_SURFACE_SNAPSHOT": 1,
+  "PLATFORM_MIRROR_UPDATED": 1
 }
