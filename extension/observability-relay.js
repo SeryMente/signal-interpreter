@@ -6,10 +6,13 @@ var SCREENSHOT_ENDPOINT=RELAY_BASE+"/api/screenshot";
 var REPOSITORY="SeryMente/signal-interpreter";
 var REQUEST_TIMEOUT_MS=15000;
 async function request(init){
+  init=init||{};
+  var endpoint=init.endpoint||RELAY_ENDPOINT;
+  if(init.endpoint)delete init.endpoint;
   var controller=new AbortController();
   var timer=setTimeout(function(){controller.abort();},REQUEST_TIMEOUT_MS);
   try{
-    var response=await fetch(RELAY_ENDPOINT,Object.assign({method:"GET",cache:"no-store",signal:controller.signal},init||{}));
+    var response=await fetch(endpoint,Object.assign({method:"GET",cache:"no-store",signal:controller.signal},init));
     var text=await response.text(); var data=null;
     try{data=text?JSON.parse(text):null;}catch(_){data=text;}
     if(!response.ok){var error=new Error("Relay HTTP "+response.status);error.status=response.status;error.data=data;throw error;}
@@ -28,7 +31,7 @@ async function uploadScreenshot(screenshot){
   if(!screenshot||screenshot.schema!=="signal-interpreter-platform-screenshot/v1")throw new Error("Schema de captura de plataforma no soportado");
   var hash=String(screenshot.sha256||"");
   if(!/^[a-f0-9]{64}$/i.test(hash))throw new Error("Hash de captura inválido");
-  return request({method:"POST",url:SCREENSHOT_ENDPOINT,headers:{"Content-Type":"application/json"},body:JSON.stringify(screenshot)});
+  return request({endpoint:SCREENSHOT_ENDPOINT,method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(screenshot)});
 }
 async function uploadScreenshot(screenshot){
   if(!screenshot||screenshot.schema!=="signal-interpreter-platform-screenshot/v1")throw new Error("Schema de screenshot no soportado");
