@@ -2059,32 +2059,38 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var allVerified=captureResult.verified&&(!outputRequired||outputResult.verified===true);
 
     if(!allVerified){
+      var recoveryMuted=previousMuted;
+      var recoveryPolicy="restore-previous-user-intent";
+      if(desired){
+        recoveryMuted=true;
+        recoveryPolicy="fail-closed-on-explicit-mute";
+      }
       if(captureActive){
         try{
           await ensureOffscreen();
-          await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_SET_MICROPHONE_MUTED",muted:previousMuted});
+          await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_SET_MICROPHONE_MUTED",muted:recoveryMuted});
         }catch(_){}
       }
       if(outputRequired){
-        try{await setMainClientMicrophoneMuted(state.callSourceTabId,previousMuted,"restore-after-verify-error");}catch(_){}
+        try{await setMainClientMicrophoneMuted(state.callSourceTabId,recoveryMuted,desired?"fail-closed-explicit-mute":"restore-after-verify-error");}catch(_){}
       }
-      state.microphoneMuted=previousMuted;
+      state.microphoneMuted=recoveryMuted;
       state.microphoneMuteStatus="error";
-      state.microphoneOutputMuted=previousOutputMuted;
+      state.microphoneOutputMuted=recoveryMuted;
       state.microphoneOutputStatus="error";
       state.microphoneOutputTrackCount=Number(outputResult.trackCount||0);
       state.microphoneOutputSenderCount=Number(outputResult.senderCount||0);
-      state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:previousMuted});
+      state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:recoveryMuted});
       await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
       record("EXTENSION_MICROPHONE_MUTE_ERROR",{
-        desired:desired,previousMuted:previousMuted,source:source||"unknown",callId:state.callId||null,
+        desired:desired,previousMuted:previousMuted,recoveryMuted:recoveryMuted,source:source||"unknown",callId:state.callId||null,
         captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,
         error:captureResult.error||outputResult.error||"verification-failed",
-        policy:"restore-previous-user-intent",
+        policy:recoveryPolicy,
         previousMuteStatus:previousMuteStatus,
         previousOutputStatus:previousOutputStatus
       },"error","microphone");
-      return{ok:false,muted:previousMuted,verified:false,error:captureResult.error||outputResult.error||"verification-failed"};
+      return{ok:false,muted:recoveryMuted,verified:false,error:captureResult.error||outputResult.error||"verification-failed"};
     }
 
     state.microphoneMuted=desired;
