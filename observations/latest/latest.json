@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-932fa54a-1e47-406a-9af6-1f017e6c9253",
-  "createdAt": "2026-10-08T22:37:46.471Z",
-  "trigger": "alarm",
+  "batchId": "batch-55456a90-cf9f-42f0-aea8-3dcaf3a7be24",
+  "createdAt": "2026-10-08T22:39:46.999Z",
+  "trigger": "critical",
   "extensionVersion": "0.10.12",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "6a7fd6bf-72ab-4d23-973a-d86761e9e152",
-      "sequence": 1943,
-      "timestamp": "2026-10-08T22:37:30.518Z",
-      "ingestedAt": "2026-10-08T22:37:30.519Z",
-      "level": "info",
-      "category": "PORTAL",
-      "component": "webRequest",
+      "id": "2ab60ee2-851a-472b-8bff-a19a0c4370d0",
+      "sequence": 1946,
+      "timestamp": "2026-10-08T22:39:45.892Z",
+      "ingestedAt": "2026-10-08T22:39:45.892Z",
+      "level": "warn",
+      "category": "RUNTIME",
+      "component": "background",
       "extensionVersion": "0.10.12",
       "host": "",
       "url": "",
-      "phase": "event",
-      "action": "NETWORK_ACTIVITY_WINDOW",
-      "outcome": "observed",
-      "traceId": "d734bc28-975f-446a-ba42-cb8f2bd2cf78",
+      "phase": "error",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
+      "outcome": "error",
+      "traceId": "c697eea2-6b43-493c-9921-131a96190fc3",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -35,7 +35,7 @@
       "expected": null,
       "observed": null,
       "reasonCode": null,
-      "error": null,
+      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
       "metrics": {},
       "context": {},
       "privacy": {
@@ -44,90 +44,28 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "windowSeconds": 15,
-        "endpointCount": 6,
-        "endpoints": [
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate",
-            "statusCode": 200,
-            "count": 30,
-            "totalDurationMs": 14175,
-            "maxDurationMs": 696,
-            "avgDurationMs": 473
-          },
-          {
-            "method": "POST",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
-            "statusCode": 200,
-            "count": 3,
-            "totalDurationMs": 1244,
-            "maxDurationMs": 582,
-            "avgDurationMs": 415
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/auth/session",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 361,
-            "maxDurationMs": 361,
-            "avgDurationMs": 361
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/telecom.getClientTokens",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 356,
-            "maxDurationMs": 356,
-            "avgDurationMs": 356
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/user.getUserProfileInOrganisation",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 210,
-            "maxDurationMs": 210,
-            "avgDurationMs": 210
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/_next/data/4pdUmHBffRJWFVzZy6_xH/en/profile/<ID>",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 192,
-            "maxDurationMs": 192,
-            "avgDurationMs": 192
-          }
-        ]
+        "trigger": "hourly",
+        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
       }
     }
   ],
   "summary": {
     "eventsTotal": 1,
     "errors": 0,
-    "warnings": 0,
-    "critical": false,
+    "warnings": 1,
+    "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 1943,
-    "lastSequence": 1943,
-    "firstTimestamp": "2026-10-08T22:37:30.518Z",
-    "lastTimestamp": "2026-10-08T22:37:30.518Z",
+    "firstSequence": 1946,
+    "lastSequence": 1946,
+    "firstTimestamp": "2026-10-08T22:39:45.892Z",
+    "lastTimestamp": "2026-10-08T22:39:45.892Z",
     "actions": {
-      "NETWORK_ACTIVITY_WINDOW": 1
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
     },
     "categories": {
-      "PORTAL": 1
+      "RUNTIME": 1
     }
   }
 }
