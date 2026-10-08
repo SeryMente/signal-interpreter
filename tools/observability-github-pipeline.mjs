@@ -142,6 +142,40 @@ function applyBatchToIndex(obs,index,batch){
   }
   return{changedObservations,changedDeltas};
 }
+function deriveScreenshotIndex(obs){
+  const index={schema:"signal-interpreter-platform-screenshot-index/v1",generatedAt:null,totalEvents:0,changed:0,unchanged:0,errors:0,latestByRoute:{}};
+  const files=listJson(path.join(obs,"batches"));
+  for(const file of files){
+    const batch=readJson(file,null);
+    if(!batch||!Array.isArray(batch.events))continue;
+    for(const event of batch.events){
+      const action=String(event&&event.action||"");
+      if(!/^PLATFORM_SCREENSHOT_(CHANGED|UNCHANGED|UPLOAD_ERROR|CAPTURE_ERROR|TOO_LARGE|DISCARDED)/.test(action))continue;
+      index.totalEvents+=1;
+      if(action==="PLATFORM_SCREENSHOT_CHANGED")index.changed+=1;
+      else if(action==="PLATFORM_SCREENSHOT_UNCHANGED")index.unchanged+=1;
+      else index.errors+=1;
+      const payload=event&&event.payload||{};
+      const route=String(payload.route||"/");
+      if(action==="PLATFORM_SCREENSHOT_CHANGED"){
+        index.latestByRoute[route]={
+          hash:String(payload.hash||""),
+          capturedAt:String(payload.capturedAt||event.timestamp||batch.createdAt||""),
+          eventAt:String(event.timestamp||batch.createdAt||""),
+          remotePath:payload.remotePath||null,
+          tabId:payload.tabId==null?null:Number(payload.tabId),
+          windowId:payload.windowId==null?null:Number(payload.windowId),
+          bytes:Number(payload.bytes||0),
+          quality:Number(payload.quality||0),
+          reason:String(payload.reason||"capture")
+        };
+      }
+    }
+  }
+  index.generatedAt=now();
+  index.routeCount=Object.keys(index.latestByRoute).length;
+  return index;
+}
 function buildLatestSummary(latestBatch,index){
   const summary=latestBatch&&latestBatch.summary||{};
   const lines=[
@@ -242,7 +276,9 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
   const latestReal=lastInput&&isRealBatch(lastInput)?lastInput:findLatestRealBatch(obs);
   const generatedAt=now();
   index.generatedAt=generatedAt;
+  const screenshotIndex=deriveScreenshotIndex(obs);
   writeJson(path.join(obs,"platform-index.json"),index);
+  writeJson(path.join(obs,"screenshots-index.json"),screenshotIndex);
   writeJson(path.join(obs,"platform-latest.json"),{
     schema:"signal-interpreter-platform-latest/v1",
     generatedAt,
@@ -265,7 +301,11 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     platform:{
       observations:Number(index.observations||0),
       deltas:Number(index.deltas||0),
-      identities:Number(index.identityCount||0)
+      identities:Number(index.identityCount||0),
+      screenshotsChanged:Number(screenshotIndex.changed||0),
+      screenshotsUnchanged:Number(screenshotIndex.unchanged||0),
+      screenshotErrors:Number(screenshotIndex.errors||0),
+      screenshotRoutes:Number(screenshotIndex.routeCount||0)
     }
   };
   writeJson(path.join(obs,"manifest.json"),manifest);
@@ -291,6 +331,10 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     platformSnapshots:Number(index.observations||0),
     platformDeltas:Number(index.deltas||0),
     identities:Number(index.identityCount||0),
+    platformScreenshotsChanged:Number(screenshotIndex.changed||0),
+    platformScreenshotsUnchanged:Number(screenshotIndex.unchanged||0),
+    platformScreenshotErrors:Number(screenshotIndex.errors||0),
+    platformScreenshotRoutes:Number(screenshotIndex.routeCount||0),
     inboxRemaining:listJson(inbox).length,
     status:"ok"
   };
