@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-9086faae-7855-4d29-8124-e0a95c253fcf
-- Creado: 2026-10-08T01:13:39.728Z
-- Trigger: event-window
+- Batch: batch-9655cd2c-8b6f-45d8-9e63-1ecc9d935f13
+- Creado: 2026-10-08T01:13:56.487Z
+- Trigger: call-ended
 - Extensión: 0.10.5
-- Eventos: 10
+- Eventos: 2
 - Errores: 0
 - Warnings: 0
-- Secuencia: 56 → 65
+- Secuencia: 66 → 67
 - Identidades de plataforma: 5
 - Snapshots de plataforma: 67
 - Deltas de plataforma: 67
@@ -15,17 +15,12 @@
 ## Categorías
 
 {
-  "RUNTIME": 7,
-  "PORTAL": 2,
-  "SESSION": 1
+  "SESSION": 2
 }
 
 ## Acciones
 
 {
-  "TAB_LIFECYCLE": 4,
-  "PLATFORM_TELEMETRY_RECONCILED": 2,
-  "NETWORK_ACTIVITY_WINDOW": 2,
-  "PLATFORM_ONLINE_RECONCILED_STARTED": 1,
-  "HOTLOAD_CALL_LEASE_HEARTBEAT": 1
+  "CALL_TIMER_STOPPED": 1,
+  "CALL_OBSERVABILITY_CHECKPOINT": 1
 }
