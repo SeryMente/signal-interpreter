@@ -235,19 +235,18 @@ internal static class SignalInterpreterCaptionHost
                 string name = current.Name ?? "";
                 string className = current.ClassName ?? "";
 
-                bool chromeWidget =
-                    className.IndexOf("Chrome_WidgetWin_", StringComparison.OrdinalIgnoreCase) >= 0;
-                bool titledCaption = ContainsCaptionTitle(name);
+                bool looksLikeCaption =
+                    className.IndexOf("Chrome_WidgetWin_", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                    ContainsCaptionTitle(name);
 
-                if (!chromeWidget || current.IsOffscreen)
+                if (!looksLikeCaption || current.IsOffscreen)
                     continue;
 
-                string directText = ReadCaptionDescendants(window);
-                if (titledCaption && !string.IsNullOrWhiteSpace(directText))
-                {
-                    visible = true;
-                    return directText;
-                }
+                visible = true;
+                string text = ReadCaptionDescendants(window);
+                if (!string.IsNullOrWhiteSpace(text))
+                    return text;
+            }
 
                 if (LooksLikeCaptionSubtree(window))
                 {
@@ -275,38 +274,6 @@ internal static class SignalInterpreterCaptionHost
                 return true;
         }
 
-        return false;
-    }
-
-    private static bool LooksLikeCaptionSubtree(AutomationElement window)
-    {
-        try
-        {
-            AutomationElementCollection nodes =
-                window.FindAll(TreeScope.Descendants, Condition.TrueCondition);
-
-            foreach (AutomationElement node in nodes)
-            {
-                var current = node.Current;
-                string typeName = current.ControlType.ProgrammaticName ?? "";
-                if (String.Equals(typeName, "ControlType.Text", StringComparison.Ordinal) ||
-                    String.Equals(typeName, "ControlType.Document", StringComparison.Ordinal))
-                {
-                    string text = (current.Name ?? "").Trim();
-                    if (String.IsNullOrWhiteSpace(text) || IgnoredText.Contains(text))
-                        continue;
-
-                    // CaptionBubble exposes its dialog/caption node as accessible
-                    // content. A substantial text node is a stronger signal than a
-                    // generic Chrome window title.
-                    if (text.Length >= 12 && text.Length <= 10000)
-                        return true;
-                }
-            }
-        }
-        catch
-        {
-        }
         return false;
     }
 
