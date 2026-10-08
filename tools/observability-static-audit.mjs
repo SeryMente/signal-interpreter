@@ -19,7 +19,7 @@ const githubPipelineTest=read("tools/observability-github-pipeline-test.mjs");
 const platformLearning=read("tools/observability/platform-learning.mjs");
 const platformLearningTest=read("tools/observability/platform-learning-test.mjs");
 
-assert.equal(manifest.version,"0.10.5");
+assert.equal(manifest.version,"0.10.6");
 assert.equal(manifest.permissions.includes("nativeMessaging"),false);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
@@ -60,6 +60,18 @@ assert.ok(background.includes("checkpointCallObservability(\"call-ended\""));
 assert.ok(background.includes("SignalObservationSync.flush(checkpoint)"));
 assert.ok(background.includes("CALL_ANSWERED_OVERLAY_REFRESH_REQUESTED"));
 assert.ok(background.includes("event.action === \"CALL_ROUTE_ENTERED\" || event.action === \"ANSWER_FLOW_ROUTE_CONFIRMED\""));
+assert.ok(background.includes("async function hotloadExistingCloudTabs"));
+assert.ok(background.includes("chrome.tabs.query({ url: [AUTHORIZED_ORIGIN + \"/*\"]"));
+assert.ok(background.includes("EFFECTIF_HOTLOAD_REPLACE"));
+assert.ok(background.includes("window.__SIGNAL_INTERPRETER_CLOUD_RUNTIME__ = null"));
+assert.ok(background.includes("HOTLOAD_EXISTING_TAB_REHYDRATED"));
+assert.ok(background.includes("HOTLOAD_EXISTING_TABS_SCAN_COMPLETED"));
+assert.ok(background.includes("attempt <= 3"));
+assert.ok(background.includes("hotloadExistingCloudTabs(\"runtime-start\")"));
+assert.ok(background.includes("hotloadExistingCloudTabs(\"onInstalled\")"));
+assert.ok(background.includes("hotloadExistingCloudTabs(\"onStartup\")"));
+assert.ok(content.includes("function deactivateForHotload"));
+assert.ok(content.includes("EFFECTIF_HOTLOAD_REPLACE"));
 
 assert.ok(observationSync.includes("SignalObservabilityRelay.uploadBatch"));
 assert.ok(observationSync.includes("signal-observation-sync-retry"));
