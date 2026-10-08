@@ -374,6 +374,7 @@
     if ($("lastManualPublish")) $("lastManualPublish").textContent = formatMoment(relayMomentState.manual, "Nunca registrada");
     if ($("lastModelContextAccess")) $("lastModelContextAccess").textContent = formatMoment(relayMomentState.model, "No registrado");
   }
+
   async function renderRelayStatus() {
     try {
       var info=await SignalObservabilityRelay.getStatus();
