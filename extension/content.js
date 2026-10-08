@@ -486,6 +486,47 @@
       } catch (_) {}
     } catch (_) {}
   }
+
+  // Fallback en la pestaña de Cloud Interpreter: sigue funcionando aunque
+  // Chrome deje el comando de extensión sin atajo asignado.
+  document.addEventListener("keydown", function (event) {
+    if (!event || event.repeat || event.isComposing) return;
+    if (!event.ctrlKey || !event.shiftKey || event.altKey || event.metaKey) return;
+    if (!(event.code === "Period" || event.key === "." || event.key === ">")) return;
+    event.preventDefault();
+    event.stopPropagation();
+    emit("EXTENSION_MICROPHONE_KEYBOARD_FALLBACK_TRIGGERED", {
+      hotkey: "Ctrl+Shift+.", code: event.code || null, key: event.key || null,
+      path: "content-keydown-fallback"
+    });
+    try {
+      chrome.runtime.sendMessage({
+        type: "SIGNAL_EXTENSION_MICROPHONE_KEYBOARD_FALLBACK",
+        source: "keyboard-content-fallback"
+      }, function (response) {
+        var runtimeError = chrome.runtime && chrome.runtime.lastError;
+        if (runtimeError) {
+          emit("EXTENSION_MICROPHONE_KEYBOARD_FALLBACK_ERROR", {
+            hotkey: "Ctrl+Shift+.", error: String(runtimeError.message || runtimeError)
+          }, "error");
+          return;
+        }
+        emit(response && response.ok && response.verified
+          ? "EXTENSION_MICROPHONE_KEYBOARD_FALLBACK_COMPLETED"
+          : "EXTENSION_MICROPHONE_KEYBOARD_FALLBACK_ERROR", {
+          hotkey: "Ctrl+Shift+.", ok: !!(response && response.ok),
+          verified: !!(response && response.verified),
+          muted: response && typeof response.muted === "boolean" ? response.muted : null,
+          duplicateSuppressed: !!(response && response.duplicateSuppressed),
+          error: response && response.error || null
+        }, response && response.ok && response.verified ? "info" : "error");
+      });
+    } catch (error) {
+      emit("EXTENSION_MICROPHONE_KEYBOARD_FALLBACK_ERROR", {
+        hotkey: "Ctrl+Shift+.", error: String(error)
+      }, "error");
+    }
+  }, true);
   function parsePlatformSeconds() {
     var endButton = Array.from(document.querySelectorAll("button,[role='button']")).filter(visibleElement).find(function (element) {
       return /^End call$/i.test(normalized(element.getAttribute("aria-label") || element.textContent || ""));
