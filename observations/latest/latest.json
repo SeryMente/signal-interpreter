@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-efce6e7d-1f9d-4b2b-b642-3dd7d9eca136",
-  "createdAt": "2026-10-07T23:50:49.141Z",
+  "batchId": "batch-2dd78603-5274-439a-887f-ad372871417c",
+  "createdAt": "2026-10-08T00:04:06.077Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.2",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "f70a961f-6f37-4b0c-966c-2c2202c4be89",
-      "sequence": 8589,
-      "timestamp": "2026-10-07T23:50:29.598Z",
-      "ingestedAt": "2026-10-07T23:50:29.598Z",
+      "id": "3a65c669-0491-427a-9c80-9baacea43bdf",
+      "sequence": 8594,
+      "timestamp": "2026-10-08T00:03:35.829Z",
+      "ingestedAt": "2026-10-08T00:03:35.829Z",
       "level": "info",
-      "category": "RUNTIME",
+      "category": "BILLING",
       "component": "background",
       "extensionVersion": "0.10.2",
       "host": "",
       "url": "",
-      "phase": "event",
-      "action": "PLATFORM_SESSION_RECONCILED_ENDED",
-      "outcome": "observed",
-      "traceId": "8d5eae62-7086-4913-84ec-b8ffd14e0853",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
+      "outcome": "success",
+      "traceId": "12f53ce1-ca77-4062-84a3-15d4a87827da",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -34,7 +34,7 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": "no-cloud-tabs",
+      "reasonCode": "alarm",
       "error": null,
       "metrics": {},
       "context": {},
@@ -44,436 +44,31 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "tab-removed",
-        "reason": "no-cloud-tabs",
-        "durationSeconds": 1718.985
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "062801ad-1fa5-4400-90a5-3e2744960149",
-      "sequence": 8590,
-      "timestamp": "2026-10-07T23:50:29.923Z",
-      "ingestedAt": "2026-10-07T23:50:29.923Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.2",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "PLATFORM_TELEMETRY_RECONCILED",
-      "outcome": "observed",
-      "traceId": "23f01416-8b4c-4f82-91cd-0c5bc496a463",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.2",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "event:PLATFORM_SESSION_ENDED",
-        "tabCount": 1,
-        "authenticatedCount": 0,
-        "onlineCount": 0,
-        "callCount": 0,
-        "probeErrors": 1
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "7fdf5786-72c0-43d9-afd5-b5d3ad710cb4",
-      "sequence": 8591,
-      "timestamp": "2026-10-07T23:50:30.223Z",
-      "ingestedAt": "2026-10-07T23:50:30.223Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.2",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "PLATFORM_TELEMETRY_RECONCILED",
-      "outcome": "observed",
-      "traceId": "e904aec8-8829-4f7e-bbd8-34a710a6c7cd",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.2",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "tab-removed",
-        "tabCount": 0,
-        "authenticatedCount": 0,
-        "onlineCount": 0,
-        "callCount": 0,
-        "probeErrors": 0
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "4189b747-efee-4d71-8213-f3355dcf541f",
-      "sequence": 8592,
-      "timestamp": "2026-10-07T23:50:30.552Z",
-      "ingestedAt": "2026-10-07T23:50:30.552Z",
-      "level": "info",
-      "category": "PORTAL",
-      "component": "webRequest",
-      "extensionVersion": "0.10.2",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "NETWORK_ACTIVITY_WINDOW",
-      "outcome": "observed",
-      "traceId": "3fcfec6f-6ff7-42e7-8787-d0edc6f18cc9",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.2",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "windowSeconds": 15,
-        "endpointCount": 22,
-        "endpoints": [
-          {
-            "method": "POST",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
-            "statusCode": 200,
-            "count": 2,
-            "totalDurationMs": 334,
-            "maxDurationMs": 327,
-            "avgDurationMs": 167
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/user.getUserProfileInOrganisation",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 333,
-            "maxDurationMs": 333,
-            "avgDurationMs": 333
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/telecom.getClientTokens",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 332,
-            "maxDurationMs": 332,
-            "avgDurationMs": 332
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/auth/session",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 7,
-            "maxDurationMs": 7,
-            "avgDurationMs": 7
-          },
-          {
-            "method": "GET",
-            "type": "other",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/pages/profile/<ID>/appointments-6f9c3e29e82eb4ec.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 2,
-            "maxDurationMs": 2,
-            "avgDurationMs": 2
-          },
-          {
-            "method": "GET",
-            "type": "other",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/pages/profile/<ID>",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "other",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/7934-2e33df73ccadbc23.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "other",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/3449-7cbd018a543f3559.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "other",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/508-461e306b49b86f27.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "other",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/4419-c58971fd26d7d5a0.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "script",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/pages/index-b54a867050457801.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/_next/static/css/2c563eff5b881598.css",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "script",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/pages/profile/<ID>",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/_next/static/css/e93c9643282f60a0.css",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "script",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/7934-2e33df73ccadbc23.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "script",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/3449-7cbd018a543f3559.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "script",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/4419-c58971fd26d7d5a0.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "script",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/7962-8c26d48dca579334.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/_next/static/css/12e275ad53db66c3.css",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "script",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/pages/profile/<ID>/appointments-6f9c3e29e82eb4ec.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 1,
-            "maxDurationMs": 1,
-            "avgDurationMs": 1
-          },
-          {
-            "method": "GET",
-            "type": "other",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/7962-8c26d48dca579334.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 0,
-            "maxDurationMs": 0,
-            "avgDurationMs": 0
-          },
-          {
-            "method": "GET",
-            "type": "script",
-            "url": "https://app.cloudinterpreter.com/_next/static/chunks/508-461e306b49b86f27.js",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 0,
-            "maxDurationMs": 0,
-            "avgDurationMs": 0
-          }
-        ]
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "35ec552a-2348-4040-8233-ff744cc5abf7",
-      "sequence": 8593,
-      "timestamp": "2026-10-07T23:50:30.904Z",
-      "ingestedAt": "2026-10-07T23:50:30.904Z",
-      "level": "warn",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.2",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "OBSERVATION_SYNC_RETRY_SCHEDULED",
-      "outcome": "observed",
-      "traceId": "a1763712-40aa-497d-984c-65d6a2c15ff8",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.2",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": "Error: Relay HTTP 409",
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "retryMs": 15000,
-        "error": "Error: Relay HTTP 409",
-        "sequence": null
+        "pair": "USD/MXN",
+        "rate": 17.976918,
+        "rateDate": "[PHONE]",
+        "source": "ExchangeRate.fun / hourly snapshot",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 5,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 8589,
-    "lastSequence": 8593,
-    "firstTimestamp": "2026-10-07T23:50:29.598Z",
-    "lastTimestamp": "2026-10-07T23:50:30.904Z",
+    "firstSequence": 8594,
+    "lastSequence": 8594,
+    "firstTimestamp": "2026-10-08T00:03:35.829Z",
+    "lastTimestamp": "2026-10-08T00:03:35.829Z",
     "actions": {
-      "PLATFORM_SESSION_RECONCILED_ENDED": 1,
-      "PLATFORM_TELEMETRY_RECONCILED": 2,
-      "NETWORK_ACTIVITY_WINDOW": 1,
-      "OBSERVATION_SYNC_RETRY_SCHEDULED": 1
+      "EXCHANGE_RATE_UPDATED": 1
     },
     "categories": {
-      "RUNTIME": 4,
-      "PORTAL": 1
+      "BILLING": 1
     }
   }
 }
