@@ -1588,15 +1588,19 @@
     });
     var micButton = overlayRoot.getElementById("mic");
     if (micButton) {
-      var muted = !!state.microphoneMuted;
+      var activeCapture = !!(state.groqCapture && state.groqCapture.status === "connected");
+      var actualMuted = activeCapture ? !!state.groqCapture.microphoneMuted : !!state.microphoneMuted;
       var muteStatus = String(state.microphoneMuteStatus || "");
-      micButton.textContent = muted ? "MIC OFF" : "MIC ON";
-      micButton.classList.toggle("muted", muted);
-      micButton.classList.toggle("live", !muted && muteStatus === "applied");
+      var muteError = activeCapture && muteStatus === "error";
+      micButton.textContent = muteError ? "MIC ERR" : (actualMuted ? "MIC OFF" : "MIC ON");
+      micButton.classList.toggle("muted", actualMuted && !muteError);
+      micButton.classList.toggle("live", !actualMuted && !muteError && muteStatus === "applied");
       micButton.setAttribute("aria-pressed", muted ? "true" : "false");
-      micButton.title = muted
-        ? "Micrófono de Signal Interpreter desactivado · Ctrl+Shift+M para activar"
-        : "Micrófono de Signal Interpreter activo · Ctrl+Shift+M para silenciar";
+      micButton.title = muteError
+        ? "Error: no se pudo verificar el mute del micrófono de Signal Interpreter · pulsa Ctrl+Shift+M para reintentar"
+        : actualMuted
+          ? "Micrófono de Signal Interpreter desactivado · Ctrl+Shift+M para activar"
+          : "Micrófono de Signal Interpreter activo · Ctrl+Shift+M para silenciar";
     }
     overlayRoot.getElementById("amount").textContent = totalText;
     overlayRoot.getElementById("live").textContent = state.callStartedAt && overlayPeriod !== "previousMonth"
