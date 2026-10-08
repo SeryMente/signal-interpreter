@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-5efeda02-6fdc-4172-adfc-9cb6b4813c65",
-  "createdAt": "2026-10-08T12:04:30.504Z",
-  "trigger": "alarm",
+  "batchId": "batch-1efcfbc1-6316-427d-ad42-295f9129f3bc",
+  "createdAt": "2026-10-08T12:08:31.575Z",
+  "trigger": "critical",
   "extensionVersion": "0.10.2",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "49e4c24a-98bc-4e81-966f-d4f459cd9c1e",
-      "sequence": 8655,
-      "timestamp": "2026-10-08T12:04:29.638Z",
-      "ingestedAt": "2026-10-08T12:04:29.638Z",
-      "level": "info",
+      "id": "49417836-622e-466c-a45b-a5f554d62fb2",
+      "sequence": 8658,
+      "timestamp": "2026-10-08T12:08:30.158Z",
+      "ingestedAt": "2026-10-08T12:08:30.158Z",
+      "level": "warn",
       "category": "RUNTIME",
       "component": "background",
       "extensionVersion": "0.10.2",
       "host": "",
       "url": "",
-      "phase": "event",
-      "action": "TELEMETRY_MAINTENANCE",
-      "outcome": "observed",
-      "traceId": "0e557f16-f9ca-4999-8459-f7fd819feed0",
+      "phase": "error",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
+      "outcome": "error",
+      "traceId": "14dea2c7-0e95-4c9d-a4f5-302dbcdcbd93",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -35,7 +35,7 @@
       "expected": null,
       "observed": null,
       "reasonCode": null,
-      "error": null,
+      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
       "metrics": {},
       "context": {},
       "privacy": {
@@ -44,41 +44,25 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "pruned": {
-          "cutoff": "[PHONE]T12:04:29.503Z",
-          "expiredEvents": 0,
-          "expiredSnapshots": 0,
-          "expiredSignalSegments": 0,
-          "excessEvents": 0,
-          "excessSignalSegments": 0
-        },
-        "stats": {
-          "database": "signal-interpreter-telemetry",
-          "events": 8654,
-          "snapshots": 11,
-          "signalSegments": 0,
-          "oldestEventAt": "[PHONE]T18:56:51.212Z",
-          "newestEventAt": "[PHONE]T12:03:35.738Z",
-          "usageBytes": 7948632,
-          "quotaBytes": 70771534168
-        }
+        "trigger": "hourly",
+        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
       }
     }
   ],
   "summary": {
     "eventsTotal": 1,
     "errors": 0,
-    "warnings": 0,
-    "critical": false,
+    "warnings": 1,
+    "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 8655,
-    "lastSequence": 8655,
-    "firstTimestamp": "2026-10-08T12:04:29.638Z",
-    "lastTimestamp": "2026-10-08T12:04:29.638Z",
+    "firstSequence": 8658,
+    "lastSequence": 8658,
+    "firstTimestamp": "2026-10-08T12:08:30.158Z",
+    "lastTimestamp": "2026-10-08T12:08:30.158Z",
     "actions": {
-      "TELEMETRY_MAINTENANCE": 1
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
     },
     "categories": {
       "RUNTIME": 1
