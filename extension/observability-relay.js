@@ -28,10 +28,11 @@ async function getStatus(){
   }
 }
 async function uploadScreenshot(screenshot){
-  if(!screenshot||screenshot.schema!=="signal-interpreter-platform-screenshot/v1")throw new Error("Schema de captura de plataforma no soportado");
-  var hash=String(screenshot.sha256||"");
-  if(!/^[a-f0-9]{64}$/i.test(hash))throw new Error("Hash de captura inválido");
-  return request({endpoint:SCREENSHOT_ENDPOINT,method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(screenshot)});
+  if(!screenshot||screenshot.schema!=="signal-interpreter-platform-screenshot/v1")throw new Error("Schema de screenshot no soportado");
+  if(!/^[a-f0-9]{64}$/i.test(String(screenshot.sha256||"")))throw new Error("Hash de screenshot inválido");
+  if(String(screenshot.mimeType||"")!=="image/jpeg")throw new Error("Solo JPEG soportado");
+  if(!screenshot.imageBase64)throw new Error("Screenshot vacío");
+  return request({method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(screenshot)});
 }
 async function uploadScreenshot(screenshot){
   if(!screenshot||screenshot.schema!=="signal-interpreter-platform-screenshot/v1")throw new Error("Schema de screenshot no soportado");
