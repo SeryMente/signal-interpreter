@@ -59,6 +59,40 @@ importScripts("dialogue-engine.js","telemetry-db.js","observability-relay.js","o
   function hasActiveCall(state) {
     return !!(state && state.callId && state.callStartedAt);
   }
+  var PLATFORM_SCREENSHOT_ALARM="signal-platform-screenshot";
+  var PLATFORM_SCREENSHOT_MIN_INTERVAL_MS=15000;
+  var platformScreenshotInFlight=false,platformScreenshotLastAttemptAt=0,platformScreenshotScheduled=null;
+  function isCloudInterpreterUrl(url){try{return new URL(String(url||"")).origin===AUTHORIZED_ORIGIN;}catch(_){return false;}}
+  function base64ToBytes(base64){var raw=atob(String(base64||"")),bytes=new Uint8Array(raw.length);for(var i=0;i<raw.length;i+=1)bytes[i]=raw.charCodeAt(i);return bytes;}
+  async function sha256Base64(base64){var digest=await crypto.subtle.digest("SHA-256",base64ToBytes(base64)),bytes=new Uint8Array(digest),hex="";for(var i=0;i<bytes.length;i+=1)hex+=bytes[i].toString(16).padStart(2,"0");return hex;}
+  async function screenshotOverlay(tabId,hide){try{return await chrome.tabs.sendMessage(Number(tabId),{type:hide?"EFFECTIF_SCREENSHOT_PREPARE":"EFFECTIF_SCREENSHOT_RESTORE"});}catch(error){return{ok:false,error:String(error)};}}
+  async function captureCloudPlatformScreenshot(tabId,reason){
+    if(platformScreenshotInFlight)return{ok:false,skipped:"in-flight"};
+    if(Date.now()-platformScreenshotLastAttemptAt<PLATFORM_SCREENSHOT_MIN_INTERVAL_MS)return{ok:false,skipped:"rate-limit"};
+    platformScreenshotLastAttemptAt=Date.now();
+    var targetTab;try{targetTab=await chrome.tabs.get(Number(tabId));}catch(error){record("PLATFORM_SCREENSHOT_TAB_ERROR",{tabId:Number(tabId),reason:reason||"unknown",error:String(error)},"warn","observability");return{ok:false,error:String(error)}}
+    if(!targetTab||!targetTab.active||!isCloudInterpreterUrl(targetTab.url)){return{ok:false,skipped:"not-visible-cloud-tab"}}
+    var stored=await chrome.storage.local.get(["effectifConfig","platformScreenshotHashes"]),cfg=Object.assign({},DEFAULT_CONFIG,stored.effectifConfig||{});
+    if(!cfg.observationEnabled)return{ok:false,skipped:"observation-disabled"};
+    platformScreenshotInFlight=true;var hidden=false;
+    try{
+      var prep=await screenshotOverlay(targetTab.id,true);hidden=!!(prep&&prep.ok);
+      await new Promise(function(resolve){setTimeout(resolve,80);});
+      var dataUrl=await chrome.tabs.captureVisibleTab(targetTab.windowId,{format:"jpeg",quality:72});
+      if(!dataUrl||typeof dataUrl!=="string")throw new Error("captureVisibleTab returned no image");
+      var comma=dataUrl.indexOf(",");if(comma<0)throw new Error("Invalid screenshot data URL");
+      var base64=dataUrl.slice(comma+1),sha256=await sha256Base64(base64),route=routeShape(targetTab.url)||"/";
+      var hashes=stored.platformScreenshotHashes&&typeof stored.platformScreenshotHashes==="object"?stored.platformScreenshotHashes:{};
+      if(hashes[route]===sha256){record("PLATFORM_SCREENSHOT_UNCHANGED",{tabId:targetTab.id,route:route,reason:reason||"scheduled",sha256:sha256},"info","observability");return{ok:true,unchanged:true,route:route,sha256:sha256};}
+      var result=await SignalObservabilityRelay.uploadScreenshot({schema:"signal-interpreter-platform-screenshot/v1",origin:AUTHORIZED_ORIGIN,route:route,capturedAt:iso(),reason:reason||"scheduled",extensionVersion:chrome.runtime.getManifest().version,tabId:Number(targetTab.id),windowId:Number(targetTab.windowId),mimeType:"image/jpeg",sha256:sha256,base64:base64});
+      hashes[route]=sha256;var keys=Object.keys(hashes);if(keys.length>80)keys.slice(0,keys.length-80).forEach(function(key){delete hashes[key];});
+      await chrome.storage.local.set({platformScreenshotHashes:hashes});
+      record(result&&result.duplicate?"PLATFORM_SCREENSHOT_ALREADY_PRESENT":"PLATFORM_SCREENSHOT_UPLOADED",{tabId:targetTab.id,route:route,reason:reason||"scheduled",sha256:sha256,duplicate:!!(result&&result.duplicate),remotePath:result&&result.remotePath||null},"info","observability");
+      return{ok:true,duplicate:!!(result&&result.duplicate),route:route,sha256:sha256,remotePath:result&&result.remotePath||null};
+    }catch(error){record("PLATFORM_SCREENSHOT_UPLOAD_ERROR",{tabId:Number(tabId),reason:reason||"unknown",error:String(error)},"warn","observability");return{ok:false,error:String(error)}}
+    finally{if(hidden)await screenshotOverlay(targetTab.id,false);platformScreenshotInFlight=false;}
+  }
+  function scheduleCloudPlatformScreenshot(tabId,reason,delayMs){if(platformScreenshotScheduled)clearTimeout(platformScreenshotScheduled);platformScreenshotScheduled=setTimeout(function(){platformScreenshotScheduled=null;captureCloudPlatformScreenshot(tabId,reason).catch(function(error){record("PLATFORM_SCREENSHOT_UNHANDLED_ERROR",{tabId:Number(tabId),reason:reason||"scheduled",error:String(error)},"warn","observability");});},Math.max(0,Number(delayMs)||0));}
   function enqueueEarningsSync(operation, task) {
     var run = earningsSyncQueue.then(task, task);
     earningsSyncQueue = run.catch(function (error) {
