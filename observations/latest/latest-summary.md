@@ -1,26 +1,31 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-9107486d-858b-4d8f-b292-31884164f297
-- Creado: 2026-10-09T23:26:26.795Z
-- Trigger: critical
+- Batch: batch-1fe63fbe-5f8d-4473-a962-3a3f8a7b5844
+- Creado: 2026-10-09T23:26:53.471Z
+- Trigger: event-window
 - Extensión: 0.10.22
-- Eventos: 7
-- Errores: 1
+- Eventos: 19
+- Errores: 0
 - Warnings: 0
-- Secuencia: 402 → 408
+- Secuencia: 409 → 427
 - Identidades de plataforma: 8
-- Snapshots de plataforma: 567
-- Deltas de plataforma: 567
+- Snapshots de plataforma: 568
+- Deltas de plataforma: 568
 
 ## Categorías
 
 {
-  "RUNTIME": 7
+  "RUNTIME": 17,
+  "PORTAL": 2
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 6,
-  "PLATFORM_SCREENSHOT_CAPTURE_ERROR": 1
+  "PAGE_LIFECYCLE": 1,
+  "PAGE_VISIBILITY_CHANGED": 1,
+  "AUTO_ANSWER_READINESS": 14,
+  "NETWORK_ACTIVITY_WINDOW": 1,
+  "PERFORMANCE_HEARTBEAT": 1,
+  "PLATFORM_SURFACE_SNAPSHOT": 1
 }
