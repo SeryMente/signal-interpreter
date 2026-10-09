@@ -63,7 +63,7 @@ assert.ok(groq.includes("language:String(data&&data.language||language||\"unknow
 assert.ok(overlay.includes("pointer-events:none"));
 assert.ok(overlay.includes("attachShadow({ mode: \"closed\" })"));
 assert.ok(overlay.includes("interactiveRects"));
-assert.ok(overlay.includes("core.overlapRatio"));
+assert.ok(overlay.includes("core.choosePositionCandidate(candidates, rects, w, h)"));
 assert.ok(overlay.includes("createRowNode"));
 assert.ok(overlay.includes("EFFECTIF_SCREENSHOT_PREPARE"));
 assert.ok(overlay.includes("EFFECTIF_SCREENSHOT_RESTORE"));
