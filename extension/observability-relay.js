@@ -22,9 +22,9 @@ async function request(init){
 async function getStatus(){
   try{
     var data=await request({method:"GET"});
-    return{reachable:true,configured:true,repository:data&&data.repository||REPOSITORY,mode:data&&data.mode||"vercel-to-github",publishHistory:data&&data.publishHistory||null,modelContextAccess:data&&data.modelContextAccess||null,error:null};
+    return{reachable:true,configured:!!(data&&data.configured===true),repository:data&&data.repository||REPOSITORY,branch:data&&data.branch||"main",mode:data&&data.mode||"vercel-to-github",batchContract:data&&data.batchContract||null,publishHistory:data&&data.publishHistory||null,modelContextAccess:data&&data.modelContextAccess||null,error:data&&data.configured===false?"Relay reachable but GitHub is not configured":null};
   }catch(error){
-    return{reachable:false,configured:true,repository:REPOSITORY,error:String(error&&error.message||error)};
+    return{reachable:false,configured:false,repository:REPOSITORY,error:String(error&&error.message||error)};
   }
 }
 async function uploadScreenshot(screenshot){
@@ -32,13 +32,23 @@ async function uploadScreenshot(screenshot){
   if(!/^[a-f0-9]{64}$/i.test(String(screenshot.sha256||"")))throw new Error("Hash de screenshot inválido");
   if(String(screenshot.mimeType||"")!=="image/jpeg")throw new Error("Solo JPEG soportado");
   if(!String(screenshot.base64||""))throw new Error("Screenshot vacío");
-  return request({endpoint:SCREENSHOT_ENDPOINT,method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(screenshot)});
+  var result = await request({endpoint:SCREENSHOT_ENDPOINT,method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(screenshot)});
+  if(!result || result.accepted!==true || String(result.sha256||"").toLowerCase()!==String(screenshot.sha256||"").toLowerCase() ||
+      !String(result.remotePath||"").startsWith("observations/platform-screenshots/")) {
+    throw new Error("Relay no confirmó la persistencia idempotente del screenshot");
+  }
+  return result;
 }
 async function uploadBatch(batch){
   if(!batch||batch.schema!=="signal-interpreter-observation-batch/v1")throw new Error("Schema de batch no soportado");
   var batchId=String(batch.batchId||"");
   if(!/^[A-Za-z0-9._-]{1,120}$/.test(batchId))throw new Error("batchId inválido");
-  return request({endpoint:RELAY_ENDPOINT,method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(batch)});
+  var result = await request({endpoint:RELAY_ENDPOINT,method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(batch)});
+  var expectedPath = "observations/inbox/" + batchId + ".json";
+  if(!result || result.accepted!==true || result.batchId!==batchId || result.remotePath!==expectedPath || !result.contentSha) {
+    throw new Error("Relay no confirmó el batch exacto en la cola durable de GitHub");
+  }
+  return result;
 }
 global.SignalObservabilityRelay={getStatus:getStatus,uploadBatch:uploadBatch,uploadScreenshot:uploadScreenshot,repository:REPOSITORY,endpoint:RELAY_ENDPOINT,screenshotEndpoint:SCREENSHOT_ENDPOINT};
 })(typeof self!=="undefined"?self:window);
