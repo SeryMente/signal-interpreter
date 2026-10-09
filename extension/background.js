@@ -1725,8 +1725,9 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       ? (mirror && mirror.earnings && mirror.earnings.today) || (mirror && mirror.statistics)
       : mirror && mirror.earnings && mirror.earnings[period];
     var summary = item && item.summary || {};
+    if (summary.earnedUsd == null || summary.earnedUsd === "") return null;
     var earnedUsd = Number(summary.earnedUsd);
-    if (!(earnedUsd >= 0)) return null;
+    if (!Number.isFinite(earnedUsd) || earnedUsd < 0) return null;
     return {
       earnedUsd: earnedUsd,
       earned: summary.earned || null,
@@ -1744,7 +1745,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var existing = stored.effectifCallEarnings || {};
     var expectedStartMs = Date.parse(startedAt || state.callStartedAt);
     function isSafeExistingBaseline(value) {
-      if (!value || !Number.isFinite(Number(value.earnedUsd)) || Number(value.earnedUsd) < 0) return false;
+      if (!value || value.earnedUsd == null || value.earnedUsd === "" ||
+          !Number.isFinite(Number(value.earnedUsd)) || Number(value.earnedUsd) < 0) return false;
       if (value.source === "local-completed-calls" && value.earned == null) return true;
       var observedAt = Date.parse(value.capturedAt);
       return value.earned != null && Number.isFinite(expectedStartMs) &&
