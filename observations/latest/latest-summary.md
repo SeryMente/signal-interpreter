@@ -1,34 +1,34 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-98f8f455-4e10-4d3a-a149-1ba906761996
-- Creado: 2026-10-09T18:02:29.006Z
-- Trigger: alarm
+- Batch: batch-42d99c39-4072-4aff-95d6-e44547379304
+- Creado: 2026-10-09T18:03:17.521Z
+- Trigger: manual
 - Extensión: 0.10.17
-- Eventos: 50
+- Eventos: 9
 - Errores: 0
-- Warnings: 0
-- Secuencia: 3741 → 3790
+- Warnings: 1
+- Secuencia: 3928 → 3936
 - Identidades de plataforma: 8
-- Snapshots de plataforma: 474
-- Deltas de plataforma: 474
+- Snapshots de plataforma: 477
+- Deltas de plataforma: 477
 
 ## Categorías
 
 {
-  "RUNTIME": 47,
-  "PORTAL": 2,
+  "RUNTIME": 8,
   "SESSION": 1
 }
 
 ## Acciones
 
 {
-  "MEDIA_HEALTH": 18,
-  "AUTO_ANSWER_READINESS": 26,
-  "NETWORK_ACTIVITY_WINDOW": 1,
-  "EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFIED": 1,
-  "HOTLOAD_CALL_LEASE_HEARTBEAT": 1,
+  "HOTLOAD_EXISTING_TABS_SCAN_COMPLETED": 1,
+  "HOTLOAD_EXISTING_WEB_TABS_SCAN_DEDUPED": 1,
   "PERFORMANCE_HEARTBEAT": 1,
-  "PLATFORM_SURFACE_SNAPSHOT": 1,
-  "PLATFORM_INTEGRITY_CHECK": 1
+  "PLATFORM_SESSION_STARTED": 1,
+  "OBSERVER_STARTED": 1,
+  "PLATFORM_INTEGRITY_CHECK": 1,
+  "AUTO_ANSWER_READINESS": 1,
+  "CALL_ROUTE_ENTERED": 1,
+  "EARNINGS_OVERLAY_STARTED": 1
 }
