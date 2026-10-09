@@ -179,6 +179,34 @@
     return area / Math.max(1, a.width * a.height);
   }
 
+  function choosePositionCandidate(candidates, controls, width, height) {
+    var choices = Array.isArray(candidates) ? candidates : [];
+    var rects = Array.isArray(controls) ? controls : [];
+    var w = Math.max(1, Number(width) || 1);
+    var h = Math.max(1, Number(height) || 1);
+    if (!choices.length) return null;
+    var best = null;
+    var bestScore = Infinity;
+    choices.forEach(function (candidate) {
+      var left = Number(candidate.left) || 0;
+      var top = Number(candidate.top) || 0;
+      var rect = {
+        left: left, top: top, right: left + w, bottom: top + h, width: w, height: h
+      };
+      var score = rects.reduce(function (sum, control) {
+        var controlArea = Math.max(1, Number(control.width || (control.right - control.left)) *
+          Number(control.height || (control.bottom - control.top)));
+        var weight = controlArea < 1800 ? 1.5 : 1;
+        return sum + overlapRatio(rect, control) * weight;
+      }, 0);
+      if (score < bestScore) {
+        bestScore = score;
+        best = candidate;
+      }
+    });
+    return best;
+  }
+
   root.SignalCaptionCore = {
     normalizeText: normalizeText,
     detectLanguage: detectLanguage,
@@ -190,6 +218,7 @@
     roleForLanguage: roleForLanguage,
     roleForSource: roleForSource,
     languageLabel: languageLabel,
-    overlapRatio: overlapRatio
+    overlapRatio: overlapRatio,
+    choosePositionCandidate: choosePositionCandidate
   };
 })(typeof globalThis !== "undefined" ? globalThis : window);
