@@ -1487,28 +1487,26 @@
       : platformMirror.earnings && platformMirror.earnings[period];
     var official = entry && entry.summary || {};
     var baseline = resolveOverlayBaseline(period, entry, official, activeStartedAt);
-    var baseUsd = finiteMetric(baseline && baseline.earnedUsd);
-    if (baseUsd == null) baseUsd = finiteMetric(fallback.earnedUsd) || 0;
-    var baseCalls = finiteMetric(baseline && baseline.callCount);
-    if (baseCalls == null) baseCalls = Number(fallback.callCount || 0);
-    var baseMinutes = finiteMetric(baseline && baseline.minutes);
-    if (baseMinutes == null) baseMinutes = Number(fallback.minutes || 0);
-    var activeStartsInPeriod = activePeriod && earningsMetrics
-      ? earningsMetrics.callStartsInPeriod(period, activeStartedAt, now)
-      : activePeriod && overlayPeriodMatches(activeStartedAt, period);
-    var calls = baseCalls + (activeStartsInPeriod ? 1 : 0);
-    var periodMinutes = baseMinutes + livePeriodSeconds / 60;
-    var totalUsd = baseUsd + liveUsd;
+    var calculated = earningsMetrics && earningsMetrics.combinePeriodMetrics
+      ? earningsMetrics.combinePeriodMetrics(period, baseline, fallback, activeStartedAt, rate, now)
+      : {
+        calls: (finiteMetric(baseline && baseline.callCount) == null ? Number(fallback.callCount || 0) : Number(baseline.callCount)) +
+          (activePeriod && overlayPeriodMatches(activeStartedAt, period) ? 1 : 0),
+        liveSeconds: liveSeconds,
+        liveUsd: liveUsd,
+        periodMinutes: (finiteMetric(baseline && baseline.minutes) == null ? Number(fallback.minutes || 0) : Number(baseline.minutes)) + livePeriodSeconds / 60,
+        totalUsd: (finiteMetric(baseline && baseline.earnedUsd) == null ? Number(fallback.earnedUsd || 0) : Number(baseline.earnedUsd)) + liveUsd
+      };
     var hasOfficial = !!(baseline && baseline.authoritative && finiteMetric(baseline.earnedUsd) != null);
     return {
       period: period,
-      calls: calls,
+      calls: calculated.calls,
       callsAuthoritative: !!(hasOfficial && finiteMetric(baseline.callCount) != null),
       modality: modality,
-      liveSeconds: liveSeconds,
-      liveUsd: liveUsd,
-      periodMinutes: periodMinutes,
-      totalUsd: totalUsd,
+      liveSeconds: calculated.liveSeconds,
+      liveUsd: calculated.liveUsd,
+      periodMinutes: calculated.periodMinutes,
+      totalUsd: calculated.totalUsd,
       officialUsd: hasOfficial ? baseline.earnedUsd : null,
       fx: Number(config.usdMxnRate || 0),
       fxDate: config.exchangeRateDate || null,
