@@ -12,7 +12,7 @@
   function detectLanguage(value) {
     var text = normalizeText(value).toLowerCase();
     if (!text) return "unknown";
-    var wordCount = text.split(/\\s+/).filter(Boolean).length;
+    var wordCount = text.split(/\s+/).filter(Boolean).length;
     if (wordCount < 3) return "unknown";
 
     var spanishMarkers = [
@@ -48,7 +48,7 @@
     var language = String(value == null ? "" : value).trim().toLowerCase().replace(/_/g, "-");
     if (!language) return "unknown";
     if (typeof language.normalize === "function") {
-      language = language.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "");
+      language = language.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
     if (/^(?:en|eng|english)(?:$|[-\\s(])/.test(language)) return "en";
     if (/^(?:es|spa|spanish|espanol|castellano)(?:$|[-\\s(])/.test(language)) return "es";
@@ -62,8 +62,8 @@
   }
 
   function wordOverlap(previous, next) {
-    var a = normalizeText(previous).toLowerCase().split(/\\s+/).filter(Boolean);
-    var b = normalizeText(next).toLowerCase().split(/\\s+/).filter(Boolean);
+    var a = normalizeText(previous).toLowerCase().split(/\s+/).filter(Boolean);
+    var b = normalizeText(next).toLowerCase().split(/\s+/).filter(Boolean);
     var limit = Math.min(a.length, b.length);
     for (var size = limit; size >= 2; size -= 1) {
       var matches = true;
@@ -85,8 +85,8 @@
     if (right.indexOf(left) === 0) return "progressive";
     if (left.indexOf(right) === 0) return "stale";
     if (wordOverlap(a, b) >= 2) return "overlap";
-    var leftWords = left.split(/\\s+/);
-    var rightWords = right.split(/\\s+/);
+    var leftWords = left.split(/\s+/);
+    var rightWords = right.split(/\s+/);
     var commonPrefix = 0;
     while (commonPrefix < leftWords.length && commonPrefix < rightWords.length &&
       leftWords[commonPrefix] === rightWords[commonPrefix]) commonPrefix += 1;
@@ -102,7 +102,7 @@
     if (relation === "progressive") return b;
     if (relation === "overlap") {
       var overlap = wordOverlap(a, b);
-      var words = b.split(/\\s+/);
+      var words = b.split(/\s+/);
       return normalizeText(a + " " + words.slice(overlap).join(" "));
     }
     return b;
