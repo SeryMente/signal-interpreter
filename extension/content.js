@@ -1472,6 +1472,7 @@
         modality: modality,
         liveSeconds: liveSeconds,
         liveUsd: liveUsd,
+        livePeriodSeconds: livePeriodSeconds,
         periodMinutes: yearMinutes,
         totalUsd: yearChart && yearChart.complete ? yearUsd : yearBaseUsd + liveUsd,
         officialUsd: yearChart && yearChart.complete ? yearUsd : null,
@@ -1506,6 +1507,7 @@
       liveSeconds: calculated.liveSeconds,
       liveUsd: calculated.liveUsd,
       periodMinutes: calculated.periodMinutes,
+      livePeriodSeconds: calculated.livePeriodSeconds == null ? livePeriodSeconds : calculated.livePeriodSeconds,
       totalUsd: calculated.totalUsd,
       officialUsd: hasOfficial ? baseline.earnedUsd : null,
       fx: Number(config.usdMxnRate || 0),
@@ -1577,7 +1579,7 @@
     }
     var today = localDay();
     var todayInfo = earningsNow("today");
-    var liveMinutes = todayInfo.liveSeconds / 60;
+    var liveMinutes = Number(todayInfo.livePeriodSeconds || 0) / 60;
     var baselineToday = activeCallEarnings && activeCallEarnings.callId === state.callId && activeCallEarnings.baselines && activeCallEarnings.baselines.today;
     items = items.map(function (item) {
       if (item.key !== today) return item;
@@ -1623,7 +1625,7 @@
       var next = Object.assign({}, item);
       if (item.key === currentMonthKey && state.callId && state.callStartedAt) {
         next.earnedUsd = Number(baselineMonth && baselineMonth.earnedUsd || 0) + earningsNow("currentMonth").liveUsd;
-        next.minutes = Number(baselineMonth && baselineMonth.minutes || item.minutes || 0) + earningsNow("currentMonth").liveSeconds / 60;
+        next.minutes = Number(baselineMonth && baselineMonth.minutes || item.minutes || 0) + earningsNow("currentMonth").livePeriodSeconds / 60;
       }
       return next;
     });
