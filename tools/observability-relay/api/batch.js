@@ -1,3 +1,4 @@
+import {createHash} from "node:crypto";
 const REPOSITORY = "SeryMente/signal-interpreter";
 const BRANCH = "main";
 const API_VERSION = "2022-11-28";
@@ -16,6 +17,14 @@ function githubHeaders() {
   return { Accept:"application/vnd.github+json", Authorization:`Bearer ${process.env.GITHUB_TOKEN || ""}`, "Content-Type":"application/json", "X-GitHub-Api-Version":API_VERSION, "User-Agent":"signal-interpreter-observability-relay" };
 }
 function encodePath(path) { return path.split("/").map(encodeURIComponent).join("/"); }
+function gitBlobSha(bytes) {
+  const data=Buffer.isBuffer(bytes)?bytes:Buffer.from(bytes);
+  return createHash("sha1").update(Buffer.concat([Buffer.from("blob "+data.length+"\\0","utf8"),data])).digest("hex");
+}
+function assertExistingMatches(existing,bytes,kind) {
+  const expected=gitBlobSha(bytes),actual=String(existing&&existing.sha||"");
+  if(!actual||actual!==expected)throw Object.assign(new Error("Idempotency conflict: "+kind+" ID exists with different bytes"),{status:409});
+}
 async function githubRequest(path, init={}) {
   const response=await fetch(`https://api.github.com${path}`,{...init,headers:{...githubHeaders(),...(init.headers||{})}});
   const text=await response.text(); let data=null; try{data=text?JSON.parse(text):null;}catch(_){data=text;}
@@ -71,7 +80,7 @@ export default async function handler(req,res){
         publishHistory={lastAutomaticPublishAt:parsed.lastAutomaticPublishAt||null,lastAutomaticBatchId:parsed.lastAutomaticBatchId||null,lastManualPublishAt:parsed.lastManualPublishAt||null,lastManualBatchId:parsed.lastManualBatchId||null};
       }
     } catch(_) {}
-    return res.status(200).json({ok:true,service:"signal-interpreter-observability-relay",repository:REPOSITORY,branch:BRANCH,mode:"vercel-to-github",publishHistory,modelContextAccess:modelContextAccess});
+    return res.status(200).json({ok:true,service:"signal-interpreter-observability-relay",repository:REPOSITORY,branch:BRANCH,mode:"vercel-to-github",configured:!!process.env.GITHUB_TOKEN,batchContract:"durable-inbox/v1",maxEvents:MAX_EVENTS,maxBodyBytes:MAX_BODY_BYTES,publishHistory,modelContextAccess:modelContextAccess});
   }
   if(req.method!=="POST") return res.status(405).json({ok:false,error:"Method not allowed"});
   if(!process.env.GITHUB_TOKEN) return res.status(503).json({ok:false,error:"Relay not configured"});
@@ -83,20 +92,21 @@ export default async function handler(req,res){
       const routeToken=String(raw.route||"platform").replace(/[^A-Za-z0-9_-]+/g,"_").replace(/^_+|_+$/g,"").slice(0,90)||"platform";
       const remotePath=`observations/screenshots/${day}/${routeToken}--${String(raw.sha256).toLowerCase()}.jpg`;
       const existing=await getExisting(remotePath);
-      if(existing) return res.status(200).json({accepted:true,duplicate:true,screenshotId:raw.screenshotId,remotePath,contentSha:existing.sha||null});
+      if(existing) { assertExistingMatches(existing,checked.bytes,"screenshot"); return res.status(200).json({accepted:true,duplicate:true,screenshotId:raw.screenshotId,remotePath,contentSha:existing.sha||null}); }
       const payload={message:`diagnostic: store platform screenshot ${String(raw.sha256).slice(0,16)}`,content:checked.bytes.toString("base64"),branch:BRANCH};
       let created;
       try{created=await githubRequest(`/repos/${REPOSITORY}/contents/${encodePath(remotePath)}`,{method:"PUT",body:JSON.stringify(payload)});}
-      catch(error){if(error.status===409){const raced=await getExisting(remotePath);if(raced)return res.status(200).json({accepted:true,duplicate:true,screenshotId:raw.screenshotId,remotePath,contentSha:raced.sha||null});}throw error;}
+      catch(error){if(error.status===409){const raced=await getExisting(remotePath);if(raced){assertExistingMatches(raced,checked.bytes,"screenshot");return res.status(200).json({accepted:true,duplicate:true,screenshotId:raw.screenshotId,remotePath,contentSha:raced.sha||null});}}throw error;}
       return res.status(200).json({accepted:true,duplicate:false,screenshotId:raw.screenshotId,remotePath,contentSha:created&&created.content&&created.content.sha||null,commitSha:created&&created.commit&&created.commit.sha||null});
     }
     const batch=validateBatch(raw);
     const remotePath=`observations/inbox/${batch.batchId}.json`;
+    const expectedBytes=Buffer.from(batch.serialized+"\n","utf8");
     const existing=await getExisting(remotePath);
-    if(existing) return res.status(200).json({accepted:true,duplicate:true,batchId:batch.batchId,remotePath,contentSha:existing.sha||null});
-    const payload={message:`diagnostic: enqueue observation batch ${batch.batchId}`,content:Buffer.from(batch.serialized+"\n","utf8").toString("base64"),branch:BRANCH};
+    if(existing) { assertExistingMatches(existing,expectedBytes,"batch"); return res.status(200).json({accepted:true,duplicate:true,batchId:batch.batchId,remotePath,contentSha:existing.sha||null}); }
+    const payload={message:\`diagnostic: enqueue observation batch \${batch.batchId}\`,content:expectedBytes.toString("base64"),branch:BRANCH};
     let created;
-    try{created=await githubRequest(`/repos/${REPOSITORY}/contents/${encodePath(remotePath)}`,{method:"PUT",body:JSON.stringify(payload)});}catch(error){if(error.status===409){const raced=await getExisting(remotePath);if(raced)return res.status(200).json({accepted:true,duplicate:true,batchId:batch.batchId,remotePath,contentSha:raced.sha||null});}throw error;}
+    try{created=await githubRequest(`/repos/${REPOSITORY}/contents/${encodePath(remotePath)}`,{method:"PUT",body:JSON.stringify(payload)});}catch(error){if(error.status===409){const raced=await getExisting(remotePath);if(raced){assertExistingMatches(raced,expectedBytes,"batch");return res.status(200).json({accepted:true,duplicate:true,batchId:batch.batchId,remotePath,contentSha:raced.sha||null});}}throw error;}
     return res.status(200).json({accepted:true,duplicate:false,batchId:batch.batchId,remotePath,contentSha:created&&created.content&&created.content.sha||null,commitSha:created&&created.commit&&created.commit.sha||null});
   }catch(error){const status=Number(error&&error.status)||500;return res.status(status>=400&&status<600?status:500).json({ok:false,error:String(error&&error.message||error)});}
 }
