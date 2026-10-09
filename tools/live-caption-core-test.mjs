@@ -59,7 +59,7 @@ releaseFirst();
 await first;
 await new Promise((resolve) => setImmediate(resolve));
 assert.deepEqual(started, [1, 90, 3], "se conserva el fragmento pendiente más reciente, no una cola ilimitada");
-assert.deepEqual(replacedSources, [{ source: "cliente", replaced: 1 }]);
+assert.deepEqual(replacedSources, [{ source: "cliente", replaced: 1 }, { source: "cliente", replaced: 2 }]);
 assert.equal(dispatcher.status().cliente.pending, false);
 assert.equal(dispatcher.status().cliente.running, false);
 
