@@ -1239,7 +1239,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         });
     });
   }
-    var callAlertInFlight = new Map();
+  var callAlertInFlight = new Map();
   function requestCallAlert(callId, trigger) {
     if (!callId || callAlertInFlight.has(callId)) return;
     callAlertInFlight.set(callId, Date.now());
