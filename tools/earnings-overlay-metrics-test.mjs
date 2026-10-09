@@ -23,23 +23,24 @@ assert.equal(metrics.periodKey("currentMonth", now), "2026-10");
 assert.equal(metrics.periodKey("previousMonth", now), "2026-09");
 assert.equal(metrics.periodKey("year", now), "2026");
 assert.equal(metrics.callStartsInPeriod("today", yesterday, now), false);
-assert.equal(metrics.activeSecondsInPeriod("today", yesterday, now), 43200);
+assert.equal(metrics.activeSecondsInPeriod("today", yesterday, now), 0, "live call is attributed to its start-date period");
 assert.equal(metrics.activeSecondsInPeriod("today", todayStart, now), 43200);
 assert.equal(metrics.activeSecondsInPeriod("previousMonth", yesterday, now), 0);
 
 const monthBoundary = new Date(2026, 8, 30, 23, 30, 0, 0);
 const afterMonthBoundary = new Date(2026, 9, 1, 0, 30, 0, 0);
 assert.equal(metrics.callStartsInPeriod("currentMonth", monthBoundary, afterMonthBoundary), false);
-assert.equal(metrics.activeSecondsInPeriod("currentMonth", monthBoundary, afterMonthBoundary), 1800);
-assert.equal(metrics.intervalSecondsInPeriod("currentMonth", monthBoundary, afterMonthBoundary, afterMonthBoundary), 1800);
+assert.equal(metrics.activeSecondsInPeriod("currentMonth", monthBoundary, afterMonthBoundary), 0, "a call started in the prior month is not counted again in the current month");
+assert.equal(metrics.callDurationSecondsInPeriod("currentMonth", monthBoundary, afterMonthBoundary, afterMonthBoundary), 0);
 
 const yearBoundary = new Date(2025, 11, 31, 23, 30, 0, 0);
 const newYear = new Date(2026, 0, 1, 0, 30, 0, 0);
 assert.equal(metrics.callStartsInPeriod("year", yearBoundary, newYear), false);
-assert.equal(metrics.activeSecondsInPeriod("year", yearBoundary, newYear), 1800);
+assert.equal(metrics.activeSecondsInPeriod("year", yearBoundary, newYear), 0, "a call started last year is not included in current-year totals");
 
 const finishedToday = new Date(2026, 9, 9, 11, 0, 0, 0);
-assert.equal(metrics.intervalSecondsInPeriod("today", yesterday, finishedToday, now), 39600);
+assert.equal(metrics.callDurationSecondsInPeriod("today", yesterday, finishedToday, now), 0);
+assert.equal(metrics.callDurationSecondsInPeriod("today", todayStart, finishedToday, now), 39600);
 
 const sameDay = metrics.combinePeriodMetrics("today", {
   earnedUsd: 12.5, callCount: 8, minutes: 123.5, periodKey: "2026-10-09", source: "platform-page-context"
@@ -59,10 +60,10 @@ const activeFromYesterday = metrics.combinePeriodMetrics("today", {
   earnedUsd: 2, callCount: 3, minutes: 30
 }, yesterday, 0.2, now);
 assert.equal(activeFromYesterday.calls, 4, "a call started yesterday must not inflate today's call count");
-assert.equal(activeFromYesterday.livePeriodSeconds, 43200);
-assert.equal(activeFromYesterday.periodMinutes, 780);
-assert.equal(activeFromYesterday.liveUsd, 144);
-assert.equal(activeFromYesterday.totalUsd, 149);
+assert.equal(activeFromYesterday.livePeriodSeconds, 0);
+assert.equal(activeFromYesterday.periodMinutes, 60);
+assert.equal(activeFromYesterday.liveUsd, 0);
+assert.equal(activeFromYesterday.totalUsd, 5);
 
 const priorMonth = metrics.combinePeriodMetrics("previousMonth", {
   earnedUsd: 25, callCount: 10, minutes: 180
