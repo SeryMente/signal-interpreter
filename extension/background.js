@@ -1931,7 +1931,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var existingTodayBaseline=activeBaselines.today;
       var existingTodayKey=existingTodayBaseline &&
         (existingTodayBaseline.periodKey || earningsPeriodKey("today",existingTodayBaseline.capturedAt || callEarnings.startedAt));
-      if(existingTodayBaseline && existingTodayKey===expectedTodayKey && existingTodayBaseline.source!=="local-reconciled-state"){
+      if(existingTodayBaseline && existingTodayKey===expectedTodayKey){
         callBaseline=existingTodayBaseline;
       } else {
         callBaseline={
@@ -2052,7 +2052,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         var existingPeriodBaseline=activeBaselines[range.period];
         var existingPeriodKey=existingPeriodBaseline &&
           (existingPeriodBaseline.periodKey || earningsPeriodKey(range.period,existingPeriodBaseline.capturedAt || callEarnings.startedAt));
-        if(existingPeriodBaseline && existingPeriodKey===expectedPeriodKey && existingPeriodBaseline.source!=="local-reconciled-state"){
+        if(existingPeriodBaseline && existingPeriodKey===expectedPeriodKey){
           callBaseline=existingPeriodBaseline;
         } else {
           callBaseline={
