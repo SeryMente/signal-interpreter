@@ -1454,7 +1454,7 @@
       !unfinishedRecords.some(function (call) { return String(call.callId || "") === activeCallId; }));
     return { completed: completed, unfinished: unfinished, missed: missed, active: active ? 1 : 0, total: completed + unfinished + missed + (active ? 1 : 0) };
   }
-    function escapeXml(value) {
+  function escapeXml(value) {
     return String(value == null ? "" : value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");
   }
   function renderCurrentMonthChart(container) {
