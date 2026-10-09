@@ -22,7 +22,7 @@ assert.match(content, /renderYearChart\(container\)/);
 assert.match(content, /polyline class=\"trend\"/);
 assert.match(content, /income-bar/);
 assert.match(content, /minute-bar/);
-assert.match(content, /callStatsForPeriod\(overlayPeriod\)/);
+assert.match(content, /callStatsForPeriod\(overlayPeriod, info\)/);
 assert.match(content, /Completadas/);
 assert.match(content, /No terminadas/);
 assert.match(content, /Perdidas/);
