@@ -122,6 +122,10 @@ async function startCapture(streamId,sessionId,muted,captionPreview,tabId){
 async function stopCapture(){running=false;stopCaptionPreview();try{if(tabTimer)clearTimeout(tabTimer);if(micTimer)clearTimeout(micTimer);if(micMuteWatchdog)clearInterval(micMuteWatchdog)}catch(_){}tabTimer=null;micTimer=null;micMuteWatchdog=null;try{if(tabRecorder&&tabRecorder.state!=="inactive")tabRecorder.stop()}catch(_){}try{if(micRecorder&&micRecorder.state!=="inactive")micRecorder.stop()}catch(_){}tabRecorder=null;micRecorder=null;stopStream(tabStream);stopStream(micStream);tabStream=null;micStream=null;captureSessionId=null;if(audioContext){try{await audioContext.close()}catch(_){}audioContext=null}send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"stopped",timestamp:new Date().toISOString()});return{ok:true}}
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
   if(!message||message.target!=="offscreen")return false;
+  if(message.type==="SIGNAL_GET_GROQ_CAPTURE_STATE"){
+    sendResponse({ok:true,running:!!running,sessionId:captureSessionId,tabAudio:!!tabStream,microphone:!!micStream,microphoneMuted:!!micMuteDesired});
+    return false;
+  }
   if(message.type==="EFFECTIF_PLAY_SOUND"){
     playTone(Math.max(0,Math.min(1,Number(message.volume)||0)),String(message.cue||"")).then(function(){sendResponse({ok:true})}).catch(function(error){sendResponse({ok:false,error:String(error)})});
 
