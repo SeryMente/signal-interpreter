@@ -1,16 +1,24 @@
 (function () {
   "use strict";
-  var MARKER = "__SIGNAL_INTERPRETER_MIC_HOTKEY_FALLBACK_V1__";
+  var MARKER = "__SIGNAL_INTERPRETER_MIC_HOTKEY_FALLBACK_V2__";
   var prior = window[MARKER];
   if (prior && typeof prior.cleanup === "function") {
     try { prior.cleanup(); } catch (_) {}
   }
+
   function isMicrophoneHotkey(event) {
     if (!event || event.isTrusted !== true || event.repeat || event.isComposing) return false;
     if (!event.ctrlKey || !event.shiftKey || event.altKey || event.metaKey) return false;
-    return event.code === "Period" || event.code === "NumpadDecimal" ||
-      event.key === "." || event.key === ">";
+
+    // Use the physical key/code first; key/keyCode are fallbacks for keyboard layouts
+    // where Shift changes the character reported by the browser.
+    var code = String(event.code || "");
+    var key = String(event.key || "");
+    var keyCode = Number(event.keyCode || event.which || 0);
+    return code === "Period" || code === "NumpadDecimal" ||
+      key === "." || key === ">" || keyCode === 190 || keyCode === 110;
   }
+
   function onKeyDown(event) {
     if (!isMicrophoneHotkey(event)) return;
     event.preventDefault();
@@ -32,9 +40,12 @@
       console.warn("[SIGNAL-INTERPRETER] MICROPHONE_HOTKEY_SEND_ERROR", String(error || "unknown"));
     }
   }
-  document.addEventListener("keydown", onKeyDown, true);
+
+  // Window capture sees the shortcut before document/page handlers can consume it.
+  var keyTarget = window && typeof window.addEventListener === "function" ? window : document;
+  keyTarget.addEventListener("keydown", onKeyDown, true);
   window[MARKER] = {
-    cleanup: function () { document.removeEventListener("keydown", onKeyDown, true); },
-    version: 1
+    cleanup: function () { keyTarget.removeEventListener("keydown", onKeyDown, true); },
+    version: 2
   };
 })();
