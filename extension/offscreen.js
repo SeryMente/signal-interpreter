@@ -43,48 +43,86 @@ function arm(source,stream){
   r.onstop=function(){var blob=chunks.length?new Blob(chunks,{type:"audio/webm"}):null;chunks=[];if(blob&&blob.size){var reader=new FileReader();reader.onloadend=function(){try{var dataUrl=String(reader.result||""),base64=dataUrl.split(",")[1]||"";send({type:"SIGNAL_GROQ_AUDIO_CHUNK",sessionId:currentSessionId,source:source,base64:base64,bytes:blob.size,startedAt:startedAt,endedAt:Date.now(),sequence:seq})}catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:source,error:String(error)})}};reader.readAsDataURL(blob)}if(running)setTimeout(function(){var next=arm(source,stream);if(source==="cliente")tabRecorder=next;else micRecorder=next;},40)};
   r.start();setTimeout(function(){try{if(r&&r.state!=="inactive")r.stop()}catch(_){}},18000);return r;
 }
+function stopCaptionPreviewRecorder(source){
+  var recorder=null;
+  if(source==="cliente"){recorder=previewTabRecorder;previewTabRecorder=null;}
+  else{recorder=previewMicRecorder;previewMicRecorder=null;}
+  if(recorder){try{if(recorder.state!=="inactive")recorder.stop();}catch(_){}}
+}
 function stopCaptionPreview(){
-  captionPreviewTabEnabled=false;
-  captionPreviewMicEnabled=false;
-  try{if(previewTabRecorder&&previewTabRecorder.state!=="inactive")previewTabRecorder.stop();}catch(_){}
-  try{if(previewMicRecorder&&previewMicRecorder.state!=="inactive")previewMicRecorder.stop();}catch(_){}
-  previewTabRecorder=null;previewMicRecorder=null;previewSeq=0;previewSessionId=null;previewTabId=null;
+  captionPreviewTabEnabled=false;captionPreviewMicEnabled=false;
+  stopCaptionPreviewRecorder("cliente");stopCaptionPreviewRecorder("yo");
+  previewSeq=0;previewSessionId=null;previewTabId=null;
 }
 function startCaptionPreviewRecorder(source,stream,sessionId,tabId){
   if(!stream||!sessionId)return null;
   var recorder=null,session=String(sessionId),targetTabId=Number(tabId||0),startedAt=Date.now();
-  try{recorder=new MediaRecorder(stream,{mimeType:"audio/webm;codecs=opus"});}catch(_){try{recorder=new MediaRecorder(stream)}catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});return null;}}
+  try{
+    recorder=new MediaRecorder(stream,{mimeType:"audio/webm;codecs=opus"});
+  }catch(_){
+    try{recorder=new MediaRecorder(stream);}
+    catch(error){
+      send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});
+      return null;
+    }
+  }
   recorder.ondataavailable=function(e){
     if(!running||e.data==null||!e.data.size)return;
     if(source==="cliente"&&!captionPreviewTabEnabled)return;
     if(source==="yo"&&!captionPreviewMicEnabled)return;
-    var chunkStartedAt=startedAt;startedAt=Date.now();var sequence=++previewSeq;
+    var chunkStartedAt=startedAt;
+    startedAt=Date.now();
+    var sequence=++previewSeq;
     try{
       var reader=new FileReader();
       reader.onloadend=function(){
         try{
           var dataUrl=String(reader.result||""),base64=dataUrl.split(",")[1]||"";
-          if(base64)send({type:"SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK",sessionId:session,tabId:targetTabId,source:source,base64:base64,bytes:e.data.size,startedAt:chunkStartedAt,endedAt:Date.now(),sequence:sequence});
-        }catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)})}
+          if(base64)send({
+            type:"SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK",sessionId:session,tabId:targetTabId,
+            source:source,base64:base64,bytes:e.data.size,startedAt:chunkStartedAt,
+            endedAt:Date.now(),sequence:sequence
+          });
+        }catch(error){
+          send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});
+        }
       };
       reader.readAsDataURL(e.data);
-    }catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)})}
+    }catch(error){
+      send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});
+    }
   };
-  recorder.onerror=function(e){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(e&&e.error||e)})};
-  try{recorder.start(2800);}catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});return null;}
+  recorder.onerror=function(e){
+    send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(e&&e.error||e)});
+  };
+  try{recorder.start(2800);}
+  catch(error){
+    send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});
+    return null;
+  }
   return recorder;
 }
 function startCaptionPreview(mode){
   mode=mode||{};
-  stopCaptionPreview();
-  if(!running||!captureSessionId)return false;
-  captionPreviewTabEnabled=!!mode.tab;
-  captionPreviewMicEnabled=mode.mic!==false;
-  previewSessionId=captureSessionId;
-  previewTabId=Number(previewTabId||0);
-  if(captionPreviewTabEnabled) previewTabRecorder=startCaptionPreviewRecorder("cliente",tabStream,captureSessionId,previewTabId);
-  if(captionPreviewMicEnabled) previewMicRecorder=startCaptionPreviewRecorder("yo",micStream,captureSessionId,previewTabId);
-  return !!(previewTabRecorder||previewMicRecorder);
+  if(!running||!captureSessionId){stopCaptionPreview();return false;}
+  var targetTab=Number(previewTabId||0);
+  if(previewSessionId!==captureSessionId){
+    stopCaptionPreview();
+    previewSessionId=captureSessionId;previewTabId=targetTab;
+  }
+  var nextTab=!!mode.tab,nextMic=mode.mic!==false;
+  captionPreviewTabEnabled=nextTab;captionPreviewMicEnabled=nextMic;
+  if(nextTab){
+    if(!previewTabRecorder||previewTabRecorder.state==="inactive"){
+      previewTabRecorder=startCaptionPreviewRecorder("cliente",tabStream,captureSessionId,previewTabId);
+    }
+  }else if(previewTabRecorder){stopCaptionPreviewRecorder("cliente");}
+  if(nextMic){
+    if(!previewMicRecorder||previewMicRecorder.state==="inactive"){
+      previewMicRecorder=startCaptionPreviewRecorder("yo",micStream,captureSessionId,previewTabId);
+    }
+  }else if(previewMicRecorder){stopCaptionPreviewRecorder("yo");}
+  return !!((nextTab&&previewTabRecorder)||(nextMic&&previewMicRecorder));
 }
 function startTimer(source,rec){var timer=setTimeout(function(){try{if(rec&&rec.state!=="inactive")rec.stop()}catch(_){}},18000);if(source==="cliente")tabTimer=timer;else micTimer=timer;}
 async function applyMicMute(muted){
@@ -108,7 +146,7 @@ async function startCapture(streamId,sessionId,muted,captionPreview,tabId){
     var micApplied=await applyMicMute(initialMute);
     if(!micApplied.ok)throw new Error("No se pudo verificar el estado inicial del micrófono de la extensión.");
     tabRecorder=arm("cliente",tabStream);micRecorder=arm("yo",micStream);if(!tabRecorder||!micRecorder)throw new Error("No se pudieron iniciar los dos grabadores.");
-    if(captionPreview===true){startCaptionPreview({tab:false,mic:true});}
+    if(captionPreview===true){startCaptionPreview({tab:true,mic:false});}
     startTimer("cliente",tabRecorder);startTimer("yo",micRecorder);
     if(micMuteWatchdog)clearInterval(micMuteWatchdog);
     micMuteWatchdog=setInterval(function(){
@@ -142,11 +180,17 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
   }
   if(message.type==="SIGNAL_SET_CAPTION_PREVIEW"){
     if(message.enabled===true){
-      var previewResult=startCaptionPreview({tab:message.tabEnabled===true,mic:message.micEnabled!==false});
-      sendResponse({ok:previewResult||!running,enabled:true,tabEnabled:captionPreviewTabEnabled,micEnabled:captionPreviewMicEnabled});
+      if(!running||!captureSessionId){
+        sendResponse({ok:false,enabled:true,started:false,tabEnabled:false,micEnabled:false,error:"audio-capture-not-running"});
+        return true;
+      }
+      var previewTabRequested=message.tabEnabled===true,previewMicRequested=message.micEnabled!==false;
+      var previewResult=startCaptionPreview({tab:previewTabRequested,mic:previewMicRequested});
+      var noPreviewSourceRequested=!previewTabRequested&&!previewMicRequested;
+      sendResponse({ok:!!previewResult||noPreviewSourceRequested,enabled:true,started:!!previewResult,tabEnabled:captionPreviewTabEnabled,micEnabled:captionPreviewMicEnabled,error:previewResult||noPreviewSourceRequested?null:"preview-recorder-unavailable"});
     }else{
       stopCaptionPreview();
-      sendResponse({ok:true,enabled:false,tabEnabled:false,micEnabled:false});
+      sendResponse({ok:true,enabled:false,started:false,tabEnabled:false,micEnabled:false});
     }
     return true;
   }

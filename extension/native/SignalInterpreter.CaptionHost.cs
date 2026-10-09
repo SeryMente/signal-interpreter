@@ -232,35 +232,42 @@ internal static class SignalInterpreterCaptionHost
             try
             {
                 AutomationElement.AutomationElementInformation current = window.Current;
+                if (current.IsOffscreen)
+                    continue;
+
                 string name = current.Name ?? "";
                 string className = current.ClassName ?? "";
-
                 bool looksLikeCaption =
                     className.IndexOf("Chrome_WidgetWin_", StringComparison.OrdinalIgnoreCase) >= 0 &&
                     ContainsCaptionTitle(name);
 
-                if (!looksLikeCaption || current.IsOffscreen)
+                if (!looksLikeCaption)
                     continue;
 
                 visible = true;
                 string text = ReadCaptionDescendants(window);
-                if (!string.IsNullOrWhiteSpace(text))
+                if (!String.IsNullOrWhiteSpace(text))
                     return text;
-            }
-
-                if (LooksLikeCaptionSubtree(window))
-                {
-                    visible = true;
-                    if (!string.IsNullOrWhiteSpace(directText))
-                        return directText;
-                }
             }
             catch
             {
+                // UI Automation can temporarily invalidate elements while Chrome rebuilds the bubble.
             }
         }
 
         return "";
+    }
+
+    private static bool IsCaptionTitleLabel(string text)
+    {
+        if (String.IsNullOrWhiteSpace(text))
+            return false;
+        foreach (string token in CaptionTitlePattern.Split('|'))
+        {
+            if (String.Equals(text.Trim(), token, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
     }
 
     private static bool ContainsCaptionTitle(string name)
@@ -279,7 +286,8 @@ internal static class SignalInterpreterCaptionHost
 
     private static string ReadCaptionDescendants(AutomationElement window)
     {
-        var lines = new List<string>();
+        var textNodes = new List<string>();
+        var documentNodes = new List<string>();
         try
         {
             AutomationElementCollection nodes =
@@ -294,31 +302,39 @@ internal static class SignalInterpreterCaptionHost
                         continue;
 
                     string typeName = current.ControlType.ProgrammaticName ?? "";
-                    if (!String.Equals(typeName, "ControlType.Text", StringComparison.Ordinal) &&
-                        !String.Equals(typeName, "ControlType.Document", StringComparison.Ordinal))
+                    bool isText = String.Equals(typeName, "ControlType.Text", StringComparison.Ordinal);
+                    bool isDocument = String.Equals(typeName, "ControlType.Document", StringComparison.Ordinal);
+                    if (!isText && !isDocument)
                         continue;
 
                     string text = (current.Name ?? "").Trim();
-                    if (String.IsNullOrWhiteSpace(text) || IgnoredText.Contains(text))
+                    if (String.IsNullOrWhiteSpace(text) || IgnoredText.Contains(text) || IsCaptionTitleLabel(text))
                         continue;
 
-                    if (text.Length > 10000)
-                        text = text.Substring(text.Length - 10000);
+                    if (text.Length > 4000)
+                        text = text.Substring(text.Length - 4000);
 
-                    if (!lines.Contains(text))
-                        lines.Add(text);
+                    List<string> target = isText ? textNodes : documentNodes;
+                    if (target.Count == 0 || !String.Equals(target[target.Count - 1], text, StringComparison.Ordinal))
+                        target.Add(text);
                 }
                 catch
                 {
+                    // Ignore an element invalidated while Chrome updates the caption tree.
                 }
             }
         }
         catch
         {
+            // UI Automation can temporarily fail while Chrome opens or closes the bubble.
         }
 
-        int start = Math.Max(0, lines.Count - 16);
-        return String.Join(Environment.NewLine, lines.GetRange(start, lines.Count - start)).Trim();
+        // Prefer the last leaf text node; parent Document nodes can contain the whole transcript history.
+        if (textNodes.Count > 0)
+            return textNodes[textNodes.Count - 1];
+        if (documentNodes.Count > 0)
+            return documentNodes[documentNodes.Count - 1];
+        return "";
     }
 
     private static string TrimError(string value)

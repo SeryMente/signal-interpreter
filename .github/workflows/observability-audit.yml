@@ -33,6 +33,10 @@ jobs:
           node --check tools/hotload-active-call-test.mjs
           node --check extension/groq-transcriber.js
           node --check tools/groq-transcriber-tests.mjs
+          node --check tools/live-caption-core-test.mjs
+          node --check tools/live-caption-bridge-tests.mjs
+          node --check tools/live-caption-offscreen-tests.mjs
+          node --check tools/live-caption-static-audit.mjs
           node --check tools/earnings-overlay-tests.mjs
           node --check tools/call-earnings-baseline-tests.mjs
           node --check extension/live-caption-core.js
@@ -84,6 +88,10 @@ jobs:
         run: node tools/groq-transcriber-tests.mjs
       - name: Live Caption core unit test
         run: node tools/live-caption-core-test.mjs
+      - name: Live Caption Native Messaging bridge transition test
+        run: node tools/live-caption-bridge-tests.mjs
+      - name: Live Caption offscreen preview lifecycle test
+        run: node tools/live-caption-offscreen-tests.mjs
       - name: Live Caption static audit
         run: node tools/live-caption-static-audit.mjs
       - name: Observability static audit

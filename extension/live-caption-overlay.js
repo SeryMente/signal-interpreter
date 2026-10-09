@@ -12,6 +12,7 @@
   var enabled = true;
   var active = false;
   var positionRaf = null;
+  var screenshotPreviousVisibility = null;
 
   function isCloudInterpreterPage() {
     return location.hostname === "app.cloudinterpreter.com";
@@ -81,69 +82,122 @@
     var card = root.querySelector(".card");
     if (!card) return;
 
-    var w = Math.min(420, Math.max(220, innerWidth - 28));
-    var h = Math.min(210, Math.max(112, card.getBoundingClientRect().height || 156));
+    var viewportWidth = Math.max(220, innerWidth || document.documentElement.clientWidth || 220);
+    var viewportHeight = Math.max(180, innerHeight || document.documentElement.clientHeight || 180);
     var margin = 14;
-    var candidates = [
-      { name:"bottom-left", left:margin, top:innerHeight - h - margin },
-      { name:"bottom-right", left:innerWidth - w - margin, top:innerHeight - h - margin },
-      { name:"top-left", left:margin, top:margin },
-      { name:"top-right", left:innerWidth - w - margin, top:margin }
+    var w = Math.min(420, viewportWidth - margin * 2);
+    var h = Math.min(210, Math.max(112, card.getBoundingClientRect().height || 156));
+    var centerX = (viewportWidth - w) / 2;
+    var centerY = (viewportHeight - h) / 2;
+    var edgeX = Math.max(margin, viewportWidth - w - margin);
+    var edgeY = Math.max(margin, viewportHeight - h - margin);
+    var rawCandidates = [
+      { name: "bottom-left", left: margin, top: edgeY },
+      { name: "bottom-right", left: edgeX, top: edgeY },
+      { name: "top-left", left: margin, top: margin },
+      { name: "top-right", left: edgeX, top: margin },
+      { name: "left-center", left: margin, top: centerY },
+      { name: "right-center", left: edgeX, top: centerY },
+      { name: "top-center", left: centerX, top: margin },
+      { name: "bottom-center", left: centerX, top: edgeY }
     ];
-
+    var candidates = rawCandidates.map(function (candidate) {
+      return Object.assign({}, candidate, {
+        left: Math.max(margin, Math.min(edgeX, candidate.left)),
+        top: Math.max(margin, Math.min(edgeY, candidate.top))
+      });
+    });
     var rects = interactiveRects();
-    var best = candidates.map(function (candidate) {
-      var rect = { left:candidate.left, top:candidate.top, right:candidate.left+w, bottom:candidate.top+h, width:w, height:h };
-      var score = rects.reduce(function (sum, item) { return sum + core.overlapRatio(rect, item); }, 0);
-      return { candidate:candidate, score:score };
-    }).sort(function (a,b) { return a.score - b.score; })[0].candidate;
+    var best = core.choosePositionCandidate(candidates, rects, w, h) || candidates[0];
 
-    host.style.left = Math.max(margin, best.left) + "px";
-    host.style.top = Math.max(margin, best.top) + "px";
+    host.style.width = w + "px";
+    host.style.left = best.left + "px";
+    host.style.top = best.top + "px";
     host.style.right = "auto";
     host.style.bottom = "auto";
+  }
+
+  function laneForSource(source) {
+    return source === "yo" ? "yo" : "cliente";
   }
 
   function pushRow(text, language, source, isLive) {
     var clean = core.normalizeText(text);
     if (!clean) return;
-
-    language = language === "en" || language === "es" ? language : core.detectLanguage(clean);
+    source = source === "yo" || source === "chrome-live-caption" ? source : "cliente";
+    language = core.resolveLanguage(language, clean);
     var now = Date.now();
+    var lane = laneForSource(source);
+    var candidate = null;
 
-    if (source === "chrome-live-caption") {
-      if (liveNative && (now - liveNative.updatedAt) < 15000) {
-        var previous = liveNative.text;
-        var sameFamily = clean === previous ||
-          clean.indexOf(previous) === 0 ||
-          previous.indexOf(clean) === 0 ||
-          (previous.length > 24 && clean.slice(0, 60) === previous.slice(0, 60));
-        if (sameFamily) {
-          liveNative.text = clean;
-          liveNative.language = language;
-          liveNative.updatedAt = now;
-          var last = rows[rows.length - 1];
-          if (last) { last.text = clean; last.language = language; last.live = true; }
-          render();
-          return;
-        }
-      }
-      liveNative = { text:clean, language:language, updatedAt:now };
-      rows.push({ text:clean, language:language, source:source, live:true, at:now });
-      rows = rows.slice(-MAX_ROWS);
-      render();
-      return;
+    for (var i = rows.length - 1; i >= 0; i -= 1) {
+      if (laneForSource(rows[i].source) !== lane) continue;
+      if (now - Number(rows[i].at || 0) > 12000) break;
+      candidate = rows[i];
+      break;
     }
 
-    var duplicate = rows.some(function (row) {
-      return row.source === source && now - row.at < 12000 && row.text === clean;
-    });
-    if (duplicate) return;
+    if (candidate) {
+      var relation = core.captionRelation(candidate.text, clean);
+      if (relation !== "new") {
+        if (relation === "duplicate" || relation === "stale") {
+          if (relation === "duplicate") {
+            candidate.at = now;
+            if (language !== "unknown") candidate.language = language;
+            if (source === "chrome-live-caption") {
+              candidate.source = source;
+              candidate.live = true;
+            } else if (candidate.source !== "chrome-live-caption") {
+              candidate.source = source;
+              candidate.live = !!isLive;
+            }
+            render();
+          }
+          return;
+        }
+        var previousAt = Number(candidate.at || 0);
+        var previousSource = candidate.source;
+        candidate.text = core.mergeCaptionText(candidate.text, clean).slice(0, 4000);
+        candidate.at = now;
+        if (language !== "unknown" || candidate.language === "unknown") candidate.language = language;
+        if (source === "chrome-live-caption") {
+          candidate.source = source;
+          candidate.live = true;
+        } else if (previousSource !== "chrome-live-caption" || now - previousAt > 4500) {
+          candidate.source = source;
+          candidate.live = !!isLive;
+        }
+        render();
+        return;
+      }
+    }
 
-    rows.push({ text:clean, language:language, source:source, live:!!isLive, at:now });
+    rows.push({ text: clean, language: language, source: source, live: !!isLive, at: now });
     rows = rows.slice(-MAX_ROWS);
-    liveNative = null;
     render();
+  }
+
+  function createRowNode() {
+    var row = document.createElement("div");
+    row.className = "row";
+    var accent = document.createElement("i");
+    accent.className = "accent";
+    var body = document.createElement("div");
+    var meta = document.createElement("div");
+    meta.className = "meta";
+    var role = document.createElement("span");
+    role.className = "role";
+    var lang = document.createElement("span");
+    lang.className = "lang";
+    var text = document.createElement("div");
+    text.className = "text";
+    meta.appendChild(role);
+    meta.appendChild(lang);
+    body.appendChild(meta);
+    body.appendChild(text);
+    row.appendChild(accent);
+    row.appendChild(body);
+    return row;
   }
 
   function render() {
@@ -154,25 +208,34 @@
     if (!container) return;
 
     var data = rows.slice(-MAX_ROWS);
-    container.innerHTML = data.map(function (row) {
-      var lang = row.language || "unknown";
-      var cls = lang === "es" ? "row es" : "row";
-      if (row.live) cls += " live";
-      return '<div class="' + cls + '">' +
-        '<i class="accent"></i>' +
-        '<div><div class="meta"><span class="role">' + core.roleForLanguage(lang) + '</span><span class="lang">' + core.languageLabel(lang) + '</span></div><div class="text"></div></div>' +
-      '</div>';
-    }).join("");
-
-    Array.from(container.querySelectorAll(".text")).forEach(function (el, index) {
-      el.textContent = data[index].text;
+    while (container.children.length > data.length) {
+      container.removeChild(container.lastElementChild);
+    }
+    data.forEach(function (item, index) {
+      var node = container.children[index];
+      if (!node) {
+        node = createRowNode();
+        container.appendChild(node);
+      }
+      var language = item.language || "unknown";
+      node.className = "row" + (language === "es" ? " es" : "") + (item.live ? " live" : "");
+      var role = node.querySelector(".role");
+      var lang = node.querySelector(".lang");
+      var text = node.querySelector(".text");
+      if (role && role.textContent !== core.roleForLanguage(language)) role.textContent = core.roleForLanguage(language);
+      if (lang && lang.textContent !== core.languageLabel(language)) lang.textContent = core.languageLabel(language);
+      if (text && text.textContent !== item.text) text.textContent = item.text;
     });
 
-    dot.className = "dot" + (active ? "" : " idle");
-    if (data.length && active) {
+    if (dot) dot.className = "dot" + (active ? "" : " idle");
+    var newestAt = data.reduce(function (latest, item) {
+      return Math.max(latest, Number(item.at || 0));
+    }, 0);
+    var hasRecentContext = newestAt > 0 && Date.now() - newestAt <= 12000;
+    if (data.length && (active || hasRecentContext)) {
       host.style.display = "block";
       positionOverlay();
-    } else if (!data.length) {
+    } else {
       host.style.display = "none";
     }
   }
@@ -181,6 +244,7 @@
     enabled = !next || next.liveCaptionOverlayEnabled !== false;
     if (!enabled) {
       active = false;
+      rows = [];
       if (host) host.style.display = "none";
       return;
     }
@@ -204,31 +268,59 @@
   chrome.runtime.onMessage.addListener(function (message) {
     if (!message) return;
     if (message.type === "SIGNAL_CAPTION_UPDATE") {
-      setActive(true);
-      pushRow(message.caption && message.caption.text, message.caption && message.caption.language, message.caption && message.caption.source, message.caption && message.caption.live);
+      var caption = message.caption || {};
+      if (caption.text) {
+        pushRow(caption.text, caption.language, caption.source, caption.live);
+        setActive(true);
+      }
     } else if (message.type === "SIGNAL_CAPTION_NATIVE_STATUS") {
-      setActive(!!(message.active || message.visible));
+      var statusActive = message.captionFresh === false
+        ? false
+        : (message.active === true || (message.captionFresh == null && message.visible === true));
+      setActive(statusActive);
+    } else if (message.type === "SIGNAL_CAPTION_SESSION_RESET") {
+      rows = [];
+      active = false;
+      render();
+    } else if (message.type === "EFFECTIF_SCREENSHOT_PREPARE") {
+      if (host && host.isConnected && screenshotPreviousVisibility === null) {
+        screenshotPreviousVisibility = host.style.visibility;
+        host.style.visibility = "hidden";
+      }
+    } else if (message.type === "EFFECTIF_SCREENSHOT_RESTORE") {
+      if (host && host.isConnected) {
+        host.style.visibility = screenshotPreviousVisibility === null ? "" : screenshotPreviousVisibility;
+      }
+      screenshotPreviousVisibility = null;
     } else if (message.type === "EFFECTIF_HOTLOAD_REPLACE") {
+      rows = [];
+      active = false;
       if (host) host.remove();
       host = null;
       root = null;
-      active = false;
     }
   });
 
-  window.addEventListener("resize", function () {
-    if (positionRaf) cancelAnimationFrame(positionRaf);
+  function schedulePosition() {
+    if (positionRaf) return;
     positionRaf = requestAnimationFrame(function () {
       positionRaf = null;
       positionOverlay();
     });
-  });
+  }
+
+  window.addEventListener("resize", schedulePosition);
+  window.addEventListener("scroll", schedulePosition, true);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", schedulePosition);
+    window.visualViewport.addEventListener("scroll", schedulePosition);
+  }
 
   var routeTimer = setInterval(function () {
     if (!enabled) return;
     if (isCloudInterpreterPage()) {
       ensureHost();
-      if (rows.length && active) render();
+      if (rows.length) render();
     } else if (host) {
       host.style.display = "none";
       active = false;

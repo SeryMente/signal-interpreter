@@ -1,0 +1,151 @@
+name: native-caption-host-build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "feat/**"
+
+permissions:
+  contents: write
+
+jobs:
+  compile-and-protocol-smoke-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile the checked-in UI Automation host source
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $framework = Join-Path $env:WINDIR "Microsoft.NET\Framework64\v4.0.30319"
+          $compiler = Join-Path $framework "csc.exe"
+          $uiaClient = Get-ChildItem -Path $framework -Filter "UIAutomationClient.dll" -Recurse | Select-Object -First 1
+          $uiaTypes = Get-ChildItem -Path $framework -Filter "UIAutomationTypes.dll" -Recurse | Select-Object -First 1
+          if (-not (Test-Path -LiteralPath $compiler)) { throw "No se encontró el compilador de .NET Framework: $compiler" }
+          if (-not $uiaClient -or -not $uiaTypes) { throw "No se encontraron los ensamblados de Windows UI Automation." }
+          $output = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.exe"
+          & $compiler /nologo /target:exe /platform:anycpu "/out:$output" "/reference:$($uiaClient.FullName)" "/reference:$($uiaTypes.FullName)" (Join-Path $PWD "extension\native\SignalInterpreter.CaptionHost.cs")
+          if ($LASTEXITCODE -ne 0) { throw "Falló la compilación del host C# (csc=$LASTEXITCODE)." }
+          if (-not (Test-Path -LiteralPath $output)) { throw "La compilación no produjo el ejecutable esperado." }
+          $header = [IO.File]::ReadAllBytes($output)
+          if ($header.Length -lt 2 -or $header[0] -ne 0x4D -or $header[1] -ne 0x5A) { throw "El archivo compilado no tiene cabecera PE/EXE." }
+          Write-Output "NATIVE_CAPTION_HOST_COMPILE=PASS"
+          Write-Output "ExecutableBytes=$($header.Length)"
+      - name: Package compiled host candidate
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $output = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.exe"
+          $payload = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.exe.b64"
+          $hashFile = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.sha256"
+          $bytes = [IO.File]::ReadAllBytes($output)
+          $base64 = [Convert]::ToBase64String($bytes)
+          [IO.File]::WriteAllText($payload, $base64, [Text.Encoding]::ASCII)
+          $sha256 = (Get-FileHash -LiteralPath $output -Algorithm SHA256).Hash
+          [IO.File]::WriteAllText($hashFile, $sha256, [Text.Encoding]::ASCII)
+          Write-Output "NATIVE_CAPTION_HOST_SHA256=$sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signal-native-caption-host-0.10.22
+          path: |
+            ${{ runner.temp }}/SignalInterpreter.CaptionHost.exe
+            ${{ runner.temp }}/SignalInterpreter.CaptionHost.exe.b64
+            ${{ runner.temp }}/SignalInterpreter.CaptionHost.sha256
+          if-no-files-found: error
+      - name: Verify Native Messaging framing and clean shutdown
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $output = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.exe"
+          $start = New-Object System.Diagnostics.ProcessStartInfo
+          $start.FileName = $output
+          $start.UseShellExecute = $false
+          $start.CreateNoWindow = $true
+          $start.RedirectStandardInput = $true
+          $start.RedirectStandardOutput = $true
+          $process = New-Object System.Diagnostics.Process
+          $process.StartInfo = $start
+          if (-not $process.Start()) { throw "No se pudo iniciar el host compilado." }
+          $payload = [Text.Encoding]::UTF8.GetBytes('{"type":"stop"}')
+          $stdin = $process.StandardInput.BaseStream
+          $frame = [BitConverter]::GetBytes([int]$payload.Length)
+          $stdin.Write($frame, 0, $frame.Length)
+          $stdin.Write($payload, 0, $payload.Length)
+          $stdin.Flush()
+          $stdin.Close()
+          $stdout = $process.StandardOutput.BaseStream
+          $header = New-Object byte[] 4
+          $offset = 0
+          while ($offset -lt 4) {
+            $read = $stdout.Read($header, $offset, 4 - $offset)
+            if ($read -le 0) { throw "El host cerró stdout antes de emitir el mensaje ready." }
+            $offset += $read
+          }
+          $length = [BitConverter]::ToInt32($header, 0)
+          if ($length -le 0 -or $length -gt 1048576) { throw "Longitud Native Messaging inválida: $length" }
+          $bytes = New-Object byte[] $length
+          $offset = 0
+          while ($offset -lt $length) {
+            $read = $stdout.Read($bytes, $offset, $length - $offset)
+            if ($read -le 0) { throw "Mensaje Native Messaging truncado." }
+            $offset += $read
+          }
+          $ready = [Text.Encoding]::UTF8.GetString($bytes) | ConvertFrom-Json
+          if ($ready.type -ne "ready" -or $ready.schema -ne "signal-caption-native/v1") { throw "Respuesta ready inválida." }
+          if (-not $process.WaitForExit(10000)) { $process.Kill(); throw "El host no terminó tras recibir stop." }
+          if ($process.ExitCode -ne 0) { throw "El host terminó con código $($process.ExitCode)." }
+          Write-Output "NATIVE_CAPTION_HOST_PROTOCOL=PASS"
+      - name: Synchronize the embedded host payload when source changes
+        if: github.event_name == 'push'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $event = Get-Content -LiteralPath $env:GITHUB_EVENT_PATH -Raw | ConvertFrom-Json
+          $commitMessage = [string]$event.head_commit.message
+          if ($commitMessage.StartsWith("build: sync native caption host payload with source")) {
+            Write-Output "NATIVE_CAPTION_HOST_PAYLOAD=SYNC_COMMIT"
+            exit 0
+          }
+          $exe = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.exe"
+          $source = Join-Path $PWD "extension\native\SignalInterpreter.CaptionHost.cs"
+          $payload = Join-Path $PWD "extension\native\SignalInterpreter.CaptionHost.exe.b64"
+          $register = Join-Path $PWD "extension\native\register-caption-host.ps1"
+          $audit = Join-Path $PWD "tools\live-caption-static-audit.mjs"
+          $newBinaryHash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToUpperInvariant()
+          $sourceText = [IO.File]::ReadAllText($source).Replace("`r`n", "`n")
+          $sourceBytes = [Text.Encoding]::UTF8.GetBytes($sourceText)
+          $sha = [Security.Cryptography.SHA256]::Create()
+          try { $newSourceHash = [BitConverter]::ToString($sha.ComputeHash($sourceBytes)).Replace("-", "").ToUpperInvariant() } finally { $sha.Dispose() }
+          $registerContent = [IO.File]::ReadAllText($register)
+          $binaryMatch = [regex]::Match($registerContent, 'ExpectedSha256\s*=\s*"([A-Fa-f0-9]{64})"')
+          $sourceMatch = [regex]::Match($registerContent, 'ExpectedSourceSha256\s*=\s*"([A-Fa-f0-9]{64})"')
+          if (-not $binaryMatch.Success -or -not $sourceMatch.Success) { throw "Faltan las huellas esperadas en el script de registro." }
+          $oldBinaryHash = $binaryMatch.Groups[1].Value.ToUpperInvariant()
+          $oldSourceHash = $sourceMatch.Groups[1].Value.ToUpperInvariant()
+          if ($oldSourceHash -eq $newSourceHash) {
+            Write-Output "NATIVE_CAPTION_HOST_SOURCE=IN_SYNC"
+            exit 0
+          }
+          if (-not $env:GITHUB_REF_NAME.StartsWith("feat/")) {
+            throw "El código fuente del host cambió sin actualizar su payload en una rama feat/*."
+          }
+          $bytes = [IO.File]::ReadAllBytes($exe)
+          [IO.File]::WriteAllText($payload, [Convert]::ToBase64String($bytes), [Text.Encoding]::ASCII)
+          $registerContent = $registerContent.Replace($oldBinaryHash, $newBinaryHash).Replace($oldSourceHash, $newSourceHash)
+          [IO.File]::WriteAllText($register, $registerContent, [Text.UTF8Encoding]::new($false))
+          $auditContent = [IO.File]::ReadAllText($audit)
+          if (-not $auditContent.Contains($oldBinaryHash)) { throw "La auditoría no contiene la huella binaria previa." }
+          $auditContent = $auditContent.Replace($oldBinaryHash, $newBinaryHash)
+          if (-not $auditContent.Contains($oldSourceHash)) { throw "La auditoría no contiene la huella de fuente previa." }
+          $auditContent = $auditContent.Replace($oldSourceHash, $newSourceHash)
+          [IO.File]::WriteAllText($audit, $auditContent, [Text.UTF8Encoding]::new($false))
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add extension/native/SignalInterpreter.CaptionHost.exe.b64 extension/native/register-caption-host.ps1 tools/live-caption-static-audit.mjs
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "build: sync native caption host payload with source"
+            git push origin ("HEAD:" + $env:GITHUB_REF_NAME)
+          }
+          Write-Output "NATIVE_CAPTION_HOST_PAYLOAD=SYNCED"

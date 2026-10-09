@@ -11,7 +11,7 @@ const assist = read("extension/auth-signin-assist.js");
 const popupHtml = read("extension/ui/popup.html");
 const popupJs = read("extension/ui/popup.js");
 
-assert.equal(manifest.version, "0.10.21");
+assert.equal(manifest.version, "0.10.22");
 assert.ok(background.includes('"auth-bootstrap.js"'));
 assert.ok(manifest.content_scripts.some((entry) =>
   entry.matches && entry.matches.includes("https://app.cloudinterpreter.com/auth/signin*") &&

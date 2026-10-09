@@ -45,39 +45,85 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   var signalGroqQueue = Promise.resolve();
   var earningsSyncQueue = Promise.resolve();
   var microphoneMuteQueue = Promise.resolve();
-  var captionPreviewQueue = Promise.resolve();
-  async function setCaptionPreviewForActiveCall(tabEnabled) {
+  var captionPreviewDispatcher = null;
+  var captionPreviewLastErrorAt = Object.create(null);
+  async function setCaptionPreviewForActiveCall(tabEnabled, reason) {
+    var trigger = String(reason || "native-status").slice(0, 80);
     try {
       var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-      if (config.liveCaptionOverlayEnabled === false || !hasActiveCall(state)) return { ok: true, skipped: true };
-      if (!state.callSourceTabId) return { ok: false, error: "No hay pestaña de llamada para Live Caption." };
+      var enabled = config.liveCaptionOverlayEnabled !== false && hasActiveCall(state);
+      if (!enabled) {
+        try {
+          await chrome.runtime.sendMessage({
+            target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: false, reason: trigger
+          });
+        } catch (_) {}
+        if (config.liveCaptionOverlayEnabled === false || !hasActiveCall(state)) {
+          try { SignalCaptionBridge.stop(); } catch (_) {}
+        }
+        return { ok: true, enabled: false, reason: trigger };
+      }
       await ensureOffscreen();
+      var captureStatus = await chrome.runtime.sendMessage({
+        target: "offscreen", type: "SIGNAL_GET_GROQ_CAPTURE_STATE"
+      }).catch(function () { return null; });
+      if (!captureStatus || captureStatus.running !== true) {
+        return { ok: true, skipped: true, reason: "audio-capture-not-running" };
+      }
+      if (!state.callSourceTabId) {
+        record("SIGNAL_CAPTION_PREVIEW_UNAVAILABLE", {
+          callId: state.callId || null, reasonCode: "call-tab-unavailable", trigger: trigger
+        }, "warn", "caption");
+        await chrome.runtime.sendMessage({
+          target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: false, reason: "call-tab-unavailable"
+        }).catch(function () {});
+        return { ok: false, error: "No hay pestaña de llamada para Live Caption." };
+      }
       var response = await chrome.runtime.sendMessage({
         target: "offscreen",
         type: "SIGNAL_SET_CAPTION_PREVIEW",
         enabled: true,
         tabEnabled: !!tabEnabled,
-        micEnabled: true
+        micEnabled: false,
+        reason: trigger
       });
+      if (response && response.ok) {
+        record("SIGNAL_CAPTION_PREVIEW_MODE_CHANGED", {
+          callId: state.callId || null,
+          sourceMode: tabEnabled ? "native-stale-groq-fallback" : "native-caption-fresh",
+          tabPreviewEnabled: !!tabEnabled,
+          micPreviewEnabled: false,
+          trigger: trigger
+        }, "info", "caption");
+      } else {
+        record("SIGNAL_CAPTION_PREVIEW_UNAVAILABLE", {
+          callId: state.callId || null,
+          reasonCode: "audio-capture-not-running",
+          trigger: trigger
+        }, "warn", "caption");
+      }
       return response || { ok: false };
     } catch (error) {
-      return { ok: false, error: String(error || "unknown") };
+      record("SIGNAL_CAPTION_PREVIEW_CONTROL_ERROR", {
+        trigger: trigger,
+        errorType: String(error && error.name || "Error").slice(0, 80)
+      }, "warn", "caption");
+      return { ok: false, error: String(error && error.name || "unknown") };
     }
   }
 
   try {
     SignalCaptionBridge.onStatus = function (status) {
-      if (status && status.active) {
-        setCaptionPreviewForActiveCall(false).catch(function () {});
-      } else {
-        setCaptionPreviewForActiveCall(true).catch(function () {});
-      }
+      setCaptionPreviewForActiveCall(!(status && status.active === true), status && status.reason || "native-status")
+        .catch(function () {});
     };
     SignalCaptionBridge.onError = function (error) {
-      record("SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR", { error: String(error || "unknown") }, "warn", "caption");
-      setCaptionPreviewForActiveCall(true).catch(function () {});
+      record("SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR", {
+        errorType: String(error && error.name || "NativeMessagingError").slice(0, 80)
+      }, "warn", "caption");
+      setCaptionPreviewForActiveCall(true, "native-bridge-error").catch(function () {});
     };
   } catch (_) {}
   var HOTLOAD_SCHEMA = "signal-hotload/v1";
@@ -469,6 +515,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
     if (!hasActiveCall(state)) return;
     var callTabId = Number(state.callSourceTabId || state.hotLoadLease && state.hotLoadLease.callSourceTabId);
+    var validCallTab = false;
     record("HOTLOAD_RUNTIME_BOUNDARY_RECOVERY_STARTED", {
       trigger: trigger || "runtime-boundary", callId: state.callId, callSourceTabId: callTabId || null,
       captureExpected: !!(state.hotLoadLease && state.hotLoadLease.captureExpected),
@@ -479,6 +526,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       try {
         var tab = await chrome.tabs.get(callTabId);
         if (tab && isAuthorizedCloudUrl(tab.url) && isCloudCallUrl(tab.url)) {
+          validCallTab = true;
           await chrome.scripting.executeScript({ target: { tabId: callTabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
           await chrome.scripting.executeScript({ target: { tabId: callTabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
           record("HOTLOAD_CONTENT_RUNTIME_REHYDRATED", { callId: state.callId, tabId: callTabId }, "info", "runtime");
@@ -486,6 +534,19 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       } catch (error) {
         record("HOTLOAD_CONTENT_RUNTIME_REHYDRATE_ERROR", { callId: state.callId, tabId: callTabId || null, error: String(error) }, "error", "runtime");
       }
+    }
+    if (validCallTab && cachedConfig.liveCaptionOverlayEnabled !== false) {
+      var nativeReconnectRequested = false;
+      try { nativeReconnectRequested = SignalCaptionBridge.start(callTabId, state.callId); } catch (_) {}
+      record("SIGNAL_CAPTION_NATIVE_RECOVERY_REQUESTED", {
+        callId: state.callId, tabId: callTabId, requested: !!nativeReconnectRequested,
+        trigger: String(trigger || "runtime-boundary").slice(0, 80)
+      }, nativeReconnectRequested ? "info" : "warn", "caption");
+      setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "runtime-boundary-recovery")
+        .catch(function () {});
+    } else if (cachedConfig.liveCaptionOverlayEnabled === false) {
+      try { SignalCaptionBridge.stop(); } catch (_) {}
+      setCaptionPreviewForActiveCall(false, "runtime-boundary-disabled").catch(function () {});
     }
     var expectedCapture = !!(state.hotLoadLease && state.hotLoadLease.captureExpected && state.hotLoadLease.transcriptionSessionId);
     if (!expectedCapture || !Number.isFinite(callTabId)) return;
@@ -1186,6 +1247,13 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       }, "info", "background");
     }).then(function (state) {
       if (!state || state.callId !== callId) return;
+      if (cachedConfig.liveCaptionOverlayEnabled !== false && state.callSourceTabId != null) {
+        var nativeCaptionStarted = false;
+        try { nativeCaptionStarted = SignalCaptionBridge.start(state.callSourceTabId, callId); } catch (_) {}
+        record("SIGNAL_CAPTION_NATIVE_START_REQUESTED", {
+          callId: callId, tabId: state.callSourceTabId, requested: !!nativeCaptionStarted
+        }, nativeCaptionStarted ? "info" : "warn", "caption");
+      }
       return captureCallEarningsBaseline(callId, state.callStartedAt).catch(function (error) {
         record("CALL_EARNINGS_BASELINE_CAPTURE_ERROR", {
           callId: callId, startedAt: state.callStartedAt, error: String(error)
@@ -1399,9 +1467,12 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       }), "info", source);
       if (sendResponse) sendResponse({ ok: true, call: call });
     }).then(function (finalState) {
+      try { SignalCaptionBridge.stop(); } catch (_) {}
+      return setCaptionPreviewForActiveCall(false, "call-ended").catch(function () { return null; }).then(function () {
       checkpointCallObservability("call-ended", closedCallId, finalState);
       return reconcileOfficialEarningsAfterCall(closedCallId).catch(function(error){
         record("CALL_END_EARNINGS_RECONCILIATION_ERROR",{callId:closedCallId,error:String(error)},"warn","background");
+      });
       });
     }).then(function () { applyPendingHotloadAfterCall("call-ended").catch(function () {}); });
   }
@@ -2076,9 +2147,14 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
         record("HOTLOAD_CAPTURE_LEASE_PREPARED",{callId:state.callId,tabId:state.callSourceTabId||null,sessionId:session.id,runtimeVersion:chrome.runtime.getManifest().version}, "info","runtime");
       }
-      await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id,muted:!!state.microphoneMuted,captionPreview:cachedConfig.liveCaptionOverlayEnabled !== false,tabId:state.callSourceTabId||session.tabId||session.sourceTabId||0});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
+      await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id,muted:!!state.microphoneMuted,captionPreview:cachedConfig.liveCaptionOverlayEnabled !== false && hasActiveCall(state),tabId:state.callSourceTabId||session.tabId||session.sourceTabId||0});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
       signalActiveSessionId=session.id;
-      try { if (cachedConfig.liveCaptionOverlayEnabled !== false) SignalCaptionBridge.start(state.callSourceTabId); } catch (_) {}
+      try {
+        if (cachedConfig.liveCaptionOverlayEnabled !== false && hasActiveCall(state)) {
+          SignalCaptionBridge.start(state.callSourceTabId, state.callId);
+          setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "capture-start").catch(function () {});
+        }
+      } catch (_) {}
       state.microphoneMuteStatus="pending";
       await updateGroqCaptureState({status:"connected",tabAudio:true,microphone:true,microphoneMuted:!!state.microphoneMuted,startedAt:iso(),lastChunkAt:null,error:null});
       if(hasActiveCall(state)){
@@ -2283,49 +2359,139 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     return run;
   }
   async function stopGroqCapture(reason){
-    try { SignalCaptionBridge.stop(); } catch (_) {}
+    var stopReason = String(reason || "manual");
+    if (stopReason === "call-ended" || stopReason === "source-tab-closed" ||
+        cachedConfig.liveCaptionOverlayEnabled === false) {
+      try { SignalCaptionBridge.stop(); } catch (_) {}
+    } else {
+      chrome.storage.local.get(["effectifState"]).then(function (stored) {
+        var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+        if (!hasActiveCall(state)) { try { SignalCaptionBridge.stop(); } catch (_) {} }
+      }).catch(function () {});
+    }
     try{await ensureOffscreen();await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_STOP_GROQ_CAPTURE"});}catch(_){};
     await updateGroqCaptureState({status:"stopped",tabAudio:false,microphone:false,error:null}).catch(function(){});recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_STOPPED",{reason:reason||"manual"});broadcastSignalEvent({type:"signal.groq.status",sessionId:signalActiveSessionId,status:"stopped",reason:reason||"manual",timestamp:iso()});return{ok:true};
   }
   function broadcastSignalEvent(event){try{var p=chrome.runtime.sendMessage({type:"SIGNAL_INTERPRETER_EVENT",event:event});if(p&&p.catch)p.catch(function(){});}catch(_){}}
-  async function handleGroqCaptionPreviewChunk(message){
-    captionPreviewQueue=captionPreviewQueue.then(async function(){
-      if(!message||!message.base64)return;
-      var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId;
-      var session=data.sessions.find(function(s){return s.id===id});
-      if(!session)return;
-      var stored=await chrome.storage.local.get(["effectifState"]);
-      var currentState=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
-      if(!hasActiveCall(currentState))return;
-      if(String(currentState.callSourceTabId)!==String(message.tabId||currentState.callSourceTabId))return;
-      if(message.source==="yo" && (currentState.microphoneMuted===true || currentState.microphoneMuteStatus!=="applied" || currentState.microphoneOutputStatus==="error"))return;
-      if(message.source!=="yo" && SignalCaptionBridge.isFresh(4500))return;
-      if(!(await SignalGroqTranscriber.ready()))return;
-      var raw=atob(String(message.base64||"")),bytes=new Uint8Array(raw.length);
-      for(var bi=0;bi<raw.length;bi++)bytes[bi]=raw.charCodeAt(bi);
-      var blob=new Blob([bytes],{type:"audio/webm"});
-      var seq=Number(message.sequence||0);
-      var result=await SignalGroqTranscriber.transcribe(blob,{
-        model:cachedConfig.groqModel||GROQ_MODEL,
-        language:"",
-        filename:"signal-caption-preview-"+(seq||Date.now())+".webm",
-        prompt:"Transcripción breve para interpretación médica. Detecta automáticamente inglés o español. Conserva nombres propios y términos clínicos.",
-        timeoutMs:12000
-      });
-      if(!result.ok||!String(result.text||"").trim())return;
-      var text=String(result.text||"").trim(),language=String(result.language||"");
-      if(language!=="en"&&language!=="es")language=SignalCaptionCore.detectLanguage(text);
-      var tabId=Number(currentState.callSourceTabId);
-      if(!Number.isFinite(tabId))return;
-      try{
-        await chrome.tabs.sendMessage(tabId,{type:"SIGNAL_CAPTION_UPDATE",caption:{
-          text:text.slice(0,4000),language:language||"unknown",source:message.source||"cliente",live:false,native:false
-        }});
-      }catch(_){}
-    }).catch(function(error){
-      record("SIGNAL_CAPTION_PREVIEW_ERROR",{error:String(error||"unknown")},"warn","caption");
+  function recordCaptionPreviewFailure(source, reasonCode, httpStatus) {
+    var sourceKey = source === "yo" ? "yo" : "cliente";
+    var key = sourceKey + "|" + String(reasonCode || "unknown");
+    var now = Date.now();
+    var previous = Number(captionPreviewLastErrorAt[key] || 0);
+    if (now - previous < 15000) return;
+    captionPreviewLastErrorAt[key] = now;
+    record("SIGNAL_CAPTION_PREVIEW_ERROR", {
+      source: sourceKey,
+      reasonCode: String(reasonCode || "unknown").slice(0, 80),
+      httpStatus: Number.isFinite(Number(httpStatus)) ? Number(httpStatus) : null
+    }, "warn", "caption");
+  }
+
+  async function processGroqCaptionPreviewChunk(message) {
+    if (!message || !message.base64) return;
+    var source = message.source === "yo" ? "yo" : "cliente";
+    var encoded = String(message.base64 || "");
+    if (encoded.length > 900000) {
+      recordCaptionPreviewFailure(source, "chunk-too-large");
+      return;
+    }
+    var data = await loadSignalSessions();
+    var id = message.sessionId || data.activeSessionId;
+    var session = data.sessions.find(function (item) { return item.id === id; });
+    if (!session) return;
+
+    var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
+    var currentState = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    var currentConfig = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+    if (!hasActiveCall(currentState) || currentConfig.liveCaptionOverlayEnabled === false) return;
+    if (String(currentState.callSourceTabId) !== String(message.tabId || currentState.callSourceTabId)) return;
+    var leasedSessionId = currentState.hotLoadLease && currentState.hotLoadLease.transcriptionSessionId;
+    if (leasedSessionId && String(leasedSessionId) !== String(id)) return;
+    if (source === "yo" && (
+      currentState.microphoneMuted === true ||
+      currentState.microphoneMuteStatus !== "applied" ||
+      currentState.microphoneOutputStatus === "error"
+    )) return;
+    if (source !== "yo" && SignalCaptionBridge.isFresh(4500)) return;
+    if (!(await SignalGroqTranscriber.ready())) {
+      recordCaptionPreviewFailure(source, "missing-api-key");
+      return;
+    }
+
+    var raw = atob(encoded);
+    var bytes = new Uint8Array(raw.length);
+    for (var bi = 0; bi < raw.length; bi += 1) bytes[bi] = raw.charCodeAt(bi);
+    var blob = new Blob([bytes], { type: "audio/webm" });
+    var sequence = Number(message.sequence || 0);
+    var result = await SignalGroqTranscriber.transcribe(blob, {
+      model: currentConfig.groqModel || GROQ_MODEL,
+      language: "",
+      filename: "signal-caption-preview-" + source + "-" + (sequence || Date.now()) + ".webm",
+      prompt: "Transcripción breve para interpretación médica. Detecta automáticamente inglés o español. Conserva nombres propios y términos clínicos.",
+      timeoutMs: 12000
     });
-    return captionPreviewQueue;
+    if (!result.ok) {
+      recordCaptionPreviewFailure(source,
+        result.httpStatus ? "groq-http-error" : (String(result.error || "").indexOf("Tiempo agotado") >= 0 ? "groq-timeout" : "groq-request-failed"),
+        result.httpStatus);
+      return;
+    }
+    var text = String(result.text || "").trim();
+    if (!text) return;
+
+    // La fuente nativa puede recuperar la prioridad mientras Groq procesa el fragmento.
+    if (source !== "yo" && SignalCaptionBridge.isFresh(4500)) return;
+
+    // Descartar resultados tardíos tras cambiar o terminar la llamada, la sesión o la preferencia.
+    var latestStored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
+    var latestState = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), latestStored.effectifState || {})));
+    var latestConfig = Object.assign({}, DEFAULT_CONFIG, latestStored.effectifConfig || {});
+    if (!hasActiveCall(latestState) || latestState.callId !== currentState.callId ||
+        String(latestState.callSourceTabId) !== String(currentState.callSourceTabId) ||
+        latestConfig.liveCaptionOverlayEnabled === false) return;
+    var latestLeaseSession = latestState.hotLoadLease && latestState.hotLoadLease.transcriptionSessionId;
+    if (latestLeaseSession && String(latestLeaseSession) !== String(id)) return;
+
+    var language = SignalCaptionCore.resolveLanguage(result.language, text);
+    var tabId = Number(latestState.callSourceTabId);
+    if (!Number.isFinite(tabId)) return;
+    try {
+      await chrome.tabs.sendMessage(tabId, {
+        type: "SIGNAL_CAPTION_UPDATE",
+        caption: {
+          text: text.slice(0, 4000),
+          language: language,
+          source: source,
+          live: false,
+          native: false,
+          sequence: sequence,
+          startedAt: Number(message.startedAt || 0)
+        }
+      });
+    } catch (_) {
+      recordCaptionPreviewFailure(source, "overlay-message-failed");
+    }
+  }
+
+  function handleGroqCaptionPreviewChunk(message) {
+    if (!message || !message.base64) return Promise.resolve();
+    if (!captionPreviewDispatcher) {
+      captionPreviewDispatcher = SignalCaptionCore.createLatestOnlyDispatcher(
+        processGroqCaptionPreviewChunk,
+        function (source, replaced) {
+          if (replaced % 10 === 1) {
+            record("SIGNAL_CAPTION_PREVIEW_CHUNKS_COALESCED", {
+              source: source,
+              replacedPendingChunks: replaced
+            }, "info", "caption");
+          }
+        }
+      );
+    }
+    return captionPreviewDispatcher.enqueue(message).catch(function (error) {
+      recordCaptionPreviewFailure(message.source, "preview-processing-error");
+      return { ok: false, errorType: String(error && error.name || "Error").slice(0, 80) };
+    });
   }
   function handleGroqAudioChunk(message){
     signalGroqQueue=signalGroqQueue.then(async function(){
@@ -2853,9 +3019,27 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   }, { urls: ["https://app.cloudinterpreter.com/*"] });
   chrome.windows.onRemoved.addListener(function () {});
   chrome.storage.onChanged.addListener(function (changes, area) {
-    if (area === "local" && changes.effectifConfig) {
-      cachedConfig = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.newValue || {});
+    if (area !== "local" || !changes.effectifConfig) return;
+    var previousConfig = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.oldValue || {});
+    cachedConfig = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.newValue || {});
+    var wasEnabled = previousConfig.liveCaptionOverlayEnabled !== false;
+    var isEnabled = cachedConfig.liveCaptionOverlayEnabled !== false;
+    if (wasEnabled === isEnabled) return;
+    if (!isEnabled) {
+      try { SignalCaptionBridge.stop(); } catch (_) {}
+      setCaptionPreviewForActiveCall(false, "preference-disabled").catch(function () {});
+      return;
     }
+    chrome.storage.local.get(["effectifState"]).then(function (stored) {
+      var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+      if (!hasActiveCall(state) || state.callSourceTabId == null) return;
+      SignalCaptionBridge.start(state.callSourceTabId, state.callId);
+      setCaptionPreviewForActiveCall(true, "preference-enabled").catch(function () {});
+    }).catch(function (error) {
+      record("SIGNAL_CAPTION_PREFERENCE_RECOVERY_ERROR", {
+        errorType: String(error && error.name || "Error").slice(0, 80)
+      }, "warn", "caption");
+    });
   });
 
   function checkMicrophoneCommandShortcut(trigger) {
