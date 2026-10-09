@@ -1,81 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-2d5a3586-0300-42d4-bb99-ab3dc6c6e93c",
-  "createdAt": "2026-10-09T16:05:42.941Z",
+  "batchId": "batch-88ec73e4-1141-4a22-806e-189ec077103b",
+  "createdAt": "2026-10-09T16:06:34.446Z",
   "trigger": "critical",
   "extensionVersion": "0.10.14",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "f977b1d4-b382-4807-b6df-5947a6c0897d",
-      "sequence": 5993,
-      "timestamp": "2026-10-09T16:05:38.244Z",
-      "ingestedAt": "2026-10-09T16:05:38.245Z",
-      "level": "info",
-      "category": "PORTAL",
-      "component": "webRequest",
-      "extensionVersion": "0.10.14",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "NETWORK_ACTIVITY_WINDOW",
-      "outcome": "observed",
-      "traceId": "3a8bc206-58b2-4c08-9fdc-eebcdbe2d3c9",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.14",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "windowSeconds": 15,
-        "endpointCount": 2,
-        "endpoints": [
-          {
-            "method": "GET",
-            "type": "media",
-            "url": "https://app.cloudinterpreter.com/ring.mp3",
-            "statusCode": 206,
-            "count": 2,
-            "totalDurationMs": 727,
-            "maxDurationMs": 390,
-            "avgDurationMs": 364
-          },
-          {
-            "method": "GET",
-            "type": "image",
-            "url": "https://app.cloudinterpreter.com/icons/icon.png",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 288,
-            "maxDurationMs": 288,
-            "avgDurationMs": 288
-          }
-        ]
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "632e3063-a6d5-49b8-a783-1fba4eaacd54",
-      "sequence": 5994,
-      "timestamp": "2026-10-09T16:05:42.677Z",
-      "ingestedAt": "2026-10-09T16:05:42.677Z",
+      "id": "a82ccb3a-8cfb-438b-a546-7b0a34f03821",
+      "sequence": 6017,
+      "timestamp": "2026-10-09T16:06:34.216Z",
+      "ingestedAt": "2026-10-09T16:06:34.216Z",
       "level": "warn",
       "category": "SESSION",
       "component": "alarm",
@@ -85,7 +20,7 @@
       "phase": "event",
       "action": "CONNECT_FLOW_FAILED_NO_CALL_ROUTE",
       "outcome": "observed",
-      "traceId": "cc3ab4d7-2af5-422e-a5dc-ec47f0abe34d",
+      "traceId": "418910e1-5420-48bd-9ff9-429a710096f0",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -109,32 +44,30 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "pendingId": "73ddc819-c5c4-4d95-8c08-9d59fee66449",
-        "detectedAt": "[PHONE]T16:05:27.247Z",
-        "clickedAt": "[PHONE]T16:05:27.249Z",
-        "classifiedAt": "[PHONE]T16:05:42.617Z",
+        "pendingId": "b040e383-74d4-4b50-9424-c51ab4d190bd",
+        "detectedAt": "[PHONE]T16:06:18.734Z",
+        "clickedAt": "[PHONE]T16:06:18.735Z",
+        "classifiedAt": "[PHONE]T16:06:34.162Z",
         "reason": "connect_clicked_no_call_route"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
     "warnings": 1,
     "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 5993,
-    "lastSequence": 5994,
-    "firstTimestamp": "2026-10-09T16:05:38.244Z",
-    "lastTimestamp": "2026-10-09T16:05:42.677Z",
+    "firstSequence": 6017,
+    "lastSequence": 6017,
+    "firstTimestamp": "2026-10-09T16:06:34.216Z",
+    "lastTimestamp": "2026-10-09T16:06:34.216Z",
     "actions": {
-      "NETWORK_ACTIVITY_WINDOW": 1,
       "CONNECT_FLOW_FAILED_NO_CALL_ROUTE": 1
     },
     "categories": {
-      "PORTAL": 1,
       "SESSION": 1
     }
   }
