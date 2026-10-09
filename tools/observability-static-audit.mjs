@@ -175,7 +175,7 @@ assert.ok(micGuard.includes("stableReport"));
 assert.ok(micGuard.includes("stableSamples"));
 assert.ok(micGuard.includes("},50);"));
 assert.ok(globalMouse.includes("left+right-hold"));
-assert.ok(globalMouse.includes("__SIGNAL_INTERPRETER_GLOBAL_MOUSE_GESTURE_V1__"));
+assert.ok(globalMouse.includes("__SIGNAL_INTERPRETER_GLOBAL_MOUSE_GESTURE_V2__"));
 assert.ok(globalMouse.includes("240"));
 assert.ok(offscreen.includes('"mute-on"'));
 assert.ok(offscreen.includes('"mute-off"'));
