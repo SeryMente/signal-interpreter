@@ -7,7 +7,7 @@ const content = read("../extension/content.js");
 const background = read("../extension/background.js");
 const manifest = JSON.parse(read("../extension/manifest.json"));
 
-assert.equal(manifest.version, "0.9.23");
+assert.equal(manifest.version, "0.10.21");
 assert.match(content, /location\.pathname\.match\(\/\^\\\/call\\/);
 assert.match(content, /signal-interpreter-earnings-overlay/);
 assert.match(content, /var routeCallId = currentCallId\(\);[\s\S]*?if \(!routeCallId\)/);
@@ -33,7 +33,14 @@ assert.match(content, /effectifCallEarnings/);
 assert.match(content, /activeCallEarnings && activeCallEarnings\.callId === state\.callId/);
 assert.match(content, /reconcileOverlayDateRollover\(\)/);
 assert.match(content, /EFFECTIF_REFRESH_EXCHANGE_RATE/);
-assert.match(content, /totalUsd = baseUsd \+ \(activePeriod \? liveUsd : 0\)/);
+assert.match(content, /totalUsd = baseUsd \+ \(activeCallForPeriod \? liveUsd : 0\)/);
+assert.match(content, /function overlayCallLengthToMinutes/);
+assert.match(content, /Number\(info\.minutes \|\| 0\)\.toFixed\(1\) \+ " " \+ minutesLabel/);
+assert.match(content, /var displayCurrency = preferredCurrency === "MXN" && !fxFresh \? "USD" : preferredCurrency/);
+assert.match(content, /Date\.now\(\) - captured\.getTime\(\) > 15 \* 60 \* 1000/);
+assert.match(content, /\.compact \.fx,\.compact \.chart-block\{display:none\}/);
+assert.doesNotMatch(content, /\.compact \.detail,\.compact \.fx,\.compact \.stats/);
+assert.match(content, /var activeCallId = String\(state\.callId \|\| \(overlayLifecycleActive && overlayLifecycleCallId\)/);
 assert.match(content, /setInterval\(renderOverlay, 100\)/);
 
 const historicalFn = background.match(/async function syncOfficialEarningsRangeUnsafe\(period\)\{[\s\S]*?\n  \}\n  function syncOfficialPlatformData/);
@@ -53,6 +60,13 @@ assert.match(background, /function syncOfficialPlatformData\(\)\{\s*return enque
 assert.match(background, /function syncOfficialEarningsRange\(period\)\{\s*return enqueueEarningsSync/);
 assert.match(background, /effectifCallEarnings/);
 assert.match(background, /CALL_EARNINGS_BASELINE_CAPTURED/);
+assert.match(background, /captureCallEarningsBaseline\(callId, state\.callStartedAt\)/);
+const startCall = background.match(/function startCall\(event\) \{[\s\S]*?\n  var callAlertInFlight/);
+assert(startCall, "startCall no encontrado");
+assert.ok(startCall[0].indexOf("captureCallEarningsBaseline(callId, state.callStartedAt)") < startCall[0].indexOf("syncOfficialPlatformData()"), "el baseline se congela antes de la sincronización oficial posterior al inicio");
+assert.match(background, /source: "local-completed-calls", official: false/);
+assert.match(background, /source: "platform-page-context",\s*official: true/);
+assert.match(background, /Date\.now\(\) - captured\.getTime\(\) > 15 \* 60 \* 1000/);
 assert.match(background, /baselines:\s*\{\s*today:\s*baseline\("today"\),\s*currentMonth:\s*baseline\("currentMonth"\)/);
 assert.match(background, /baselines:Object\.assign\(\{today:null,currentMonth:null\},callEarnings\.baselines\|\|\{\}\)/);
 assert.match(background, /reconcileOfficialEarningsAfterCall\(callId\)/);
