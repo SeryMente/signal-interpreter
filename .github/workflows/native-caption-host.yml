@@ -114,7 +114,10 @@ jobs:
           $register = Join-Path $PWD "extension\native\register-caption-host.ps1"
           $audit = Join-Path $PWD "tools\live-caption-static-audit.mjs"
           $newBinaryHash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToUpperInvariant()
-          $newSourceHash = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToUpperInvariant()
+          $sourceText = [IO.File]::ReadAllText($source).Replace("`r`n", "`n")
+          $sourceBytes = [Text.Encoding]::UTF8.GetBytes($sourceText)
+          $sha = [Security.Cryptography.SHA256]::Create()
+          try { $newSourceHash = [BitConverter]::ToString($sha.ComputeHash($sourceBytes)).Replace("-", "").ToUpperInvariant() } finally { $sha.Dispose() }
           $registerContent = [IO.File]::ReadAllText($register)
           $binaryMatch = [regex]::Match($registerContent, 'ExpectedSha256\s*=\s*"([A-Fa-f0-9]{64})"')
           $sourceMatch = [regex]::Match($registerContent, 'ExpectedSourceSha256\s*=\s*"([A-Fa-f0-9]{64})"')
