@@ -1428,58 +1428,90 @@
     if (period === "year") {
       var yearChart = platformMirror.earningsCharts && platformMirror.earningsCharts.year;
       var yearItems = Array.isArray(yearChart && yearChart.items) ? yearChart.items : [];
-      var nowDate = new Date(now), currentMonthKey = nowDate.getFullYear() + "-" + String(nowDate.getMonth() + 1).padStart(2, "0");
-      var monthEntry = platformMirror.earnings && platformMirror.earnings.currentMonth;
-      var monthSummary = monthEntry && monthEntry.summary || {};
-      var monthBaseline = resolveOverlayBaseline("currentMonth", monthEntry, monthSummary, activeStartedAt);
-      var monthLiveSeconds = activePeriod && earningsMetrics
-        ? earningsMetrics.activeSecondsInPeriod("currentMonth", activeStartedAt, now)
-        : activePeriod && overlayPeriodMatches(activeStartedAt, "currentMonth") ? liveSeconds : 0;
-      var monthLiveUsd = monthLiveSeconds / 60 * rate;
+      var nowDate = new Date(now);
+      var currentMonthKey = nowDate.getFullYear() + "-" + String(nowDate.getMonth() + 1).padStart(2, "0");
+      var activeStartDate = activeStartedAt ? new Date(activeStartedAt) : null;
+      var activeStartMonthKey = activeStartDate && Number.isFinite(activeStartDate.getTime())
+        ? activeStartDate.getFullYear() + "-" + String(activeStartDate.getMonth() + 1).padStart(2, "0")
+        : null;
+      var activeStartsInYear = activePeriod && earningsMetrics
+        ? earningsMetrics.callStartsInPeriod("year", activeStartedAt, now)
+        : activePeriod && overlayPeriodMatches(activeStartedAt, "year");
+      var storedStartMonthBaseline = activeCallEarnings && activeCallEarnings.callId === (state.callId || currentCallId()) &&
+        activeCallEarnings.baselines && activeCallEarnings.baselines.currentMonth;
+      var startMonthBaseline = storedStartMonthBaseline ? normalizeOverlayBaseline(storedStartMonthBaseline, "currentMonth") : null;
+      if (!startMonthBaseline || startMonthBaseline.periodKey !== activeStartMonthKey) startMonthBaseline = null;
+      if (!startMonthBaseline && activeStartMonthKey === currentMonthKey) {
+        var liveMonthEntry = platformMirror.earnings && platformMirror.earnings.currentMonth;
+        var liveMonthOfficial = liveMonthEntry && liveMonthEntry.summary || {};
+        var liveMonthCandidate = overlayOfficialBaseline(liveMonthEntry, liveMonthOfficial, "currentMonth");
+        if (liveMonthCandidate && liveMonthCandidate.authoritative &&
+            finiteMetric(liveMonthCandidate.earnedUsd) != null &&
+            Date.parse(liveMonthEntry.capturedAt || "") <= Date.parse(activeStartedAt || "")) {
+          startMonthBaseline = liveMonthCandidate;
+        }
+      }
+      var yearMoneyAuthoritative = !!(yearChart && yearChart.complete && yearItems.length &&
+        yearItems.every(function (item) { return finiteMetric(item.earnedUsd) != null; }));
+      var yearCallsAuthoritative = !!(yearChart && yearChart.complete && yearItems.length &&
+        yearItems.every(function (item) { return finiteMetric(item.callCount) != null; }));
+      var yearMinutesAuthoritative = !!(yearChart && yearChart.complete && yearItems.length &&
+        yearItems.every(function (item) { return finiteMetric(item.minutes) != null; }));
       var yearUsd = yearItems.reduce(function (sum, item) {
-        var value = Number(item.earnedUsd) || 0;
-        if (item.key === currentMonthKey && yearChart && yearChart.complete) {
-          var monthBaseUsd = finiteMetric(monthBaseline && monthBaseline.earnedUsd);
-          if (monthBaseUsd != null) value = monthBaseUsd;
-          if (activePeriod) value += monthLiveUsd;
+        var value = finiteMetric(item.earnedUsd);
+        if (value == null) value = 0;
+        if (activeStartsInYear && item.key === activeStartMonthKey && yearChart && yearChart.complete) {
+          var baselineUsd = startMonthBaseline && startMonthBaseline.authoritative
+            ? finiteMetric(startMonthBaseline.earnedUsd) : null;
+          if (baselineUsd != null) value = baselineUsd;
+          value += liveUsd;
         }
         return sum + value;
       }, 0);
       var yearCalls = yearItems.reduce(function (sum, item) {
-        var count = Number(item.callCount) || 0;
-        if (item.key === currentMonthKey && yearChart && yearChart.complete && finiteMetric(monthBaseline && monthBaseline.callCount) != null) {
-          count = Number(monthBaseline.callCount) + (activePeriod && overlayPeriodMatches(activeStartedAt, "currentMonth") ? 1 : 0);
+        var count = finiteMetric(item.callCount);
+        if (count == null) count = 0;
+        if (activeStartsInYear && item.key === activeStartMonthKey && yearChart && yearChart.complete) {
+          var baselineCalls = startMonthBaseline && startMonthBaseline.authoritative
+            ? finiteMetric(startMonthBaseline.callCount) : null;
+          if (baselineCalls != null) count = baselineCalls;
+          count += 1;
         }
         return sum + count;
       }, 0);
       var yearMinutes = yearItems.reduce(function (sum, item) {
-        var minutes = Number(item.minutes) || 0;
-        if (item.key === currentMonthKey && yearChart && yearChart.complete && finiteMetric(monthBaseline && monthBaseline.minutes) != null) {
-          minutes = Number(monthBaseline.minutes) + monthLiveSeconds / 60;
+        var minutes = finiteMetric(item.minutes);
+        if (minutes == null) minutes = 0;
+        if (activeStartsInYear && item.key === activeStartMonthKey && yearChart && yearChart.complete) {
+          var baselineMinutes = startMonthBaseline && startMonthBaseline.authoritative
+            ? finiteMetric(startMonthBaseline.minutes) : null;
+          if (baselineMinutes != null) minutes = baselineMinutes;
+          minutes += liveSeconds / 60;
         }
         return sum + minutes;
       }, 0);
-      var yearBaseUsd = fallback.earnedUsd || 0;
-      if (!(yearChart && yearChart.complete)) yearUsd = yearBaseUsd + liveUsd;
-      if (!(yearChart && yearChart.complete)) {
-        yearCalls = fallback.callCount + (activePeriod && overlayPeriodMatches(activeStartedAt, period) ? 1 : 0);
-        yearMinutes = Number(fallback.minutes || 0) + livePeriodSeconds / 60;
-      }
+      var yearBaseUsd = finiteMetric(fallback.earnedUsd) || 0;
+      var yearBaseCalls = finiteMetric(fallback.callCount) || 0;
+      var yearBaseMinutes = finiteMetric(fallback.minutes) || 0;
+      if (!yearMoneyAuthoritative) yearUsd = yearBaseUsd + (activeStartsInYear ? liveUsd : 0);
+      if (!yearCallsAuthoritative) yearCalls = yearBaseCalls + (activeStartsInYear ? 1 : 0);
+      if (!yearMinutesAuthoritative) yearMinutes = yearBaseMinutes + (activeStartsInYear ? liveSeconds / 60 : 0);
       return {
         period: period,
         calls: yearCalls,
-        callsAuthoritative: !!(yearChart && yearChart.complete),
+        callsAuthoritative: yearCallsAuthoritative,
+        minutesAuthoritative: yearMinutesAuthoritative,
         modality: modality,
         liveSeconds: liveSeconds,
-        liveUsd: liveUsd,
-        livePeriodSeconds: livePeriodSeconds,
+        liveUsd: activeStartsInYear ? liveUsd : 0,
+        livePeriodSeconds: activeStartsInYear ? liveSeconds : 0,
         periodMinutes: yearMinutes,
-        totalUsd: yearChart && yearChart.complete ? yearUsd : yearBaseUsd + liveUsd,
-        officialUsd: yearChart && yearChart.complete ? yearUsd : null,
+        totalUsd: yearMoneyAuthoritative ? yearUsd : yearBaseUsd + (activeStartsInYear ? liveUsd : 0),
+        officialUsd: yearMoneyAuthoritative ? yearUsd : null,
         fx: Number(config.usdMxnRate || 0),
         fxDate: config.exchangeRateDate || null,
-        hasOfficial: !!(yearChart && yearChart.complete),
-        baselineSource: yearChart && yearChart.complete ? "platform-page-context" : "local-reconciled-state"
+        hasOfficial: yearMoneyAuthoritative,
+        baselineSource: yearMoneyAuthoritative ? "platform-page-context" : "local-reconciled-state"
       };
     }
 
@@ -1499,10 +1531,13 @@
         totalUsd: (finiteMetric(baseline && baseline.earnedUsd) == null ? Number(fallback.earnedUsd || 0) : Number(baseline.earnedUsd)) + liveUsd
       };
     var hasOfficial = !!(baseline && baseline.authoritative && finiteMetric(baseline.earnedUsd) != null);
+    var callsAuthoritative = !!(baseline && baseline.authoritative && finiteMetric(baseline.callCount) != null);
+    var minutesAuthoritative = !!(baseline && baseline.authoritative && finiteMetric(baseline.minutes) != null);
     return {
       period: period,
       calls: calculated.calls,
-      callsAuthoritative: !!(hasOfficial && finiteMetric(baseline.callCount) != null),
+      callsAuthoritative: callsAuthoritative,
+      minutesAuthoritative: minutesAuthoritative,
       modality: modality,
       liveSeconds: calculated.liveSeconds,
       liveUsd: calculated.liveUsd,
@@ -1900,9 +1935,11 @@
     overlayRoot.getElementById("missed").textContent = String(callStats.missed);
     overlayRoot.getElementById("totalCalls").textContent = String(callStats.total);
     renderOverlayChart(overlayRoot.getElementById("chart"));
-    var baselineStatus = info.hasOfficial
-      ? "Base oficial de Cloud Interpreter sincronizada"
-      : "Estimación local: base oficial no confirmada para este periodo";
+    var baselineStatus = info.hasOfficial && info.callsAuthoritative && info.minutesAuthoritative
+      ? "Base oficial sincronizada" + (activeCallEarnings && activeCallEarnings.callId === state.callId && info.livePeriodSeconds > 0 ? " · incremento en curso estimado" : "")
+      : info.hasOfficial
+        ? "Ingresos oficiales; llamadas/minutos no confirmados por completo"
+        : "Estimación local: base oficial no confirmada para este periodo";
     overlayRoot.getElementById("fx").textContent = baselineStatus + " · " + (fxFresh
       ? "USD/MXN " + info.fx.toFixed(4) + " · tasa de hoy " + info.fxDate
       : "Tasa USD/MXN de hoy no confirmada todavía");
