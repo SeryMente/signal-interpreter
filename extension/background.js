@@ -1973,7 +1973,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
           callId:currentState.callId,capturedAt:iso(),periodKey:expectedTodayKey,
           earnedUsd:parsed.earnedUsd==null?null:Number(parsed.earnedUsd),earned:parsed.earned||null,
           callCount:parsed.callCount==null?null:Number(parsed.callCount),
-          minutes:parsed.callLength==null?null:callLengthToMinutes(parsed.callLength),
+          minutes:parsed.callLength==null?null:parseEarningsDurationMinutes(parsed.callLength),
           callLength:parsed.callLength||null,source:"platform-page-context",authoritative:true
         };
         callEarnings={
@@ -2094,7 +2094,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
             callId:storedState.callId,capturedAt:iso(),periodKey:expectedPeriodKey,
             earnedUsd:parsed.earnedUsd==null?null:Number(parsed.earnedUsd),earned:parsed.earned||null,
             callCount:parsed.callCount==null?null:Number(parsed.callCount),
-            minutes:parsed.callLength==null?null:callLengthToMinutes(parsed.callLength),
+            minutes:parsed.callLength==null?null:parseEarningsDurationMinutes(parsed.callLength),
             callLength:parsed.callLength||null,source:"platform-page-context",authoritative:true
           };
           callEarnings={
