@@ -1338,6 +1338,17 @@
     if (earnedUsd == null && callCount == null && minutes == null && summary.earned == null) return null;
     var source = entry.source || "platform-page-context";
     var keyReference = entry.startIso || entry.capturedAt || Date.now();
+    var baselinePeriodKey = null;
+    if (earningsMetrics) {
+      if (period === "previousMonth") {
+        var periodStartDate = new Date(keyReference);
+        if (Number.isFinite(periodStartDate.getTime())) {
+          baselinePeriodKey = String(periodStartDate.getFullYear()) + "-" + String(periodStartDate.getMonth() + 1).padStart(2, "0");
+        }
+      } else {
+        baselinePeriodKey = earningsMetrics.periodKey(period, keyReference);
+      }
+    }
     return {
       earnedUsd: earnedUsd,
       earned: summary.earned == null ? null : summary.earned,
@@ -1345,7 +1356,7 @@
       minutes: minutes,
       callLength: summary.callLength == null ? null : summary.callLength,
       capturedAt: entry.capturedAt || null,
-      periodKey: earningsMetrics ? earningsMetrics.periodKey(period, keyReference) : null,
+      periodKey: baselinePeriodKey,
       source: source,
       authoritative: source === "platform-page-context" || source === "fetchInterpreterLogs" || source === "platform-page-context-call-safe"
     };
