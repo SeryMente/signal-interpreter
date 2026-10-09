@@ -20,11 +20,17 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.20");
+assert.equal(manifest.version,"0.10.21");
 assert.ok(manifest.key && manifest.key.length > 300);
 assert.ok(manifest.key);
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
-assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://app.cloudinterpreter.com/*")&&Array.isArray(e.js)&&e.js[0]==="live-caption-core.js"&&e.js[1]==="live-caption-overlay.js"&&e.js[2]==="content.js"));
+const cloudIsolatedScripts=manifest.content_scripts.find((e)=>e.matches?.includes("https://app.cloudinterpreter.com/*")&&e.world==="ISOLATED"&&Array.isArray(e.js));
+assert.ok(cloudIsolatedScripts);
+assert.ok(cloudIsolatedScripts.js.indexOf("live-caption-core.js")<cloudIsolatedScripts.js.indexOf("content.js"));
+assert.ok(cloudIsolatedScripts.js.indexOf("live-caption-overlay.js")<cloudIsolatedScripts.js.indexOf("content.js"));
+assert.ok(cloudIsolatedScripts.js.indexOf("earnings-overlay-metrics.js")>=0);
+assert.ok(cloudIsolatedScripts.js.indexOf("earnings-overlay-metrics.js")<cloudIsolatedScripts.js.indexOf("content.js"));
+assert.ok(exists("extension/earnings-overlay-metrics.js"));
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 
 assert.ok(background.includes('importScripts("live-caption-core.js","live-caption-bridge.js"'));

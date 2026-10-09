@@ -1110,7 +1110,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     });
   }
   function markIncoming(event) {
-    mutateState(async function (state) {
+    var shouldPrefetchEarnings = false;
+    return mutateState(async function (state) {
       if (state.callId) return;
       var pendingAge = state.pendingCall && Date.parse(event.timestamp) - Date.parse(state.pendingCall.detectedAt);
       if (!state.pendingCall || !Number.isFinite(pendingAge) || pendingAge > 60000) {
@@ -1119,6 +1120,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
           modality: event.payload && event.payload.modality || event.modality || "OPI",
           clickedAt: null
         };
+        shouldPrefetchEarnings = true;
       }
       state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
       state.autoAnswerTelemetry.detections = Number(state.autoAnswerTelemetry.detections || 0) + 1;
@@ -1126,6 +1128,29 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       state.autoAnswerTelemetry.disabled = Number(state.autoAnswerTelemetry.disabled || 0) + (event.payload && event.payload.connectDisabled ? 1 : 0);
       state.autoAnswerTelemetry.lastDetectedAt = event.timestamp;
       chrome.alarms.create("effectif-pending-call", { when: Date.now() + 15000 });
+    }).then(function (state) {
+      if (!shouldPrefetchEarnings || state && state.callId) return state;
+      record("CALL_INCOMING_EARNINGS_PREFETCH_REQUESTED", {
+        pendingCallId: state && state.pendingCall && state.pendingCall.id || null,
+        detectedAt: event.timestamp,
+        policy: "authenticated-page-context-no-navigation"
+      }, "info", "background");
+      syncOfficialPlatformData().then(function (result) {
+        var summary = result && result.snapshot && result.snapshot.summary || {};
+        record("CALL_INCOMING_EARNINGS_PREFETCH_COMPLETED", {
+          pendingCallId: state && state.pendingCall && state.pendingCall.id || null,
+          method: result && result.method || null,
+          callCountAvailable: summary.callCount != null,
+          callLengthAvailable: summary.callLength != null,
+          source: "platform-page-context"
+        }, "info", "background");
+      }).catch(function (error) {
+        record("CALL_INCOMING_EARNINGS_PREFETCH_ERROR", {
+          pendingCallId: state && state.pendingCall && state.pendingCall.id || null,
+          error: String(error)
+        }, "warn", "background");
+      });
+      return state;
     });
   }
   async function applyPendingHotloadAfterCall(trigger) {
@@ -1184,7 +1209,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         startOffsetSeconds: Number.isFinite(measuredPlatformSeconds) ? measuredPlatformSeconds : null,
         evidence: event.payload && event.payload.evidence || null
       }, "info", "background");
-    }).then(function (state) {
+    }).then(async function (state) {
       if (!state || state.callId !== callId) return;
       checkpointCallObservability("call-answered", callId, state);
       requestCallOverlayRefresh(state.callSourceTabId, callId, "call-answered");
@@ -1195,6 +1220,15 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       }, "info", "background");
       record("TRANSCRIPTION_MODULE_READY", { callId: callId, engine: "groq-whisper" }, "info", "background");
       requestCallAlert(callId, "call-route-confirmed");
+      try {
+        // The incoming call started a serialized official-stats prefetch; finish it before freezing this call's baseline.
+        await earningsSyncQueue.catch(function () { return null; });
+        await captureCallEarningsBaseline(callId, state.callStartedAt);
+      } catch (baselineError) {
+        record("CALL_EARNINGS_BASELINE_CAPTURE_ERROR", {
+          callId: callId, startedAt: state.callStartedAt, error: String(baselineError)
+        }, "warn", "background");
+      }
       refreshExchangeRate("call-start").catch(function(error){
         record("CALL_START_EXCHANGE_RATE_ERROR",{callId:callId,error:String(error)},"warn","background");
       });
@@ -1655,7 +1689,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       endIso: range.end.toISOString(),
       earnedUsd: Number(summary.earnedUsd) >= 0 ? Number(summary.earnedUsd) : 0,
       callCount: Number(summary.callCount) >= 0 ? Number(summary.callCount) : 0,
-      minutes: callLengthToMinutes(summary.callLength),
+      minutes: parseEarningsDurationMinutes(summary.callLength),
       callLength: summary.callLength || null
     };
   }
@@ -1710,51 +1744,179 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       return { ok: true, period: period, chart: charts[period] };
     });
   }
+  function earningsPeriodKey(period, reference) {
+    var date = reference ? new Date(reference) : new Date();
+    if (!Number.isFinite(date.getTime())) date = new Date();
+    var year = String(date.getFullYear());
+    var month = String(date.getMonth() + 1).padStart(2, "0");
+    if (period === "today") return localDay(date);
+    if (period === "currentMonth") return year + "-" + month;
+    if (period === "previousMonth") {
+      var previous = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+      return String(previous.getFullYear()) + "-" + String(previous.getMonth() + 1).padStart(2, "0");
+    }
+    return year;
+  }
+  function parseEarningsDurationMinutes(value) {
+    if (typeof value === "number") return Number.isFinite(value) && value >= 0 ? value : null;
+    var text = String(value == null ? "" : value).trim();
+    if (!text) return null;
+    var time = /^(\d{1,3}):(\d{2})(?::(\d{2}(?:[.,]\d+)?))?$/.exec(text);
+    if (time) {
+      var first = Number(time[1]), second = Number(time[2]);
+      var third = time[3] == null ? null : Number(time[3].replace(",", "."));
+      if (!Number.isFinite(first) || !Number.isFinite(second) || (third != null && !Number.isFinite(third))) return null;
+      if (time[3] != null) return Math.max(0, first * 60 + second + third / 60);
+      return Math.max(0, first + second / 60);
+    }
+    var unitPattern = /(\d+(?:[.,]\d+)?)\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\b/gi;
+    var match, total = 0, found = false;
+    while ((match = unitPattern.exec(text)) !== null) {
+      found = true;
+      var amount = Number(match[1].replace(",", "."));
+      if (!Number.isFinite(amount) || amount < 0) return null;
+      var unit = match[2].toLowerCase();
+      if (/^(h|hr|hrs|hour|hours)$/.test(unit)) total += amount * 60;
+      else if (/^(s|sec|secs|second|seconds)$/.test(unit)) total += amount / 60;
+      else total += amount;
+    }
+    if (found) return total;
+    var numeric = Number(text.replace(",", "."));
+    return Number.isFinite(numeric) && numeric >= 0 ? numeric : null;
+  }
+  function parseEarningsUsd(value, valueUsd) {
+    var usd = valueUsd == null || valueUsd === "" ? null : Number(valueUsd);
+    if (Number.isFinite(usd) && usd >= 0) return usd;
+    var match = String(value == null ? "" : value).match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
+    if (!match) return null;
+    var parsed = Number(match[1].replace(",", "."));
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  }
   function mirrorEarningBaseline(mirror, period) {
     var item = period === "today"
       ? (mirror && mirror.earnings && mirror.earnings.today) || (mirror && mirror.statistics)
       : mirror && mirror.earnings && mirror.earnings[period];
     var summary = item && item.summary || {};
-    var earnedUsd = Number(summary.earnedUsd);
-    if (!(earnedUsd >= 0)) return null;
+    var earnedUsd = summary.earnedUsd == null || summary.earnedUsd === "" ? null : Number(summary.earnedUsd);
+    if (!(Number.isFinite(earnedUsd) && earnedUsd >= 0)) earnedUsd = null;
+    var callCount = summary.callCount == null || summary.callCount === "" ? null : Number(summary.callCount);
+    if (!(Number.isFinite(callCount) && callCount >= 0)) callCount = null;
+    var minutes = summary.callLength == null || summary.callLength === "" ? null : parseEarningsDurationMinutes(summary.callLength);
+    if (earnedUsd == null && callCount == null && minutes == null) return null;
+    var source = item.source || "platform-page-context";
     return {
       earnedUsd: earnedUsd,
       earned: summary.earned || null,
-      callCount: Number(summary.callCount) >= 0 ? Number(summary.callCount) : 0,
-      minutes: callLengthToMinutes(summary.callLength),
+      callCount: callCount,
+      minutes: minutes,
       callLength: summary.callLength || null,
       capturedAt: item.capturedAt || null,
-      source: item.source || "platform-page-context"
+      periodKey: earningsPeriodKey(period, item.startIso || item.capturedAt || Date.now()),
+      source: source,
+      authoritative: source === "platform-page-context" || source === "fetchInterpreterLogs" || source === "platform-page-context-call-safe"
     };
   }
   async function captureCallEarningsBaseline(callId, startedAt) {
     var stored = await chrome.storage.local.get(["effectifState", "effectifPlatformMirror", "effectifCallEarnings", "effectifConfig"]);
     var state = Object.assign(baseState(), stored.effectifState || {});
     if (!callId || state.callId !== callId || !state.callStartedAt) return false;
-    var existing = stored.effectifCallEarnings || {};
-    if (existing.callId === callId) return true;
     var mirror = stored.effectifPlatformMirror || {};
     var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+    var baselineStartedAt = startedAt || state.callStartedAt;
+    var todayKey = earningsPeriodKey("today", baselineStartedAt);
+    var monthKey = earningsPeriodKey("currentMonth", baselineStartedAt);
+    var existing = stored.effectifCallEarnings || {};
+    function baselineMatches(period, key) {
+      var candidate = existing.baselines && existing.baselines[period];
+      return !!(existing.callId === callId && candidate &&
+        (candidate.periodKey || earningsPeriodKey(period, candidate.capturedAt || existing.startedAt || baselineStartedAt)) === key &&
+        candidate.source !== "local-reconciled-state");
+    }
+    if (baselineMatches("today", todayKey) && baselineMatches("currentMonth", monthKey)) return true;
+
+    function dateInPeriod(value, period, reference) {
+      var date = new Date(value || "");
+      var ref = new Date(reference || Date.now());
+      if (!Number.isFinite(date.getTime()) || !Number.isFinite(ref.getTime())) return false;
+      if (period === "today") return localDay(date) === localDay(ref);
+      if (period === "currentMonth") return date.getFullYear() === ref.getFullYear() && date.getMonth() === ref.getMonth();
+      if (period === "year") return date.getFullYear() === ref.getFullYear();
+      return false;
+    }
     function localFallback(period) {
-      var now = new Date();
-      return (Array.isArray(state.completedCalls) ? state.completedCalls : []).filter(function (call) {
-        var date = new Date(call.startedAt || call.endedAt);
-        if (!Number.isFinite(date.getTime())) return false;
-        if (period === "today") return localDay(date) === localDay(now);
-        return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
-      }).reduce(function (sum, call) { return sum + Number(call.estimatedRevenue || 0); }, 0);
+      var reference = new Date(baselineStartedAt);
+      if (!Number.isFinite(reference.getTime())) reference = new Date();
+      var completed = (Array.isArray(state.completedCalls) ? state.completedCalls : []).filter(function (call) {
+        return dateInPeriod(call.startedAt || call.endedAt, period, reference);
+      });
+      var unfinished = (Array.isArray(state.unfinishedCalls) ? state.unfinishedCalls : []).filter(function (call) {
+        return dateInPeriod(call.startedAt || call.endedAt, period, reference);
+      });
+      var missed = (Array.isArray(state.missedCallRecords) ? state.missedCallRecords : []).filter(function (call) {
+        return dateInPeriod(call.detectedAt || call.classifiedAt, period, reference);
+      });
+      function unique(records) {
+        var seen = new Set();
+        return records.filter(function (call, index) {
+          var key = call.callId || call.id || String(call.startedAt || call.detectedAt || "") + "|" + String(call.endedAt || "") + "|" + index;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+      completed = unique(completed);
+      unfinished = unique(unfinished.filter(function (call) {
+        return !completed.some(function (done) { return done.callId && done.callId === call.callId; });
+      }));
+      missed = unique(missed.filter(function (call) {
+        return !completed.concat(unfinished).some(function (record) { return record.callId && record.callId === call.callId; });
+      }));
+      var seenDuration = new Set();
+      var durationSeconds = completed.concat(unfinished).reduce(function (sum, call, index) {
+        var key = call.callId || call.id || String(call.startedAt || "") + "|" + index;
+        if (seenDuration.has(key)) return sum;
+        seenDuration.add(key);
+        var start = Date.parse(call.startedAt || "");
+        var end = Date.parse(call.endedAt || "");
+        var seconds = null;
+        if (Number.isFinite(start) && Number.isFinite(end) && end >= start) {
+          var periodStart = period === "today"
+            ? new Date(reference.getFullYear(), reference.getMonth(), reference.getDate()).getTime()
+            : new Date(reference.getFullYear(), reference.getMonth(), 1).getTime();
+          var periodEnd = period === "today"
+            ? new Date(reference.getFullYear(), reference.getMonth(), reference.getDate() + 1).getTime()
+            : new Date(reference.getFullYear(), reference.getMonth() + 1, 1).getTime();
+          seconds = Math.max(0, (Math.min(end, periodEnd) - Math.max(start, periodStart)) / 1000);
+        } else {
+          seconds = Number(call.platformSeconds);
+          if (!(Number.isFinite(seconds) && seconds >= 0)) seconds = Number(call.observedSeconds);
+          if (!(Number.isFinite(seconds) && seconds >= 0)) seconds = Number(call.billableSecondsAssumed);
+          if (!(Number.isFinite(seconds) && seconds >= 0)) seconds = 0;
+        }
+        return sum + seconds;
+      }, 0);
+      return {
+        earnedUsd: completed.reduce(function (sum, call) { return sum + Number(call.estimatedRevenue || 0); }, 0),
+        earned: null,
+        callCount: completed.length + unfinished.length + missed.length,
+        minutes: durationSeconds / 60,
+        callLength: null,
+        capturedAt: null,
+        periodKey: earningsPeriodKey(period, reference),
+        source: "local-reconciled-state",
+        authoritative: false
+      };
     }
     function baseline(period) {
+      var expectedKey = earningsPeriodKey(period, baselineStartedAt);
       var found = mirrorEarningBaseline(mirror, period);
-      if (found) return Object.assign({ callId: callId }, found);
-      return {
-        callId: callId, earnedUsd: localFallback(period), earned: null, capturedAt: null, source: "local-completed-calls"
-      };
+      if (found && found.periodKey === expectedKey) return Object.assign({ callId: callId }, found);
+      return Object.assign({ callId: callId }, localFallback(period));
     }
     var payload = {
       schema: "signal-interpreter-active-call-earnings/v1",
       callId: callId,
-      startedAt: startedAt || state.callStartedAt,
+      startedAt: baselineStartedAt,
       capturedAt: iso(),
       modality: state.callModality || "OPI",
       ratePerMinute: (state.callModality || "OPI") === "VRI" ? Number(config.vriRatePerMinute || 0.25) : Number(config.opiRatePerMinute || 0.20),
@@ -1767,9 +1929,16 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     record("CALL_EARNINGS_BASELINE_CAPTURED", {
       callId: callId,
       startedAt: payload.startedAt,
-      todayBaselineUsd: payload.baselines.today && payload.baselines.today.earnedUsd || null,
-      currentMonthBaselineUsd: payload.baselines.currentMonth && payload.baselines.currentMonth.earnedUsd || null,
-      source: "pre-call-platform-mirror"
+      todayBaselineUsd: payload.baselines.today && payload.baselines.today.earnedUsd,
+      todayBaselineCalls: payload.baselines.today && payload.baselines.today.callCount,
+      todayBaselineMinutes: payload.baselines.today && payload.baselines.today.minutes,
+      todayPeriodKey: payload.baselines.today && payload.baselines.today.periodKey,
+      todaySource: payload.baselines.today && payload.baselines.today.source,
+      currentMonthBaselineUsd: payload.baselines.currentMonth && payload.baselines.currentMonth.earnedUsd,
+      currentMonthBaselineCalls: payload.baselines.currentMonth && payload.baselines.currentMonth.callCount,
+      currentMonthBaselineMinutes: payload.baselines.currentMonth && payload.baselines.currentMonth.minutes,
+      currentMonthPeriodKey: payload.baselines.currentMonth && payload.baselines.currentMonth.periodKey,
+      currentMonthSource: payload.baselines.currentMonth && payload.baselines.currentMonth.source
     }, "info", "background");
     return true;
   }
@@ -1792,14 +1961,25 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var callBaseline=previousStatistics.callBaseline||null;
     var persistCallEarnings=null;
     if(currentState.callId && currentState.callStartedAt){
-      if(callEarnings.callId===currentState.callId && callEarnings.baselines && callEarnings.baselines.today){
-        callBaseline=callEarnings.baselines.today;
-      } else if(!callBaseline || callBaseline.callId!==currentState.callId){
-        callBaseline={callId:currentState.callId,capturedAt:iso(),earnedUsd:Number(parsed.earnedUsd),earned:parsed.earned,source:"official-sync-fallback"};
+      var expectedTodayKey=earningsPeriodKey("today",Date.now());
+      var activeBaselines=callEarnings.callId===currentState.callId && callEarnings.baselines ? callEarnings.baselines : {};
+      var existingTodayBaseline=activeBaselines.today;
+      var existingTodayKey=existingTodayBaseline &&
+        (existingTodayBaseline.periodKey || earningsPeriodKey("today",existingTodayBaseline.capturedAt || callEarnings.startedAt));
+      if(existingTodayBaseline && existingTodayKey===expectedTodayKey){
+        callBaseline=existingTodayBaseline;
+      } else {
+        callBaseline={
+          callId:currentState.callId,capturedAt:iso(),periodKey:expectedTodayKey,
+          earnedUsd:parsed.earnedUsd==null?null:Number(parsed.earnedUsd),earned:parsed.earned||null,
+          callCount:parsed.callCount==null?null:Number(parsed.callCount),
+          minutes:parsed.callLength==null?null:parseEarningsDurationMinutes(parsed.callLength),
+          callLength:parsed.callLength||null,source:"platform-page-context",authoritative:true
+        };
         callEarnings={
           schema:"signal-interpreter-active-call-earnings/v1",callId:currentState.callId,
-          startedAt:currentState.callStartedAt,capturedAt:iso(),modality:currentState.callModality||"OPI",
-          baselines:{today:callBaseline,currentMonth:null}
+          startedAt:callEarnings.startedAt||currentState.callStartedAt,capturedAt:iso(),modality:currentState.callModality||"OPI",
+          baselines:Object.assign({today:null,currentMonth:null},activeBaselines,{today:callBaseline})
         };
         persistCallEarnings=callEarnings;
       }
@@ -1902,15 +2082,26 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var callBaseline=previousItem.callBaseline||null;
       var persistCallEarnings=null;
       if(range.period!=="previousMonth" && storedState.callId && storedState.callStartedAt){
-        if(callEarnings.callId===storedState.callId && callEarnings.baselines && callEarnings.baselines[range.period]){
-          callBaseline=callEarnings.baselines[range.period];
-        } else if(!callBaseline || callBaseline.callId!==storedState.callId){
-          callBaseline={callId:storedState.callId,capturedAt:iso(),earnedUsd:Number(parsed.earnedUsd),earned:parsed.earned,source:"official-sync-fallback"};
-          callEarnings=Object.assign({},callEarnings,{
+        var expectedPeriodKey=earningsPeriodKey(range.period,range.startIso);
+        var activeBaselines=callEarnings.callId===storedState.callId && callEarnings.baselines ? callEarnings.baselines : {};
+        var existingPeriodBaseline=activeBaselines[range.period];
+        var existingPeriodKey=existingPeriodBaseline &&
+          (existingPeriodBaseline.periodKey || earningsPeriodKey(range.period,existingPeriodBaseline.capturedAt || callEarnings.startedAt));
+        if(existingPeriodBaseline && existingPeriodKey===expectedPeriodKey){
+          callBaseline=existingPeriodBaseline;
+        } else {
+          callBaseline={
+            callId:storedState.callId,capturedAt:iso(),periodKey:expectedPeriodKey,
+            earnedUsd:parsed.earnedUsd==null?null:Number(parsed.earnedUsd),earned:parsed.earned||null,
+            callCount:parsed.callCount==null?null:Number(parsed.callCount),
+            minutes:parsed.callLength==null?null:parseEarningsDurationMinutes(parsed.callLength),
+            callLength:parsed.callLength||null,source:"platform-page-context",authoritative:true
+          };
+          callEarnings={
             schema:"signal-interpreter-active-call-earnings/v1",callId:storedState.callId,
             startedAt:callEarnings.startedAt||storedState.callStartedAt,capturedAt:callEarnings.capturedAt||iso(),modality:callEarnings.modality||storedState.callModality||"OPI",
-            baselines:Object.assign({today:null,currentMonth:null},callEarnings.baselines||{})
-          });
+            baselines:Object.assign({today:null,currentMonth:null},activeBaselines)
+          };
           callEarnings.baselines[range.period]=callBaseline;
           persistCallEarnings=callEarnings;
         }
