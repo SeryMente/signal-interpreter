@@ -3,7 +3,8 @@
 
   if (!/^\/auth\/signin\/?$/.test(String(location.pathname || ""))) return;
 
-  var savedUsername = "";
+  var DEFAULT_USERNAME = "victor.hugo.queretaro@proton.me";
+  var savedUsername = DEFAULT_USERNAME;
   var handledForm = null;
   var attempts = 0;
   var maxAttempts = 48;
@@ -50,8 +51,11 @@
 
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local" || !changes.cloudInterpreterLoginUsername) return;
-    savedUsername = String(changes.cloudInterpreterLoginUsername.newValue || "").trim();
+    savedUsername = String(changes.cloudInterpreterLoginUsername.newValue || "").trim() || DEFAULT_USERNAME;
     handledForm = null;
+    if (!String(changes.cloudInterpreterLoginUsername.newValue || "").trim()) {
+      chrome.storage.local.set({ cloudInterpreterLoginUsername: DEFAULT_USERNAME }).catch(function () {});
+    }
     applySigninAssist();
   });
   function stopWatching() {
@@ -62,7 +66,10 @@
   }
 
   chrome.storage.local.get(["cloudInterpreterLoginUsername"]).then(function (stored) {
-    savedUsername = String(stored && stored.cloudInterpreterLoginUsername || "").trim();
+    savedUsername = String(stored && stored.cloudInterpreterLoginUsername || "").trim() || DEFAULT_USERNAME;
+    if (!String(stored && stored.cloudInterpreterLoginUsername || "").trim()) {
+      chrome.storage.local.set({ cloudInterpreterLoginUsername: DEFAULT_USERNAME }).catch(function () {});
+    }
 
     if (applySigninAssist()) return;
     if (document.documentElement) {
