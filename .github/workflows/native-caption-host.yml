@@ -30,6 +30,27 @@ jobs:
           if ($header.Length -lt 2 -or $header[0] -ne 0x4D -or $header[1] -ne 0x5A) { throw "El archivo compilado no tiene cabecera PE/EXE." }
           Write-Output "NATIVE_CAPTION_HOST_COMPILE=PASS"
           Write-Output "ExecutableBytes=$($header.Length)"
+      - name: Package compiled host candidate
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $output = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.exe"
+          $payload = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.exe.b64"
+          $hashFile = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.sha256"
+          $bytes = [IO.File]::ReadAllBytes($output)
+          $base64 = [Convert]::ToBase64String($bytes)
+          [IO.File]::WriteAllText($payload, $base64, [Text.Encoding]::ASCII)
+          $sha256 = (Get-FileHash -LiteralPath $output -Algorithm SHA256).Hash
+          [IO.File]::WriteAllText($hashFile, $sha256, [Text.Encoding]::ASCII)
+          Write-Output "NATIVE_CAPTION_HOST_SHA256=$sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signal-native-caption-host-0.10.22
+          path: |
+            ${{ runner.temp }}/SignalInterpreter.CaptionHost.exe
+            ${{ runner.temp }}/SignalInterpreter.CaptionHost.exe.b64
+            ${{ runner.temp }}/SignalInterpreter.CaptionHost.sha256
+          if-no-files-found: error
       - name: Verify Native Messaging framing and clean shutdown
         shell: pwsh
         run: |
