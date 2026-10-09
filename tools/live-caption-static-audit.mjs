@@ -20,7 +20,7 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.22");
+assert.equal(manifest.version,"0.10.23");
 assert.ok(manifest.key && manifest.key.length > 300);
 assert.ok(manifest.key);
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
@@ -75,6 +75,9 @@ assert.ok(groq.includes("if(language)form.append(\"language\",language);"));
 assert.ok(groq.includes("language:String(data&&data.language||language||\"unknown\")"));
 
 assert.ok(overlay.includes("pointer-events:none"));
+assert.ok(overlay.includes("max-height:210px;overflow:hidden"), "el panel debe tener altura visual acotada para no cubrir la llamada");
+assert.ok(overlay.includes("-webkit-line-clamp:2;overflow:hidden"), "cada intervención debe limitarse a dos líneas visuales");
+assert.ok(overlay.includes("var MAX_ROWS = 4;"), "el panel debe mantener un diálogo reciente compacto");
 assert.ok(overlay.includes("attachShadow({ mode: \"closed\" })"));
 assert.ok(overlay.includes("interactiveRects"));
 assert.ok(overlay.includes("core.choosePositionCandidate(candidates, rects, w, h)"));

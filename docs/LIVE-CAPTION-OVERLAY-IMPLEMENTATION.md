@@ -2,7 +2,7 @@
 
 **Repositorio canónico:** https://github.com/SeryMente/signal-interpreter
 **Especificación canónica:** https://github.com/SeryMente/signal-interpreter/blob/main/docs/USER-REQUIREMENT-LIVE-CAPTIONS-OVERLAY-VERBATIM-20261008.md
-**Versión integrada:** 0.10.22 — Continuidad del Live Caption y fallback controlado.
+**Versión integrada:** 0.10.23 — Overlay compacto y no obstructivo.
 **Commit de producción:** `2607ff07107f1e1e4cf82b3ab6e8bb4516f0ba90` (PR #44, integrada en `main` el 2026-10-09).
 
 ## Objetivo
@@ -68,4 +68,6 @@ No se ha ejecutado una llamada bilingüe real en esta sesión. Por tanto, perman
 
 ## Resultado
 
-La implementación 0.10.22 está integrada en `main`. El flujo primario/fallback, el overlay y el host nativo están incluidos en la versión canónica. Para habilitar la ruta primaria en Windows, hay que ejecutar el script de registro incluido en `extension/native/register-caption-host.ps1` desde la carpeta materializada de la extensión; después, recargar la extensión y comprobar los permisos/captura necesarios para el fallback. La instalación local de EP no se ha modificado desde esta sesión.
+La versión 0.10.23 limita el panel a 210 px de alto, muestra como máximo cuatro intervenciones recientes y recorta visualmente cada intervención a dos líneas; el host conserva `pointer-events: none` y el cálculo de posición evita controles visibles. La intención es que texto excepcionalmente largo no cubra el keypad ni controles de llamada.
+
+La versión 0.10.22 había integrado el flujo primario/fallback en `main`. El flujo primario/fallback, el overlay y el host nativo están incluidos en la versión canónica. Para habilitar la ruta primaria en Windows, hay que ejecutar el script de registro incluido en `extension/native/register-caption-host.ps1` desde la carpeta materializada de la extensión; después, recargar la extensión y comprobar los permisos/captura necesarios para el fallback. La instalación local de EP no se ha modificado desde esta sesión.
