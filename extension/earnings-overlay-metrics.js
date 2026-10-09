@@ -95,7 +95,16 @@
 
   function activeSecondsInPeriod(period, startedAt, reference) {
     if (period === "previousMonth") return 0;
-    return intervalSecondsInPeriod(period, startedAt, reference == null ? Date.now() : reference, reference);
+    if (!callStartsInPeriod(period, startedAt, reference)) return 0;
+    return elapsedSeconds(startedAt, reference);
+  }
+
+  function callDurationSecondsInPeriod(period, startedAt, endedAt, reference) {
+    if (!callStartsInPeriod(period, startedAt, reference)) return 0;
+    var start = validDate(startedAt);
+    var end = validDate(endedAt == null ? reference == null ? Date.now() : reference : endedAt);
+    if (!start || !end || end.getTime() < start.getTime()) return 0;
+    return (end.getTime() - start.getTime()) / 1000;
   }
 
   function elapsedSeconds(startedAt, reference) {
@@ -150,6 +159,7 @@
     callStartsInPeriod: callStartsInPeriod,
     intervalSecondsInPeriod: intervalSecondsInPeriod,
     activeSecondsInPeriod: activeSecondsInPeriod,
+    callDurationSecondsInPeriod: callDurationSecondsInPeriod,
     elapsedSeconds: elapsedSeconds,
     combinePeriodMetrics: combinePeriodMetrics
   };
