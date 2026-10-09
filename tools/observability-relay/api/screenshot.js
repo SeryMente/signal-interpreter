@@ -1,4 +1,6 @@
 import {createHash} from "node:crypto";
+function gitBlobSha(bytes){const data=Buffer.isBuffer(bytes)?bytes:Buffer.from(bytes);return createHash("sha1").update(Buffer.concat([Buffer.from("blob "+data.length+"\\0","utf8"),data])).digest("hex");}
+function assertExistingMatches(existing,bytes){if(!existing||!existing.sha||String(existing.sha)!==gitBlobSha(bytes))throw Object.assign(new Error("Idempotency conflict: screenshot path contains different bytes"),{status:409});}
 const REPOSITORY = "SeryMente/signal-interpreter";
 const BRANCH = "main";
 const API_VERSION = "2022-11-28";
@@ -68,13 +70,14 @@ export default async function handler(req,res){
     }));
     const day=shot.capturedAt.slice(0,10);
     const remotePath="observations/platform-screenshots/"+day+"/"+routeToken(shot.route)+"--"+shot.hash+".jpg";
+    const binary=Buffer.from(shot.base64,"base64");
     const existing=await getExisting(remotePath);
-    if(existing)return res.status(200).json({accepted:true,duplicate:true,sha256:shot.hash,remotePath,contentSha:existing.sha||null});
+    if(existing){assertExistingMatches(existing,binary);return res.status(200).json({accepted:true,duplicate:true,sha256:shot.hash,remotePath,contentSha:existing.sha||null});}
     const payload={message:"diagnostic: store platform screenshot "+shot.hash,content:shot.base64,branch:BRANCH};
     let created;
     try{created=await githubRequest("/repos/"+REPOSITORY+"/contents/"+encodePath(remotePath),{method:"PUT",body:JSON.stringify(payload)});}
     catch(error){
-      if(error.status===409){const raced=await getExisting(remotePath);if(raced)return res.status(200).json({accepted:true,duplicate:true,sha256:shot.hash,remotePath,contentSha:raced.sha||null});}
+      if(error.status===409){const raced=await getExisting(remotePath);if(raced){assertExistingMatches(raced,binary);return res.status(200).json({accepted:true,duplicate:true,sha256:shot.hash,remotePath,contentSha:raced.sha||null});}}
       throw error;
     }
     return res.status(200).json({accepted:true,duplicate:false,sha256:shot.hash,remotePath,contentSha:created&&created.content&&created.content.sha||null,commitSha:created&&created.commit&&created.commit.sha||null,route:shot.route,capturedAt:shot.capturedAt,reason:shot.reason});
