@@ -42,6 +42,20 @@
     return es > en ? "es" : "en";
   }
 
+  function normalizeLanguage(value) {
+    var language = String(value == null ? "" : value).trim().toLowerCase().replace(/_/g, "-");
+    if (!language) return "unknown";
+    var normalized = language.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "");
+    if (normalized === "en" || normalized === "eng" || normalized === "english" || /^en(?:-|$)/.test(normalized)) {
+      return "en";
+    }
+    if (normalized === "es" || normalized === "spa" || normalized === "spanish" ||
+        normalized === "espanol" || normalized === "castellano" || /^es(?:-|$)/.test(normalized)) {
+      return "es";
+    }
+    return "unknown";
+  }
+
   function roleForLanguage(language) {
     if (language === "en") return "CLIENTE";
     if (language === "es") return "LEP";
@@ -73,6 +87,7 @@
   root.SignalCaptionCore = {
     normalizeText: normalizeText,
     detectLanguage: detectLanguage,
+    normalizeLanguage: normalizeLanguage,
     roleForLanguage: roleForLanguage,
     roleForSource: roleForSource,
     languageLabel: languageLabel,
