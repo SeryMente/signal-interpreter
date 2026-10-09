@@ -1290,7 +1290,7 @@
     var durationSeconds = records.reduce(function (sum, call) {
       var seconds = null;
       if (earningsMetrics && call.startedAt && call.endedAt) {
-        seconds = earningsMetrics.intervalSecondsInPeriod(period, call.startedAt, call.endedAt, now);
+        seconds = earningsMetrics.callDurationSecondsInPeriod(period, call.startedAt, call.endedAt, now);
       }
       if (!(seconds >= 0)) {
         seconds = finiteMetric(call.platformSeconds);
