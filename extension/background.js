@@ -391,6 +391,17 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       record("HOTLOAD_EXISTING_TABS_QUERY_ERROR", { trigger: trigger || "runtime-start", error: String(error) }, "error", "runtime");
       return { ok: false, error: String(error) };
     }
+    var hotloadState = null;
+    var hotloadStateReady = false;
+    try {
+      var hotloadStored = await chrome.storage.local.get(["effectifState"]);
+      hotloadState = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), hotloadStored.effectifState || {})));
+      hotloadStateReady = true;
+    } catch (stateError) {
+      record("HOTLOAD_EXISTING_TAB_STATE_READ_ERROR", {
+        trigger: trigger || "runtime-start", error: String(stateError)
+      }, "error", "runtime");
+    }
     var result = { scanned: tabs.length, eligible: 0, injected: 0, errors: 0 };
     for (var i = 0; i < tabs.length; i += 1) {
       var tab = tabs[i];
@@ -413,7 +424,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
           });
           await chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
           await chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
-          if (isCloudCallUrl(tab.url) && hotloadState.microphoneMuted === true && Number(hotloadState.callSourceTabId) === tabId) {
+          if (hotloadStateReady && isCloudCallUrl(tab.url) && hotloadState.microphoneMuted === true && Number(hotloadState.callSourceTabId) === tabId) {
             try {
               var muteSync = await chrome.tabs.sendMessage(tabId, { type: "SIGNAL_MAIN_MICROPHONE_SET", muted: true, source: "hotload-sync" });
               record(muteSync && muteSync.verified === true ? "HOTLOAD_MICROPHONE_OUTPUT_VERIFIED" : "HOTLOAD_MICROPHONE_OUTPUT_VERIFY_ERROR", {
