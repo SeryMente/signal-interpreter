@@ -27,7 +27,7 @@ En chrome://extensions activa Developer mode y usa Load unpacked sobre la carpet
 
 No es necesario ejecutar ningún proceso de bridge local.
 
-## Inicio de sesión automático de Cloud Interpreter (0.10.15)
+## Inicio de sesión automático de Cloud Interpreter (0.10.16)
 
 Al instalar o actualizar la extensión, y al iniciar Chrome, Signal Interpreter comprueba la sesión sin reemplazar las pestañas existentes. Si ya hay una pestaña de perfil o llamada autenticada, no abre otra. En caso contrario, examina en segundo plano la ruta de acceso; si sigue mostrando el formulario de inicio de sesión, esa misma pestaña nueva se activa.
 
@@ -171,3 +171,8 @@ Esta versión convierte la telemetría de desarrollo en un flujo persistente y s
 - Un Scheduled Task mantiene el reporter activo con reinicio automático y un watchdog adicional recupera procesos colgados en el puerto 8788.
 - El health endpoint expone el último intento, último éxito GitHub, secuencia publicada, errores y estado de cola.
 - El self-test de extremo a extremo confirma que un batch llega a GitHub main de forma automática.
+## Controles de micrófono 0.10.16
+
+- `Ctrl+Shift+.` dispone de un respaldo de teclado en cualquier pestaña web, además del comando de Chrome; el worker deduplica señales para evitar alternar dos veces.
+- El gesto reversible mantiene pulsados los botones izquierdo y derecho durante al menos 240 ms. Los listeners se reinstalan limpiamente y el estado se toma del bitmask de botones, con respaldo para navegadores sin Pointer Events.
+- Silenciar usa tonos más agudos (1046.5 → 880 Hz); activar el micrófono usa tonos más graves (523.25 → 392 Hz).

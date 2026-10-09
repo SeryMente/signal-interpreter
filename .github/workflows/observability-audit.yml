@@ -24,6 +24,9 @@ jobs:
           node --check extension/content.js
           node --check extension/mic-guard-main.js
           node --check extension/global-mouse-gesture.js
+          node --check extension/hotkey-fallback.js
+          node --check tools/global-microphone-hotkey-test.mjs
+          node --check tools/microphone-feedback-test.mjs
           node --check extension/platform-screenshot.js
           node --check tools/observability-relay/api/screenshot.js
           node --check extension/offscreen.js
@@ -53,6 +56,10 @@ jobs:
         run: node tools/microphone-guard-test.mjs
       - name: Global mouse mute unit test
         run: node tools/global-mouse-gesture-test.mjs
+      - name: Global microphone hotkey unit test
+        run: node tools/global-microphone-hotkey-test.mjs
+      - name: Microphone feedback unit test
+        run: node tools/microphone-feedback-test.mjs
       - name: Platform screenshot unit test
         run: node tools/platform-screenshot-test.mjs
       - name: GitHub package pipeline unit test
