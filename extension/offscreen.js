@@ -22,11 +22,11 @@ async function playTone(volume, cue){
     });
   }
   if(cue==="mute-on"){
-    await tone(880,start,.11);
-    await tone(622.25,start+.12,.13);
-  }else if(cue==="mute-off"){
-    await tone(622.25,start,.11);
+    await tone(1046.5,start,.11);
     await tone(880,start+.12,.13);
+  }else if(cue==="mute-off"){
+    await tone(523.25,start,.11);
+    await tone(392,start+.12,.13);
   }else{
     await tone(880,start,.11);
     await tone(1174.66,start+.12,.13);
@@ -123,7 +123,7 @@ async function stopCapture(){running=false;stopCaptionPreview();try{if(tabTimer)
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
   if(!message||message.target!=="offscreen")return false;
   if(message.type==="EFFECTIF_PLAY_SOUND"){
-    playTone(Math.max(0,Math.min(1,Number(message.volume)||0))).then(function(){sendResponse({ok:true})}).catch(function(error){sendResponse({ok:false,error:String(error)})});
+    playTone(Math.max(0,Math.min(1,Number(message.volume)||0)),String(message.cue||"")).then(function(){sendResponse({ok:true})}).catch(function(error){sendResponse({ok:false,error:String(error)})});
 
     return true;
   }

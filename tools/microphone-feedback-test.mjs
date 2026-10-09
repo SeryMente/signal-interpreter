@@ -8,7 +8,7 @@ assert.ok(manifest.content_scripts.some((entry) =>
   entry.js && entry.js.includes("hotkey-fallback.js") &&
   entry.matches && entry.matches.includes("https://*/*") && entry.all_frames === true
 ));
-assert.match(offscreen, /playTone\(Math\.max\(0,Math\.min\(1,Number\(message\.volume\)\|\|0\)\),String\(message\.cue\|\|"''\)\)/,
+assert.ok(offscreen.includes('playTone(Math.max(0,Math.min(1,Number(message.volume)||0)),String(message.cue||""))'),
   "offscreen sound handler must forward the requested cue");
 assert.ok(offscreen.includes('await tone(1046.5,start,.11);'));
 assert.ok(offscreen.includes('await tone(880,start+.12,.13);'));

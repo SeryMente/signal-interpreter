@@ -31,7 +31,7 @@ const githubPipelineTest=read("tools/observability-github-pipeline-test.mjs");
 const platformLearning=read("tools/observability/platform-learning.mjs");
 const platformLearningTest=read("tools/observability/platform-learning-test.mjs");
 
-assert.equal(manifest.version,"0.10.15");
+assert.equal(manifest.version,"0.10.16");
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
@@ -151,6 +151,8 @@ assert.ok(content.includes("state.groqCapture.microphoneMuted"));
 assert.ok(offscreen.includes("SIGNAL_SET_MICROPHONE_MUTED"));
 assert.ok(manifest.content_scripts.some(function(e){return e.world==="MAIN"&&e.js.includes("mic-guard-main.js")&&e.run_at==="document_start";}));
 assert.ok(manifest.content_scripts.some(function(e){return e.js.includes("global-mouse-gesture.js")&&e.run_at==="document_start";}));
+assert.ok(manifest.content_scripts.some(function(e){return e.js.includes("hotkey-fallback.js")&&e.all_frames===true;}));
+assert.ok(offscreen.includes('String(message.cue||"")'));
 assert.ok(manifest.host_permissions.includes("http://*/*"));
 assert.ok(manifest.host_permissions.includes("https://*/*"));
 assert.ok(background.includes("executeMainMicrophoneCommand"));
