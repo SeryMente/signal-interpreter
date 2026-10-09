@@ -2351,44 +2351,125 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     await updateGroqCaptureState({status:"stopped",tabAudio:false,microphone:false,error:null}).catch(function(){});recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_STOPPED",{reason:reason||"manual"});broadcastSignalEvent({type:"signal.groq.status",sessionId:signalActiveSessionId,status:"stopped",reason:reason||"manual",timestamp:iso()});return{ok:true};
   }
   function broadcastSignalEvent(event){try{var p=chrome.runtime.sendMessage({type:"SIGNAL_INTERPRETER_EVENT",event:event});if(p&&p.catch)p.catch(function(){});}catch(_){}}
-  async function handleGroqCaptionPreviewChunk(message){
-    captionPreviewQueue=captionPreviewQueue.then(async function(){
-      if(!message||!message.base64)return;
-      var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId;
-      var session=data.sessions.find(function(s){return s.id===id});
-      if(!session)return;
-      var stored=await chrome.storage.local.get(["effectifState"]);
-      var currentState=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
-      if(!hasActiveCall(currentState))return;
-      if(String(currentState.callSourceTabId)!==String(message.tabId||currentState.callSourceTabId))return;
-      if(message.source==="yo" && (currentState.microphoneMuted===true || currentState.microphoneMuteStatus!=="applied" || currentState.microphoneOutputStatus==="error"))return;
-      if(message.source!=="yo" && SignalCaptionBridge.isFresh(4500))return;
-      if(!(await SignalGroqTranscriber.ready()))return;
-      var raw=atob(String(message.base64||"")),bytes=new Uint8Array(raw.length);
-      for(var bi=0;bi<raw.length;bi++)bytes[bi]=raw.charCodeAt(bi);
-      var blob=new Blob([bytes],{type:"audio/webm"});
-      var seq=Number(message.sequence||0);
-      var result=await SignalGroqTranscriber.transcribe(blob,{
-        model:cachedConfig.groqModel||GROQ_MODEL,
-        language:"",
-        filename:"signal-caption-preview-"+(seq||Date.now())+".webm",
-        prompt:"Transcripción breve para interpretación médica. Detecta automáticamente inglés o español. Conserva nombres propios y términos clínicos.",
-        timeoutMs:12000
-      });
-      if(!result.ok||!String(result.text||"").trim())return;
-      var text=String(result.text||"").trim(),language=String(result.language||"");
-      if(language!=="en"&&language!=="es")language=SignalCaptionCore.detectLanguage(text);
-      var tabId=Number(currentState.callSourceTabId);
-      if(!Number.isFinite(tabId))return;
-      try{
-        await chrome.tabs.sendMessage(tabId,{type:"SIGNAL_CAPTION_UPDATE",caption:{
-          text:text.slice(0,4000),language:language||"unknown",source:message.source||"cliente",live:false,native:false
-        }});
-      }catch(_){}
-    }).catch(function(error){
-      record("SIGNAL_CAPTION_PREVIEW_ERROR",{error:String(error||"unknown")},"warn","caption");
+  function recordCaptionPreviewFailure(source, reasonCode, httpStatus) {
+    var sourceKey = source === "yo" ? "yo" : "cliente";
+    var key = sourceKey + "|" + String(reasonCode || "unknown");
+    var now = Date.now();
+    var previous = Number(captionPreviewLastErrorAt[key] || 0);
+    if (now - previous < 15000) return;
+    captionPreviewLastErrorAt[key] = now;
+    record("SIGNAL_CAPTION_PREVIEW_ERROR", {
+      source: sourceKey,
+      reasonCode: String(reasonCode || "unknown").slice(0, 80),
+      httpStatus: Number.isFinite(Number(httpStatus)) ? Number(httpStatus) : null
+    }, "warn", "caption");
+  }
+
+  async function processGroqCaptionPreviewChunk(message) {
+    if (!message || !message.base64) return;
+    var source = message.source === "yo" ? "yo" : "cliente";
+    var encoded = String(message.base64 || "");
+    if (encoded.length > 900000) {
+      recordCaptionPreviewFailure(source, "chunk-too-large");
+      return;
+    }
+    var data = await loadSignalSessions();
+    var id = message.sessionId || data.activeSessionId;
+    var session = data.sessions.find(function (item) { return item.id === id; });
+    if (!session) return;
+
+    var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
+    var currentState = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    var currentConfig = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+    if (!hasActiveCall(currentState) || currentConfig.liveCaptionOverlayEnabled === false) return;
+    if (String(currentState.callSourceTabId) !== String(message.tabId || currentState.callSourceTabId)) return;
+    var leasedSessionId = currentState.hotLoadLease && currentState.hotLoadLease.transcriptionSessionId;
+    if (leasedSessionId && String(leasedSessionId) !== String(id)) return;
+    if (source === "yo" && (
+      currentState.microphoneMuted === true ||
+      currentState.microphoneMuteStatus !== "applied" ||
+      currentState.microphoneOutputStatus === "error"
+    )) return;
+    if (source !== "yo" && SignalCaptionBridge.isFresh(4500)) return;
+    if (!(await SignalGroqTranscriber.ready())) {
+      recordCaptionPreviewFailure(source, "missing-api-key");
+      return;
+    }
+
+    var raw = atob(encoded);
+    var bytes = new Uint8Array(raw.length);
+    for (var bi = 0; bi < raw.length; bi += 1) bytes[bi] = raw.charCodeAt(bi);
+    var blob = new Blob([bytes], { type: "audio/webm" });
+    var sequence = Number(message.sequence || 0);
+    var result = await SignalGroqTranscriber.transcribe(blob, {
+      model: currentConfig.groqModel || GROQ_MODEL,
+      language: "",
+      filename: "signal-caption-preview-" + source + "-" + (sequence || Date.now()) + ".webm",
+      prompt: "Transcripción breve para interpretación médica. Detecta automáticamente inglés o español. Conserva nombres propios y términos clínicos.",
+      timeoutMs: 12000
     });
-    return captionPreviewQueue;
+    if (!result.ok) {
+      recordCaptionPreviewFailure(source,
+        result.httpStatus ? "groq-http-error" : (String(result.error || "").indexOf("Tiempo agotado") >= 0 ? "groq-timeout" : "groq-request-failed"),
+        result.httpStatus);
+      return;
+    }
+    var text = String(result.text || "").trim();
+    if (!text) return;
+
+    // La fuente nativa puede recuperar la prioridad mientras Groq procesa el fragmento.
+    if (source !== "yo" && SignalCaptionBridge.isFresh(4500)) return;
+
+    // Descartar resultados tardíos tras cambiar o terminar la llamada, la sesión o la preferencia.
+    var latestStored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
+    var latestState = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), latestStored.effectifState || {})));
+    var latestConfig = Object.assign({}, DEFAULT_CONFIG, latestStored.effectifConfig || {});
+    if (!hasActiveCall(latestState) || latestState.callId !== currentState.callId ||
+        String(latestState.callSourceTabId) !== String(currentState.callSourceTabId) ||
+        latestConfig.liveCaptionOverlayEnabled === false) return;
+    var latestLeaseSession = latestState.hotLoadLease && latestState.hotLoadLease.transcriptionSessionId;
+    if (latestLeaseSession && String(latestLeaseSession) !== String(id)) return;
+
+    var language = SignalCaptionCore.resolveLanguage(result.language, text);
+    var tabId = Number(latestState.callSourceTabId);
+    if (!Number.isFinite(tabId)) return;
+    try {
+      await chrome.tabs.sendMessage(tabId, {
+        type: "SIGNAL_CAPTION_UPDATE",
+        caption: {
+          text: text.slice(0, 4000),
+          language: language,
+          source: source,
+          live: false,
+          native: false,
+          sequence: sequence,
+          startedAt: Number(message.startedAt || 0)
+        }
+      });
+    } catch (_) {
+      recordCaptionPreviewFailure(source, "overlay-message-failed");
+    }
+  }
+
+  function handleGroqCaptionPreviewChunk(message) {
+    if (!message || !message.base64) return Promise.resolve();
+    if (!captionPreviewDispatcher) {
+      captionPreviewDispatcher = SignalCaptionCore.createLatestOnlyDispatcher(
+        processGroqCaptionPreviewChunk,
+        function (source, replaced) {
+          if (replaced % 10 === 1) {
+            record("SIGNAL_CAPTION_PREVIEW_CHUNKS_COALESCED", {
+              source: source,
+              replacedPendingChunks: replaced
+            }, "info", "caption");
+          }
+        }
+      );
+    }
+    return captionPreviewDispatcher.enqueue(message).catch(function (error) {
+      recordCaptionPreviewFailure(message.source, "preview-processing-error");
+      return { ok: false, errorType: String(error && error.name || "Error").slice(0, 80) };
+    });
   }
   function handleGroqAudioChunk(message){
     signalGroqQueue=signalGroqQueue.then(async function(){
