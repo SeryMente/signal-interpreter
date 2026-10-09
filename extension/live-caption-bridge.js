@@ -11,6 +11,7 @@
   var lastNotifiedVisible = false;
   var reconnectAttempt = 0;
   var reconnectTimer = null;
+  var connectionStartedAt = 0;
   var RECONNECT_DELAYS = [1000, 2500, 5000, 10000];
 
   function sendToTab(type, payload, tabIdOverride) {
@@ -87,6 +88,8 @@
 
     if (message.type === "status" || message.type === "heartbeat") {
       if (message.error) markError(message.error);
+      if (message.type === "heartbeat" && connectionStartedAt > 0 &&
+          Date.now() - connectionStartedAt >= 15000) reconnectAttempt = 0;
       if (message.active !== true) lastCaptionAt = 0;
       notifyStatus({
         active: message.active === true,
@@ -122,6 +125,7 @@
     var error = chrome.runtime.lastError;
     port = null;
     lastCaptionAt = 0;
+    connectionStartedAt = 0;
     notifyStatus({ active: false, visible: false, error: error && error.message }, "native-disconnect", true);
     if (error) markError(error.message || error);
     scheduleReconnect();
@@ -130,12 +134,12 @@
   function connect() {
     if (targetTabId == null || port) return !!port;
     try {
+      connectionStartedAt = Date.now();
       var nextPort = chrome.runtime.connectNative(HOST_NAME);
       port = nextPort;
       nextPort.onMessage.addListener(function (message) { handleMessage(message, nextPort); });
       nextPort.onDisconnect.addListener(function () { handleDisconnect(nextPort); });
       nextPort.postMessage({ type: "start" });
-      reconnectAttempt = 0;
       return true;
     } catch (error) {
       port = null;
@@ -149,6 +153,7 @@
     lastNotifiedActive = false;
     lastNotifiedVisible = false;
     reconnectAttempt = 0;
+    connectionStartedAt = 0;
   }
 
   function start(tabId, callId) {
