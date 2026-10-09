@@ -1,36 +1,27 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-b5ef4f8c-4e20-4f9a-b6b1-bcbf11a41da2
-- Creado: 2026-10-09T16:08:40.376Z
-- Trigger: alarm
+- Batch: batch-02088140-3f55-4500-a38a-f0c3952a8b6e
+- Creado: 2026-10-09T16:10:00.551Z
+- Trigger: critical
 - Extensión: 0.10.14
-- Eventos: 24
-- Errores: 0
+- Eventos: 7
+- Errores: 1
 - Warnings: 0
-- Secuencia: 6090 → 6113
+- Secuencia: 6333 → 6339
 - Identidades de plataforma: 8
-- Snapshots de plataforma: 405
-- Deltas de plataforma: 405
+- Snapshots de plataforma: 408
+- Deltas de plataforma: 408
 
 ## Categorías
 
 {
-  "RUNTIME": 24
+  "RUNTIME": 7
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 13,
-  "PERFORMANCE_HEARTBEAT": 1,
-  "AUTO_ANSWER_BOOTSTRAP_REQUESTED": 1,
-  "INCOMING_DIALOG_DETECTED": 1,
-  "CONNECT_BUTTON_FOUND": 1,
-  "AUTO_ANSWER_ELIGIBLE": 1,
-  "USER_INTERACTION": 1,
-  "CONNECT_CLICKED": 1,
-  "PLATFORM_INTEGRITY_CHECK": 1,
-  "SCREEN_MAP": 1,
-  "AUTO_ANSWER_BOOTSTRAP_INJECTED": 1,
-  "INCOMING_RING_SIGNAL": 1
+  "PLATFORM_SCREENSHOT_CAPTURE_ERROR": 1,
+  "AUTO_ANSWER_READINESS": 5,
+  "MEDIA_HEALTH": 1
 }
