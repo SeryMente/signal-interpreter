@@ -132,11 +132,15 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
   }
   if(message.type==="SIGNAL_SET_CAPTION_PREVIEW"){
     if(message.enabled===true){
+      if(!running||!captureSessionId){
+        sendResponse({ok:false,enabled:true,started:false,tabEnabled:false,micEnabled:false,error:"audio-capture-not-running"});
+        return true;
+      }
       var previewResult=startCaptionPreview({tab:message.tabEnabled===true,mic:message.micEnabled!==false});
-      sendResponse({ok:previewResult||!running,enabled:true,tabEnabled:captionPreviewTabEnabled,micEnabled:captionPreviewMicEnabled});
+      sendResponse({ok:!!previewResult,enabled:true,started:!!previewResult,tabEnabled:captionPreviewTabEnabled,micEnabled:captionPreviewMicEnabled,error:previewResult?null:"preview-recorder-unavailable"});
     }else{
       stopCaptionPreview();
-      sendResponse({ok:true,enabled:false,tabEnabled:false,micEnabled:false});
+      sendResponse({ok:true,enabled:false,started:false,tabEnabled:false,micEnabled:false});
     }
     return true;
   }
