@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-334e58e5-35a8-49df-8057-9c47ddec90c5",
-  "createdAt": "2026-10-09T01:08:31.654Z",
+  "batchId": "batch-8a030ba1-140b-467e-9fc1-f33877647b64",
+  "createdAt": "2026-10-09T15:30:10.137Z",
   "trigger": "critical",
-  "extensionVersion": "0.10.2",
+  "extensionVersion": "0.10.14",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "19536f8c-f3de-4d7e-bac6-cf2169ddb2ed",
-      "sequence": 8723,
-      "timestamp": "2026-10-09T01:08:30.115Z",
-      "ingestedAt": "2026-10-09T01:08:30.115Z",
-      "level": "warn",
+      "id": "344751ee-a69c-4e17-a284-8453e370dc2f",
+      "sequence": 185,
+      "timestamp": "2026-10-09T15:30:08.226Z",
+      "ingestedAt": "2026-10-09T15:30:08.226Z",
+      "level": "error",
       "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.2",
+      "component": "platform-screenshot",
+      "extensionVersion": "0.10.14",
       "host": "",
       "url": "",
       "phase": "error",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
+      "action": "PLATFORM_SCREENSHOT_CAPTURE_ERROR",
       "outcome": "error",
-      "traceId": "b01eead9-ff38-4595-b773-15540d187b88",
+      "traceId": "5c702554-5ae0-459d-8e1d-01e43ca0edc3",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -28,14 +28,14 @@
       "tabId": null,
       "session": {},
       "environment": {
-        "extensionVersion": "0.10.2",
+        "extensionVersion": "0.10.14",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
         "platform": "Win32"
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
+      "reasonCode": "tab-activated",
+      "error": "Error: Tabs cannot be edited right now (user may be dragging a tab).",
       "metrics": {},
       "context": {},
       "privacy": {
@@ -44,28 +44,260 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
+        "tabId": 1800214389,
+        "windowId": 1800213272,
+        "route": "/auth/signin",
+        "error": "Error: Tabs cannot be edited right now (user may be dragging a tab).",
+        "reason": "tab-activated"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "f6081ec2-b61a-4b48-9f48-ca08159a9bcf",
+      "sequence": 186,
+      "timestamp": "2026-10-09T15:30:08.314Z",
+      "ingestedAt": "2026-10-09T15:30:08.314Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "background",
+      "extensionVersion": "0.10.14",
+      "host": "",
+      "url": "",
+      "phase": "event",
+      "action": "TELEMETRY_MAINTENANCE",
+      "outcome": "observed",
+      "traceId": "cc898e20-60f2-4b9c-9283-b9add8d1b28a",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.14",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "pruned": {
+          "cutoff": "[PHONE]T15:30:08.226Z",
+          "expiredEvents": 0,
+          "expiredSnapshots": 0,
+          "expiredSignalSegments": 0,
+          "excessEvents": 0,
+          "excessSignalSegments": 0
+        },
+        "stats": {
+          "database": "signal-interpreter-telemetry",
+          "events": 185,
+          "snapshots": 1,
+          "signalSegments": 0,
+          "oldestEventAt": "[PHONE]T15:29:07.523Z",
+          "newestEventAt": "[PHONE]T15:30:08.226Z",
+          "usageBytes": 742692,
+          "quotaBytes": 1077301077284
+        }
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "9ea35c3f-ad86-4c20-87e9-ec9d389b8938",
+      "sequence": 187,
+      "timestamp": "2026-10-09T15:30:08.711Z",
+      "ingestedAt": "2026-10-09T15:30:08.725Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "extensionVersion": "0.10.14",
+      "host": "app.cloudinterpreter.com",
+      "url": "https://app.cloudinterpreter.com/auth/signin",
+      "phase": "event",
+      "action": "AUTO_ANSWER_READINESS",
+      "outcome": "observed",
+      "traceId": "f32d5374-3b32-4a2e-bb8f-edff4f7aa9ec",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1800214389,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.14",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "heartbeat",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/auth/signin",
+        "visibility": "visible",
+        "focused": true,
+        "online": true,
+        "monotonicMs": 38129,
+        "sourceTabId": 1800214389,
+        "sourceWindowId": 1800213272,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://app.cloudinterpreter.com/auth/signin"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "ready": false,
+        "availability": "unknown",
+        "authorizedProfile": false,
+        "route": "/auth/signin",
+        "exactUrl": "https://app.cloudinterpreter.com/auth/signin",
+        "runtimeVersion": "0.10.14",
+        "reason": "heartbeat"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "598099d3-9c20-48ad-a553-562255c82fc3",
+      "sequence": 188,
+      "timestamp": "2026-10-09T15:30:08.810Z",
+      "ingestedAt": "2026-10-09T15:30:08.840Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "extensionVersion": "0.10.14",
+      "host": "app.cloudinterpreter.com",
+      "url": "https://app.cloudinterpreter.com/auth/signin",
+      "phase": "event",
+      "action": "PAGE_LIFECYCLE",
+      "outcome": "observed",
+      "traceId": "3f1a2b3f-8100-4850-8ceb-a149b5b5cf9b",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1800214389,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.14",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/auth/signin",
+        "visibility": "visible",
+        "focused": false,
+        "online": true,
+        "monotonicMs": 38227,
+        "sourceTabId": 1800214389,
+        "sourceWindowId": 1800213272,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.cloudinterpreter.com/auth/signin"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "event": "blur",
+        "persisted": false
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "e19c1da8-812b-467d-b8d1-b5a6ebdecb8f",
+      "sequence": 189,
+      "timestamp": "2026-10-09T15:30:08.811Z",
+      "ingestedAt": "2026-10-09T15:30:08.921Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "extensionVersion": "0.10.14",
+      "host": "app.cloudinterpreter.com",
+      "url": "https://app.cloudinterpreter.com/auth/signin",
+      "phase": "event",
+      "action": "PAGE_VISIBILITY_CHANGED",
+      "outcome": "observed",
+      "traceId": "ec0688b5-1f59-4d87-846c-45224dadd861",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1800214389,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.14",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/auth/signin",
+        "visibility": "hidden",
+        "focused": false,
+        "online": true,
+        "monotonicMs": 38229,
+        "sourceTabId": 1800214389,
+        "sourceWindowId": 1800213272,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.cloudinterpreter.com/auth/signin"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "visibility": "hidden"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
-    "errors": 0,
-    "warnings": 1,
+    "eventsTotal": 5,
+    "errors": 1,
+    "warnings": 0,
     "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 8723,
-    "lastSequence": 8723,
-    "firstTimestamp": "2026-10-09T01:08:30.115Z",
-    "lastTimestamp": "2026-10-09T01:08:30.115Z",
+    "firstSequence": 185,
+    "lastSequence": 189,
+    "firstTimestamp": "2026-10-09T15:30:08.226Z",
+    "lastTimestamp": "2026-10-09T15:30:08.811Z",
     "actions": {
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+      "PLATFORM_SCREENSHOT_CAPTURE_ERROR": 1,
+      "TELEMETRY_MAINTENANCE": 1,
+      "AUTO_ANSWER_READINESS": 1,
+      "PAGE_LIFECYCLE": 1,
+      "PAGE_VISIBILITY_CHANGED": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "RUNTIME": 5
     }
   }
 }
