@@ -108,20 +108,7 @@
       });
     });
     var rects = interactiveRects();
-    var best = candidates.map(function (candidate) {
-      var rect = {
-        left: candidate.left, top: candidate.top,
-        right: candidate.left + w, bottom: candidate.top + h,
-        width: w, height: h
-      };
-      var score = rects.reduce(function (sum, item) {
-        var overlap = core.overlapRatio(rect, item);
-        var controlArea = Math.max(1, item.width * item.height);
-        var functionalWeight = controlArea < 1800 ? 1.5 : 1;
-        return sum + overlap * functionalWeight;
-      }, 0);
-      return { candidate: candidate, score: score };
-    }).sort(function (a, b) { return a.score - b.score; })[0].candidate;
+    var best = core.choosePositionCandidate(candidates, rects, w, h) || candidates[0];
 
     host.style.width = w + "px";
     host.style.left = best.left + "px";
