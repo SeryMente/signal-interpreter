@@ -7,9 +7,6 @@ on:
       - main
       - "feat/**"
 
-permissions:
-  contents: write
-
 jobs:
   compile-and-protocol-smoke-test:
     runs-on: windows-latest
@@ -26,7 +23,7 @@ jobs:
           if (-not (Test-Path -LiteralPath $compiler)) { throw "No se encontró el compilador de .NET Framework: $compiler" }
           if (-not $uiaClient -or -not $uiaTypes) { throw "No se encontraron los ensamblados de Windows UI Automation." }
           $output = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.exe"
-          & $compiler /nologo /target:exe /platform:anycpu /deterministic+ "/out:$output" "/reference:$($uiaClient.FullName)" "/reference:$($uiaTypes.FullName)" (Join-Path $PWD "extension\native\SignalInterpreter.CaptionHost.cs")
+          & $compiler /nologo /target:exe /platform:anycpu "/out:$output" "/reference:$($uiaClient.FullName)" "/reference:$($uiaTypes.FullName)" (Join-Path $PWD "extension\native\SignalInterpreter.CaptionHost.cs")
           if ($LASTEXITCODE -ne 0) { throw "Falló la compilación del host C# (csc=$LASTEXITCODE)." }
           if (-not (Test-Path -LiteralPath $output)) { throw "La compilación no produjo el ejecutable esperado." }
           $header = [IO.File]::ReadAllBytes($output)
@@ -97,39 +94,3 @@ jobs:
           if (-not $process.WaitForExit(10000)) { $process.Kill(); throw "El host no terminó tras recibir stop." }
           if ($process.ExitCode -ne 0) { throw "El host terminó con código $($process.ExitCode)." }
           Write-Output "NATIVE_CAPTION_HOST_PROTOCOL=PASS"
-      - name: Synchronize embedded host payload on feature branches
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-          $exe = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.exe"
-          $payload = Join-Path $PWD "extension\native\SignalInterpreter.CaptionHost.exe.b64"
-          $register = Join-Path $PWD "extension\native\register-caption-host.ps1"
-          $audit = Join-Path $PWD "tools\live-caption-static-audit.mjs"
-          $newHash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToUpperInvariant()
-          $registerContent = [IO.File]::ReadAllText($register)
-          $match = [regex]::Match($registerContent, 'ExpectedSha256\s*=\s*"([A-Fa-f0-9]{64})"')
-          if (-not $match.Success) { throw "No se encontró la huella SHA-256 esperada en el script de registro." }
-          $oldHash = $match.Groups[1].Value.ToUpperInvariant()
-          if ($oldHash -eq $newHash) {
-            Write-Output "NATIVE_CAPTION_HOST_PAYLOAD=IN_SYNC"
-          } elseif ($env:GITHUB_REF_NAME.StartsWith("feat/")) {
-            $bytes = [IO.File]::ReadAllBytes($exe)
-            $base64 = [Convert]::ToBase64String($bytes)
-            [IO.File]::WriteAllText($payload, $base64, [Text.Encoding]::ASCII)
-            $registerContent = $registerContent.Replace($oldHash, $newHash)
-            [IO.File]::WriteAllText($register, $registerContent, [Text.UTF8Encoding]::new($false))
-            $auditContent = [IO.File]::ReadAllText($audit)
-            if (-not $auditContent.Contains($oldHash)) { throw "La auditoría no contiene la huella previa para actualizar." }
-            $auditContent = $auditContent.Replace($oldHash, $newHash)
-            [IO.File]::WriteAllText($audit, $auditContent, [Text.UTF8Encoding]::new($false))
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add extension/native/SignalInterpreter.CaptionHost.exe.b64 extension/native/register-caption-host.ps1 tools/live-caption-static-audit.mjs
-            if (-not (git diff --cached --quiet)) {
-              git commit -m "build: sync native caption host payload with source"
-              git push origin ("HEAD:" + $env:GITHUB_REF_NAME)
-            }
-            Write-Output "NATIVE_CAPTION_HOST_PAYLOAD=SYNCED"
-          } else {
-            throw "El ejecutable nativo no coincide con su payload versionado. Sincronízalo en una rama feat/* antes de integrar."
-          }
