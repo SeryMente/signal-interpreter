@@ -1,0 +1,75 @@
+name: native-caption-host-build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "feat/**"
+
+jobs:
+  compile-and-protocol-smoke-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile the checked-in UI Automation host source
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $framework = Join-Path $env:WINDIR "Microsoft.NET\Framework64\v4.0.30319"
+          $compiler = Join-Path $framework "csc.exe"
+          $uiaClient = Get-ChildItem -Path $framework -Filter "UIAutomationClient.dll" -Recurse | Select-Object -First 1
+          $uiaTypes = Get-ChildItem -Path $framework -Filter "UIAutomationTypes.dll" -Recurse | Select-Object -First 1
+          if (-not (Test-Path -LiteralPath $compiler)) { throw "No se encontró el compilador de .NET Framework: $compiler" }
+          if (-not $uiaClient -or -not $uiaTypes) { throw "No se encontraron los ensamblados de Windows UI Automation." }
+          $output = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.exe"
+          & $compiler /nologo /target:exe /platform:anycpu "/out:$output" "/reference:$($uiaClient.FullName)" "/reference:$($uiaTypes.FullName)" (Join-Path $PWD "extension\native\SignalInterpreter.CaptionHost.cs")
+          if ($LASTEXITCODE -ne 0) { throw "Falló la compilación del host C# (csc=$LASTEXITCODE)." }
+          if (-not (Test-Path -LiteralPath $output)) { throw "La compilación no produjo el ejecutable esperado." }
+          $header = [IO.File]::ReadAllBytes($output)
+          if ($header.Length -lt 2 -or $header[0] -ne 0x4D -or $header[1] -ne 0x5A) { throw "El archivo compilado no tiene cabecera PE/EXE." }
+          Write-Output "NATIVE_CAPTION_HOST_COMPILE=PASS"
+          Write-Output "ExecutableBytes=$($header.Length)"
+      - name: Verify Native Messaging framing and clean shutdown
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $output = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.exe"
+          $start = New-Object System.Diagnostics.ProcessStartInfo
+          $start.FileName = $output
+          $start.UseShellExecute = $false
+          $start.CreateNoWindow = $true
+          $start.RedirectStandardInput = $true
+          $start.RedirectStandardOutput = $true
+          $process = New-Object System.Diagnostics.Process
+          $process.StartInfo = $start
+          if (-not $process.Start()) { throw "No se pudo iniciar el host compilado." }
+          $payload = [Text.Encoding]::UTF8.GetBytes('{"type":"stop"}')
+          $stdin = $process.StandardInput.BaseStream
+          $frame = [BitConverter]::GetBytes([int]$payload.Length)
+          $stdin.Write($frame, 0, $frame.Length)
+          $stdin.Write($payload, 0, $payload.Length)
+          $stdin.Flush()
+          $stdin.Close()
+          $stdout = $process.StandardOutput.BaseStream
+          $header = New-Object byte[] 4
+          $offset = 0
+          while ($offset -lt 4) {
+            $read = $stdout.Read($header, $offset, 4 - $offset)
+            if ($read -le 0) { throw "El host cerró stdout antes de emitir el mensaje ready." }
+            $offset += $read
+          }
+          $length = [BitConverter]::ToInt32($header, 0)
+          if ($length -le 0 -or $length -gt 1048576) { throw "Longitud Native Messaging inválida: $length" }
+          $bytes = New-Object byte[] $length
+          $offset = 0
+          while ($offset -lt $length) {
+            $read = $stdout.Read($bytes, $offset, $length - $offset)
+            if ($read -le 0) { throw "Mensaje Native Messaging truncado." }
+            $offset += $read
+          }
+          $ready = [Text.Encoding]::UTF8.GetString($bytes) | ConvertFrom-Json
+          if ($ready.type -ne "ready" -or $ready.schema -ne "signal-caption-native/v1") { throw "Respuesta ready inválida." }
+          if (-not $process.WaitForExit(10000)) { $process.Kill(); throw "El host no terminó tras recibir stop." }
+          if ($process.ExitCode -ne 0) { throw "El host terminó con código $($process.ExitCode)." }
+          Write-Output "NATIVE_CAPTION_HOST_PROTOCOL=PASS"
