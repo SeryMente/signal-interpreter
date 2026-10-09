@@ -18,6 +18,9 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check extension/background.js
+          node --check extension/auth-bootstrap.js
+          node --check extension/auth-signin-assist.js
+          node --check tools/cloud-login-bootstrap-test.mjs
           node --check extension/content.js
           node --check extension/mic-guard-main.js
           node --check extension/global-mouse-gesture.js
@@ -44,6 +47,8 @@ jobs:
         run: node tools/observability/platform-learning-test.mjs
       - name: Screenshot relay unit test
         run: node tools/observability-screenshot-relay-test.mjs
+      - name: Cloud login bootstrap unit test
+        run: node tools/cloud-login-bootstrap-test.mjs
       - name: Microphone guard unit test
         run: node tools/microphone-guard-test.mjs
       - name: Global mouse mute unit test
