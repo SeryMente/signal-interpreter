@@ -105,6 +105,44 @@
     return Math.max(0, (now.getTime() - start.getTime()) / 1000);
   }
 
+  function nonnegative(value) {
+    if (value == null || value === "") return null;
+    var number = Number(value);
+    return Number.isFinite(number) && number >= 0 ? number : null;
+  }
+
+  function combinePeriodMetrics(period, baseline, fallback, startedAt, ratePerMinute, reference) {
+    var now = validDate(reference == null ? Date.now() : reference) || new Date();
+    var active = period !== "previousMonth" && !!validDate(startedAt);
+    var elapsed = active ? elapsedSeconds(startedAt, now) : 0;
+    var inPeriod = active ? activeSecondsInPeriod(period, startedAt, now) : 0;
+    var baseMoney = nonnegative(baseline && baseline.earnedUsd);
+    if (baseMoney == null) baseMoney = nonnegative(fallback && fallback.earnedUsd);
+    if (baseMoney == null) baseMoney = 0;
+    var baseCalls = nonnegative(baseline && baseline.callCount);
+    if (baseCalls == null) baseCalls = nonnegative(fallback && fallback.callCount);
+    if (baseCalls == null) baseCalls = 0;
+    var baseMinutes = nonnegative(baseline && baseline.minutes);
+    if (baseMinutes == null) baseMinutes = nonnegative(fallback && fallback.minutes);
+    if (baseMinutes == null) baseMinutes = 0;
+    var activeStartsInPeriod = active && callStartsInPeriod(period, startedAt, now);
+    var rate = nonnegative(ratePerMinute);
+    if (rate == null) rate = 0;
+    var liveUsd = inPeriod / 60 * rate;
+    return {
+      baseEarnedUsd: baseMoney,
+      baseCalls: baseCalls,
+      baseMinutes: baseMinutes,
+      liveSeconds: elapsed,
+      livePeriodSeconds: inPeriod,
+      liveUsd: liveUsd,
+      activeStartsInPeriod: !!activeStartsInPeriod,
+      calls: baseCalls + (activeStartsInPeriod ? 1 : 0),
+      periodMinutes: baseMinutes + inPeriod / 60,
+      totalUsd: baseMoney + liveUsd
+    };
+  }
+
   var api = {
     parseCallLengthMinutes: parseCallLengthMinutes,
     periodBounds: periodBounds,
