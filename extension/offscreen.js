@@ -136,8 +136,10 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
         sendResponse({ok:false,enabled:true,started:false,tabEnabled:false,micEnabled:false,error:"audio-capture-not-running"});
         return true;
       }
-      var previewResult=startCaptionPreview({tab:message.tabEnabled===true,mic:message.micEnabled!==false});
-      sendResponse({ok:!!previewResult,enabled:true,started:!!previewResult,tabEnabled:captionPreviewTabEnabled,micEnabled:captionPreviewMicEnabled,error:previewResult?null:"preview-recorder-unavailable"});
+      var previewTabRequested=message.tabEnabled===true,previewMicRequested=message.micEnabled!==false;
+      var previewResult=startCaptionPreview({tab:previewTabRequested,mic:previewMicRequested});
+      var noPreviewSourceRequested=!previewTabRequested&&!previewMicRequested;
+      sendResponse({ok:!!previewResult||noPreviewSourceRequested,enabled:true,started:!!previewResult,tabEnabled:captionPreviewTabEnabled,micEnabled:captionPreviewMicEnabled,error:previewResult||noPreviewSourceRequested?null:"preview-recorder-unavailable"});
     }else{
       stopCaptionPreview();
       sendResponse({ok:true,enabled:false,started:false,tabEnabled:false,micEnabled:false});
