@@ -2313,7 +2313,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         timeoutMs:12000
       });
       if(!result.ok||!String(result.text||"").trim())return;
-      var text=String(result.text||"").trim(),language=String(result.language||"");
+      var text=String(result.text||"").trim(),language=SignalCaptionCore.normalizeLanguage(result.language);
       if(language!=="en"&&language!=="es")language=SignalCaptionCore.detectLanguage(text);
       var tabId=Number(currentState.callSourceTabId);
       if(!Number.isFinite(tabId))return;
@@ -2340,11 +2340,13 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var seq=Number(message.sequence||0),key=id+"|"+String(message.source||"")+"|"+seq;if(signalGroqSeen.has(key))return;signalGroqSeen.set(key,Date.now());if(signalGroqSeen.size>500)signalGroqSeen.delete(signalGroqSeen.keys().next().value);
       if(!(await SignalGroqTranscriber.ready())){recordSignalDiagnostic("SIGNAL_GROQ_TRANSCRIPTION_ERROR",{sessionId:id,reason:"missing-api-key",source:message.source},"error");return;}
       var raw=atob(String(message.base64||"")),bytes=new Uint8Array(raw.length);for(var bi=0;bi<raw.length;bi++)bytes[bi]=raw.charCodeAt(bi);var blob=new Blob([bytes],{type:"audio/webm"}),speaker=message.source==="yo"?"YO":"CLIENTE",audioSource=message.source==="yo"?"microphone":"tab";
-      var result=await SignalGroqTranscriber.transcribe(blob,{model:config.groqModel||GROQ_MODEL,language:"es",filename:"signal-"+audioSource+"-"+(seq||Date.now())+".webm",prompt:"Interpretación médica en español; conserva nombres propios y términos clínicos.",timeoutMs:30000});
+      var result=await SignalGroqTranscriber.transcribe(blob,{model:config.groqModel||GROQ_MODEL,language:"",filename:"signal-"+audioSource+"-"+(seq||Date.now())+".webm",prompt:"Transcribe en el idioma original. Detecta automáticamente inglés o español; conserva nombres propios y términos clínicos.",timeoutMs:30000});
       updateGroqUsage({ok:result.ok,speaker:speaker,audioSeconds:Math.max(0,(Number(message.endedAt||Date.now())-Number(message.startedAt||Date.now()))/1000),bytesSent:blob.size,latencyMs:result.latencyMs||0,characters:String(result.text||"").length,httpStatus:result.httpStatus||null,error:result.error});
       if(!result.ok){recordSignalDiagnostic("SIGNAL_GROQ_TRANSCRIPTION_ERROR",{sessionId:id,speaker:speaker,error:result.error,source:audioSource,sequence:seq},"error");return;}
+      var transcriptLanguage=SignalCaptionCore.normalizeLanguage(result.language);
+      if(transcriptLanguage!=="en"&&transcriptLanguage!=="es")transcriptLanguage=SignalCaptionCore.detectLanguage(result.text||"");
       var parts=result.segments&&result.segments.length?result.segments:[{start:0,end:0,text:result.text}],emitted=0;
-      for(var i=0;i<parts.length;i++){var text=String(parts[i].text||"").trim();if(!text)continue;var ts=Number(message.startedAt||Date.now())+Math.max(0,Number(parts[i].start||0))*1000;var seg={id:"groq-"+uid(),sessionId:id,text:text.slice(0,12000),timestamp:new Date(ts).toISOString(),reason:"groq-transcription",source:"groq",speaker:speaker,speakerId:speaker,audioSource:audioSource,model:result.model,chunkSequence:seq};var persisted=await persistSignalSegment(id,seg);if(persisted.ok){emitted++;broadcastSignalEvent({type:"signal.transcript.segment",sessionId:id,segment:seg,timestamp:seg.timestamp});}}
+      for(var i=0;i<parts.length;i++){var text=String(parts[i].text||"").trim();if(!text)continue;var ts=Number(message.startedAt||Date.now())+Math.max(0,Number(parts[i].start||0))*1000;var seg={id:"groq-"+uid(),sessionId:id,text:text.slice(0,12000),timestamp:new Date(ts).toISOString(),reason:"groq-transcription",source:"groq",speaker:speaker,speakerId:speaker,audioSource:audioSource,language:transcriptLanguage,model:result.model,chunkSequence:seq};var persisted=await persistSignalSegment(id,seg);if(persisted.ok){emitted++;broadcastSignalEvent({type:"signal.transcript.segment",sessionId:id,segment:seg,timestamp:seg.timestamp});}}
       await updateGroqCaptureState({status:"connected",lastChunkAt:iso(),error:null});await mutateState(async function(state){state.transcriptionMetrics=Object.assign({},state.transcriptionMetrics||{}, {segments:Number(state.transcriptionMetrics&&state.transcriptionMetrics.segments||0)+emitted,groqSegments:Number(state.transcriptionMetrics&&state.transcriptionMetrics.groqSegments||0)+emitted,localSegments:0,queueDepth:0,averageLatencyMs:result.latencyMs||0});state.groqTranscript=Object.assign({},state.groqTranscript||{}, {active:true,segments:Number(state.groqTranscript&&state.groqTranscript.segments||0)+emitted,lastTimestamp:emitted?iso():state.groqTranscript.lastTimestamp,model:result.model||GROQ_MODEL});});
     }).catch(function(error){recordSignalDiagnostic("SIGNAL_GROQ_CHUNK_ERROR",{error:String(error)},"error");});
   }
