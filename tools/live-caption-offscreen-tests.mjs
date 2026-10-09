@@ -112,7 +112,7 @@ assert.deepEqual(recorders[3].startIntervals, [2800]);
 recorders[3].emitData();
 await new Promise((resolve) => setImmediate(resolve));
 assert.ok(messages.some((m) => m.type === "SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK" && m.sessionId === "session-a"));
-assert.equal(messages.some((m) => m.type === "SIGNAL_GROQ_AUDIO_CHUNK" && m.sequence === 1 && m.source === "caption-preview-cliente"), false,
+assert.equal(messages.some((m) => m.type === "SIGNAL_GROQ_AUDIO_CHUNK" && m.source === "cliente"), false,
   "el preview no debe entrar en la ruta durable de segmentos");
 
 const disabled = await send({ target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: false });
