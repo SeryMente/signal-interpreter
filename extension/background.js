@@ -1146,7 +1146,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var callId = event.callId || event.payload && event.payload.callId;
     mutateState(async function (state) {
       if (!callId || state.callId === callId ||
-          (state.completedCalls || []).some(function (call) { return call.callId === callId; })) return;
+          (state.completedCalls || []).concat(state.unfinishedCalls || []).some(function (call) { return String(call.callId || "") === String(callId); })) return;
       state.callId = callId;
       var measuredPlatformSeconds = Number(event.payload && event.payload.evidence && event.payload.evidence.platformTimerSeconds);
       var routeTimestampMs = Date.parse(event.timestamp);
@@ -1184,14 +1184,35 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         startOffsetSeconds: Number.isFinite(measuredPlatformSeconds) ? measuredPlatformSeconds : null,
         evidence: event.payload && event.payload.evidence || null
       }, "info", "background");
-    }).then(function (state) {
+    }).then(async function (state) {
       if (!state || state.callId !== callId) return;
+
+      // Freeze the last confirmed pre-call figures before any post-start fetch can
+      // replace them with an in-progress platform summary. Never silently label a
+      // local fallback as official.
+      var baselineCaptured = false;
+      try {
+        baselineCaptured = await captureCallEarningsBaseline(callId, state.callStartedAt);
+      } catch (error) {
+        record("CALL_EARNINGS_BASELINE_CAPTURE_ERROR", {
+          callId: callId, startedAt: state.callStartedAt,
+          error: String(error && error.message || error), retryable: true
+        }, "error", "background");
+      }
+      if (!baselineCaptured) {
+        record("CALL_EARNINGS_BASELINE_UNCONFIRMED", {
+          callId: callId, startedAt: state.callStartedAt,
+          reason: "official-precall-baseline-unavailable",
+          moneySource: "local-estimate-until-official-reconciliation"
+        }, "warn", "background");
+      }
+
       checkpointCallObservability("call-answered", callId, state);
       requestCallOverlayRefresh(state.callSourceTabId, callId, "call-answered");
       record("CALL_ANSWERED_OVERLAY_REFRESH_REQUESTED", {
-        callId: callId,
-        tabId: state.callSourceTabId,
-        dailyCallsToday: Number(state.dailyCalls && state.dailyCalls[localDay()] || 0)
+        callId: callId, tabId: state.callSourceTabId,
+        dailyCallsToday: Number(state.dailyCalls && state.dailyCalls[localDay()] || 0),
+        baselineCaptured: baselineCaptured
       }, "info", "background");
       record("TRANSCRIPTION_MODULE_READY", { callId: callId, engine: "groq-whisper" }, "info", "background");
       requestCallAlert(callId, "call-route-confirmed");
@@ -1201,22 +1222,24 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       return syncOfficialPlatformData().then(function(result){
           var summary=result&&result.snapshot&&result.snapshot.summary||{};
           record("CALL_START_EARNINGS_SYNC_COMPLETED",{
-            callId:callId,method:result&&result.method||null,earned:summary.earned||null
+            callId:callId,method:result&&result.method||null,earned:summary.earned||null,
+            baselineCaptured:baselineCaptured,officialSource:"fetchInterpreterLogs"
           },"info","background");
         }).catch(function(error){
-          record("CALL_START_EARNINGS_SYNC_ERROR",{callId:callId,error:String(error)},"warn","background");
+          record("CALL_START_EARNINGS_SYNC_ERROR",{callId:callId,error:String(error),baselineCaptured:baselineCaptured},"warn","background");
         }).then(function(){
           return syncOfficialEarningsRange("currentMonth").then(function(result){
             record("CALL_START_MONTH_SYNC_COMPLETED",{
-              callId:callId,method:result&&result.method||null,period:"currentMonth"
+              callId:callId,method:result&&result.method||null,period:"currentMonth",
+              baselineCaptured:baselineCaptured
             },"info","background");
           }).catch(function(error){
-            record("CALL_START_MONTH_SYNC_ERROR",{callId:callId,error:String(error)},"warn","background");
+            record("CALL_START_MONTH_SYNC_ERROR",{callId:callId,error:String(error),baselineCaptured:baselineCaptured},"warn","background");
           });
         });
     });
   }
-  var callAlertInFlight = new Map();
+    var callAlertInFlight = new Map();
   function requestCallAlert(callId, trigger) {
     if (!callId || callAlertInFlight.has(callId)) return;
     callAlertInFlight.set(callId, Date.now());
@@ -1714,6 +1737,11 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var item = period === "today"
       ? (mirror && mirror.earnings && mirror.earnings.today) || (mirror && mirror.statistics)
       : mirror && mirror.earnings && mirror.earnings[period];
+    var captured = new Date(item && item.capturedAt || "");
+    var now = new Date();
+    if (!Number.isFinite(captured.getTime()) || Date.now() - captured.getTime() > 15 * 60 * 1000) return null;
+    if (period === "today" && localDay(captured) !== localDay(now)) return null;
+    if (period === "currentMonth" && (captured.getFullYear() !== now.getFullYear() || captured.getMonth() !== now.getMonth())) return null;
     var summary = item && item.summary || {};
     var earnedUsd = Number(summary.earnedUsd);
     if (!(earnedUsd >= 0)) return null;
@@ -1724,7 +1752,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       minutes: callLengthToMinutes(summary.callLength),
       callLength: summary.callLength || null,
       capturedAt: item.capturedAt || null,
-      source: item.source || "platform-page-context"
+      source: item.source || "platform-page-context",
+      official: true
     };
   }
   async function captureCallEarningsBaseline(callId, startedAt) {
@@ -1748,7 +1777,24 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var found = mirrorEarningBaseline(mirror, period);
       if (found) return Object.assign({ callId: callId }, found);
       return {
-        callId: callId, earnedUsd: localFallback(period), earned: null, capturedAt: null, source: "local-completed-calls"
+        callId: callId, earnedUsd: localFallback(period), earned: null, capturedAt: null,
+        callCount: (Array.isArray(state.completedCalls) ? state.completedCalls : []).filter(function (call) {
+          var date = new Date(call.startedAt || call.endedAt);
+          if (!Number.isFinite(date.getTime())) return false;
+          if (period === "today") return localDay(date) === localDay(now);
+          return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+        }).length,
+        minutes: (Array.isArray(state.completedCalls) ? state.completedCalls : []).filter(function (call) {
+          var date = new Date(call.startedAt || call.endedAt);
+          if (!Number.isFinite(date.getTime())) return false;
+          if (period === "today") return localDay(date) === localDay(now);
+          return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+        }).reduce(function (sum, call) {
+          var seconds = Number(call.billableSecondsAssumed);
+          if (!Number.isFinite(seconds) || seconds < 0) seconds = Number(call.observedSeconds);
+          return sum + (Number.isFinite(seconds) && seconds >= 0 ? seconds / 60 : 0);
+        }, 0),
+        source: "local-completed-calls", official: false
       };
     }
     var payload = {
@@ -1795,7 +1841,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       if(callEarnings.callId===currentState.callId && callEarnings.baselines && callEarnings.baselines.today){
         callBaseline=callEarnings.baselines.today;
       } else if(!callBaseline || callBaseline.callId!==currentState.callId){
-        callBaseline={callId:currentState.callId,capturedAt:iso(),earnedUsd:Number(parsed.earnedUsd),earned:parsed.earned,source:"official-sync-fallback"};
+        callBaseline={callId:currentState.callId,capturedAt:iso(),earnedUsd:Number(parsed.earnedUsd),earned:parsed.earned,source:"official-sync-fallback",official:true};
         callEarnings={
           schema:"signal-interpreter-active-call-earnings/v1",callId:currentState.callId,
           startedAt:currentState.callStartedAt,capturedAt:iso(),modality:currentState.callModality||"OPI",
