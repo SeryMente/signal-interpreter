@@ -54,9 +54,12 @@ CI ejecuta pruebas de normalización y fusión de captions, transición/reconexi
 
 ## Estado de validación
 
-Versión 0.10.22 en rama de trabajo. El 9 de octubre de 2026, GitHub Actions ejecutó en la rama `feat/live-caption-sprint-0.10.22`:
-- `signal-observability-audit`: **success** en el commit `0e4252f916f840717396979b6da998dd74874b24`. Incluye sintaxis, auditorías existentes y las pruebas de core, puente nativo y ciclo de vida del preview.
-- `native-caption-host-build`: **success** en ese commit. Compiló `SignalInterpreter.CaptionHost.cs`, verificó la cabecera del ejecutable y pasó el smoke test del encuadre Native Messaging y apagado limpio.
-- El paso de build sincronizó el binario empaquetado del host, `register-caption-host.ps1` y la auditoría en el commit `bbba7b13912b3a4b9da2c09f374632e1ee47d0ec`. La huella SHA-256 del ejecutable empaquetado es `7526667D537E65840D3DDB68F25DCC7271C11CD5639B25C834ABEA15E4F56DB6`; la huella normalizada de `SignalInterpreter.CaptionHost.cs` es `B6C9713E063CF1AAB24314810968954398D7A452B382CAD1012E3B91D67A1E33`. Ambas coinciden entre payload, script de registro y auditoría. Se vuelve a ejecutar la batería completa sobre el árbol sincronizado; esa ejecución, no la del commit anterior, decide si esta revisión queda aprobada.
+Versión 0.10.22 en la rama de trabajo. El último commit de código probado fue `57a51c23ab6c48d30f02e99b50dcd4b7a3bce38e`:
+- `signal-observability-audit`: **success** en GitHub Actions PR run `37994825723`. Incluye sintaxis, auditorías existentes y pruebas de normalización/fusión, transición del puente nativo y ciclo de vida del preview.
+- `native-caption-host-build`: **success** en GitHub Actions PR run `37994825677`. Compila el fuente C#, verifica el encuadre Native Messaging/apagado limpio y valida que el payload incluido corresponde al hash esperado.
+- El ejecutable embebido y la fuente se sincronizaron en `bbba7b13912b3a4b9da2c09f374632e1ee47d0ec`. SHA-256 del ejecutable: `7526667D537E65840D3DDB68F25DCC7271C11CD5639B25C834ABEA15E4F56DB6`; SHA-256 normalizado del fuente C#: `B6C9713E063CF1AAB24314810968954398D7A452B382CAD1012E3B91D67A1E33`. Ambas huellas coinciden entre el payload, el registro y la auditoría.
+- Los reintentos se prueban con retroceso progresivo (1 s, 2.5 s, 5 s) al fallar repetidamente el host. La prueba cubre el puente simulado, no la disponibilidad de UI Automation en una sesión real de Chrome.
 
-Estas pruebas automatizadas no equivalen a una comprobación de reconocimiento de voz. Sigue pendiente una llamada bilingüe real para verificar: Live Caption ON, lectura nativa, cierre de la burbuja, continuidad vía Groq, recuperación nativa, controles sin obstrucción, ausencia de persistencia del preview y aislamiento de llamadas consecutivas. No se declara una prueba real hasta que se ejecute.
+Estas pruebas automatizadas no equivalen a reconocimiento de voz real. Sigue pendiente una llamada bilingüe para verificar: Live Caption ON, lectura nativa, cierre de la burbuja, continuidad vía Groq, reapertura y recuperación nativa, controles sin obstrucción, ausencia de persistencia del preview y aislamiento de llamadas consecutivas. No se declara una prueba real hasta que se ejecute.
+
+La validación se describe en el commit de código indicado. Este documento y la narrativa de versión se actualizarán aquí en la misma PR; la ejecución de CI del commit documental actual debe aprobarse antes de fusionar.
