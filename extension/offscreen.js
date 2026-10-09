@@ -22,11 +22,11 @@ async function playTone(volume, cue){
     });
   }
   if(cue==="mute-on"){
-    await tone(1046.5,start,.11);
-    await tone(880,start+.12,.13);
-  }else if(cue==="mute-off"){
     await tone(523.25,start,.11);
     await tone(392,start+.12,.13);
+  }else if(cue==="mute-off"){
+    await tone(1046.5,start,.11);
+    await tone(880,start+.12,.13);
   }else{
     await tone(880,start,.11);
     await tone(1174.66,start+.12,.13);
