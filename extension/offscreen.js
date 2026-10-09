@@ -54,6 +54,54 @@ function stopCaptionPreview(){
   stopCaptionPreviewRecorder("cliente");stopCaptionPreviewRecorder("yo");
   previewSeq=0;previewSessionId=null;previewTabId=null;
 }
+function startCaptionPreviewRecorder(source,stream,sessionId,tabId){
+  if(!stream||!sessionId)return null;
+  var recorder=null,session=String(sessionId),targetTabId=Number(tabId||0),startedAt=Date.now();
+  try{
+    recorder=new MediaRecorder(stream,{mimeType:"audio/webm;codecs=opus"});
+  }catch(_){
+    try{recorder=new MediaRecorder(stream);}
+    catch(error){
+      send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});
+      return null;
+    }
+  }
+  recorder.ondataavailable=function(e){
+    if(!running||e.data==null||!e.data.size)return;
+    if(source==="cliente"&&!captionPreviewTabEnabled)return;
+    if(source==="yo"&&!captionPreviewMicEnabled)return;
+    var chunkStartedAt=startedAt;
+    startedAt=Date.now();
+    var sequence=++previewSeq;
+    try{
+      var reader=new FileReader();
+      reader.onloadend=function(){
+        try{
+          var dataUrl=String(reader.result||""),base64=dataUrl.split(",")[1]||"";
+          if(base64)send({
+            type:"SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK",sessionId:session,tabId:targetTabId,
+            source:source,base64:base64,bytes:e.data.size,startedAt:chunkStartedAt,
+            endedAt:Date.now(),sequence:sequence
+          });
+        }catch(error){
+          send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});
+        }
+      };
+      reader.readAsDataURL(e.data);
+    }catch(error){
+      send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});
+    }
+  };
+  recorder.onerror=function(e){
+    send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(e&&e.error||e)});
+  };
+  try{recorder.start(2800);}
+  catch(error){
+    send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});
+    return null;
+  }
+  return recorder;
+}
 function startCaptionPreview(mode){
   mode=mode||{};
   if(!running||!captureSessionId){stopCaptionPreview();return false;}
