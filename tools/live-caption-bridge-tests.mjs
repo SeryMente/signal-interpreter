@@ -107,11 +107,27 @@ assert.equal(statusEvents.at(-1).active, false);
 assert.ok(errors.length >= 1);
 assert.ok(timers.some((timer) => !timer.cleared), "un host desconectado debe programar una reconexión acotada");
 
-const pendingTimer = timers.find((timer) => !timer.cleared);
-now += pendingTimer.delay;
-pendingTimer.fn();
+const firstRetry = timers[timers.length - 1];
+assert.equal(firstRetry.delay, 1000, "el primer reintento empieza con una espera corta");
+now += firstRetry.delay;
+firstRetry.fn();
 assert.equal(ports.length, 3, "se vuelve a intentar la conexión nativa");
 assert.equal(ports[2].posted.length, 1);
+
+chrome.runtime.lastError = { message: "Host exited again before becoming healthy." };
+ports[2].emitDisconnect();
+chrome.runtime.lastError = null;
+const secondRetry = timers[timers.length - 1];
+assert.equal(secondRetry.delay, 2500, "fallos repetidos usan retroceso progresivo");
+now += secondRetry.delay;
+secondRetry.fn();
+assert.equal(ports.length, 4);
+
+chrome.runtime.lastError = { message: "Host exited a third time." };
+ports[3].emitDisconnect();
+chrome.runtime.lastError = null;
+const thirdRetry = timers[timers.length - 1];
+assert.equal(thirdRetry.delay, 5000, "la espera sigue aumentando mientras no haya conexión estable");
 
 bridge.stop();
 assert.ok(tabMessages.some((item) => item.message.type === "SIGNAL_CAPTION_SESSION_RESET" && item.message.reason === "native-stopped"));
