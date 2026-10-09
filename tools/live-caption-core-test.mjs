@@ -33,6 +33,20 @@ assert.equal(core.captionRelation("I need the appointment tomorrow", "I need the
 assert.equal(core.captionRelation("Please call me tomorrow", "call me tomorrow morning"), "overlap");
 assert.equal(core.captionRelation("hello there", "hello there"), "duplicate");
 assert.equal(core.mergeCaptionText("Please call me tomorrow", "call me tomorrow morning"), "Please call me tomorrow morning");
+const candidates = [
+  { name: "bottom-left", left: 0, top: 70 },
+  { name: "top-right", left: 100, top: 0 },
+  { name: "bottom-right", left: 100, top: 70 }
+];
+const controls = [{ left: 0, top: 70, right: 25, bottom: 100, width: 25, height: 30 }];
+assert.equal(core.choosePositionCandidate(candidates, controls, 100, 30).name, "top-right",
+  "la posición debe evitar los controles funcionales cuando hay otra esquina libre");
+assert.equal(core.choosePositionCandidate(candidates, [], 100, 30).name, "bottom-left",
+  "los empates conservan la posición candidata inicial de forma determinista");
+assert.equal(core.overlapRatio(
+  { left: 0, top: 0, right: 100, bottom: 30, width: 100, height: 30 },
+  { left: 0, top: 0, right: 100, bottom: 30, width: 100, height: 30 }
+), 1);
 assert.equal(core.mergeCaptionText("I need the appointment tomorrow", "I need the appointment"), "I need the appointment tomorrow");
 
 const started = [];
