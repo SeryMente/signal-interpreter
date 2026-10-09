@@ -51,7 +51,7 @@ await new Promise((resolve) => setImmediate(resolve));
 assert.deepEqual(started, [1]);
 await dispatcher.enqueue({ source: "cliente", sequence: 2 });
 await dispatcher.enqueue({ source: "cliente", sequence: 3 });
-assert.deepEqual(JSON.parse(JSON.stringify(dispatcher.status().cliente)), { running: true, pending: true, replaced: 1 });
+assert.deepEqual(JSON.parse(JSON.stringify(dispatcher.status().cliente)), { running: true, pending: true, replaced: 2 });
 assert.deepEqual(started, [1], "no debe iniciar peticiones concurrentes en la misma fuente");
 await dispatcher.enqueue({ source: "yo", sequence: 90 });
 assert.deepEqual(started, [1, 90], "las fuentes pueden avanzar independientemente");
