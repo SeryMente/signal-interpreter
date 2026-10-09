@@ -6,6 +6,13 @@ on:
     branches:
       - main
       - "feat/**"
+  push:
+    branches:
+      - main
+      - "feat/**"
+
+permissions:
+  contents: write
 
 jobs:
   compile-and-protocol-smoke-test:
@@ -94,3 +101,43 @@ jobs:
           if (-not $process.WaitForExit(10000)) { $process.Kill(); throw "El host no terminó tras recibir stop." }
           if ($process.ExitCode -ne 0) { throw "El host terminó con código $($process.ExitCode)." }
           Write-Output "NATIVE_CAPTION_HOST_PROTOCOL=PASS"
+      - name: Synchronize the embedded host payload after a source change
+        if: github.event_name == 'push'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $event = Get-Content -LiteralPath $env:GITHUB_EVENT_PATH -Raw | ConvertFrom-Json
+          $commitMessage = [string]$event.head_commit.message
+          if ($commitMessage.StartsWith("build: sync native caption host payload with source")) {
+            Write-Output "NATIVE_CAPTION_HOST_PAYLOAD=SYNC_COMMIT"
+            exit 0
+          }
+          $exe = Join-Path $env:RUNNER_TEMP "SignalInterpreter.CaptionHost.exe"
+          $payload = Join-Path $PWD "extension\native\SignalInterpreter.CaptionHost.exe.b64"
+          $register = Join-Path $PWD "extension\native\register-caption-host.ps1"
+          $audit = Join-Path $PWD "tools\live-caption-static-audit.mjs"
+          $newHash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToUpperInvariant()
+          $registerContent = [IO.File]::ReadAllText($register)
+          $match = [regex]::Match($registerContent, 'ExpectedSha256\s*=\s*"([A-Fa-f0-9]{64})"')
+          if (-not $match.Success) { throw "No se encontró la huella SHA-256 esperada en el script de registro." }
+          $oldHash = $match.Groups[1].Value.ToUpperInvariant()
+          if ($oldHash -eq $newHash) {
+            Write-Output "NATIVE_CAPTION_HOST_PAYLOAD=IN_SYNC"
+            exit 0
+          }
+          if (-not $env:GITHUB_REF_NAME.StartsWith("feat/")) {
+            throw "El payload del host está desactualizado en una rama protegida. Sincronízalo desde una rama feat/*."
+          }
+          [IO.File]::WriteAllText($payload, [Convert]::ToBase64String([IO.File]::ReadAllBytes($exe)), [Text.Encoding]::ASCII)
+          [IO.File]::WriteAllText($register, $registerContent.Replace($oldHash, $newHash), [Text.UTF8Encoding]::new($false))
+          $auditContent = [IO.File]::ReadAllText($audit)
+          if (-not $auditContent.Contains($oldHash)) { throw "La auditoría no contiene la huella previa para actualizar." }
+          [IO.File]::WriteAllText($audit, $auditContent.Replace($oldHash, $newHash), [Text.UTF8Encoding]::new($false))
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add extension/native/SignalInterpreter.CaptionHost.exe.b64 extension/native/register-caption-host.ps1 tools/live-caption-static-audit.mjs
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "build: sync native caption host payload with source"
+            git push origin ("HEAD:" + $env:GITHUB_REF_NAME)
+          }
+          Write-Output "NATIVE_CAPTION_HOST_PAYLOAD=SYNCED"
