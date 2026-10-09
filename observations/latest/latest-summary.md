@@ -1,25 +1,28 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-88ec73e4-1141-4a22-806e-189ec077103b
-- Creado: 2026-10-09T16:06:34.446Z
+- Batch: batch-4be343fe-9724-43f9-a6bc-2d509f70fa47
+- Creado: 2026-10-09T16:07:07.500Z
 - Trigger: critical
 - Extensión: 0.10.14
-- Eventos: 1
-- Errores: 0
-- Warnings: 1
-- Secuencia: 6017 → 6017
+- Eventos: 6
+- Errores: 1
+- Warnings: 0
+- Secuencia: 6041 → 6046
 - Identidades de plataforma: 8
-- Snapshots de plataforma: 403
-- Deltas de plataforma: 403
+- Snapshots de plataforma: 404
+- Deltas de plataforma: 404
 
 ## Categorías
 
 {
-  "SESSION": 1
+  "RUNTIME": 6
 }
 
 ## Acciones
 
 {
-  "CONNECT_FLOW_FAILED_NO_CALL_ROUTE": 1
+  "PLATFORM_SCREENSHOT_CAPTURE_ERROR": 1,
+  "AUTO_ANSWER_READINESS": 3,
+  "PAGE_LIFECYCLE": 1,
+  "PAGE_VISIBILITY_CHANGED": 1
 }
