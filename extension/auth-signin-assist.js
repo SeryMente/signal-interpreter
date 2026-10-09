@@ -48,6 +48,12 @@
     return true;
   }
 
+  chrome.storage.onChanged.addListener(function (changes, area) {
+    if (area !== "local" || !changes.cloudInterpreterLoginUsername) return;
+    savedUsername = String(changes.cloudInterpreterLoginUsername.newValue || "").trim();
+    handledForm = null;
+    applySigninAssist();
+  });
   function stopWatching() {
     if (timer) clearInterval(timer);
     timer = null;

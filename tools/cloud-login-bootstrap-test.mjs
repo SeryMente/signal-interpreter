@@ -23,6 +23,7 @@ assert.ok(bootstrap.includes('chrome.tabs.create({ url: SIGNIN_URL, active: fals
 assert.ok(bootstrap.includes('chrome.tabs.update(probeTab.id, { active: true })'));
 assert.ok(bootstrap.includes('storeState("authenticated", reason)'));
 assert.ok(assist.includes('cloudInterpreterLoginUsername'));
+assert.ok(assist.includes("chrome.storage.onChanged.addListener"));
 assert.ok(assist.includes('password.focus'));
 assert.ok(!assist.includes('setInputValue(password'));
 assert.ok(popupHtml.includes('id="cloudInterpreterUsername"'));
