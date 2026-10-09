@@ -85,7 +85,7 @@ const started = await send({
   target: "offscreen", type: "SIGNAL_START_GROQ_CAPTURE", streamId: "chrome-stream-token",
   sessionId: "session-a", muted: false, captionPreview: true, tabId: 7
 });
-assert.equal(started.ok, true);
+assert.equal(started.ok, true, JSON.stringify(started));
 assert.equal(recorders.length, 3, "dos grabadores durables y un preview de pestaña");
 assert.equal(recorders[0].stream.id, "tab-audio");
 assert.equal(recorders[1].stream.id, "microphone");
