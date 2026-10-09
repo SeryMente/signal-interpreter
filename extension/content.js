@@ -994,7 +994,7 @@
   function overlayEntryCurrentForPeriod(entry, period, now) {
     if (!entry || typeof entry !== "object") return false;
     var captured = new Date(entry.capturedAt || "");
-    if (!Number.isFinite(captured.getTime())) return false;
+    if (!Number.isFinite(captured.getTime()) || Date.now() - captured.getTime() > 15 * 60 * 1000) return false;
     var currentDay = localDay(now);
     if (period === "today") return localDay(captured) === currentDay;
     if (period === "currentMonth") return captured.getFullYear() === now.getFullYear() && captured.getMonth() === now.getMonth();
