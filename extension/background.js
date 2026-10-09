@@ -515,6 +515,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
     if (!hasActiveCall(state)) return;
     var callTabId = Number(state.callSourceTabId || state.hotLoadLease && state.hotLoadLease.callSourceTabId);
+    var validCallTab = false;
     record("HOTLOAD_RUNTIME_BOUNDARY_RECOVERY_STARTED", {
       trigger: trigger || "runtime-boundary", callId: state.callId, callSourceTabId: callTabId || null,
       captureExpected: !!(state.hotLoadLease && state.hotLoadLease.captureExpected),
@@ -525,6 +526,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       try {
         var tab = await chrome.tabs.get(callTabId);
         if (tab && isAuthorizedCloudUrl(tab.url) && isCloudCallUrl(tab.url)) {
+          validCallTab = true;
           await chrome.scripting.executeScript({ target: { tabId: callTabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
           await chrome.scripting.executeScript({ target: { tabId: callTabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
           record("HOTLOAD_CONTENT_RUNTIME_REHYDRATED", { callId: state.callId, tabId: callTabId }, "info", "runtime");
@@ -532,6 +534,19 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       } catch (error) {
         record("HOTLOAD_CONTENT_RUNTIME_REHYDRATE_ERROR", { callId: state.callId, tabId: callTabId || null, error: String(error) }, "error", "runtime");
       }
+    }
+    if (validCallTab && cachedConfig.liveCaptionOverlayEnabled !== false) {
+      var nativeReconnectRequested = false;
+      try { nativeReconnectRequested = SignalCaptionBridge.start(callTabId, state.callId); } catch (_) {}
+      record("SIGNAL_CAPTION_NATIVE_RECOVERY_REQUESTED", {
+        callId: state.callId, tabId: callTabId, requested: !!nativeReconnectRequested,
+        trigger: String(trigger || "runtime-boundary").slice(0, 80)
+      }, nativeReconnectRequested ? "info" : "warn", "caption");
+      setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "runtime-boundary-recovery")
+        .catch(function () {});
+    } else if (cachedConfig.liveCaptionOverlayEnabled === false) {
+      try { SignalCaptionBridge.stop(); } catch (_) {}
+      setCaptionPreviewForActiveCall(false, "runtime-boundary-disabled").catch(function () {});
     }
     var expectedCapture = !!(state.hotLoadLease && state.hotLoadLease.captureExpected && state.hotLoadLease.transcriptionSessionId);
     if (!expectedCapture || !Number.isFinite(callTabId)) return;
