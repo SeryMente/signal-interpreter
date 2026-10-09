@@ -37,6 +37,8 @@ assert.match(content, /earningsMetrics\.combinePeriodMetrics\(period, baseline, 
 assert.match(content, /totalUsd: calculated\.totalUsd/);
 assert.match(content, /info\.periodMinutes\.toFixed\(2\) \+ " min del periodo"/);
 assert.match(content, /earningsMetrics\.activeSecondsInPeriod/);
+assert.match(content, /todayInfo\.livePeriodSeconds/);
+assert.match(content, /earningsNow\("currentMonth"\)\.livePeriodSeconds \/ 60/);
 assert.match(content, /earningsMetrics\.periodKey/);
 assert.match(content, /resolveOverlayBaseline\(period, entry, official, activeStartedAt\)/);
 assert.match(content, /callsAuthoritative/);
