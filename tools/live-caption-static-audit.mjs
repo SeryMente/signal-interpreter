@@ -20,7 +20,7 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.21");
+assert.equal(manifest.version,"0.10.22");
 assert.ok(manifest.key && manifest.key.length > 300);
 assert.ok(manifest.key);
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
@@ -28,7 +28,7 @@ assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://app.cl
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 
 assert.ok(background.includes('importScripts("live-caption-core.js","live-caption-bridge.js"'));
-assert.ok(background.includes("SignalCaptionBridge.start(state.callSourceTabId)"));
+assert.ok(background.includes("SignalCaptionBridge.start(state.callSourceTabId, callId)"));
 assert.ok(background.includes("SignalCaptionBridge.stop()"));
 assert.ok(background.includes("SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK"));
 assert.ok(background.includes("handleGroqCaptionPreviewChunk"));
