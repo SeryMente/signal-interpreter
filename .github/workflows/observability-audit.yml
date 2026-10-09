@@ -35,6 +35,7 @@ jobs:
           node --check tools/groq-transcriber-tests.mjs
           node --check tools/earnings-overlay-tests.mjs
           node --check tools/call-earnings-baseline-tests.mjs
+          node --check tools/transcription-routing-tests.mjs
           node --check extension/live-caption-core.js
           node --check extension/live-caption-bridge.js
           node --check extension/live-caption-overlay.js
@@ -82,6 +83,8 @@ jobs:
         run: node tools/earnings-overlay-tests.mjs
       - name: Groq transcriber unit test
         run: node tools/groq-transcriber-tests.mjs
+      - name: Bilingual transcription routing regression test
+        run: node tools/transcription-routing-tests.mjs
       - name: Live Caption core unit test
         run: node tools/live-caption-core-test.mjs
       - name: Live Caption static audit
