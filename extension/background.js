@@ -54,15 +54,6 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
       var enabled = config.liveCaptionOverlayEnabled !== false && hasActiveCall(state);
-      await ensureOffscreen();
-      if (enabled) {
-        var captureStatus = await chrome.runtime.sendMessage({
-          target: "offscreen", type: "SIGNAL_GET_GROQ_CAPTURE_STATE"
-        }).catch(function () { return null; });
-        if (!captureStatus || captureStatus.running !== true) {
-          return { ok: true, skipped: true, reason: "audio-capture-not-running" };
-        }
-      }
       if (!enabled) {
         try {
           await chrome.runtime.sendMessage({
@@ -73,6 +64,13 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
           try { SignalCaptionBridge.stop(); } catch (_) {}
         }
         return { ok: true, enabled: false, reason: trigger };
+      }
+      await ensureOffscreen();
+      var captureStatus = await chrome.runtime.sendMessage({
+        target: "offscreen", type: "SIGNAL_GET_GROQ_CAPTURE_STATE"
+      }).catch(function () { return null; });
+      if (!captureStatus || captureStatus.running !== true) {
+        return { ok: true, skipped: true, reason: "audio-capture-not-running" };
       }
       if (!state.callSourceTabId) {
         record("SIGNAL_CAPTION_PREVIEW_UNAVAILABLE", {
