@@ -87,6 +87,7 @@
 
     if (message.type === "status" || message.type === "heartbeat") {
       if (message.error) markError(message.error);
+      if (message.active !== true) lastCaptionAt = 0;
       notifyStatus({
         active: message.active === true,
         visible: message.visible === true,
@@ -159,9 +160,14 @@
     targetTabId = nextTabId;
     if (nextCallId) targetCallId = nextCallId;
     if (targetChanged || callChanged) {
+      var previousPort = port;
+      port = null;
       resetCallState();
       sendToTab("SIGNAL_CAPTION_SESSION_RESET", { reason: callChanged ? "new-call" : "target-changed" });
       notifyStatus({ active: false, visible: false }, "target-changed", true);
+      if (previousPort) {
+        try { previousPort.disconnect(); } catch (_) {}
+      }
     }
     if (port) return true;
     var connected = connect();
