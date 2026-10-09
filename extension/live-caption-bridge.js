@@ -160,6 +160,7 @@
     if (nextCallId) targetCallId = nextCallId;
     if (targetChanged || callChanged) {
       resetCallState();
+      sendToTab("SIGNAL_CAPTION_SESSION_RESET", { reason: callChanged ? "new-call" : "target-changed" });
       notifyStatus({ active: false, visible: false }, "target-changed", true);
     }
     if (port) return true;
@@ -176,6 +177,7 @@
     targetTabId = null;
     targetCallId = null;
     resetCallState();
+    sendToTab("SIGNAL_CAPTION_SESSION_RESET", { reason: "native-stopped" }, lostTabId);
     sendToTab("SIGNAL_CAPTION_NATIVE_STATUS", {
       active: false, visible: false, captionFresh: false, lastCaptionAgeMs: null, reason: "native-stopped"
     }, lostTabId);
