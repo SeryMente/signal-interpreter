@@ -101,7 +101,7 @@ assert.ok(tabMessages.some((item) =>
   item.message.type === "SIGNAL_CAPTION_SESSION_RESET" && item.message.reason === "new-call"));
 
 chrome.runtime.lastError = { message: "Native host has exited." };
-ports[0].emitDisconnect();
+ports[1].emitDisconnect();
 chrome.runtime.lastError = null;
 assert.equal(statusEvents.at(-1).active, false);
 assert.ok(errors.length >= 1);
@@ -110,8 +110,8 @@ assert.ok(timers.some((timer) => !timer.cleared), "un host desconectado debe pro
 const pendingTimer = timers.find((timer) => !timer.cleared);
 now += pendingTimer.delay;
 pendingTimer.fn();
-assert.equal(ports.length, 2, "se vuelve a intentar la conexión nativa");
-assert.equal(ports[1].posted.length, 1);
+assert.equal(ports.length, 3, "se vuelve a intentar la conexión nativa");
+assert.equal(ports[2].posted.length, 1);
 
 bridge.stop();
 assert.ok(tabMessages.some((item) => item.message.type === "SIGNAL_CAPTION_SESSION_RESET" && item.message.reason === "native-stopped"));
