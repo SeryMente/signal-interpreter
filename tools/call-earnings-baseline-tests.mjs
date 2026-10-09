@@ -147,6 +147,28 @@ const preCallMirror = {
 }
 
 {
+  const { context, store } = makeContext({
+    effectifState: activeState(),
+    effectifPlatformMirror: {
+      earnings: {
+        today: {
+          capturedAt: "2026-10-09T17:59:59.000Z",
+          summary: { earnedUsd: null, earned: "$50.00", callCount: 20, callLength: "02:00:00" }
+        },
+        currentMonth: {
+          capturedAt: "2026-10-09T17:59:58.000Z",
+          summary: { earnedUsd: 50, earned: "$50.00", callCount: 20, callLength: "02:00:00" }
+        }
+      }
+    },
+    effectifConfig: {}
+  });
+  assert.equal(await context.captureCallEarningsBaseline("call-123", startedAt), true);
+  assert.equal(store.effectifCallEarnings.baselines.today.source, "local-completed-calls");
+  assert.equal(store.effectifCallEarnings.baselines.currentMonth.source, "pre-call-platform-mirror");
+}
+
+{
   const unsafeStoredBaseline = {
     callId: "call-123",
     baselines: {
