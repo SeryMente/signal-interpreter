@@ -54,4 +54,9 @@ CI ejecuta pruebas de normalización y fusión de captions, transición/reconexi
 
 ## Estado de validación
 
-Versión 0.10.22 en rama de trabajo. La integración queda pendiente de que la batería de GitHub Actions pase. Después hace falta una comprobación operativa real de: Live Caption ON, lectura nativa, cierre de la burbuja, continuidad vía Groq, recuperación nativa, controles sin obstrucción, ausencia de persistencia del preview y aislamiento de llamadas consecutivas. No se declara una prueba real hasta que se ejecute.
+Versión 0.10.22 en rama de trabajo. El 9 de octubre de 2026, GitHub Actions ejecutó en la rama `feat/live-caption-sprint-0.10.22`:
+- `signal-observability-audit`: **success** en el commit `0e4252f916f840717396979b6da998dd74874b24`. Incluye sintaxis, auditorías existentes y las pruebas de core, puente nativo y ciclo de vida del preview.
+- `native-caption-host-build`: **success** en ese commit. Compiló `SignalInterpreter.CaptionHost.cs`, verificó la cabecera del ejecutable y pasó el smoke test del encuadre Native Messaging y apagado limpio.
+- El paso de build sincronizó el binario empaquetado del host, `register-caption-host.ps1` y la huella de la auditoría en el commit `9795373ec97addfcb6a3d0636ebe4119e5ceac6c`. La huella SHA-256 compilada/esperada queda en `F281C21139F60511A4709716F95D3C832166F60ED85215F02866085095E2B86B`. La siguiente ejecución debe validar de nuevo el árbol ya sincronizado; la liberación sigue condicionada a que esos checks también pasen en el HEAD final.
+
+Estas pruebas automatizadas no equivalen a una comprobación de reconocimiento de voz. Sigue pendiente una llamada bilingüe real para verificar: Live Caption ON, lectura nativa, cierre de la burbuja, continuidad vía Groq, recuperación nativa, controles sin obstrucción, ausencia de persistencia del preview y aislamiento de llamadas consecutivas. No se declara una prueba real hasta que se ejecute.
