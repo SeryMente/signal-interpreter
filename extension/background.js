@@ -2139,7 +2139,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       try {
         if (cachedConfig.liveCaptionOverlayEnabled !== false && hasActiveCall(state)) {
           SignalCaptionBridge.start(state.callSourceTabId, state.callId);
-          setCaptionPreviewForActiveCall(true, "capture-start").catch(function () {});
+          setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "capture-start").catch(function () {});
         }
       } catch (_) {}
       state.microphoneMuteStatus="pending";
