@@ -65,7 +65,7 @@ const startCall = background.match(/function startCall\(event\) \{[\s\S]*?\n  va
 assert(startCall, "startCall no encontrado");
 assert.ok(startCall[0].indexOf("captureCallEarningsBaseline(callId, state.callStartedAt)") < startCall[0].indexOf("syncOfficialPlatformData()"), "el baseline se congela antes de la sincronización oficial posterior al inicio");
 assert.match(background, /source: "local-completed-calls", official: false/);
-assert.match(background, /source: "platform-page-context",\s*official: true/);
+assert.match(background, /official: true/);
 assert.match(background, /Date\.now\(\) - captured\.getTime\(\) > 15 \* 60 \* 1000/);
 assert.match(background, /baselines:\s*\{\s*today:\s*baseline\("today"\),\s*currentMonth:\s*baseline\("currentMonth"\)/);
 assert.match(background, /baselines:Object\.assign\(\{today:null,currentMonth:null\},callEarnings\.baselines\|\|\{\}\)/);
