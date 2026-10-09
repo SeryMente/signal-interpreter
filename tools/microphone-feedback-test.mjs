@@ -15,4 +15,5 @@ assert.ok(offscreen.includes('if(cue==="mute-on"){\n    await tone(523.25,start,
 assert.ok(offscreen.includes('}else if(cue==="mute-off"){\n    await tone(1046.5,start,.11);\n    await tone(880,start+.12,.13);'),
   "MIC ON tone uses the confirmed high pitch pair");
 assert.ok(background.includes('desired?"mute-on":"mute-off"'));
+assert.ok(background.includes("outputRecoveredBaseline:!!outputResult.recoveredBaseline"), "microphone error events must expose recovery verification details");
 console.log("MICROPHONE_FEEDBACK_TEST=PASS");
