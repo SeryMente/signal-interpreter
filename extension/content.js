@@ -35,6 +35,7 @@
     earningsDisplayCurrency: "MXN"
   };
   var state = {};
+  var earningsMetrics = globalThis.SignalInterpreterEarningsMetrics || null;
   var platformMirror = {};
   var activeCallEarnings = {};
   var overlayHost = null;
@@ -1251,65 +1252,257 @@
     var previous = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     return date.getFullYear() === previous.getFullYear() && date.getMonth() === previous.getMonth();
   }
-  function earningsNow(period) {
-    period = /^(today|currentMonth|previousMonth|year)$/.test(String(period || "")) ? period : "today";
-    var calls = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) {
+  function activeOverlayStartedAt() {
+    if (state.callStartedAt) return state.callStartedAt;
+    return currentCallId() && callDisplayStartedAt ? new Date(callDisplayStartedAt).toISOString() : null;
+  }
+  function finiteMetric(value) {
+    if (value == null || value === "") return null;
+    var number = Number(value);
+    return Number.isFinite(number) && number >= 0 ? number : null;
+  }
+  function overlayPeriodMatches(value, period) {
+    if (!value) return false;
+    if (earningsMetrics) return earningsMetrics.callStartsInPeriod(period, value, Date.now());
+    return overlayCallInPeriod({ startedAt: value }, period);
+  }
+  function overlayLocalBaseline(period) {
+    var now = new Date();
+    var completed = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) {
       return overlayCallInPeriod(call, period);
     }) : [];
-    var completedUsd = calls.reduce(function (sum, call) { return sum + Number(call.estimatedRevenue || 0); }, 0);
-    var activePeriod = period !== "previousMonth";
-    var liveSeconds = activePeriod
-      ? (state.callStartedAt ? Math.max(0, (Date.now() - Date.parse(state.callStartedAt)) / 1000)
-        : (callDisplayStartedAt ? Math.max(0, (Date.now() - callDisplayStartedAt) / 1000) : 0))
-      : 0;
-    var modality = state.callModality || "OPI";
+    var unfinished = Array.isArray(state.unfinishedCalls) ? state.unfinishedCalls.filter(function (call) {
+      return overlayCallInPeriod(call, period);
+    }) : [];
+    var missed = Array.isArray(state.missedCallRecords) ? state.missedCallRecords.filter(function (call) {
+      return overlayCallInPeriod({ startedAt: call.detectedAt || call.classifiedAt }, period);
+    }) : [];
+    var seen = new Set(), records = [];
+    completed.concat(unfinished).forEach(function (call, index) {
+      var key = call.callId || call.id || String(call.startedAt || "") + "|" + String(call.endedAt || "") + "|" + index;
+      if (seen.has(key)) return;
+      seen.add(key);
+      records.push(call);
+    });
+    var completedUsd = completed.reduce(function (sum, call) {
+      return sum + (finiteMetric(call.estimatedRevenue) || 0);
+    }, 0);
+    var durationSeconds = records.reduce(function (sum, call) {
+      var seconds = null;
+      if (earningsMetrics && call.startedAt && call.endedAt) {
+        seconds = earningsMetrics.intervalSecondsInPeriod(period, call.startedAt, call.endedAt, now);
+      }
+      if (!(seconds >= 0)) {
+        seconds = finiteMetric(call.platformSeconds);
+        if (seconds == null) seconds = finiteMetric(call.observedSeconds);
+        if (seconds == null) seconds = finiteMetric(call.billableSecondsAssumed);
+        if (seconds == null && call.startedAt && call.endedAt) {
+          var start = Date.parse(call.startedAt), end = Date.parse(call.endedAt);
+          if (Number.isFinite(start) && Number.isFinite(end) && end >= start) seconds = (end - start) / 1000;
+        }
+        if (!(seconds >= 0) || !overlayPeriodMatches(call.startedAt || call.endedAt, period)) seconds = 0;
+      }
+      return sum + seconds;
+    }, 0);
+    var missedKeys = new Set();
+    var missedCount = missed.filter(function (call, index) {
+      var key = call.callId || call.id || String(call.detectedAt || call.classifiedAt || "") + "|" + index;
+      if (seen.has(key) || missedKeys.has(key)) return false;
+      missedKeys.add(key);
+      return true;
+    }).length;
+    return {
+      earnedUsd: completedUsd,
+      earned: null,
+      callCount: completed.length + unfinished.length + missedCount,
+      minutes: durationSeconds / 60,
+      callLength: null,
+      capturedAt: null,
+      periodKey: earningsMetrics ? earningsMetrics.periodKey(period, now) : null,
+      source: "local-reconciled-state",
+      authoritative: false
+    };
+  }
+  function overlayOfficialBaseline(entry, summary, period) {
+    if (!entry || !summary || typeof summary !== "object") return null;
+    var earnedUsd = finiteMetric(summary.earnedUsd);
+    if (earnedUsd == null && summary.earned != null) earnedUsd = finiteMetric(parseOfficialUsd(summary.earned));
+    var callCount = finiteMetric(summary.callCount);
+    var minutes = earningsMetrics ? earningsMetrics.parseCallLengthMinutes(summary.callLength) : null;
+    if (minutes == null && summary.callLength != null) {
+      var text = String(summary.callLength);
+      var parsed = text.split(":").map(Number);
+      if (parsed.length === 3 && parsed.every(Number.isFinite)) minutes = parsed[0] * 60 + parsed[1] + parsed[2] / 60;
+      else if (parsed.length === 2 && parsed.every(Number.isFinite)) minutes = parsed[0] + parsed[1] / 60;
+    }
+    if (earnedUsd == null && callCount == null && minutes == null && summary.earned == null) return null;
+    var source = entry.source || "platform-page-context";
+    var keyReference = entry.startIso || entry.capturedAt || Date.now();
+    return {
+      earnedUsd: earnedUsd,
+      earned: summary.earned == null ? null : summary.earned,
+      callCount: callCount,
+      minutes: minutes,
+      callLength: summary.callLength == null ? null : summary.callLength,
+      capturedAt: entry.capturedAt || null,
+      periodKey: earningsMetrics ? earningsMetrics.periodKey(period, keyReference) : null,
+      source: source,
+      authoritative: source === "platform-page-context" || source === "fetchInterpreterLogs" || source === "platform-page-context-call-safe"
+    };
+  }
+  function normalizeOverlayBaseline(baseline, period) {
+    if (!baseline) return null;
+    var source = baseline.source || "unknown";
+    var minutes = finiteMetric(baseline.minutes);
+    if (minutes == null && earningsMetrics) minutes = earningsMetrics.parseCallLengthMinutes(baseline.callLength);
+    var earnedUsd = finiteMetric(baseline.earnedUsd);
+    if (earnedUsd == null && baseline.earned != null) earnedUsd = finiteMetric(parseOfficialUsd(baseline.earned));
+    var key = baseline.periodKey || (earningsMetrics
+      ? earningsMetrics.periodKey(period, baseline.startIso || baseline.capturedAt || Date.now()) : null);
+    return {
+      earnedUsd: earnedUsd,
+      earned: baseline.earned == null ? null : baseline.earned,
+      callCount: finiteMetric(baseline.callCount),
+      minutes: minutes,
+      callLength: baseline.callLength == null ? null : baseline.callLength,
+      capturedAt: baseline.capturedAt || null,
+      periodKey: key,
+      source: source,
+      authoritative: baseline.authoritative === true || source === "platform-page-context" || source === "fetchInterpreterLogs" || source === "platform-page-context-call-safe"
+    };
+  }
+  function overlayBaselineMatchesPeriod(baseline, period, key) {
+    var normalizedBaseline = normalizeOverlayBaseline(baseline, period);
+    return !!(normalizedBaseline && normalizedBaseline.periodKey === key);
+  }
+  function resolveOverlayBaseline(period, entry, summary, activeStartedAt) {
+    var now = new Date();
+    var currentKey = earningsMetrics ? earningsMetrics.periodKey(period, now) : null;
+    var hasActiveCall = !!activeStartedAt && period !== "previousMonth";
+    var callId = state.callId || currentCallId();
+    if (hasActiveCall) {
+      var storedCallBaseline = activeCallEarnings && activeCallEarnings.callId === callId &&
+        activeCallEarnings.baselines && activeCallEarnings.baselines[period];
+      if (overlayBaselineMatchesPeriod(storedCallBaseline, period, currentKey)) {
+        return normalizeOverlayBaseline(storedCallBaseline, period);
+      }
+      var itemBaseline = entry && entry.callBaseline;
+      if (itemBaseline && itemBaseline.callId === callId &&
+          overlayBaselineMatchesPeriod(itemBaseline, period, currentKey)) {
+        return normalizeOverlayBaseline(itemBaseline, period);
+      }
+    }
+    var officialBaseline = overlayOfficialBaseline(entry, summary, period);
+    if (officialBaseline && (!hasActiveCall || !currentKey || officialBaseline.periodKey === currentKey)) {
+      return officialBaseline;
+    }
+    return overlayLocalBaseline(period);
+  }
+  function earningsNow(period) {
+    period = /^(today|currentMonth|previousMonth|year)$/.test(String(period || "")) ? period : "today";
+    var now = Date.now();
+    var activeStartedAt = activeOverlayStartedAt();
+    var activePeriod = period !== "previousMonth" && !!activeStartedAt;
+    var liveSeconds = activePeriod && earningsMetrics
+      ? earningsMetrics.elapsedSeconds(activeStartedAt, now)
+      : activePeriod ? Math.max(0, (now - Date.parse(activeStartedAt)) / 1000) : 0;
+    var livePeriodSeconds = activePeriod && earningsMetrics
+      ? earningsMetrics.activeSecondsInPeriod(period, activeStartedAt, now)
+      : activePeriod && overlayPeriodMatches(activeStartedAt, period) ? liveSeconds : 0;
+    var modality = state.callModality || state.pendingCall && state.pendingCall.modality || "OPI";
     var rate = modality === "VRI" ? Number(config.vriRatePerMinute || 0.25) : Number(config.opiRatePerMinute || 0.20);
-    var liveUsd = liveSeconds / 60 * rate;
+    var liveUsd = livePeriodSeconds / 60 * rate;
+    var fallback = overlayLocalBaseline(period);
+
     if (period === "year") {
       var yearChart = platformMirror.earningsCharts && platformMirror.earningsCharts.year;
       var yearItems = Array.isArray(yearChart && yearChart.items) ? yearChart.items : [];
-      var now = new Date(), currentMonthKey = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+      var nowDate = new Date(now), currentMonthKey = nowDate.getFullYear() + "-" + String(nowDate.getMonth() + 1).padStart(2, "0");
+      var monthEntry = platformMirror.earnings && platformMirror.earnings.currentMonth;
+      var monthSummary = monthEntry && monthEntry.summary || {};
+      var monthBaseline = resolveOverlayBaseline("currentMonth", monthEntry, monthSummary, activeStartedAt);
+      var monthLiveSeconds = activePeriod && earningsMetrics
+        ? earningsMetrics.activeSecondsInPeriod("currentMonth", activeStartedAt, now)
+        : activePeriod && overlayPeriodMatches(activeStartedAt, "currentMonth") ? liveSeconds : 0;
+      var monthLiveUsd = monthLiveSeconds / 60 * rate;
       var yearUsd = yearItems.reduce(function (sum, item) {
         var value = Number(item.earnedUsd) || 0;
-        if (item.key === currentMonthKey && state.callId && activeCallEarnings && activeCallEarnings.callId === state.callId &&
-            activeCallEarnings.baselines && activeCallEarnings.baselines.currentMonth) {
-          value = Number(activeCallEarnings.baselines.currentMonth.earnedUsd) || 0;
-          value += liveUsd;
+        if (item.key === currentMonthKey && yearChart && yearChart.complete) {
+          var monthBaseUsd = finiteMetric(monthBaseline && monthBaseline.earnedUsd);
+          if (monthBaseUsd != null) value = monthBaseUsd;
+          if (activePeriod) value += monthLiveUsd;
         }
         return sum + value;
       }, 0);
-      var yearCalls = yearItems.reduce(function (sum, item) { return sum + Number(item.callCount || 0); }, 0);
+      var yearCalls = yearItems.reduce(function (sum, item) {
+        var count = Number(item.callCount) || 0;
+        if (item.key === currentMonthKey && yearChart && yearChart.complete && finiteMetric(monthBaseline && monthBaseline.callCount) != null) {
+          count = Number(monthBaseline.callCount) + (activePeriod && overlayPeriodMatches(activeStartedAt, "currentMonth") ? 1 : 0);
+        }
+        return sum + count;
+      }, 0);
+      var yearMinutes = yearItems.reduce(function (sum, item) {
+        var minutes = Number(item.minutes) || 0;
+        if (item.key === currentMonthKey && yearChart && yearChart.complete && finiteMetric(monthBaseline && monthBaseline.minutes) != null) {
+          minutes = Number(monthBaseline.minutes) + monthLiveSeconds / 60;
+        }
+        return sum + minutes;
+      }, 0);
+      var yearBaseUsd = fallback.earnedUsd || 0;
+      if (!(yearChart && yearChart.complete)) yearUsd = yearBaseUsd + liveUsd;
+      if (!(yearChart && yearChart.complete)) {
+        yearCalls = fallback.callCount + (activePeriod && overlayPeriodMatches(activeStartedAt, period) ? 1 : 0);
+        yearMinutes = Number(fallback.minutes || 0) + livePeriodSeconds / 60;
+      }
       return {
-        period: period, calls: yearCalls || calls.length, modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd,
-        totalUsd: yearChart && yearChart.complete ? yearUsd : completedUsd + liveUsd,
+        period: period,
+        calls: yearCalls,
+        callsAuthoritative: !!(yearChart && yearChart.complete),
+        modality: modality,
+        liveSeconds: liveSeconds,
+        liveUsd: liveUsd,
+        periodMinutes: yearMinutes,
+        totalUsd: yearChart && yearChart.complete ? yearUsd : yearBaseUsd + liveUsd,
         officialUsd: yearChart && yearChart.complete ? yearUsd : null,
-        fx: Number(config.usdMxnRate || 0), fxDate: config.exchangeRateDate || null, hasOfficial: !!(yearChart && yearChart.complete)
+        fx: Number(config.usdMxnRate || 0),
+        fxDate: config.exchangeRateDate || null,
+        hasOfficial: !!(yearChart && yearChart.complete),
+        baselineSource: yearChart && yearChart.complete ? "platform-page-context" : "local-reconciled-state"
       };
     }
+
     var entry = period === "today"
       ? (platformMirror.earnings && platformMirror.earnings.today) || platformMirror.statistics
       : platformMirror.earnings && platformMirror.earnings[period];
     var official = entry && entry.summary || {};
-    var officialUsd = Number(official.earnedUsd);
-    if (!(officialUsd >= 0)) officialUsd = parseOfficialUsd(official.earned);
-    var callBaseline = entry && entry.callBaseline;
-    if (activePeriod && state.callId && activeCallEarnings && activeCallEarnings.callId === state.callId &&
-        activeCallEarnings.baselines && activeCallEarnings.baselines[period]) {
-      callBaseline = activeCallEarnings.baselines[period];
-    }
-    if (activePeriod && state.callId && callBaseline && callBaseline.callId === state.callId) {
-      officialUsd = Number(callBaseline.earnedUsd);
-      if (!(officialUsd >= 0)) officialUsd = parseOfficialUsd(callBaseline.earned);
-    }
-    var hasOfficial = Number.isFinite(officialUsd) && officialUsd >= 0 && (official.earned != null || (callBaseline && callBaseline.callId === state.callId));
-    var baseUsd = hasOfficial ? officialUsd : completedUsd;
-    var totalUsd = baseUsd + (activePeriod ? liveUsd : 0);
-    var officialCalls = Number(official.callCount);
+    var baseline = resolveOverlayBaseline(period, entry, official, activeStartedAt);
+    var baseUsd = finiteMetric(baseline && baseline.earnedUsd);
+    if (baseUsd == null) baseUsd = finiteMetric(fallback.earnedUsd) || 0;
+    var baseCalls = finiteMetric(baseline && baseline.callCount);
+    if (baseCalls == null) baseCalls = Number(fallback.callCount || 0);
+    var baseMinutes = finiteMetric(baseline && baseline.minutes);
+    if (baseMinutes == null) baseMinutes = Number(fallback.minutes || 0);
+    var activeStartsInPeriod = activePeriod && earningsMetrics
+      ? earningsMetrics.callStartsInPeriod(period, activeStartedAt, now)
+      : activePeriod && overlayPeriodMatches(activeStartedAt, period);
+    var calls = baseCalls + (activeStartsInPeriod ? 1 : 0);
+    var periodMinutes = baseMinutes + livePeriodSeconds / 60;
+    var totalUsd = baseUsd + liveUsd;
+    var hasOfficial = !!(baseline && baseline.authoritative && finiteMetric(baseline.earnedUsd) != null);
     return {
-      period: period, calls: Number.isFinite(officialCalls) && officialCalls >= 0 ? officialCalls : calls.length,
-      modality: modality, liveSeconds: liveSeconds, liveUsd: liveUsd,
-      totalUsd: totalUsd, officialUsd: hasOfficial ? officialUsd : null, fx: Number(config.usdMxnRate || 0),
-      fxDate: config.exchangeRateDate || null, hasOfficial: hasOfficial
+      period: period,
+      calls: calls,
+      callsAuthoritative: !!(hasOfficial && finiteMetric(baseline.callCount) != null),
+      modality: modality,
+      liveSeconds: liveSeconds,
+      liveUsd: liveUsd,
+      periodMinutes: periodMinutes,
+      totalUsd: totalUsd,
+      officialUsd: hasOfficial ? baseline.earnedUsd : null,
+      fx: Number(config.usdMxnRate || 0),
+      fxDate: config.exchangeRateDate || null,
+      hasOfficial: hasOfficial,
+      baselineSource: baseline && baseline.source || "local-reconciled-state"
     };
   }
   function requestOverlayEarnings(period) {
@@ -1347,15 +1540,21 @@
       emit("EARNINGS_OVERLAY_CHART_SYNC_ERROR", { period: period, error: String(error) }, "warn");
     }
   }
-  function callStatsForPeriod(period) {
+  function callStatsForPeriod(period, info) {
     function inPeriod(value) {
       return overlayCallInPeriod({ startedAt: value }, period);
     }
     var completed = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) { return inPeriod(call.startedAt || call.endedAt); }).length : 0;
     var unfinished = Array.isArray(state.unfinishedCalls) ? state.unfinishedCalls.filter(function (call) { return inPeriod(call.startedAt || call.endedAt); }).length : 0;
     var missed = Array.isArray(state.missedCallRecords) ? state.missedCallRecords.filter(function (call) { return inPeriod(call.detectedAt || call.classifiedAt); }).length : 0;
-    var active = state.callId && state.callStartedAt && inPeriod(state.callStartedAt) ? 1 : 0;
-    return { completed: completed, unfinished: unfinished, missed: missed, active: active, total: completed + unfinished + missed + active };
+    var activeStartedAt = activeOverlayStartedAt();
+    var active = activeStartedAt && period !== "previousMonth" && earningsMetrics
+      ? (earningsMetrics.callStartsInPeriod(period, activeStartedAt, Date.now()) ? 1 : 0)
+      : activeStartedAt && period !== "previousMonth" && inPeriod(activeStartedAt) ? 1 : 0;
+    var localTotal = completed + unfinished + missed + active;
+    var officialOrReconciledTotal = info && finiteMetric(info.calls);
+    var total = officialOrReconciledTotal == null ? localTotal : officialOrReconciledTotal;
+    return { completed: completed, unfinished: unfinished, missed: missed, active: active, total: total, localTotal: localTotal };
   }
   function escapeXml(value) {
     return String(value == null ? "" : value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");
@@ -1648,7 +1847,7 @@
     if (currency === "USD") totalText = money(info.totalUsd, "USD", 4);
     if (overlayPeriod === "previousMonth") liveText = "Sin llamada";
     var periodLabel = overlayPeriod === "today" ? "Hoy" : overlayPeriod === "currentMonth" ? "Este mes" : overlayPeriod === "previousMonth" ? "Mes pasado" : "Año";
-    var callStats = callStatsForPeriod(overlayPeriod);
+    var callStats = callStatsForPeriod(overlayPeriod, info);
     var expandedHistorical = overlayPeriod !== "today";
     overlayRoot.querySelector(".card").classList.toggle("compact", !!config.overlayCompact && !expandedHistorical);
     overlayRoot.querySelectorAll("[data-period]").forEach(function (button) {
@@ -1678,9 +1877,13 @@
     overlayRoot.getElementById("live").textContent = state.callStartedAt && overlayPeriod !== "previousMonth"
       ? "En llamada " + liveText
       : liveText;
-    overlayRoot.getElementById("summary").textContent = state.callStartedAt && overlayPeriod !== "previousMonth"
-      ? periodLabel + " · " + callStats.total + " llamadas · " + info.modality + " · " + (info.liveSeconds / 60).toFixed(2) + " min · " + (callStats.active ? "1 en curso" : "")
-      : periodLabel + " · " + callStats.total + " llamadas";
+    var activeStartedAt = activeOverlayStartedAt();
+    var activeLiveLabel = activeStartedAt && overlayPeriod !== "previousMonth"
+      ? " · en curso " + (info.liveSeconds / 60).toFixed(2) + " min"
+      : "";
+    overlayRoot.getElementById("summary").textContent = periodLabel + " · " + callStats.total + " llamadas · " +
+      (Number.isFinite(info.periodMinutes) ? info.periodMinutes.toFixed(2) + " min del periodo" : "minutos sin confirmar") +
+      activeLiveLabel;
     overlayRoot.getElementById("completed").textContent = String(callStats.completed);
     overlayRoot.getElementById("unfinished").textContent = String(callStats.unfinished);
     overlayRoot.getElementById("missed").textContent = String(callStats.missed);
