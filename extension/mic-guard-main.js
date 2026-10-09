@@ -27,8 +27,34 @@ var tok=live.length>0&&live.every(function(t){try{return t.enabled===!muted}catc
 function wait(ms){return new Promise(function(resolve){setTimeout(resolve,ms)})}
 async function stableReport(samples,gap){var first=null,last=null;for(var i=0;i<samples;i+=1){last=report();if(!last.verified)return Object.assign({},last,{stable:false,stableSamples:i+1});if(!first)first=last;else if(last.trackCount!==first.trackCount||last.senderCount!==first.senderCount)return Object.assign({},last,{verified:false,stable:false,unstable:true,stableSamples:i+1});if(i+1<samples)await wait(gap)}return Object.assign({},last,{stable:true,stableSamples:samples})}
 async function forceMute(id){muted=true;state.muted=true;patch();tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_) {}});var r=await stableReport(3,20);ack(id,{ok:r.verified&&r.stable,muted:true,verified:r.verified&&r.stable,stable:!!r.stable,stableSamples:r.stableSamples||0,trackCount:r.trackCount,senderCount:r.senderCount,patches:patches,error:r.verified&&r.stable?null:"No se pudo verificar de forma estable la pista saliente del micrófono."})}
-async function unmute(id){patch();var before=await stableReport(2,15);if(!before.verified||!before.stable){muted=true;state.muted=true;tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_) {}});var safe=await stableReport(2,15);ack(id,{ok:false,muted:true,verified:false,stable:!!safe.stable,stableSamples:safe.stableSamples||0,trackCount:safe.trackCount,senderCount:safe.senderCount,error:"No se libera el micrófono sin pista y sender WebRTC estables y verificables."});return}
-muted=false;state.muted=false;tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=true}catch(_) {}});var r=await stableReport(3,20);if(!r.verified||!r.stable){muted=true;state.muted=true;tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_) {}});r=await stableReport(3,20);ack(id,{ok:false,muted:true,verified:false,stable:!!r.stable,stableSamples:r.stableSamples||0,trackCount:r.trackCount,senderCount:r.senderCount,error:"El unmute no pudo verificarse de forma estable; el micrófono permanece silenciado."});return}ack(id,{ok:true,muted:false,verified:true,stable:true,stableSamples:r.stableSamples||3,trackCount:r.trackCount,senderCount:r.senderCount,patches:patches})}
+async function unmute(id){
+patch();
+var recoveredBaseline=false;
+var before=await stableReport(2,15);
+if(!before.verified||!before.stable){
+  // A hotload or platform track transition can leave a live track briefly inconsistent.
+  // Re-establish and verify a muted baseline, then continue this same explicit unmute request.
+  muted=true;state.muted=true;
+  tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_){}});
+  var safe=await stableReport(3,25);
+  if(!safe.verified||!safe.stable||Number(safe.trackCount||0)<1){
+    ack(id,{ok:false,muted:true,verified:false,stable:!!safe.stable,stableSamples:safe.stableSamples||0,trackCount:safe.trackCount,senderCount:safe.senderCount,error:"No se libera el micrófono: no fue posible restablecer una pista saliente viva y estable.",recoveryBaselineAttempted:true});
+    return;
+  }
+  recoveredBaseline=true;
+}
+muted=false;state.muted=false;
+tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=true}catch(_){}});
+var r=await stableReport(3,20);
+if(!r.verified||!r.stable){
+  muted=true;state.muted=true;
+  tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_){}});
+  r=await stableReport(3,20);
+  ack(id,{ok:false,muted:true,verified:false,stable:!!r.stable,stableSamples:r.stableSamples||0,trackCount:r.trackCount,senderCount:r.senderCount,error:"El unmute no pudo verificarse de forma estable; el micrófono permanece silenciado.",recoveredBaseline:recoveredBaseline});
+  return;
+}
+ack(id,{ok:true,muted:false,verified:true,stable:true,stableSamples:r.stableSamples||3,trackCount:r.trackCount,senderCount:r.senderCount,patches:patches,recoveredBaseline:recoveredBaseline});
+}
 document.addEventListener(CE,function(e){var m=null;try{m=JSON.parse(String(e&&e.detail||""))}catch(_){}if(!m||m.schema!=="signal-main-mic-command/v1")return;if(m.op==="set"){if(m.muted)forceMute(m.requestId);else unmute(m.requestId)}else if(m.op==="probe"){patch();stableReport(2,15).then(function(r){ack(m.requestId,{ok:true,muted:muted,verified:r.verified,stable:!!r.stable,stableSamples:r.stableSamples||0,trackCount:r.trackCount,senderCount:r.senderCount,patches:patches})}).catch(function(error){ack(m.requestId,{ok:false,muted:muted,verified:false,stable:false,error:String(error),patches:patches})})}},true);
 var state=old||{version:"1.0",startedAt:now(),commandEvent:CE,ackEvent:AE,tracks:tracks,senders:senders,patches:patches,muted:muted,timer:null};
 state.tracks=tracks;state.senders=senders;state.patches=patches;state.muted=muted;patch();

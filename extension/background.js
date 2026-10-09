@@ -2062,14 +2062,14 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       try{
         var response=await chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:!!muted,source:source||"background"});
         if(response&&response.verified===true&&!!response.muted===!!muted){
-          record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(response.trackCount||0),senderCount:Number(response.senderCount||0),attempts:attempt,transport:"content"},"info","microphone");
+          record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(response.trackCount||0),senderCount:Number(response.senderCount||0),recoveredBaseline:!!response.recoveredBaseline,attempts:attempt,transport:"content"},"info","microphone");
           return Object.assign({},response,{ok:true,inactive:false,attempts:attempt,transport:"content"});
         }
         lastError=response&&response.error||"La salida del micrófono no pudo verificarse.";
       }catch(error){lastError=String(error);}
       var direct=await executeMainMicrophoneCommand(targetTabId,"set",!!muted,source||"background-direct");
       if(direct&&direct.verified===true&&!!direct.muted===!!muted){
-        record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(direct.trackCount||0),senderCount:Number(direct.senderCount||0),attempts:attempt,transport:"direct-main"},"info","microphone");
+        record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(direct.trackCount||0),senderCount:Number(direct.senderCount||0),recoveredBaseline:!!direct.recoveredBaseline,attempts:attempt,transport:"direct-main"},"info","microphone");
         return Object.assign({},direct,{ok:true,inactive:false,attempts:attempt,transport:"direct-main"});
       }
       lastError=direct&&direct.error||lastError;
@@ -2153,7 +2153,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       record("EXTENSION_MICROPHONE_MUTE_ERROR",{
         desired:desired,previousMuted:previousMuted,recoveryMuted:recoveryMuted,
         source:source||"unknown",callId:state.callId||null,
-        captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,
+        captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,outputRecoveredBaseline:!!outputResult.recoveredBaseline,outputTrackCount:Number(outputResult.trackCount||0),outputSenderCount:Number(outputResult.senderCount||0),outputAttempts:Number(outputResult.attempts||0),
         error:captureResult.error||outputResult.error||"verification-failed",
         policy:recoveryPolicy,
         previousMuteStatus:previousMuteStatus,
@@ -2175,7 +2175,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     state.microphoneOutputSenderCount=Number(outputResult.senderCount||0);
     state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:desired});
     await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
-    record("EXTENSION_MICROPHONE_MUTE_APPLIED",{desired:desired,source:source||"unknown",callId:state.callId||null,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)},"info","microphone");
+    record("EXTENSION_MICROPHONE_MUTE_APPLIED",{desired:desired,source:source||"unknown",callId:state.callId||null,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,recoveredBaseline:!!outputResult.recoveredBaseline,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)},"info","microphone");
     if(cachedConfig.soundEnabled!==false){
       try{
         await playSound(Math.max(0.05,Number(cachedConfig.volume||0.8)),desired?"mute-on":"mute-off");
