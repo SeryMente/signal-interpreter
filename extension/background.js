@@ -45,39 +45,79 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   var signalGroqQueue = Promise.resolve();
   var earningsSyncQueue = Promise.resolve();
   var microphoneMuteQueue = Promise.resolve();
-  var captionPreviewQueue = Promise.resolve();
-  async function setCaptionPreviewForActiveCall(tabEnabled) {
+  var captionPreviewDispatcher = null;
+  var captionPreviewLastErrorAt = Object.create(null);
+  async function setCaptionPreviewForActiveCall(tabEnabled, reason) {
+    var trigger = String(reason || "native-status").slice(0, 80);
     try {
       var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-      if (config.liveCaptionOverlayEnabled === false || !hasActiveCall(state)) return { ok: true, skipped: true };
-      if (!state.callSourceTabId) return { ok: false, error: "No hay pestaña de llamada para Live Caption." };
+      var enabled = config.liveCaptionOverlayEnabled !== false && hasActiveCall(state);
       await ensureOffscreen();
+      if (!enabled) {
+        try {
+          await chrome.runtime.sendMessage({
+            target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: false, reason: trigger
+          });
+        } catch (_) {}
+        if (config.liveCaptionOverlayEnabled === false || !hasActiveCall(state)) {
+          try { SignalCaptionBridge.stop(); } catch (_) {}
+        }
+        return { ok: true, enabled: false, reason: trigger };
+      }
+      if (!state.callSourceTabId) {
+        record("SIGNAL_CAPTION_PREVIEW_UNAVAILABLE", {
+          callId: state.callId || null, reasonCode: "call-tab-unavailable", trigger: trigger
+        }, "warn", "caption");
+        await chrome.runtime.sendMessage({
+          target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: false, reason: "call-tab-unavailable"
+        }).catch(function () {});
+        return { ok: false, error: "No hay pestaña de llamada para Live Caption." };
+      }
       var response = await chrome.runtime.sendMessage({
         target: "offscreen",
         type: "SIGNAL_SET_CAPTION_PREVIEW",
         enabled: true,
         tabEnabled: !!tabEnabled,
-        micEnabled: true
+        micEnabled: true,
+        reason: trigger
       });
+      if (response && response.ok) {
+        record("SIGNAL_CAPTION_PREVIEW_MODE_CHANGED", {
+          callId: state.callId || null,
+          sourceMode: tabEnabled ? "native-stale-groq-fallback" : "native-caption-fresh",
+          tabPreviewEnabled: !!tabEnabled,
+          micPreviewEnabled: true,
+          trigger: trigger
+        }, "info", "caption");
+      } else {
+        record("SIGNAL_CAPTION_PREVIEW_UNAVAILABLE", {
+          callId: state.callId || null,
+          reasonCode: "audio-capture-not-running",
+          trigger: trigger
+        }, "warn", "caption");
+      }
       return response || { ok: false };
     } catch (error) {
-      return { ok: false, error: String(error || "unknown") };
+      record("SIGNAL_CAPTION_PREVIEW_CONTROL_ERROR", {
+        trigger: trigger,
+        errorType: String(error && error.name || "Error").slice(0, 80)
+      }, "warn", "caption");
+      return { ok: false, error: String(error && error.name || "unknown") };
     }
   }
 
   try {
     SignalCaptionBridge.onStatus = function (status) {
-      if (status && status.active) {
-        setCaptionPreviewForActiveCall(false).catch(function () {});
-      } else {
-        setCaptionPreviewForActiveCall(true).catch(function () {});
-      }
+      setCaptionPreviewForActiveCall(!(status && status.active === true), status && status.reason || "native-status")
+        .catch(function () {});
     };
     SignalCaptionBridge.onError = function (error) {
-      record("SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR", { error: String(error || "unknown") }, "warn", "caption");
-      setCaptionPreviewForActiveCall(true).catch(function () {});
+      record("SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR", {
+        errorType: String(error && error.name || "NativeMessagingError").slice(0, 80)
+      }, "warn", "caption");
+      setCaptionPreviewForActiveCall(true, "native-bridge-error").catch(function () {});
     };
   } catch (_) {}
   var HOTLOAD_SCHEMA = "signal-hotload/v1";
