@@ -68,7 +68,7 @@ assert.match(background, /function syncOfficialEarningsRange\(period\)\{\s*retur
 assert.match(background, /effectifCallEarnings/);
 assert.match(background, /CALL_EARNINGS_BASELINE_CAPTURED/);
 assert.match(background, /baselines:\s*\{\s*today:\s*baseline\("today"\),\s*currentMonth:\s*baseline\("currentMonth"\)/);
-assert.match(background, /baselines:Object\.assign\(\{today:null,currentMonth:null\},callEarnings\.baselines\|\|\{\}\)/);
+assert.match(background, /baselines:Object\.assign\(\{today:null,currentMonth:null\},activeBaselines\)/);
 assert.match(background, /reconcileOfficialEarningsAfterCall\(callId\)/);
 assert.match(background, /CALL_END_EARNINGS_SYNC_ERROR/);
 assert.match(background, /chrome\.storage\.local\.remove\(\["effectifCallEarnings"\]\)/);
