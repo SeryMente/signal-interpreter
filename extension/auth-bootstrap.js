@@ -60,7 +60,7 @@
         // Allow the app time to restore a valid session before classifying the page as logged out.
         if (onSigninRoute && page.hasPassword && page.hasUsername) {
           if (!firstVisibleSigninAt) firstVisibleSigninAt = Date.now();
-          if (Date.now() - firstVisibleSigninAt >= 1400) return false;
+          if (Date.now() - firstVisibleSigninAt >= 2200) return false;
         } else {
           firstVisibleSigninAt = 0;
         }
@@ -93,11 +93,23 @@
     }
   }
 
+  async function hasAuthenticatedPlatformTab() {
+    var tabs = await chrome.tabs.query({ url: [ORIGIN + "/*"] });
+    return (tabs || []).some(function (tab) {
+      var path = "";
+      try { path = new URL(String(tab.url || "")).pathname; } catch (_) {}
+      return /^\\/(profile|call|logs|appointments|scheduled)(\\/|$)/.test(path);
+    });
+  }
   async function runBootstrap(reason) {
     var probeTab = null;
     await storeState("checking", reason);
 
     try {
+      if (await hasAuthenticatedPlatformTab()) {
+        await storeState("authenticated", reason, { source: "existing-platform-tab" });
+        return;
+      }
       // Use a background tab on the sign-in route; never navigate or replace the user's open tabs.
       probeTab = await chrome.tabs.create({ url: SIGNIN_URL, active: false });
       var alreadySignedIn = await waitForSessionRedirect(probeTab.id);

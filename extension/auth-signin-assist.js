@@ -55,10 +55,8 @@
     observer = null;
   }
 
-  chrome.storage.local.get(["effectifConfig"]).then(function (stored) {
-    savedUsername = String(
-      stored && stored.effectifConfig && stored.effectifConfig.cloudInterpreterUsername || ""
-    ).trim();
+  chrome.storage.local.get(["cloudInterpreterLoginUsername"]).then(function (stored) {
+    savedUsername = String(stored && stored.cloudInterpreterLoginUsername || "").trim();
 
     if (applySigninAssist()) return;
     if (document.documentElement) {
