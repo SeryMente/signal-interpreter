@@ -1,34 +1,35 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-788ed136-218e-4cae-ac06-0505db036f9a
-- Creado: 2026-10-09T15:48:21.860Z
-- Trigger: event-threshold
+- Batch: batch-a39fd4ff-65c1-4842-9d29-a9a0630ad1e0
+- Creado: 2026-10-09T15:48:35.828Z
+- Trigger: critical
 - Extensión: 0.10.14
-- Eventos: 56
-- Errores: 0
+- Eventos: 46
+- Errores: 1
 - Warnings: 0
-- Secuencia: 3282 → 3337
+- Secuencia: 3338 → 3383
 - Identidades de plataforma: 8
-- Snapshots de plataforma: 368
-- Deltas de plataforma: 368
+- Snapshots de plataforma: 369
+- Deltas de plataforma: 369
 
 ## Categorías
 
 {
-  "RUNTIME": 55,
-  "SESSION": 1
+  "RUNTIME": 44,
+  "PORTAL": 2
 }
 
 ## Acciones
 
 {
-  "PLATFORM_INTEGRITY_CHECK": 2,
-  "AUTO_ANSWER_READINESS": 30,
-  "MEDIA_HEALTH": 17,
-  "EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFIED": 1,
-  "HOTLOAD_CALL_LEASE_HEARTBEAT": 1,
-  "PAGE_LIFECYCLE": 2,
-  "USER_INTERACTION": 1,
+  "MEDIA_HEALTH": 15,
+  "AUTO_ANSWER_READINESS": 23,
+  "PERFORMANCE_HEARTBEAT": 1,
+  "NETWORK_ACTIVITY_WINDOW": 1,
+  "PLATFORM_SURFACE_SNAPSHOT": 1,
   "SCREEN_MAP": 1,
-  "PAGE_VISIBILITY_CHANGED": 1
+  "PAGE_VISIBILITY_CHANGED": 1,
+  "PAGE_LIFECYCLE": 1,
+  "PLATFORM_INTEGRITY_CHECK": 1,
+  "PLATFORM_SCREENSHOT_CAPTURE_ERROR": 1
 }
