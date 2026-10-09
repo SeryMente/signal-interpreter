@@ -1900,9 +1900,12 @@
     overlayRoot.getElementById("missed").textContent = String(callStats.missed);
     overlayRoot.getElementById("totalCalls").textContent = String(callStats.total);
     renderOverlayChart(overlayRoot.getElementById("chart"));
-    overlayRoot.getElementById("fx").textContent = fxFresh
+    var baselineStatus = info.hasOfficial
+      ? "Base oficial de Cloud Interpreter sincronizada"
+      : "Estimación local: base oficial no confirmada para este periodo";
+    overlayRoot.getElementById("fx").textContent = baselineStatus + " · " + (fxFresh
       ? "USD/MXN " + info.fx.toFixed(4) + " · tasa de hoy " + info.fxDate
-      : "Tasa USD/MXN de hoy no confirmada todavía";
+      : "Tasa USD/MXN de hoy no confirmada todavía");
   }
   function installNavigationObservers() {
     if (navigationListenersInstalled) return;
