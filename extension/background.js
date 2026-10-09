@@ -2359,7 +2359,16 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     return run;
   }
   async function stopGroqCapture(reason){
-    try { SignalCaptionBridge.stop(); } catch (_) {}
+    var stopReason = String(reason || "manual");
+    if (stopReason === "call-ended" || stopReason === "source-tab-closed" ||
+        cachedConfig.liveCaptionOverlayEnabled === false) {
+      try { SignalCaptionBridge.stop(); } catch (_) {}
+    } else {
+      chrome.storage.local.get(["effectifState"]).then(function (stored) {
+        var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+        if (!hasActiveCall(state)) { try { SignalCaptionBridge.stop(); } catch (_) {} }
+      }).catch(function () {});
+    }
     try{await ensureOffscreen();await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_STOP_GROQ_CAPTURE"});}catch(_){};
     await updateGroqCaptureState({status:"stopped",tabAudio:false,microphone:false,error:null}).catch(function(){});recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_STOPPED",{reason:reason||"manual"});broadcastSignalEvent({type:"signal.groq.status",sessionId:signalActiveSessionId,status:"stopped",reason:reason||"manual",timestamp:iso()});return{ok:true};
   }
