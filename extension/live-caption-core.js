@@ -45,7 +45,7 @@
   function normalizeLanguage(value) {
     var language = String(value == null ? "" : value).trim().toLowerCase().replace(/_/g, "-");
     if (!language) return "unknown";
-    var normalized = language.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "");
+    var normalized = language.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     if (normalized === "en" || normalized === "eng" || normalized === "english" || /^en(?:-|$)/.test(normalized)) {
       return "en";
     }
