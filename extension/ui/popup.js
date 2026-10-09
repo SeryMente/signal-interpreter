@@ -26,7 +26,8 @@
     exchangeRateUpdatedAt: null
   };
   var config = Object.assign({}, DEFAULT_CONFIG);
-  var cloudInterpreterLoginUsername = "";
+  var DEFAULT_CLOUD_INTERPRETER_LOGIN_USERNAME = "victor.hugo.queretaro@proton.me";
+  var cloudInterpreterLoginUsername = DEFAULT_CLOUD_INTERPRETER_LOGIN_USERNAME;
   var state = {};
   var mirror = {};
   var relayMomentState = { automatic: null, manual: null, model: null };
@@ -224,7 +225,8 @@
   $("groqModel").addEventListener("change",function(){save({groqModel:this.value});});
   var loginUsernameInput = $("cloudInterpreterUsername");
   if (loginUsernameInput) loginUsernameInput.addEventListener("change", function () {
-    cloudInterpreterLoginUsername = String(this.value || "").trim();
+    cloudInterpreterLoginUsername = String(this.value || "").trim() || DEFAULT_CLOUD_INTERPRETER_LOGIN_USERNAME;
+    this.value = cloudInterpreterLoginUsername;
     chrome.storage.local.set({ cloudInterpreterLoginUsername: cloudInterpreterLoginUsername }, function () {
       status("Usuario guardado localmente en Chrome");
     });
@@ -464,7 +466,10 @@
     popupStateLoaded = true;
     chrome.storage.local.get(["effectifConfig", "effectifState", "effectifLastEvent", "effectifPlatformMirror", "cloudInterpreterLoginUsername"], function (stored) {
       config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}); delete config.groqApiKey;
-      cloudInterpreterLoginUsername = String(stored.cloudInterpreterLoginUsername || "");
+      cloudInterpreterLoginUsername = String(stored.cloudInterpreterLoginUsername || "").trim() || DEFAULT_CLOUD_INTERPRETER_LOGIN_USERNAME;
+      if (!String(stored.cloudInterpreterLoginUsername || "").trim()) {
+        chrome.storage.local.set({ cloudInterpreterLoginUsername: DEFAULT_CLOUD_INTERPRETER_LOGIN_USERNAME }).catch(function () {});
+      }
       state = stored.effectifState || {};
       mirror = stored.effectifPlatformMirror || {};
       var last = stored.effectifLastEvent;
@@ -480,7 +485,7 @@
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local") return;
     if (changes.effectifConfig) config = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.newValue || {});
-    if (changes.cloudInterpreterLoginUsername) cloudInterpreterLoginUsername = String(changes.cloudInterpreterLoginUsername.newValue || "");
+    if (changes.cloudInterpreterLoginUsername) cloudInterpreterLoginUsername = String(changes.cloudInterpreterLoginUsername.newValue || "").trim() || DEFAULT_CLOUD_INTERPRETER_LOGIN_USERNAME;
     if (changes.effectifState) state = changes.effectifState.newValue || {};
     if (changes.effectifPlatformMirror) mirror = changes.effectifPlatformMirror.newValue || {};
     if (changes.signalObservationSyncState) renderRelayStatus();
