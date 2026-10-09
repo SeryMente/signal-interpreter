@@ -176,3 +176,10 @@ Esta versión convierte la telemetría de desarrollo en un flujo persistente y s
 - `Ctrl+Shift+.` dispone de un respaldo de teclado en cualquier pestaña web, además del comando de Chrome; el worker deduplica señales para evitar alternar dos veces.
 - El gesto reversible mantiene pulsados los botones izquierdo y derecho durante al menos 240 ms. Los listeners se reinstalan limpiamente y el estado se toma del bitmask de botones, con respaldo para navegadores sin Pointer Events.
 - Silenciar usa tonos más agudos (1046.5 → 880 Hz); activar el micrófono usa tonos más graves (523.25 → 392 Hz).
+
+
+## Hotload durante llamada (0.10.17)
+
+Cuando Chrome notifica una actualización disponible durante una llamada, la extensión persiste la identidad de llamada, la pestaña de origen, la sesión de transcripción y el estado esperado de captura antes de recargar el runtime para aplicar la versión nueva. La pestaña de Cloud Interpreter y su llamada no se navegan ni se cierran; al instalarse la versión nueva, el runtime rehidrata los scripts y verifica el estado real de la sesión offscreen antes de considerar recuperada la transcripción. Si no está activa, intenta readquirir la captura y registra la degradación si la recuperación falla.
+
+El hotload reinicia el contexto de la extensión y puede causar una breve recuperación de la transcripción; no garantiza continuidad de cada fragmento de audio durante ese límite. La llamada de Cloud Interpreter no se cierra ni se navega.

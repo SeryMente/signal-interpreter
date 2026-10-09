@@ -30,6 +30,7 @@ jobs:
           node --check extension/platform-screenshot.js
           node --check tools/observability-relay/api/screenshot.js
           node --check extension/offscreen.js
+          node --check tools/hotload-active-call-test.mjs
           node --check extension/groq-transcriber.js
           node --check extension/live-caption-core.js
           node --check extension/live-caption-bridge.js
@@ -52,6 +53,8 @@ jobs:
         run: node tools/observability-screenshot-relay-test.mjs
       - name: Cloud login bootstrap unit test
         run: node tools/cloud-login-bootstrap-test.mjs
+      - name: Hotload during active call unit test
+        run: node tools/hotload-active-call-test.mjs
       - name: Microphone guard unit test
         run: node tools/microphone-guard-test.mjs
       - name: Global mouse mute unit test
