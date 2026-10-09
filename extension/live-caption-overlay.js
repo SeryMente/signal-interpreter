@@ -168,13 +168,15 @@
           }
           return;
         }
+        var previousAt = Number(candidate.at || 0);
+        var previousSource = candidate.source;
         candidate.text = core.mergeCaptionText(candidate.text, clean).slice(0, 4000);
         candidate.at = now;
         if (language !== "unknown" || candidate.language === "unknown") candidate.language = language;
         if (source === "chrome-live-caption") {
           candidate.source = source;
           candidate.live = true;
-        } else if (now - Number(candidate.at || 0) > 4500 || candidate.source !== "chrome-live-caption") {
+        } else if (previousSource !== "chrome-live-caption" || now - previousAt > 4500) {
           candidate.source = source;
           candidate.live = !!isLive;
         }
@@ -279,31 +281,59 @@
   chrome.runtime.onMessage.addListener(function (message) {
     if (!message) return;
     if (message.type === "SIGNAL_CAPTION_UPDATE") {
-      setActive(true);
-      pushRow(message.caption && message.caption.text, message.caption && message.caption.language, message.caption && message.caption.source, message.caption && message.caption.live);
+      var caption = message.caption || {};
+      if (caption.text) {
+        pushRow(caption.text, caption.language, caption.source, caption.live);
+        setActive(true);
+      }
     } else if (message.type === "SIGNAL_CAPTION_NATIVE_STATUS") {
-      setActive(!!(message.active || message.visible));
+      var statusActive = message.captionFresh === false
+        ? false
+        : (message.active === true || (message.captionFresh == null && message.visible === true));
+      setActive(statusActive);
+    } else if (message.type === "SIGNAL_CAPTION_SESSION_RESET") {
+      rows = [];
+      active = false;
+      render();
+    } else if (message.type === "EFFECTIF_SCREENSHOT_PREPARE") {
+      if (host && host.isConnected && screenshotPreviousVisibility === null) {
+        screenshotPreviousVisibility = host.style.visibility;
+        host.style.visibility = "hidden";
+      }
+    } else if (message.type === "EFFECTIF_SCREENSHOT_RESTORE") {
+      if (host && host.isConnected) {
+        host.style.visibility = screenshotPreviousVisibility === null ? "" : screenshotPreviousVisibility;
+      }
+      screenshotPreviousVisibility = null;
     } else if (message.type === "EFFECTIF_HOTLOAD_REPLACE") {
+      rows = [];
+      active = false;
       if (host) host.remove();
       host = null;
       root = null;
-      active = false;
     }
   });
 
-  window.addEventListener("resize", function () {
-    if (positionRaf) cancelAnimationFrame(positionRaf);
+  function schedulePosition() {
+    if (positionRaf) return;
     positionRaf = requestAnimationFrame(function () {
       positionRaf = null;
       positionOverlay();
     });
-  });
+  }
+
+  window.addEventListener("resize", schedulePosition);
+  window.addEventListener("scroll", schedulePosition, true);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", schedulePosition);
+    window.visualViewport.addEventListener("scroll", schedulePosition);
+  }
 
   var routeTimer = setInterval(function () {
     if (!enabled) return;
     if (isCloudInterpreterPage()) {
       ensureHost();
-      if (rows.length && active) render();
+      if (rows.length) render();
     } else if (host) {
       host.style.display = "none";
       active = false;
