@@ -88,7 +88,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         type: "SIGNAL_SET_CAPTION_PREVIEW",
         enabled: true,
         tabEnabled: !!tabEnabled,
-        micEnabled: true,
+        micEnabled: false,
         reason: trigger
       });
       if (response && response.ok) {
@@ -96,7 +96,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
           callId: state.callId || null,
           sourceMode: tabEnabled ? "native-stale-groq-fallback" : "native-caption-fresh",
           tabPreviewEnabled: !!tabEnabled,
-          micPreviewEnabled: true,
+          micPreviewEnabled: false,
           trigger: trigger
         }, "info", "caption");
       } else {
