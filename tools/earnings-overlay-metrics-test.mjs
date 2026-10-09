@@ -40,4 +40,37 @@ assert.equal(metrics.activeSecondsInPeriod("year", yearBoundary, newYear), 1800)
 
 const finishedToday = new Date(2026, 9, 9, 11, 0, 0, 0);
 assert.equal(metrics.intervalSecondsInPeriod("today", yesterday, finishedToday, now), 39600);
+
+const sameDay = metrics.combinePeriodMetrics("today", {
+  earnedUsd: 12.5, callCount: 8, minutes: 123.5, periodKey: "2026-10-09", source: "platform-page-context"
+}, {
+  earnedUsd: 3, callCount: 2, minutes: 10
+}, new Date(2026, 9, 9, 11, 30, 0, 0), 0.2, now);
+assert.equal(sameDay.baseEarnedUsd, 12.5);
+assert.equal(sameDay.calls, 9);
+assert.equal(sameDay.livePeriodSeconds, 1800);
+assert.equal(sameDay.periodMinutes, 153.5);
+assert.equal(sameDay.liveUsd, 6);
+assert.equal(sameDay.totalUsd, 18.5);
+
+const activeFromYesterday = metrics.combinePeriodMetrics("today", {
+  earnedUsd: 5, callCount: 4, minutes: 60, periodKey: "2026-10-09", source: "platform-page-context"
+}, {
+  earnedUsd: 2, callCount: 3, minutes: 30
+}, yesterday, 0.2, now);
+assert.equal(activeFromYesterday.calls, 4, "a call started yesterday must not inflate today's call count");
+assert.equal(activeFromYesterday.livePeriodSeconds, 43200);
+assert.equal(activeFromYesterday.periodMinutes, 780);
+assert.equal(activeFromYesterday.liveUsd, 144);
+assert.equal(activeFromYesterday.totalUsd, 149);
+
+const priorMonth = metrics.combinePeriodMetrics("previousMonth", {
+  earnedUsd: 25, callCount: 10, minutes: 180
+}, { earnedUsd: 0, callCount: 0, minutes: 0 }, monthBoundary, 0.2, afterMonthBoundary);
+assert.equal(priorMonth.liveSeconds, 0);
+assert.equal(priorMonth.livePeriodSeconds, 0);
+assert.equal(priorMonth.calls, 10);
+assert.equal(priorMonth.periodMinutes, 180);
+assert.equal(priorMonth.totalUsd, 25);
+
 console.log("EARNINGS_OVERLAY_METRICS_TEST=PASS");
