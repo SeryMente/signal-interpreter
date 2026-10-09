@@ -32,6 +32,9 @@ jobs:
           node --check extension/offscreen.js
           node --check tools/hotload-active-call-test.mjs
           node --check extension/groq-transcriber.js
+          node --check tools/groq-transcriber-tests.mjs
+          node --check tools/earnings-overlay-tests.mjs
+          node --check tools/call-earnings-baseline-tests.mjs
           node --check extension/live-caption-core.js
           node --check extension/live-caption-bridge.js
           node --check extension/live-caption-overlay.js
@@ -73,6 +76,12 @@ jobs:
         run: node tools/observability-package-audit.mjs observations
       - name: Observability cycle delta unit test
         run: node tools/observability-cycle-delta-test.mjs
+      - name: Call earnings baseline regression test
+        run: node tools/call-earnings-baseline-tests.mjs
+      - name: Earnings overlay regression test
+        run: node tools/earnings-overlay-tests.mjs
+      - name: Groq transcriber unit test
+        run: node tools/groq-transcriber-tests.mjs
       - name: Live Caption core unit test
         run: node tools/live-caption-core-test.mjs
       - name: Live Caption static audit

@@ -1173,7 +1173,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       state.pendingCallEnd = null;
       chrome.alarms.clear("effectif-pending-call");
       state.totalCalls = Number(state.totalCalls || 0) + 1;
-      var day = localDay(event.timestamp);
+      var day = localDay(measuredStartAt);
       state.dailyCalls = Object.assign({}, state.dailyCalls || {});
       state.dailyCalls[day] = Number(state.dailyCalls[day] || 0) + 1;
       record("CALL_TIMER_STARTED", {
@@ -1186,6 +1186,11 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       }, "info", "background");
     }).then(function (state) {
       if (!state || state.callId !== callId) return;
+      return captureCallEarningsBaseline(callId, state.callStartedAt).catch(function (error) {
+        record("CALL_EARNINGS_BASELINE_CAPTURE_ERROR", {
+          callId: callId, startedAt: state.callStartedAt, error: String(error)
+        }, "warn", "background");
+      }).then(function () {
       checkpointCallObservability("call-answered", callId, state);
       requestCallOverlayRefresh(state.callSourceTabId, callId, "call-answered");
       record("CALL_ANSWERED_OVERLAY_REFRESH_REQUESTED", {
@@ -1206,14 +1211,19 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         }).catch(function(error){
           record("CALL_START_EARNINGS_SYNC_ERROR",{callId:callId,error:String(error)},"warn","background");
         }).then(function(){
-          return syncOfficialEarningsRange("currentMonth").then(function(result){
-            record("CALL_START_MONTH_SYNC_COMPLETED",{
-              callId:callId,method:result&&result.method||null,period:"currentMonth"
-            },"info","background");
-          }).catch(function(error){
-            record("CALL_START_MONTH_SYNC_ERROR",{callId:callId,error:String(error)},"warn","background");
+          return captureCallEarningsBaseline(callId, state.callStartedAt).catch(function(error){
+            record("CALL_EARNINGS_BASELINE_RECONCILE_ERROR",{callId:callId,error:String(error)},"warn","background");
+          }).then(function(){
+            return syncOfficialEarningsRange("currentMonth").then(function(result){
+              record("CALL_START_MONTH_SYNC_COMPLETED",{
+                callId:callId,method:result&&result.method||null,period:"currentMonth"
+              },"info","background");
+            }).catch(function(error){
+              record("CALL_START_MONTH_SYNC_ERROR",{callId:callId,error:String(error)},"warn","background");
+            });
           });
         });
+      });
     });
   }
   var callAlertInFlight = new Map();
@@ -1715,8 +1725,9 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       ? (mirror && mirror.earnings && mirror.earnings.today) || (mirror && mirror.statistics)
       : mirror && mirror.earnings && mirror.earnings[period];
     var summary = item && item.summary || {};
+    if (summary.earnedUsd == null || summary.earnedUsd === "") return null;
     var earnedUsd = Number(summary.earnedUsd);
-    if (!(earnedUsd >= 0)) return null;
+    if (!Number.isFinite(earnedUsd) || earnedUsd < 0) return null;
     return {
       earnedUsd: earnedUsd,
       earned: summary.earned || null,
@@ -1732,24 +1743,59 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var state = Object.assign(baseState(), stored.effectifState || {});
     if (!callId || state.callId !== callId || !state.callStartedAt) return false;
     var existing = stored.effectifCallEarnings || {};
-    if (existing.callId === callId) return true;
+    var expectedStartMs = Date.parse(startedAt || state.callStartedAt);
+    function isSafeExistingBaseline(value) {
+      if (!value || value.earnedUsd == null || value.earnedUsd === "" ||
+          !Number.isFinite(Number(value.earnedUsd)) || Number(value.earnedUsd) < 0) return false;
+      if (value.source === "local-completed-calls" && value.earned == null) return true;
+      var observedAt = Date.parse(value.capturedAt);
+      return value.earned != null && Number.isFinite(expectedStartMs) &&
+        Number.isFinite(observedAt) && observedAt <= expectedStartMs;
+    }
+    if (existing.callId === callId && existing.baselines &&
+        isSafeExistingBaseline(existing.baselines.today) &&
+        isSafeExistingBaseline(existing.baselines.currentMonth)) return true;
     var mirror = stored.effectifPlatformMirror || {};
     var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
     function localFallback(period) {
-      var now = new Date();
-      return (Array.isArray(state.completedCalls) ? state.completedCalls : []).filter(function (call) {
+      var reference = new Date(startedAt || state.callStartedAt);
+      if (!Number.isFinite(reference.getTime())) reference = new Date();
+      function inTargetPeriod(call) {
         var date = new Date(call.startedAt || call.endedAt);
         if (!Number.isFinite(date.getTime())) return false;
-        if (period === "today") return localDay(date) === localDay(now);
-        return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
-      }).reduce(function (sum, call) { return sum + Number(call.estimatedRevenue || 0); }, 0);
+        if (period === "today") return localDay(date) === localDay(reference);
+        return date.getFullYear() === reference.getFullYear() && date.getMonth() === reference.getMonth();
+      }
+      var completed = (Array.isArray(state.completedCalls) ? state.completedCalls : []).filter(inTargetPeriod);
+      var unfinished = (Array.isArray(state.unfinishedCalls) ? state.unfinishedCalls : []).filter(inTargetPeriod);
+      function callSeconds(call) {
+        var candidates = [call.platformSeconds, call.billableSecondsAssumed, call.observedSeconds];
+        for (var i = 0; i < candidates.length; i += 1) {
+          if (candidates[i] == null || candidates[i] === "") continue;
+          var value = Number(candidates[i]);
+          if (Number.isFinite(value) && value >= 0) return value;
+        }
+        return 0;
+      }
+      return {
+        earnedUsd: completed.reduce(function (sum, call) { return sum + Number(call.estimatedRevenue || 0); }, 0),
+        earned: null,
+        callCount: completed.length + unfinished.length,
+        minutes: completed.concat(unfinished).reduce(function (sum, call) { return sum + callSeconds(call); }, 0) / 60,
+        callLength: null,
+        capturedAt: null,
+        source: "local-completed-calls"
+      };
     }
     function baseline(period) {
       var found = mirrorEarningBaseline(mirror, period);
-      if (found) return Object.assign({ callId: callId }, found);
-      return {
-        callId: callId, earnedUsd: localFallback(period), earned: null, capturedAt: null, source: "local-completed-calls"
-      };
+      var startedMs = Date.parse(startedAt || state.callStartedAt);
+      var capturedMs = found && Date.parse(found.capturedAt);
+      if (found && found.earned != null && Number.isFinite(startedMs) &&
+          Number.isFinite(capturedMs) && capturedMs <= startedMs) {
+        return Object.assign({ callId: callId }, found, { source: "pre-call-platform-mirror" });
+      }
+      return Object.assign({ callId: callId }, localFallback(period));
     }
     var payload = {
       schema: "signal-interpreter-active-call-earnings/v1",
@@ -1767,9 +1813,10 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     record("CALL_EARNINGS_BASELINE_CAPTURED", {
       callId: callId,
       startedAt: payload.startedAt,
-      todayBaselineUsd: payload.baselines.today && payload.baselines.today.earnedUsd || null,
-      currentMonthBaselineUsd: payload.baselines.currentMonth && payload.baselines.currentMonth.earnedUsd || null,
-      source: "pre-call-platform-mirror"
+      todayBaselineUsd: payload.baselines.today && payload.baselines.today.earnedUsd != null ? payload.baselines.today.earnedUsd : null,
+      currentMonthBaselineUsd: payload.baselines.currentMonth && payload.baselines.currentMonth.earnedUsd != null ? payload.baselines.currentMonth.earnedUsd : null,
+      todayBaselineSource: payload.baselines.today && payload.baselines.today.source || "unknown",
+      currentMonthBaselineSource: payload.baselines.currentMonth && payload.baselines.currentMonth.source || "unknown"
     }, "info", "background");
     return true;
   }
