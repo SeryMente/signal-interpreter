@@ -232,31 +232,26 @@ internal static class SignalInterpreterCaptionHost
             try
             {
                 AutomationElement.AutomationElementInformation current = window.Current;
+                if (current.IsOffscreen)
+                    continue;
+
                 string name = current.Name ?? "";
                 string className = current.ClassName ?? "";
-
                 bool looksLikeCaption =
                     className.IndexOf("Chrome_WidgetWin_", StringComparison.OrdinalIgnoreCase) >= 0 &&
                     ContainsCaptionTitle(name);
 
-                if (!looksLikeCaption || current.IsOffscreen)
+                if (!looksLikeCaption)
                     continue;
 
                 visible = true;
                 string text = ReadCaptionDescendants(window);
-                if (!string.IsNullOrWhiteSpace(text))
+                if (!String.IsNullOrWhiteSpace(text))
                     return text;
-            }
-
-                if (LooksLikeCaptionSubtree(window))
-                {
-                    visible = true;
-                    if (!string.IsNullOrWhiteSpace(directText))
-                        return directText;
-                }
             }
             catch
             {
+                // UI Automation can temporarily invalidate elements while Chrome rebuilds the bubble.
             }
         }
 
