@@ -1689,7 +1689,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       endIso: range.end.toISOString(),
       earnedUsd: Number(summary.earnedUsd) >= 0 ? Number(summary.earnedUsd) : 0,
       callCount: Number(summary.callCount) >= 0 ? Number(summary.callCount) : 0,
-      minutes: callLengthToMinutes(summary.callLength),
+      minutes: parseEarningsDurationMinutes(summary.callLength),
       callLength: summary.callLength || null
     };
   }
@@ -1757,6 +1757,41 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     }
     return year;
   }
+  function parseEarningsDurationMinutes(value) {
+    if (typeof value === "number") return Number.isFinite(value) && value >= 0 ? value : null;
+    var text = String(value == null ? "" : value).trim();
+    if (!text) return null;
+    var time = /^(\d{1,3}):(\d{2})(?::(\d{2}(?:[.,]\d+)?))?$/.exec(text);
+    if (time) {
+      var first = Number(time[1]), second = Number(time[2]);
+      var third = time[3] == null ? null : Number(time[3].replace(",", "."));
+      if (!Number.isFinite(first) || !Number.isFinite(second) || (third != null && !Number.isFinite(third))) return null;
+      if (time[3] != null) return Math.max(0, first * 60 + second + third / 60);
+      return Math.max(0, first + second / 60);
+    }
+    var unitPattern = /(\d+(?:[.,]\d+)?)\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\b/gi;
+    var match, total = 0, found = false;
+    while ((match = unitPattern.exec(text)) !== null) {
+      found = true;
+      var amount = Number(match[1].replace(",", "."));
+      if (!Number.isFinite(amount) || amount < 0) return null;
+      var unit = match[2].toLowerCase();
+      if (/^(h|hr|hrs|hour|hours)$/.test(unit)) total += amount * 60;
+      else if (/^(s|sec|secs|second|seconds)$/.test(unit)) total += amount / 60;
+      else total += amount;
+    }
+    if (found) return total;
+    var numeric = Number(text.replace(",", "."));
+    return Number.isFinite(numeric) && numeric >= 0 ? numeric : null;
+  }
+  function parseEarningsUsd(value, valueUsd) {
+    var usd = valueUsd == null || valueUsd === "" ? null : Number(valueUsd);
+    if (Number.isFinite(usd) && usd >= 0) return usd;
+    var match = String(value == null ? "" : value).match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/);
+    if (!match) return null;
+    var parsed = Number(match[1].replace(",", "."));
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  }
   function mirrorEarningBaseline(mirror, period) {
     var item = period === "today"
       ? (mirror && mirror.earnings && mirror.earnings.today) || (mirror && mirror.statistics)
@@ -1766,7 +1801,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     if (!(Number.isFinite(earnedUsd) && earnedUsd >= 0)) earnedUsd = null;
     var callCount = summary.callCount == null || summary.callCount === "" ? null : Number(summary.callCount);
     if (!(Number.isFinite(callCount) && callCount >= 0)) callCount = null;
-    var minutes = summary.callLength == null || summary.callLength === "" ? null : callLengthToMinutes(summary.callLength);
+    var minutes = summary.callLength == null || summary.callLength === "" ? null : parseEarningsDurationMinutes(summary.callLength);
     if (earnedUsd == null && callCount == null && minutes == null) return null;
     var source = item.source || "platform-page-context";
     return {
