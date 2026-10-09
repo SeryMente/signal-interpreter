@@ -112,29 +112,53 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     }
     return state;
   }
-  async function scheduleSafeRuntimeReload(trigger) {
+  async function scheduleSafeRuntimeReload(trigger, allowActiveCall) {
     if (hotloadReloadScheduled) return false;
     var stored = await chrome.storage.local.get(["effectifState"]);
-    var state = normalizeStateShape(Object.assign(baseState(), stored.effectifState || {}));
-    if (hasActiveCall(state)) {
-      record("HOTLOAD_RELOAD_BLOCKED_ACTIVE_CALL", { trigger: trigger || "unknown", callId: state.callId }, "warn", "runtime");
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    var activeCall = hasActiveCall(state);
+    if (activeCall && allowActiveCall !== true) {
+      record("HOTLOAD_RELOAD_BLOCKED_ACTIVE_CALL", {
+        trigger: trigger || "unknown", callId: state.callId, policy: "explicit-active-call-opt-in-required"
+      }, "warn", "runtime");
       return false;
+    }
+    if (activeCall) {
+      var priorLease = state.hotLoadLease || baseState().hotLoadLease;
+      var captureConnected = !!(state.groqCapture && state.groqCapture.status === "connected");
+      state.hotLoadLease = Object.assign({}, priorLease, {
+        schema: HOTLOAD_SCHEMA, phase: "active-call", callId: state.callId,
+        callStartedAt: state.callStartedAt,
+        callSourceTabId: state.callSourceTabId || priorLease.callSourceTabId || null,
+        modality: state.callModality || priorLease.modality || null,
+        transcriptionSessionId: signalActiveSessionId || priorLease.transcriptionSessionId || state.transcriptionTabId || null,
+        captureExpected: captureConnected || !!priorLease.captureExpected || !!state.transcriptionActive,
+        captureStatus: state.groqCapture && state.groqCapture.status || priorLease.captureStatus || "unknown",
+        runtimeVersion: chrome.runtime.getManifest().version, lastHeartbeatAt: iso(), closedAt: null
+      });
     }
     hotloadReloadScheduled = true;
     state.hotLoadUpdate = Object.assign({}, state.hotLoadUpdate || baseState().hotLoadUpdate, {
-      schema: HOTLOAD_SCHEMA, phase: "applying", applyingAt: iso(), applyTrigger: trigger || "safe-boundary"
+      schema: HOTLOAD_SCHEMA, phase: activeCall ? "applying-active-call" : "applying",
+      applyingAt: iso(), applyTrigger: trigger || "safe-boundary",
+      deferredForCallId: null, currentVersion: chrome.runtime.getManifest().version
     });
     await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
-    record("HOTLOAD_UPDATE_APPLYING_SAFE", {
-      trigger: trigger || "safe-boundary", availableVersion: state.hotLoadUpdate.availableVersion || null,
-      currentVersion: chrome.runtime.getManifest().version
+    record(activeCall ? "HOTLOAD_UPDATE_APPLYING_ACTIVE_CALL" : "HOTLOAD_UPDATE_APPLYING_SAFE", {
+      trigger: trigger || "safe-boundary", callId: activeCall ? state.callId : null,
+      callSourceTabId: activeCall ? state.callSourceTabId || null : null,
+      captureExpected: activeCall && !!state.hotLoadLease.captureExpected,
+      transcriptionSessionId: activeCall ? state.hotLoadLease.transcriptionSessionId || null : null,
+      availableVersion: state.hotLoadUpdate.availableVersion || null,
+      currentVersion: chrome.runtime.getManifest().version,
+      policy: activeCall ? "persist-call-lease-reload-runtime-rehydrate-call-context" : "safe-boundary"
     }, "info", "runtime");
     setTimeout(function () {
       try { chrome.runtime.reload(); } catch (error) {
         hotloadReloadScheduled = false;
         record("HOTLOAD_RELOAD_ERROR", { trigger: trigger || "safe-boundary", error: String(error) }, "error", "runtime");
       }
-    }, 50);
+    }, 75);
     return true;
   }
   async function coordinateUpdateAvailability(details) {
@@ -146,16 +170,31 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var active = hasActiveCall(state);
     state.hotLoadUpdate = Object.assign({}, state.hotLoadUpdate, {
       schema: HOTLOAD_SCHEMA, availableVersion: availableVersion, detectedAt: iso(),
-      phase: active ? "deferred-active-call" : "ready-safe",
-      deferredForCallId: active ? state.callId : null,
+      phase: active ? "applying-active-call" : "ready-safe", deferredForCallId: null,
       currentVersion: chrome.runtime.getManifest().version
     });
+    if (active) {
+      var lease = state.hotLoadLease || baseState().hotLoadLease;
+      state.hotLoadLease = Object.assign({}, lease, {
+        schema: HOTLOAD_SCHEMA, phase: "active-call", callId: state.callId,
+        callStartedAt: state.callStartedAt,
+        callSourceTabId: state.callSourceTabId || lease.callSourceTabId || null,
+        modality: state.callModality || lease.modality || null,
+        transcriptionSessionId: signalActiveSessionId || lease.transcriptionSessionId || state.transcriptionTabId || null,
+        captureExpected: !!(state.groqCapture && state.groqCapture.status === "connected") || !!lease.captureExpected || !!state.transcriptionActive,
+        captureStatus: state.groqCapture && state.groqCapture.status || lease.captureStatus || "unknown",
+        runtimeVersion: chrome.runtime.getManifest().version, lastHeartbeatAt: iso()
+      });
+    }
     await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
-    record(active ? "HOTLOAD_UPDATE_DEFERRED_ACTIVE_CALL" : "HOTLOAD_UPDATE_READY_SAFE", {
+    record(active ? "HOTLOAD_UPDATE_AVAILABLE_DURING_CALL" : "HOTLOAD_UPDATE_READY_SAFE", {
       availableVersion: availableVersion, currentVersion: chrome.runtime.getManifest().version,
-      callId: state.callId || null, callActive: active, policy: "no-runtime-reload-during-active-call"
-    }, active ? "info" : "info", "runtime");
-    if (!active) await scheduleSafeRuntimeReload("update-available-no-call");
+      callId: active ? state.callId : null, callSourceTabId: active ? state.callSourceTabId || null : null,
+      callActive: active, captureExpected: active && !!state.hotLoadLease.captureExpected,
+      policy: active ? "save-call-lease-then-reload-and-rehydrate" : "apply-at-safe-boundary"
+    }, "info", "runtime");
+    if (active) await scheduleSafeRuntimeReload("update-available-active-call", true);
+    else await scheduleSafeRuntimeReload("update-available-no-call");
   }
   async function executeMainMicrophoneCommand(tabId, op, muted, source) {
     var targetTabId=Number(tabId);
@@ -440,11 +479,34 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var expectedCapture = !!(state.hotLoadLease && state.hotLoadLease.captureExpected && state.hotLoadLease.transcriptionSessionId);
     if (!expectedCapture || !Number.isFinite(callTabId)) return;
     try {
+      await ensureOffscreen();
+      var offscreenCapture = await chrome.runtime.sendMessage({
+        target: "offscreen", type: "SIGNAL_GET_GROQ_CAPTURE_STATE"
+      }).catch(function () { return null; });
+      var expectedSessionId = String(state.hotLoadLease.transcriptionSessionId || "");
+      if (offscreenCapture && offscreenCapture.ok === true && offscreenCapture.running === true &&
+          String(offscreenCapture.sessionId || "") === expectedSessionId &&
+          offscreenCapture.tabAudio === true && offscreenCapture.microphone === true) {
+        record("HOTLOAD_CAPTURE_REUSE_EXISTING", {
+          callId: state.callId, tabId: callTabId, sessionId: expectedSessionId,
+          status: "offscreen-session-verified"
+        }, "info", "runtime");
+        return;
+      }
+      if (offscreenCapture && offscreenCapture.running === true) {
+        record("HOTLOAD_CAPTURE_SESSION_MISMATCH", {
+          callId: state.callId, tabId: callTabId, expectedSessionId: expectedSessionId || null,
+          actualSessionId: offscreenCapture.sessionId || null, policy: "reacquire-expected-session"
+        }, "warn", "runtime");
+      }
       var captured = await chrome.tabCapture.getCapturedTabs();
       var existing = captured.find(function (entry) { return Number(entry.tabId) === callTabId && entry.status === "active"; });
       if (existing) {
-        record("HOTLOAD_CAPTURE_REUSE_EXISTING", { callId: state.callId, tabId: callTabId, status: existing.status }, "info", "runtime");
-        return;
+        record("HOTLOAD_CAPTURE_ACTIVE_WITHOUT_VERIFIED_OFFSCREEN_SESSION", {
+          callId: state.callId, tabId: callTabId, status: existing.status,
+          expectedSessionId: expectedSessionId || null,
+          policy: "do-not-assume-transcription-survived-runtime-boundary"
+        }, "warn", "runtime");
       }
       var streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: callTabId });
       record("HOTLOAD_CAPTURE_STREAM_REACQUIRE_OK", { callId: state.callId, tabId: callTabId }, "info", "runtime");
