@@ -1,28 +1,28 @@
 {
   "schema": "signal-interpreter-platform-observation/v1",
-  "snapshotId": "snap-0950d361-91fa-4c46-ae03-03ec0fc3b342",
-  "batchId": "batch-d1efb272-5c24-437b-917b-690a828a7b67",
-  "eventId": "0950d361-91fa-4c46-ae03-03ec0fc3b342",
-  "sequence": 4252,
+  "snapshotId": "snap-97e54070-3603-47bb-80f1-e5608a068d57",
+  "batchId": "batch-22fd3782-1839-475d-88ec-e3e7c0183549",
+  "eventId": "97e54070-3603-47bb-80f1-e5608a068d57",
+  "sequence": 4322,
   "tabId": 1800214389,
-  "capturedAt": "2026-10-09T15:52:22.636Z",
-  "identityKey": "https://app.cloudinterpreter.com|/profile/<ID>|",
-  "snapshotHash": "e379aac0ca63f46085b8f1f12338e726a356647af16dab1a2a5fbd3bd01de79b",
-  "route": "/profile/<ID>",
-  "url": "https://app.cloudinterpreter.com/profile/<ID>",
+  "capturedAt": "2026-10-09T15:53:06.256Z",
+  "identityKey": "https://app.cloudinterpreter.com|/call/<ID>|",
+  "snapshotHash": "e827a5da3512d4b50b0a7193aae1375c54ce60415bb9957122ff98628b127a5b",
+  "route": "/call/<ID>",
+  "url": "https://app.cloudinterpreter.com/call/<ID>",
   "surface": {
     "schema": "signal-interpreter-platform-surface/v1",
     "page": {
       "origin": "https://app.cloudinterpreter.com",
-      "url": "https://app.cloudinterpreter.com/profile/<ID>",
-      "path": "https://app.cloudinterpreter.com/profile/<ID>",
-      "route": "/profile/<ID>",
+      "url": "https://app.cloudinterpreter.com/call/<ID>",
+      "path": "https://app.cloudinterpreter.com/call/<ID>",
+      "route": "/call/<ID>",
       "title": "My Profile - Cloud Interpreter",
       "language": "en",
       "charset": "UTF-8",
       "readyState": "complete",
       "visibility": "hidden",
-      "nodeCount": 519,
+      "nodeCount": 548,
       "viewport": {
         "width": 1920,
         "height": 911,
@@ -36,13 +36,13 @@
         {
           "tag": "button",
           "role": "",
-          "label": "Click to go Offline",
+          "label": "Click to go Online",
           "disabled": false
         },
         {
           "tag": "button",
           "role": "",
-          "label": "Click to go Offline",
+          "label": "Click to go Online",
           "disabled": false
         },
         {
@@ -110,7 +110,32 @@
           "path": "https://cloud-interpreter-files.s3.amazonaws.com"
         }
       ],
-      "fields": [],
+      "fields": [
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "",
+          "aria": ""
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "",
+          "aria": ""
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "",
+          "aria": ""
+        },
+        {
+          "tag": "input",
+          "type": "checkbox",
+          "name": "",
+          "aria": ""
+        }
+      ],
       "headings": [
         "Victor Torres",
         "Language Pairs",
@@ -121,16 +146,18 @@
     },
     "dom": {
       "tagCounts": {
-        "div": 201,
+        "div": 211,
         "button": 4,
         "i": 51,
-        "span": 73,
+        "span": 75,
         "a": 14,
-        "svg": 8,
-        "path": 9,
+        "svg": 12,
+        "path": 13,
         "nav": 1,
         "h5": 1,
         "p": 5,
+        "label": 4,
+        "input": 11,
         "main": 1,
         "h3": 1,
         "ul": 4,
@@ -141,7 +168,6 @@
         "tbody": 1,
         "tr": 7,
         "td": 13,
-        "input": 7,
         "script": 17,
         "next-route-announcer": 1
       },
@@ -154,7 +180,7 @@
           "text": "[TEXT:19:e0ad59d9]",
           "visible": true,
           "disabled": false,
-          "childCount": 3,
+          "childCount": 4,
           "textLength": 19,
           "textFingerprint": "e0ad59d9",
           "computedStyle": {
@@ -207,12 +233,12 @@
           "tag": "body",
           "attributes": {},
           "classes": [],
-          "text": "[TEXT:19:d9e5c6bf]",
+          "text": "[TEXT:19:b0e6caef]",
           "visible": true,
           "disabled": false,
           "childCount": 19,
           "textLength": 19,
-          "textFingerprint": "d9e5c6bf",
+          "textFingerprint": "b0e6caef",
           "computedStyle": {
             "display": "block",
             "position": "static",
@@ -423,10 +449,76 @@
           }
         },
         {
-          "selector": "div#call-widget-portal>div:nth-child(2)>button:nth-child(3)",
+          "selector": "input#widget-tel",
+          "tag": "input",
+          "attributes": {
+            "id": "widget-tel",
+            "type": "checkbox"
+          },
+          "classes": [
+            "p-checkbox-input"
+          ],
+          "text": "",
+          "visible": true,
+          "disabled": true,
+          "childCount": 0,
+          "textLength": 0,
+          "textFingerprint": "811c9dc5",
+          "computedStyle": {
+            "display": "block",
+            "position": "absolute",
+            "overflow": "visible",
+            "width": "22px",
+            "height": "22px",
+            "padding": "0px",
+            "margin": "0px",
+            "color": "rgb(171, 166, 176)",
+            "border": "2px solid rgb(229, 231, 235)",
+            "opacity": "0"
+          },
+          "bbox": {
+            "width": 22,
+            "height": 22
+          }
+        },
+        {
+          "selector": "input#widget-vid",
+          "tag": "input",
+          "attributes": {
+            "id": "widget-vid",
+            "type": "checkbox"
+          },
+          "classes": [
+            "p-checkbox-input"
+          ],
+          "text": "",
+          "visible": true,
+          "disabled": true,
+          "childCount": 0,
+          "textLength": 0,
+          "textFingerprint": "811c9dc5",
+          "computedStyle": {
+            "display": "block",
+            "position": "absolute",
+            "overflow": "visible",
+            "width": "22px",
+            "height": "22px",
+            "padding": "0px",
+            "margin": "0px",
+            "color": "rgb(171, 166, 176)",
+            "border": "2px solid rgb(229, 231, 235)",
+            "opacity": "0"
+          },
+          "bbox": {
+            "width": 22,
+            "height": 22
+          }
+        },
+        {
+          "selector": "div#call-widget-portal>div:nth-child(2)>div:nth-child(3)>button:nth-child(1)",
           "tag": "button",
           "attributes": {
-            "aria-label": "Click to go Offline"
+            "aria-label": "Click to go Online"
           },
           "classes": [
             "CallWidget_button__gX9Vy",
@@ -436,14 +528,14 @@
             "p-button",
             "p-component",
             "p-button-outlined",
-            "p-button-success"
+            "p-button-danger"
           ],
-          "text": "[TEXT:19:2eac1309]",
+          "text": "[TEXT:18:72d1f2fd]",
           "visible": true,
           "disabled": false,
           "childCount": 1,
-          "textLength": 19,
-          "textFingerprint": "2eac1309",
+          "textLength": 18,
+          "textFingerprint": "72d1f2fd",
           "computedStyle": {
             "display": "flex",
             "position": "relative",
@@ -452,8 +544,8 @@
             "height": "60px",
             "padding": "16px 20px",
             "margin": "0px",
-            "color": "rgb(19, 187, 126)",
-            "border": "1px solid rgb(19, 187, 126)",
+            "color": "rgb(225, 87, 115)",
+            "border": "1px solid rgb(225, 87, 115)",
             "opacity": "1"
           },
           "bbox": {
@@ -468,12 +560,12 @@
           "classes": [
             "Layout_right__RURWl"
           ],
-          "text": "[TEXT:19:44687ce9]",
+          "text": "[TEXT:19:08ce8cfe]",
           "visible": true,
           "disabled": false,
           "childCount": 2,
           "textLength": 19,
-          "textFingerprint": "44687ce9",
+          "textFingerprint": "08ce8cfe",
           "computedStyle": {
             "display": "block",
             "position": "static",
@@ -492,10 +584,76 @@
           }
         },
         {
-          "selector": "div#call-bar-portal>div:nth-child(1)>div:nth-child(1)>div:nth-child(2)>button:nth-child(2)",
+          "selector": "input#bar-tel",
+          "tag": "input",
+          "attributes": {
+            "id": "bar-tel",
+            "type": "checkbox"
+          },
+          "classes": [
+            "p-checkbox-input"
+          ],
+          "text": "",
+          "visible": true,
+          "disabled": true,
+          "childCount": 0,
+          "textLength": 0,
+          "textFingerprint": "811c9dc5",
+          "computedStyle": {
+            "display": "block",
+            "position": "absolute",
+            "overflow": "visible",
+            "width": "22px",
+            "height": "22px",
+            "padding": "0px",
+            "margin": "0px",
+            "color": "rgb(171, 166, 176)",
+            "border": "2px solid rgb(229, 231, 235)",
+            "opacity": "0"
+          },
+          "bbox": {
+            "width": 22,
+            "height": 22
+          }
+        },
+        {
+          "selector": "input#bar-vid",
+          "tag": "input",
+          "attributes": {
+            "id": "bar-vid",
+            "type": "checkbox"
+          },
+          "classes": [
+            "p-checkbox-input"
+          ],
+          "text": "",
+          "visible": true,
+          "disabled": true,
+          "childCount": 0,
+          "textLength": 0,
+          "textFingerprint": "811c9dc5",
+          "computedStyle": {
+            "display": "block",
+            "position": "absolute",
+            "overflow": "visible",
+            "width": "22px",
+            "height": "22px",
+            "padding": "0px",
+            "margin": "0px",
+            "color": "rgb(171, 166, 176)",
+            "border": "2px solid rgb(229, 231, 235)",
+            "opacity": "0"
+          },
+          "bbox": {
+            "width": 22,
+            "height": 22
+          }
+        },
+        {
+          "selector": "div#call-bar-portal>div:nth-child(1)>div:nth-child(1)>div:nth-child(4)>button:nth-child(2)",
           "tag": "button",
           "attributes": {
-            "aria-label": "Click to go Offline"
+            "aria-label": "Click to go Online"
           },
           "classes": [
             "p-button-sm",
@@ -503,17 +661,17 @@
             "p-component",
             "p-button-outlined"
           ],
-          "text": "[TEXT:19:2eac1309]",
+          "text": "[TEXT:18:72d1f2fd]",
           "visible": true,
           "disabled": false,
           "childCount": 1,
-          "textLength": 19,
-          "textFingerprint": "2eac1309",
+          "textLength": 18,
+          "textFingerprint": "72d1f2fd",
           "computedStyle": {
             "display": "flex",
             "position": "relative",
             "overflow": "hidden",
-            "width": "162.109px",
+            "width": "161.047px",
             "height": "43px",
             "padding": "10.5px 17.5px",
             "margin": "0px",
@@ -522,7 +680,7 @@
             "opacity": "1"
           },
           "bbox": {
-            "width": 162,
+            "width": 161,
             "height": 43
           }
         },
@@ -2529,12 +2687,12 @@
     },
     "bounds": {
       "maxApproxBytes": 48000,
-      "actualApproxBytes": 44476,
+      "actualApproxBytes": 46631,
       "originalCounts": {
-        "elements": 33,
+        "elements": 37,
         "buttons": 3,
         "links": 14,
-        "fields": 0,
+        "fields": 4,
         "headings": 5,
         "resources": 80,
         "stylesheets": 19,
@@ -2542,10 +2700,10 @@
         "metadata": 11
       },
       "retainedCounts": {
-        "elements": 33,
+        "elements": 37,
         "buttons": 3,
         "links": 14,
-        "fields": 0,
+        "fields": 4,
         "headings": 5,
         "resources": 60,
         "stylesheets": 19,

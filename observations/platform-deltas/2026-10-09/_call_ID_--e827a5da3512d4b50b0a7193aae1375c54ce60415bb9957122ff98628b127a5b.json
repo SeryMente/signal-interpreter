@@ -1,29 +1,28 @@
 {
   "schema": "signal-interpreter-platform-delta/v1",
   "type": "changed",
-  "identityKey": "https://app.cloudinterpreter.com|/profile/<ID>|",
-  "fromSnapshotId": "snap-d974a270-78bf-41a7-b395-e3e999c0ab2a",
-  "toSnapshotId": "snap-0950d361-91fa-4c46-ae03-03ec0fc3b342",
-  "fromHash": "53feedf9a3dcdfa226d55757bf48ad41a7d067851f9a40448e34bd9341cd6ca9",
-  "toHash": "e379aac0ca63f46085b8f1f12338e726a356647af16dab1a2a5fbd3bd01de79b",
-  "capturedAt": "2026-10-09T15:52:22.636Z",
+  "identityKey": "https://app.cloudinterpreter.com|/call/<ID>|",
+  "fromSnapshotId": "snap-480e4673-d185-4017-9930-abaa8c27e3ba",
+  "toSnapshotId": "snap-97e54070-3603-47bb-80f1-e5608a068d57",
+  "fromHash": "67ff6e49585062a4e67f7f401ecbcde557f11f3b3d14edb2a27a0ce9c2c03737",
+  "toHash": "e827a5da3512d4b50b0a7193aae1375c54ce60415bb9957122ff98628b127a5b",
+  "capturedAt": "2026-10-09T15:53:06.256Z",
   "summary": {
-    "added": 51,
-    "removed": 8,
+    "added": 46,
+    "removed": 19,
     "changed": 15,
     "sections": [
       "page",
       "dom",
-      "controls",
-      "css"
+      "controls"
     ]
   },
   "changes": [
     {
       "kind": "changed",
       "path": "page.nodeCount",
-      "before": 152,
-      "after": 519
+      "before": 280,
+      "after": 548
     },
     {
       "kind": "changed",
@@ -32,36 +31,55 @@
       "after": "My Profile - Cloud Interpreter"
     },
     {
-      "kind": "changed",
-      "path": "page.visibility",
-      "before": "visible",
-      "after": "hidden"
-    },
-    {
       "kind": "added",
       "path": "dom.tagCounts.a",
       "value": 14
     },
     {
+      "kind": "removed",
+      "path": "dom.tagCounts.audio",
+      "value": 2
+    },
+    {
       "kind": "changed",
       "path": "dom.tagCounts.button",
-      "before": 1,
+      "before": 6,
       "after": 4
     },
     {
       "kind": "removed",
       "path": "dom.tagCounts.circle",
+      "value": 5
+    },
+    {
+      "kind": "removed",
+      "path": "dom.tagCounts.clippath",
+      "value": 3
+    },
+    {
+      "kind": "removed",
+      "path": "dom.tagCounts.defs",
       "value": 3
     },
     {
       "kind": "changed",
       "path": "dom.tagCounts.div",
-      "before": 28,
-      "after": 201
+      "before": 93,
+      "after": 211
     },
     {
       "kind": "removed",
       "path": "dom.tagCounts.footer",
+      "value": 1
+    },
+    {
+      "kind": "removed",
+      "path": "dom.tagCounts.g",
+      "value": 6
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.h3",
       "value": 1
     },
     {
@@ -70,9 +88,10 @@
       "value": 4
     },
     {
-      "kind": "added",
+      "kind": "changed",
       "path": "dom.tagCounts.h5",
-      "value": 1
+      "before": 2,
+      "after": 1
     },
     {
       "kind": "added",
@@ -82,18 +101,29 @@
     {
       "kind": "changed",
       "path": "dom.tagCounts.i",
-      "before": 1,
+      "before": 5,
       "after": 51
     },
     {
       "kind": "added",
       "path": "dom.tagCounts.input",
-      "value": 7
+      "value": 11
+    },
+    {
+      "kind": "added",
+      "path": "dom.tagCounts.label",
+      "value": 4
     },
     {
       "kind": "added",
       "path": "dom.tagCounts.li",
       "value": 14
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.main",
+      "before": 2,
+      "after": 1
     },
     {
       "kind": "added",
@@ -109,20 +139,25 @@
     {
       "kind": "changed",
       "path": "dom.tagCounts.path",
-      "before": 6,
-      "after": 9
+      "before": 11,
+      "after": 13
+    },
+    {
+      "kind": "removed",
+      "path": "dom.tagCounts.rect",
+      "value": 6
     },
     {
       "kind": "changed",
       "path": "dom.tagCounts.span",
-      "before": 8,
-      "after": 73
+      "before": 27,
+      "after": 75
     },
     {
       "kind": "changed",
       "path": "dom.tagCounts.svg",
-      "before": 4,
-      "after": 8
+      "before": 9,
+      "after": 12
     },
     {
       "kind": "added",
@@ -159,12 +194,12 @@
         "classes": [
           "Layout_right__RURWl"
         ],
-        "text": "[TEXT:19:44687ce9]",
+        "text": "[TEXT:19:08ce8cfe]",
         "visible": true,
         "disabled": false,
         "childCount": 2,
         "textLength": 19,
-        "textFingerprint": "44687ce9",
+        "textFingerprint": "08ce8cfe",
         "computedStyle": {
           "display": "block",
           "position": "static",
@@ -194,12 +229,12 @@
           "min-h-screen",
           "overflow-y-auto"
         ],
-        "text": "[TEXT:18:e5afe5b0]",
+        "text": "[TEXT:19:688fa597]",
         "visible": true,
         "disabled": false,
         "childCount": 1,
-        "textLength": 18,
-        "textFingerprint": "e5afe5b0",
+        "textLength": 19,
+        "textFingerprint": "688fa597",
         "computedStyle": {
           "display": "block",
           "position": "static",
@@ -220,12 +255,12 @@
     },
     {
       "kind": "added",
-      "path": "dom.elements[div#call-bar-portal>div:nth-child(1)>div:nth-child(1)>div:nth-child(2)>button:nth-child(2)|button]",
+      "path": "dom.elements[div#call-bar-portal>div:nth-child(1)>div:nth-child(1)>div:nth-child(4)>button:nth-child(2)|button]",
       "value": {
-        "selector": "div#call-bar-portal>div:nth-child(1)>div:nth-child(1)>div:nth-child(2)>button:nth-child(2)",
+        "selector": "div#call-bar-portal>div:nth-child(1)>div:nth-child(1)>div:nth-child(4)>button:nth-child(2)",
         "tag": "button",
         "attributes": {
-          "aria-label": "Click to go Offline"
+          "aria-label": "Click to go Online"
         },
         "classes": [
           "p-button-sm",
@@ -233,17 +268,17 @@
           "p-component",
           "p-button-outlined"
         ],
-        "text": "[TEXT:19:2eac1309]",
+        "text": "[TEXT:18:72d1f2fd]",
         "visible": true,
         "disabled": false,
         "childCount": 1,
-        "textLength": 19,
-        "textFingerprint": "2eac1309",
+        "textLength": 18,
+        "textFingerprint": "72d1f2fd",
         "computedStyle": {
           "display": "flex",
           "position": "relative",
           "overflow": "hidden",
-          "width": "162.109px",
+          "width": "161.047px",
           "height": "43px",
           "padding": "10.5px 17.5px",
           "margin": "0px",
@@ -252,19 +287,19 @@
           "opacity": "1"
         },
         "bbox": {
-          "width": 162,
+          "width": 161,
           "height": 43
         }
       }
     },
     {
       "kind": "added",
-      "path": "dom.elements[div#call-widget-portal>div:nth-child(2)>button:nth-child(3)|button]",
+      "path": "dom.elements[div#call-widget-portal>div:nth-child(2)>div:nth-child(3)>button:nth-child(1)|button]",
       "value": {
-        "selector": "div#call-widget-portal>div:nth-child(2)>button:nth-child(3)",
+        "selector": "div#call-widget-portal>div:nth-child(2)>div:nth-child(3)>button:nth-child(1)",
         "tag": "button",
         "attributes": {
-          "aria-label": "Click to go Offline"
+          "aria-label": "Click to go Online"
         },
         "classes": [
           "CallWidget_button__gX9Vy",
@@ -274,14 +309,14 @@
           "p-button",
           "p-component",
           "p-button-outlined",
-          "p-button-success"
+          "p-button-danger"
         ],
-        "text": "[TEXT:19:2eac1309]",
+        "text": "[TEXT:18:72d1f2fd]",
         "visible": true,
         "disabled": false,
         "childCount": 1,
-        "textLength": 19,
-        "textFingerprint": "2eac1309",
+        "textLength": 18,
+        "textFingerprint": "72d1f2fd",
         "computedStyle": {
           "display": "flex",
           "position": "relative",
@@ -290,8 +325,8 @@
           "height": "60px",
           "padding": "16px 20px",
           "margin": "0px",
-          "color": "rgb(19, 187, 126)",
-          "border": "1px solid rgb(19, 187, 126)",
+          "color": "rgb(225, 87, 115)",
+          "border": "1px solid rgb(225, 87, 115)",
           "opacity": "1"
         },
         "bbox": {
@@ -302,66 +337,23 @@
     },
     {
       "kind": "removed",
-      "path": "dom.elements[div#telecom-portal>footer:nth-child(3)>div:nth-child(1)>div:nth-child(2)>button:nth-child(1)|button]",
+      "path": "dom.elements[div#telecom-portal>main:nth-child(1)>div:nth-child(2)>footer:nth-child(4)|footer]",
       "value": {
-        "selector": "div#telecom-portal>footer:nth-child(3)>div:nth-child(1)>div:nth-child(2)>button:nth-child(1)",
-        "tag": "button",
-        "attributes": {
-          "aria-label": "Close this session"
-        },
-        "classes": [
-          "p-button-sm",
-          "p-button",
-          "p-component",
-          "p-disabled",
-          "p-button-loading",
-          "p-button-loading-label-only",
-          "p-button-loading-left",
-          "p-button-danger"
-        ],
-        "text": "[TEXT:18:dfa733c1]",
-        "visible": true,
-        "disabled": true,
-        "childCount": 2,
-        "textLength": 18,
-        "textFingerprint": "dfa733c1",
-        "computedStyle": {
-          "display": "flex",
-          "position": "relative",
-          "overflow": "hidden",
-          "width": "188.984px",
-          "height": "40px",
-          "padding": "10.5px 17.5px",
-          "margin": "0px",
-          "color": "rgb(171, 166, 176)",
-          "border": "1px solid rgb(244, 244, 244)",
-          "opacity": "1"
-        },
-        "bbox": {
-          "width": 189,
-          "height": 40
-        }
-      }
-    },
-    {
-      "kind": "removed",
-      "path": "dom.elements[div#telecom-portal>footer:nth-child(3)|footer]",
-      "value": {
-        "selector": "div#telecom-portal>footer:nth-child(3)",
+        "selector": "div#telecom-portal>main:nth-child(1)>div:nth-child(2)>footer:nth-child(4)",
         "tag": "footer",
         "attributes": {},
         "classes": [],
-        "text": "[TEXT:18:dfa733c1]",
+        "text": "[TEXT:37:91f654e6]",
         "visible": true,
         "disabled": false,
         "childCount": 1,
-        "textLength": 18,
-        "textFingerprint": "dfa733c1",
+        "textLength": 37,
+        "textFingerprint": "91f654e6",
         "computedStyle": {
           "display": "block",
           "position": "static",
           "overflow": "visible",
-          "width": "1920px",
+          "width": "1600px",
           "height": "80px",
           "padding": "0px",
           "margin": "0px",
@@ -370,8 +362,44 @@
           "opacity": "1"
         },
         "bbox": {
-          "width": 1920,
+          "width": 1600,
           "height": 80
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div#telecom-portal>main:nth-child(1)|main]",
+      "value": {
+        "selector": "div#telecom-portal>main:nth-child(1)",
+        "tag": "main",
+        "attributes": {},
+        "classes": [
+          "RoomScreen_container__0L6Ld",
+          "bg-greyscale-white",
+          "relative"
+        ],
+        "text": "[TEXT:19:688fa597]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 3,
+        "textLength": 19,
+        "textFingerprint": "688fa597",
+        "computedStyle": {
+          "display": "block",
+          "position": "relative",
+          "overflow": "visible",
+          "width": "1920px",
+          "height": "911px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(21, 0, 48)",
+          "border": "0px none rgb(21, 0, 48)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 1920,
+          "height": 911
         }
       }
     },
@@ -412,6 +440,46 @@
         "bbox": {
           "width": 310,
           "height": 48
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>button:nth-child(3)|button]",
+      "value": {
+        "selector": "div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1)>button:nth-child(3)",
+        "tag": "button",
+        "attributes": {
+          "aria-label": "Cancel call"
+        },
+        "classes": [
+          "p-button-sm",
+          "p-button",
+          "p-component",
+          "p-button-text",
+          "p-button-danger"
+        ],
+        "text": "[TEXT:11:1581cd45]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 1,
+        "textLength": 11,
+        "textFingerprint": "1581cd45",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "113.234px",
+          "height": "39px",
+          "padding": "10.5px 17.5px",
+          "margin": "0px",
+          "color": "rgb(225, 87, 115)",
+          "border": "1px solid rgba(0, 0, 0, 0)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 113,
+          "height": 39
         }
       }
     },
@@ -783,6 +851,161 @@
       }
     },
     {
+      "kind": "removed",
+      "path": "dom.elements[div:nth-child(2)>footer:nth-child(4)>div:nth-child(1)>div:nth-child(1)>button:nth-child(1)|button]",
+      "value": {
+        "selector": "div:nth-child(2)>footer:nth-child(4)>div:nth-child(1)>div:nth-child(1)>button:nth-child(1)",
+        "tag": "button",
+        "attributes": {},
+        "classes": [
+          "flex",
+          "justify-content-center",
+          "p-button-sm",
+          "font-semibold",
+          "p-button",
+          "p-component",
+          "p-button-outlined"
+        ],
+        "text": "[TEXT:7:6e781f45]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 2,
+        "textLength": 7,
+        "textFingerprint": "6e781f45",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "106.344px",
+          "height": "40px",
+          "padding": "10.5px 17.5px",
+          "margin": "0px",
+          "color": "rgb(111, 56, 183)",
+          "border": "1px solid rgb(243, 234, 255)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 106,
+          "height": 40
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div:nth-child(2)>footer:nth-child(4)>div:nth-child(1)>div:nth-child(1)>button:nth-child(2)|button]",
+      "value": {
+        "selector": "div:nth-child(2)>footer:nth-child(4)>div:nth-child(1)>div:nth-child(1)>button:nth-child(2)",
+        "tag": "button",
+        "attributes": {},
+        "classes": [
+          "p-button-sm",
+          "p-button",
+          "p-component",
+          "p-button-text"
+        ],
+        "text": "[TEXT:8:4b058728]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 2,
+        "textLength": 8,
+        "textFingerprint": "4b058728",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "90.1562px",
+          "height": "40px",
+          "padding": "10.5px 17.5px",
+          "margin": "0px",
+          "color": "rgb(111, 56, 183)",
+          "border": "1px solid rgba(0, 0, 0, 0)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 90,
+          "height": 40
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div:nth-child(2)>footer:nth-child(4)>div:nth-child(1)>div:nth-child(2)>button:nth-child(1)|button]",
+      "value": {
+        "selector": "div:nth-child(2)>footer:nth-child(4)>div:nth-child(1)>div:nth-child(2)>button:nth-child(1)",
+        "tag": "button",
+        "attributes": {
+          "aria-label": "End call"
+        },
+        "classes": [
+          "p-button-sm",
+          "p-button",
+          "p-component",
+          "p-button-danger"
+        ],
+        "text": "[TEXT:8:25446c02]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 1,
+        "textLength": 8,
+        "textFingerprint": "25446c02",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "92.9375px",
+          "height": "40px",
+          "padding": "10.5px 17.5px",
+          "margin": "0px",
+          "color": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(225, 87, 115)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 93,
+          "height": 40
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div:nth-child(2)>footer:nth-child(4)>div:nth-child(1)>div:nth-child(3)>button:nth-child(1)|button]",
+      "value": {
+        "selector": "div:nth-child(2)>footer:nth-child(4)>div:nth-child(1)>div:nth-child(3)>button:nth-child(1)",
+        "tag": "button",
+        "attributes": {
+          "aria-label": "3 participants"
+        },
+        "classes": [
+          "p-button-sm",
+          "p-button",
+          "p-component",
+          "p-button-text"
+        ],
+        "text": "[TEXT:14:73b9d508]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 1,
+        "textLength": 14,
+        "textFingerprint": "73b9d508",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "131.953px",
+          "height": "40px",
+          "padding": "10.5px 17.5px",
+          "margin": "0px",
+          "color": "rgb(111, 56, 183)",
+          "border": "1px solid rgba(0, 0, 0, 0)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 132,
+          "height": 40
+        }
+      }
+    },
+    {
       "kind": "added",
       "path": "dom.elements[div:nth-child(2)>main:nth-child(2)>div:nth-child(2)>div:nth-child(1)>button:nth-child(1)|button]",
       "value": {
@@ -973,6 +1196,47 @@
       }
     },
     {
+      "kind": "removed",
+      "path": "dom.elements[div:nth-child(3)>div:nth-child(1)>div:nth-child(1)>div:nth-child(1)>button:nth-child(2)|button]",
+      "value": {
+        "selector": "div:nth-child(3)>div:nth-child(1)>div:nth-child(1)>div:nth-child(1)>button:nth-child(2)",
+        "tag": "button",
+        "attributes": {},
+        "classes": [
+          "p-button-sm",
+          "text-color-greyscale-dark",
+          "py-0",
+          "justify-content-end",
+          "p-button",
+          "p-component",
+          "p-button-icon-only",
+          "p-button-text"
+        ],
+        "text": "",
+        "visible": true,
+        "disabled": false,
+        "childCount": 2,
+        "textLength": 0,
+        "textFingerprint": "811c9dc5",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "48px",
+          "height": "18px",
+          "padding": "0px 17.5px",
+          "margin": "0px",
+          "color": "rgb(129, 121, 139)",
+          "border": "1px solid rgba(0, 0, 0, 0)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 48,
+          "height": 18
+        }
+      }
+    },
+    {
       "kind": "added",
       "path": "dom.elements[div:nth-child(3)>div:nth-child(1)>div:nth-child(3)>div:nth-child(1)>a:nth-child(2)|a]",
       "value": {
@@ -1059,12 +1323,12 @@
         "tag": "body",
         "attributes": {},
         "classes": [],
-        "text": "[TEXT:19:759c424d]",
+        "text": "[TEXT:19:688fa597]",
         "visible": true,
         "disabled": false,
-        "childCount": 19,
+        "childCount": 21,
         "textLength": 19,
-        "textFingerprint": "759c424d",
+        "textFingerprint": "688fa597",
         "computedStyle": {
           "display": "block",
           "position": "static",
@@ -1087,12 +1351,12 @@
         "tag": "body",
         "attributes": {},
         "classes": [],
-        "text": "[TEXT:19:d9e5c6bf]",
+        "text": "[TEXT:19:b0e6caef]",
         "visible": true,
         "disabled": false,
         "childCount": 19,
         "textLength": 19,
-        "textFingerprint": "d9e5c6bf",
+        "textFingerprint": "b0e6caef",
         "computedStyle": {
           "display": "block",
           "position": "static",
@@ -1182,7 +1446,7 @@
         "text": "[TEXT:19:e0ad59d9]",
         "visible": true,
         "disabled": false,
-        "childCount": 3,
+        "childCount": 4,
         "textLength": 19,
         "textFingerprint": "e0ad59d9",
         "computedStyle": {
@@ -1210,7 +1474,7 @@
         "text": "[TEXT:19:e0ad59d9]",
         "visible": true,
         "disabled": false,
-        "childCount": 3,
+        "childCount": 4,
         "textLength": 19,
         "textFingerprint": "e0ad59d9",
         "computedStyle": {
@@ -1228,6 +1492,154 @@
         "bbox": {
           "width": 1905,
           "height": 1672
+        }
+      }
+    },
+    {
+      "kind": "added",
+      "path": "dom.elements[input#bar-tel|input]",
+      "value": {
+        "selector": "input#bar-tel",
+        "tag": "input",
+        "attributes": {
+          "id": "bar-tel",
+          "type": "checkbox"
+        },
+        "classes": [
+          "p-checkbox-input"
+        ],
+        "text": "",
+        "visible": true,
+        "disabled": true,
+        "childCount": 0,
+        "textLength": 0,
+        "textFingerprint": "811c9dc5",
+        "computedStyle": {
+          "display": "block",
+          "position": "absolute",
+          "overflow": "visible",
+          "width": "22px",
+          "height": "22px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(171, 166, 176)",
+          "border": "2px solid rgb(229, 231, 235)",
+          "opacity": "0"
+        },
+        "bbox": {
+          "width": 22,
+          "height": 22
+        }
+      }
+    },
+    {
+      "kind": "added",
+      "path": "dom.elements[input#bar-vid|input]",
+      "value": {
+        "selector": "input#bar-vid",
+        "tag": "input",
+        "attributes": {
+          "id": "bar-vid",
+          "type": "checkbox"
+        },
+        "classes": [
+          "p-checkbox-input"
+        ],
+        "text": "",
+        "visible": true,
+        "disabled": true,
+        "childCount": 0,
+        "textLength": 0,
+        "textFingerprint": "811c9dc5",
+        "computedStyle": {
+          "display": "block",
+          "position": "absolute",
+          "overflow": "visible",
+          "width": "22px",
+          "height": "22px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(171, 166, 176)",
+          "border": "2px solid rgb(229, 231, 235)",
+          "opacity": "0"
+        },
+        "bbox": {
+          "width": 22,
+          "height": 22
+        }
+      }
+    },
+    {
+      "kind": "added",
+      "path": "dom.elements[input#widget-tel|input]",
+      "value": {
+        "selector": "input#widget-tel",
+        "tag": "input",
+        "attributes": {
+          "id": "widget-tel",
+          "type": "checkbox"
+        },
+        "classes": [
+          "p-checkbox-input"
+        ],
+        "text": "",
+        "visible": true,
+        "disabled": true,
+        "childCount": 0,
+        "textLength": 0,
+        "textFingerprint": "811c9dc5",
+        "computedStyle": {
+          "display": "block",
+          "position": "absolute",
+          "overflow": "visible",
+          "width": "22px",
+          "height": "22px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(171, 166, 176)",
+          "border": "2px solid rgb(229, 231, 235)",
+          "opacity": "0"
+        },
+        "bbox": {
+          "width": 22,
+          "height": 22
+        }
+      }
+    },
+    {
+      "kind": "added",
+      "path": "dom.elements[input#widget-vid|input]",
+      "value": {
+        "selector": "input#widget-vid",
+        "tag": "input",
+        "attributes": {
+          "id": "widget-vid",
+          "type": "checkbox"
+        },
+        "classes": [
+          "p-checkbox-input"
+        ],
+        "text": "",
+        "visible": true,
+        "disabled": true,
+        "childCount": 0,
+        "textLength": 0,
+        "textFingerprint": "811c9dc5",
+        "computedStyle": {
+          "display": "block",
+          "position": "absolute",
+          "overflow": "visible",
+          "width": "22px",
+          "height": "22px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(171, 166, 176)",
+          "border": "2px solid rgb(229, 231, 235)",
+          "opacity": "0"
+        },
+        "bbox": {
+          "width": 22,
+          "height": 22
         }
       }
     },
@@ -1508,23 +1920,43 @@
       }
     },
     {
-      "kind": "added",
-      "path": "controls.buttons[button||Click to go Offline]",
+      "kind": "removed",
+      "path": "controls.buttons[button||3 participants]",
       "value": {
         "tag": "button",
         "role": "",
-        "label": "Click to go Offline",
+        "label": "3 participants",
         "disabled": false
       }
     },
     {
       "kind": "removed",
-      "path": "controls.buttons[button||Close this session]",
+      "path": "controls.buttons[button||Cancel call]",
       "value": {
         "tag": "button",
         "role": "",
-        "label": "Close this session",
-        "disabled": true
+        "label": "Cancel call",
+        "disabled": false
+      }
+    },
+    {
+      "kind": "added",
+      "path": "controls.buttons[button||Click to go Online]",
+      "value": {
+        "tag": "button",
+        "role": "",
+        "label": "Click to go Online",
+        "disabled": false
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "controls.buttons[button||End call]",
+      "value": {
+        "tag": "button",
+        "role": "",
+        "label": "End call",
+        "disabled": false
       }
     },
     {
@@ -1536,183 +1968,7 @@
         "label": "[EMAIL]",
         "disabled": false
       }
-    },
-    {
-      "kind": "added",
-      "path": "controls.links[https://app.cloudinterpreter.com/profile/<ID>/appointments|]",
-      "value": {
-        "label": "",
-        "path": "https://app.cloudinterpreter.com/profile/<ID>/appointments"
-      }
-    },
-    {
-      "kind": "added",
-      "path": "controls.links[https://app.cloudinterpreter.com/profile/<ID>/finance|]",
-      "value": {
-        "label": "",
-        "path": "https://app.cloudinterpreter.com/profile/<ID>/finance"
-      }
-    },
-    {
-      "kind": "added",
-      "path": "controls.links[https://app.cloudinterpreter.com/profile/<ID>/logs|]",
-      "value": {
-        "label": "",
-        "path": "https://app.cloudinterpreter.com/profile/<ID>/logs"
-      }
-    },
-    {
-      "kind": "added",
-      "path": "controls.links[https://app.cloudinterpreter.com/profile/<ID>/settings/languages|]",
-      "value": {
-        "label": "",
-        "path": "https://app.cloudinterpreter.com/profile/<ID>/settings/languages"
-      }
-    },
-    {
-      "kind": "added",
-      "path": "controls.links[https://app.cloudinterpreter.com/profile/<ID>/settings/personal|]",
-      "value": {
-        "label": "",
-        "path": "https://app.cloudinterpreter.com/profile/<ID>/settings/personal"
-      }
-    },
-    {
-      "kind": "added",
-      "path": "controls.links[https://app.cloudinterpreter.com/profile/<ID>|]",
-      "value": {
-        "label": "",
-        "path": "https://app.cloudinterpreter.com/profile/<ID>"
-      }
-    },
-    {
-      "kind": "added",
-      "path": "controls.links[https://app.cloudinterpreter.com/|]",
-      "value": {
-        "label": "",
-        "path": "https://app.cloudinterpreter.com/"
-      }
-    },
-    {
-      "kind": "added",
-      "path": "controls.links[https://cloud-interpreter-files.s3.amazonaws.com|]",
-      "value": {
-        "label": "",
-        "path": "https://cloud-interpreter-files.s3.amazonaws.com"
-      }
-    },
-    {
-      "kind": "added",
-      "path": "controls.links[https://maps.google.com|]",
-      "value": {
-        "label": "",
-        "path": "https://maps.google.com"
-      }
-    },
-    {
-      "kind": "changed",
-      "path": "css.stylesheets[|]",
-      "before": {
-        "href": "",
-        "disabled": false,
-        "media": "",
-        "ownerTag": "style",
-        "ruleCount": 2,
-        "selectorCount": 2,
-        "atRuleCount": 0,
-        "selectors": [
-          ".p-hidden-accessible",
-          ".p-overflow-hidden"
-        ],
-        "sameOriginReadable": true
-      },
-      "after": {
-        "href": "",
-        "disabled": false,
-        "media": "",
-        "ownerTag": "style",
-        "ruleCount": 16,
-        "selectorCount": 16,
-        "atRuleCount": 0,
-        "selectors": [
-          ".LanguagePair_language__CGPks",
-          ".LanguagePairs_container__oNuJC",
-          "[TEXT:120:0ba1794f]",
-          ".LanguagePairs_item__9Muda:not(:first-child)",
-          ".Modalities_container__L18OJ",
-          "[TEXT:120:bcffbe67]",
-          ".Modalities_item__l7vHt:not(:first-child)",
-          ".PersonalInfoTable_table__MDr3n td",
-          ".PersonalInfoTable_label__wZVaZ",
-          ".PersonalInfoTable_label__wZVaZ::after",
-          ".DocumentsItemUpload_upload__AV2jB",
-          ".DocumentsItemUpload_upload__AV2jB, .DocumentsItemUpload_upload__AV2jB .p-button",
-          ".NavigationProfileHeader_container__V3Jd0",
-          "[TEXT:120:53a25aef]",
-          ".NavigationProfileHeader_container__V3Jd0 .NavigationProfileHeader_badge__OUJsX",
-          ".ProfileHeaderActivity_container__gv0db"
-        ],
-        "sameOriginReadable": true
-      }
-    },
-    {
-      "kind": "removed",
-      "path": "css.stylesheets[|x]",
-      "value": {
-        "href": "",
-        "disabled": false,
-        "media": "x",
-        "ownerTag": "style",
-        "ruleCount": 16,
-        "selectorCount": 16,
-        "atRuleCount": 0,
-        "selectors": [
-          ".LanguagePair_language__CGPks",
-          ".LanguagePairs_container__oNuJC",
-          "[TEXT:120:0ba1794f]",
-          ".LanguagePairs_item__9Muda:not(:first-child)",
-          ".Modalities_container__L18OJ",
-          "[TEXT:120:bcffbe67]",
-          ".Modalities_item__l7vHt:not(:first-child)",
-          ".PersonalInfoTable_table__MDr3n td",
-          ".PersonalInfoTable_label__wZVaZ",
-          ".PersonalInfoTable_label__wZVaZ::after",
-          ".DocumentsItemUpload_upload__AV2jB",
-          ".DocumentsItemUpload_upload__AV2jB, .DocumentsItemUpload_upload__AV2jB .p-button",
-          ".NavigationProfileHeader_container__V3Jd0",
-          "[TEXT:120:53a25aef]",
-          ".NavigationProfileHeader_container__V3Jd0 .NavigationProfileHeader_badge__OUJsX",
-          ".ProfileHeaderActivity_container__gv0db"
-        ],
-        "sameOriginReadable": true
-      }
-    },
-    {
-      "kind": "removed",
-      "path": "css.inlineStyles[0|x|b1a428ad]",
-      "value": {
-        "index": 0,
-        "type": "",
-        "media": "x",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 1870,
-        "inlineFingerprint": "b1a428ad"
-      }
-    },
-    {
-      "kind": "added",
-      "path": "css.inlineStyles[0||b1a428ad]",
-      "value": {
-        "index": 0,
-        "type": "",
-        "media": "",
-        "noncePresent": false,
-        "disabled": false,
-        "length": 1870,
-        "inlineFingerprint": "b1a428ad"
-      }
     }
   ],
-  "truncated": false
+  "truncated": true
 }
