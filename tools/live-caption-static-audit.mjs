@@ -70,6 +70,8 @@ assert.ok(overlay.includes("EFFECTIF_SCREENSHOT_RESTORE"));
 assert.ok(core.includes("captionRelation"));
 assert.ok(core.includes("mergeCaptionText"));
 assert.ok(core.includes("createLatestOnlyDispatcher"));
+assert.ok(core.includes("choosePositionCandidate"));
+assert.ok(overlay.includes("core.choosePositionCandidate(candidates, rects, w, h)"));
 assert.ok(core.includes("CLIENTE"));
 assert.ok(core.includes("LEP"));
 assert.ok(core.includes("ENGLISH"));
