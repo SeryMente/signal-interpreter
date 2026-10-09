@@ -1211,12 +1211,16 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         }).catch(function(error){
           record("CALL_START_EARNINGS_SYNC_ERROR",{callId:callId,error:String(error)},"warn","background");
         }).then(function(){
-          return syncOfficialEarningsRange("currentMonth").then(function(result){
-            record("CALL_START_MONTH_SYNC_COMPLETED",{
-              callId:callId,method:result&&result.method||null,period:"currentMonth"
-            },"info","background");
-          }).catch(function(error){
-            record("CALL_START_MONTH_SYNC_ERROR",{callId:callId,error:String(error)},"warn","background");
+          return captureCallEarningsBaseline(callId, state.callStartedAt).catch(function(error){
+            record("CALL_EARNINGS_BASELINE_RECONCILE_ERROR",{callId:callId,error:String(error)},"warn","background");
+          }).then(function(){
+            return syncOfficialEarningsRange("currentMonth").then(function(result){
+              record("CALL_START_MONTH_SYNC_COMPLETED",{
+                callId:callId,method:result&&result.method||null,period:"currentMonth"
+              },"info","background");
+            }).catch(function(error){
+              record("CALL_START_MONTH_SYNC_ERROR",{callId:callId,error:String(error)},"warn","background");
+            });
           });
         });
       });
@@ -1738,7 +1742,17 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var state = Object.assign(baseState(), stored.effectifState || {});
     if (!callId || state.callId !== callId || !state.callStartedAt) return false;
     var existing = stored.effectifCallEarnings || {};
-    if (existing.callId === callId) return true;
+    var expectedStartMs = Date.parse(startedAt || state.callStartedAt);
+    function isSafeExistingBaseline(value) {
+      if (!value || !Number.isFinite(Number(value.earnedUsd)) || Number(value.earnedUsd) < 0) return false;
+      if (value.source === "local-completed-calls" && value.earned == null) return true;
+      var observedAt = Date.parse(value.capturedAt);
+      return value.earned != null && Number.isFinite(expectedStartMs) &&
+        Number.isFinite(observedAt) && observedAt <= expectedStartMs;
+    }
+    if (existing.callId === callId && existing.baselines &&
+        isSafeExistingBaseline(existing.baselines.today) &&
+        isSafeExistingBaseline(existing.baselines.currentMonth)) return true;
     var mirror = stored.effectifPlatformMirror || {};
     var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
     function localFallback(period) {
@@ -1797,9 +1811,10 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     record("CALL_EARNINGS_BASELINE_CAPTURED", {
       callId: callId,
       startedAt: payload.startedAt,
-      todayBaselineUsd: payload.baselines.today && payload.baselines.today.earnedUsd || null,
-      currentMonthBaselineUsd: payload.baselines.currentMonth && payload.baselines.currentMonth.earnedUsd || null,
-      source: "pre-call-platform-mirror"
+      todayBaselineUsd: payload.baselines.today && payload.baselines.today.earnedUsd != null ? payload.baselines.today.earnedUsd : null,
+      currentMonthBaselineUsd: payload.baselines.currentMonth && payload.baselines.currentMonth.earnedUsd != null ? payload.baselines.currentMonth.earnedUsd : null,
+      todayBaselineSource: payload.baselines.today && payload.baselines.today.source || "unknown",
+      currentMonthBaselineSource: payload.baselines.currentMonth && payload.baselines.currentMonth.source || "unknown"
     }, "info", "background");
     return true;
   }
