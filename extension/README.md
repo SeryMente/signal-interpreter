@@ -1,3 +1,12 @@
+## v0.10.21 — conciliación del overlay al inicio de llamada
+
+- Al detectar una llamada, se congela primero el último baseline prellamada confirmado (ingreso, minutos y número de llamadas); la consulta oficial posterior no puede mover esa base ni duplicar el tiempo vivo.
+- Se registra un evento explícito si no existe un baseline oficial reciente. En ese caso, el overlay identifica la cifra como estimada hasta reconciliar con `fetchInterpreterLogs` al finalizar la llamada.
+- El overlay muestra en pantalla compacta el número de llamadas de la plataforma, los minutos acumulados del periodo y el incremento estimado de la llamada activa, además del desglose local de completadas, no terminadas, perdidas y observadas.
+- Las cifras oficiales que no se han actualizado en los últimos 15 minutos no se presentan como actuales; se muestra una estimación local mientras llega una sincronización autenticada.
+- La conversión a MXN solo se usa con un tipo de cambio confirmado para la fecha local de hoy. Si no está confirmado, el importe canónico continúa visible en USD y el overlay indica que MXN está pendiente.
+- El test `tools/earnings-overlay-tests.mjs` pasa a ser una compuerta obligatoria del workflow de auditoría, y cubre el orden del baseline, los minutos, el modo compacto y la conversión.
+
 # Signal Interpreter — Extension
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
