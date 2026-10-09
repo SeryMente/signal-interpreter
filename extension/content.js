@@ -1251,6 +1251,25 @@
     var previous = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     return date.getFullYear() === previous.getFullYear() && date.getMonth() === previous.getMonth();
   }
+  function liveSecondsForPeriod(period) {
+    if (period === "previousMonth") return 0;
+    var startValue = state.callStartedAt ||
+      (currentCallId() && Number.isFinite(callDisplayStartedAt) ? new Date(callDisplayStartedAt).toISOString() : null);
+    var startedMs = Date.parse(startValue);
+    if (!Number.isFinite(startedMs)) return 0;
+    var now = new Date();
+    var periodStartMs = period === "today"
+      ? new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+      : period === "currentMonth"
+        ? new Date(now.getFullYear(), now.getMonth(), 1).getTime()
+        : new Date(now.getFullYear(), 0, 1).getTime();
+    return Math.max(0, (Date.now() - Math.max(startedMs, periodStartMs)) / 1000);
+  }
+  function activeCallStartedInPeriod(period) {
+    var startValue = state.callStartedAt ||
+      (currentCallId() && Number.isFinite(callDisplayStartedAt) ? new Date(callDisplayStartedAt).toISOString() : null);
+    return !!(startValue && overlayCallInPeriod({ startedAt: startValue }, period));
+  }
   function earningsNow(period) {
     period = /^(today|currentMonth|previousMonth|year)$/.test(String(period || "")) ? period : "today";
     var calls = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) {
@@ -1258,12 +1277,13 @@
     }) : [];
     var completedUsd = calls.reduce(function (sum, call) { return sum + Number(call.estimatedRevenue || 0); }, 0);
     var activePeriod = period !== "previousMonth";
-    var liveSeconds = activePeriod
-      ? (state.callStartedAt ? Math.max(0, (Date.now() - Date.parse(state.callStartedAt)) / 1000)
-        : (callDisplayStartedAt ? Math.max(0, (Date.now() - callDisplayStartedAt) / 1000) : 0))
-      : 0;
+    var liveSeconds = activePeriod ? liveSecondsForPeriod(period) : 0;
     var modality = state.callModality || "OPI";
-    var rate = modality === "VRI" ? Number(config.vriRatePerMinute || 0.25) : Number(config.opiRatePerMinute || 0.20);
+    var capturedRate = state.callId && activeCallEarnings && activeCallEarnings.callId === state.callId
+      ? Number(activeCallEarnings.ratePerMinute) : NaN;
+    var rate = Number.isFinite(capturedRate) && capturedRate >= 0
+      ? capturedRate
+      : (modality === "VRI" ? Number(config.vriRatePerMinute || 0.25) : Number(config.opiRatePerMinute || 0.20));
     var liveUsd = liveSeconds / 60 * rate;
     if (period === "year") {
       var yearChart = platformMirror.earningsCharts && platformMirror.earningsCharts.year;
@@ -1271,7 +1291,8 @@
       var now = new Date(), currentMonthKey = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
       var yearUsd = yearItems.reduce(function (sum, item) {
         var value = Number(item.earnedUsd) || 0;
-        if (item.key === currentMonthKey && state.callId && activeCallEarnings && activeCallEarnings.callId === state.callId &&
+        if (item.key === currentMonthKey && state.callId && activeCallStartedInPeriod("currentMonth") &&
+            activeCallEarnings && activeCallEarnings.callId === state.callId &&
             activeCallEarnings.baselines && activeCallEarnings.baselines.currentMonth) {
           value = Number(activeCallEarnings.baselines.currentMonth.earnedUsd) || 0;
           value += liveUsd;
@@ -1293,16 +1314,18 @@
     var officialUsd = Number(official.earnedUsd);
     if (!(officialUsd >= 0)) officialUsd = parseOfficialUsd(official.earned);
     var callBaseline = entry && entry.callBaseline;
-    if (activePeriod && state.callId && activeCallEarnings && activeCallEarnings.callId === state.callId &&
+    var baselineApplies = activePeriod && state.callId && activeCallStartedInPeriod(period);
+    if (baselineApplies && activeCallEarnings && activeCallEarnings.callId === state.callId &&
         activeCallEarnings.baselines && activeCallEarnings.baselines[period]) {
       callBaseline = activeCallEarnings.baselines[period];
     }
-    if (activePeriod && state.callId && callBaseline && callBaseline.callId === state.callId) {
-      officialUsd = Number(callBaseline.earnedUsd);
-      if (!(officialUsd >= 0)) officialUsd = parseOfficialUsd(callBaseline.earned);
-    }
-    var hasOfficial = Number.isFinite(officialUsd) && officialUsd >= 0 && (official.earned != null || (callBaseline && callBaseline.callId === state.callId));
-    var baseUsd = hasOfficial ? officialUsd : completedUsd;
+    var callBaselineMatches = !!(baselineApplies && callBaseline && callBaseline.callId === state.callId);
+    var callBaselineUsd = callBaselineMatches ? Number(callBaseline.earnedUsd) : NaN;
+    var hasCallBaselineValue = Number.isFinite(callBaselineUsd) && callBaselineUsd >= 0;
+    if (hasCallBaselineValue) officialUsd = callBaselineUsd;
+    var hasOfficial = Number.isFinite(officialUsd) && officialUsd >= 0 &&
+      (callBaselineMatches ? callBaseline.earned != null : official.earned != null);
+    var baseUsd = hasCallBaselineValue ? callBaselineUsd : (hasOfficial ? officialUsd : completedUsd);
     var totalUsd = baseUsd + (activePeriod ? liveUsd : 0);
     var officialCalls = Number(official.callCount);
     return {
@@ -1370,7 +1393,8 @@
     var today = localDay();
     var todayInfo = earningsNow("today");
     var liveMinutes = todayInfo.liveSeconds / 60;
-    var baselineToday = activeCallEarnings && activeCallEarnings.callId === state.callId && activeCallEarnings.baselines && activeCallEarnings.baselines.today;
+    var baselineToday = activeCallStartedInPeriod("today") && activeCallEarnings &&
+      activeCallEarnings.callId === state.callId && activeCallEarnings.baselines && activeCallEarnings.baselines.today;
     items = items.map(function (item) {
       if (item.key !== today) return item;
       var todayItem = Object.assign({}, item, { earnedUsd: todayInfo.totalUsd });
@@ -1410,7 +1434,8 @@
       return;
     }
     var now = new Date(), currentMonthKey = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
-    var baselineMonth = activeCallEarnings && activeCallEarnings.callId === state.callId && activeCallEarnings.baselines && activeCallEarnings.baselines.currentMonth;
+    var baselineMonth = activeCallStartedInPeriod("currentMonth") && activeCallEarnings &&
+      activeCallEarnings.callId === state.callId && activeCallEarnings.baselines && activeCallEarnings.baselines.currentMonth;
     items = items.map(function (item) {
       var next = Object.assign({}, item);
       if (item.key === currentMonthKey && state.callId && state.callStartedAt) {
