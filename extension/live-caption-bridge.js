@@ -24,7 +24,7 @@
 
   function markError(error) {
     var now = Date.now();
-    if (now - lastErrorAt < 10000) return;
+    if (lastErrorAt > 0 && now >= lastErrorAt && now - lastErrorAt < 10000) return;
     lastErrorAt = now;
     try {
       if (root.SignalCaptionBridge && root.SignalCaptionBridge.onError) {
