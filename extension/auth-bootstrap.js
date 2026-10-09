@@ -98,7 +98,7 @@
     return (tabs || []).some(function (tab) {
       var path = "";
       try { path = new URL(String(tab.url || "")).pathname; } catch (_) {}
-      return /^\\/(profile|call|logs|appointments|scheduled)(\\/|$)/.test(path);
+      return /^\/(profile|call|logs|appointments|scheduled)(\/|$)/.test(path);
     });
   }
   async function runBootstrap(reason) {
