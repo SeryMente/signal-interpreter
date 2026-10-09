@@ -2,7 +2,7 @@
   "use strict";
 
   function validDate(value) {
-    var date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
+    var date = value && typeof value.getTime === "function" ? new Date(value.getTime()) : new Date(value);
     return Number.isFinite(date.getTime()) ? date : null;
   }
 
