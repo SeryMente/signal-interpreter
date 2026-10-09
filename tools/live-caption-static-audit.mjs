@@ -93,6 +93,7 @@ assert.equal(hostManifest.allowed_origins[0],"chrome-extension://ldpbjhobnfgmhdo
 assert.ok(hostManifest.allowed_origins[0].endsWith("/"));
 assert.ok(register.includes("FromBase64String"));
 assert.ok(register.includes("C398104EDED632C62350F6C6755A065C7B566F18CF8269E872E05EF100156E59"));
+assert.match(register, /ExpectedSourceSha256\s*=\s*"[A-Fa-f0-9]{64}"/);
 assert.ok(register.includes("HKCU:\\Software\\Google\\Chrome\\NativeMessagingHosts"));
 assert.ok(register.includes("SignalInterpreter.CaptionHost.exe"));
 assert.ok(hostSource.includes("System.Windows.Automation"));
