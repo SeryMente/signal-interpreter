@@ -108,7 +108,8 @@
     var clean = core.normalizeText(text);
     if (!clean) return;
 
-    language = language === "en" || language === "es" ? language : core.detectLanguage(clean);
+    language = core.normalizeLanguage(language);
+    if (language !== "en" && language !== "es") language = core.detectLanguage(clean);
     var now = Date.now();
 
     if (source === "chrome-live-caption") {
