@@ -26,6 +26,7 @@
     exchangeRateUpdatedAt: null
   };
   var config = Object.assign({}, DEFAULT_CONFIG);
+  var cloudInterpreterLoginUsername = "";
   var state = {};
   var mirror = {};
   var relayMomentState = { automatic: null, manual: null, model: null };
@@ -124,6 +125,10 @@
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
     $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
+    var loginUsernameInput = $("cloudInterpreterUsername");
+    if (loginUsernameInput && document.activeElement !== loginUsernameInput) {
+      loginUsernameInput.value = cloudInterpreterLoginUsername;
+    }
     $("groqStatus").textContent = "Clave local âœ“ Â· " + (config.groqModel || "whisper-large-v3-turbo");
     if ($("telemetryVersion")) $("telemetryVersion").textContent = BUILD_LABEL;
     $("sessionTimer").textContent = duration(state.sessionStartedAt);
@@ -217,6 +222,13 @@
   var openTranscript=$("openTranscript");
   if(openTranscript)openTranscript.addEventListener("click",function(){openTranscript.disabled=true;status("Preparando captura de audioâ€¦");chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab||tab.id==null)throw new Error("No hay pestaÃ±a activa.");return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){return{tab:tab,streamId:streamId}})}).then(function(x){var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:x.tab.id,audioStreamId:x.streamId,sourceUrl:x.tab.url||"",sourceTitle:x.tab.title||""};return chrome.runtime.sendMessage(payload)}).then(function(response){status(response&&response.ok?"Groq: consola abierta y captura iniciada":"No se pudo iniciar: "+String(response&&response.error||"desconocido"),!(response&&response.ok));}).catch(function(error){status("No se pudo iniciar la captura: "+String(error),true);}).finally(function(){openTranscript.disabled=false;});});
   $("groqModel").addEventListener("change",function(){save({groqModel:this.value});});
+  var loginUsernameInput = $("cloudInterpreterUsername");
+  if (loginUsernameInput) loginUsernameInput.addEventListener("change", function () {
+    cloudInterpreterLoginUsername = String(this.value || "").trim();
+    chrome.storage.local.set({ cloudInterpreterLoginUsername: cloudInterpreterLoginUsername }, function () {
+      status("Usuario guardado localmente en Chrome");
+    });
+  });
   $("enabled").addEventListener("change", function () {
     save({ autoAnswerEnabled: this.checked });
   });
@@ -450,8 +462,9 @@
   function loadPopupState() {
     if (popupStateLoaded) return;
     popupStateLoaded = true;
-    chrome.storage.local.get(["effectifConfig", "effectifState", "effectifLastEvent", "effectifPlatformMirror"], function (stored) {
+    chrome.storage.local.get(["effectifConfig", "effectifState", "effectifLastEvent", "effectifPlatformMirror", "cloudInterpreterLoginUsername"], function (stored) {
       config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}); delete config.groqApiKey;
+      cloudInterpreterLoginUsername = String(stored.cloudInterpreterLoginUsername || "");
       state = stored.effectifState || {};
       mirror = stored.effectifPlatformMirror || {};
       var last = stored.effectifLastEvent;
@@ -467,6 +480,7 @@
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local") return;
     if (changes.effectifConfig) config = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.newValue || {});
+    if (changes.cloudInterpreterLoginUsername) cloudInterpreterLoginUsername = String(changes.cloudInterpreterLoginUsername.newValue || "");
     if (changes.effectifState) state = changes.effectifState.newValue || {};
     if (changes.effectifPlatformMirror) mirror = changes.effectifPlatformMirror.newValue || {};
     if (changes.signalObservationSyncState) renderRelayStatus();

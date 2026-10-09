@@ -27,6 +27,12 @@ En chrome://extensions activa Developer mode y usa Load unpacked sobre la carpet
 
 No es necesario ejecutar ningún proceso de bridge local.
 
+## Inicio de sesión automático de Cloud Interpreter (0.10.15)
+
+Al instalar o actualizar la extensión, y al iniciar Chrome, Signal Interpreter comprueba la sesión sin reemplazar las pestañas existentes. Si ya hay una pestaña de perfil o llamada autenticada, no abre otra. En caso contrario, examina en segundo plano la ruta de acceso; si sigue mostrando el formulario de inicio de sesión, esa misma pestaña nueva se activa.
+
+En Más controles → Acceso a Cloud Interpreter, guarda el usuario o correo. Se almacena localmente como cloudInterpreterLoginUsername, separado de la configuración y la telemetría. En /auth/signin, la extensión completa el usuario y enfoca la contraseña. La contraseña se introduce manualmente y la extensión no la lee ni la persiste.
+
 ## Pruebas
 
 La prueba de transcripción está en tools/groq-transcriber-tests.mjs y valida endpoint, modelo, parámetros de Groq, segmentos y redacción de credenciales.
@@ -34,7 +40,7 @@ La prueba de transcripción está en tools/groq-transcriber-tests.mjs y valida e
 
 ## Control de Auto-Answer por perfil y disponibilidad
 
-**Versión de extensión: 0.9.15**
+**Versión de extensión: 0.10.15**
 
 En cada ciclo de modificación de la extensión, este README debe leerse antes de editar y la versión de `extension/manifest.json` debe incrementarse.
 

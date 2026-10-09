@@ -82,6 +82,14 @@
         <summary><span>Más controles</span><span id="telemetryCount">—</span></summary>
         <div class="more-body">
           <section class="sub-card">
+            <div class="sub-head"><div><strong>Acceso a Cloud Interpreter</strong><small>Usuario automático · contraseña manual</small></div></div>
+            <label class="login-username-row" for="cloudInterpreterUsername">Usuario / email
+              <input id="cloudInterpreterUsername" type="text" autocomplete="username" placeholder="Usuario o correo de acceso">
+            </label>
+            <small>El usuario se guarda solo en este perfil de Chrome. La contraseña no se lee ni se guarda.</small>
+          </section>
+
+          <section class="sub-card">
             <div class="sub-head"><div><strong>Transcripción</strong><small id="groqStatus">Clave local · whisper-large-v3-turbo</small></div></div>
             <label class="select-row"><span>Modelo</span><select id="groqModel"><option value="whisper-large-v3-turbo">whisper-large-v3-turbo</option><option value="whisper-large-v3">whisper-large-v3</option></select></label>
             <div class="sound-row">
