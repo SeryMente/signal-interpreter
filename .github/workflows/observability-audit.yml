@@ -22,6 +22,7 @@ jobs:
           node --check extension/auth-signin-assist.js
           node --check tools/cloud-login-bootstrap-test.mjs
           node --check extension/content.js
+          node --check extension/earnings-overlay-metrics.js
           node --check extension/mic-guard-main.js
           node --check extension/global-mouse-gesture.js
           node --check extension/hotkey-fallback.js
@@ -31,6 +32,8 @@ jobs:
           node --check tools/observability-relay/api/screenshot.js
           node --check extension/offscreen.js
           node --check tools/hotload-active-call-test.mjs
+          node --check tools/earnings-overlay-metrics-test.mjs
+          node --check tools/earnings-overlay-tests.mjs
           node --check extension/groq-transcriber.js
           node --check extension/live-caption-core.js
           node --check extension/live-caption-bridge.js
@@ -55,6 +58,10 @@ jobs:
         run: node tools/cloud-login-bootstrap-test.mjs
       - name: Hotload during active call unit test
         run: node tools/hotload-active-call-test.mjs
+      - name: Earnings overlay period metrics unit test
+        run: node tools/earnings-overlay-metrics-test.mjs
+      - name: Earnings overlay sync static test
+        run: node tools/earnings-overlay-tests.mjs
       - name: Microphone guard unit test
         run: node tools/microphone-guard-test.mjs
       - name: Global mouse mute unit test
