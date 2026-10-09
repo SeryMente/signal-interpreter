@@ -55,6 +55,14 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
       var enabled = config.liveCaptionOverlayEnabled !== false && hasActiveCall(state);
       await ensureOffscreen();
+      if (enabled) {
+        var captureStatus = await chrome.runtime.sendMessage({
+          target: "offscreen", type: "SIGNAL_GET_GROQ_CAPTURE_STATE"
+        }).catch(function () { return null; });
+        if (!captureStatus || captureStatus.running !== true) {
+          return { ok: true, skipped: true, reason: "audio-capture-not-running" };
+        }
+      }
       if (!enabled) {
         try {
           await chrome.runtime.sendMessage({
@@ -1226,6 +1234,13 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       }, "info", "background");
     }).then(function (state) {
       if (!state || state.callId !== callId) return;
+      if (cachedConfig.liveCaptionOverlayEnabled !== false && state.callSourceTabId != null) {
+        var nativeCaptionStarted = false;
+        try { nativeCaptionStarted = SignalCaptionBridge.start(state.callSourceTabId, callId); } catch (_) {}
+        record("SIGNAL_CAPTION_NATIVE_START_REQUESTED", {
+          callId: callId, tabId: state.callSourceTabId, requested: !!nativeCaptionStarted
+        }, nativeCaptionStarted ? "info" : "warn", "caption");
+      }
       return captureCallEarningsBaseline(callId, state.callStartedAt).catch(function (error) {
         record("CALL_EARNINGS_BASELINE_CAPTURE_ERROR", {
           callId: callId, startedAt: state.callStartedAt, error: String(error)
@@ -1439,9 +1454,12 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       }), "info", source);
       if (sendResponse) sendResponse({ ok: true, call: call });
     }).then(function (finalState) {
+      try { SignalCaptionBridge.stop(); } catch (_) {}
+      return setCaptionPreviewForActiveCall(false, "call-ended").catch(function () { return null; }).then(function () {
       checkpointCallObservability("call-ended", closedCallId, finalState);
       return reconcileOfficialEarningsAfterCall(closedCallId).catch(function(error){
         record("CALL_END_EARNINGS_RECONCILIATION_ERROR",{callId:closedCallId,error:String(error)},"warn","background");
+      });
       });
     }).then(function () { applyPendingHotloadAfterCall("call-ended").catch(function () {}); });
   }
@@ -2116,9 +2134,14 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
         record("HOTLOAD_CAPTURE_LEASE_PREPARED",{callId:state.callId,tabId:state.callSourceTabId||null,sessionId:session.id,runtimeVersion:chrome.runtime.getManifest().version}, "info","runtime");
       }
-      await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id,muted:!!state.microphoneMuted,captionPreview:cachedConfig.liveCaptionOverlayEnabled !== false,tabId:state.callSourceTabId||session.tabId||session.sourceTabId||0});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
+      await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id,muted:!!state.microphoneMuted,captionPreview:cachedConfig.liveCaptionOverlayEnabled !== false && hasActiveCall(state),tabId:state.callSourceTabId||session.tabId||session.sourceTabId||0});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
       signalActiveSessionId=session.id;
-      try { if (cachedConfig.liveCaptionOverlayEnabled !== false) SignalCaptionBridge.start(state.callSourceTabId); } catch (_) {}
+      try {
+        if (cachedConfig.liveCaptionOverlayEnabled !== false && hasActiveCall(state)) {
+          SignalCaptionBridge.start(state.callSourceTabId, state.callId);
+          setCaptionPreviewForActiveCall(true, "capture-start").catch(function () {});
+        }
+      } catch (_) {}
       state.microphoneMuteStatus="pending";
       await updateGroqCaptureState({status:"connected",tabAudio:true,microphone:true,microphoneMuted:!!state.microphoneMuted,startedAt:iso(),lastChunkAt:null,error:null});
       if(hasActiveCall(state)){
@@ -2893,9 +2916,27 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   }, { urls: ["https://app.cloudinterpreter.com/*"] });
   chrome.windows.onRemoved.addListener(function () {});
   chrome.storage.onChanged.addListener(function (changes, area) {
-    if (area === "local" && changes.effectifConfig) {
-      cachedConfig = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.newValue || {});
+    if (area !== "local" || !changes.effectifConfig) return;
+    var previousConfig = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.oldValue || {});
+    cachedConfig = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.newValue || {});
+    var wasEnabled = previousConfig.liveCaptionOverlayEnabled !== false;
+    var isEnabled = cachedConfig.liveCaptionOverlayEnabled !== false;
+    if (wasEnabled === isEnabled) return;
+    if (!isEnabled) {
+      try { SignalCaptionBridge.stop(); } catch (_) {}
+      setCaptionPreviewForActiveCall(false, "preference-disabled").catch(function () {});
+      return;
     }
+    chrome.storage.local.get(["effectifState"]).then(function (stored) {
+      var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+      if (!hasActiveCall(state) || state.callSourceTabId == null) return;
+      SignalCaptionBridge.start(state.callSourceTabId, state.callId);
+      setCaptionPreviewForActiveCall(true, "preference-enabled").catch(function () {});
+    }).catch(function (error) {
+      record("SIGNAL_CAPTION_PREFERENCE_RECOVERY_ERROR", {
+        errorType: String(error && error.name || "Error").slice(0, 80)
+      }, "warn", "caption");
+    });
   });
 
   function checkMicrophoneCommandShortcut(trigger) {
