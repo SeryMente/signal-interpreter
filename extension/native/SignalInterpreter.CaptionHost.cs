@@ -258,6 +258,18 @@ internal static class SignalInterpreterCaptionHost
         return "";
     }
 
+    private static bool IsCaptionTitleLabel(string text)
+    {
+        if (String.IsNullOrWhiteSpace(text))
+            return false;
+        foreach (string token in CaptionTitlePattern.Split('|'))
+        {
+            if (String.Equals(text.Trim(), token, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
+    }
+
     private static bool ContainsCaptionTitle(string name)
     {
         if (String.IsNullOrWhiteSpace(name))
@@ -296,7 +308,7 @@ internal static class SignalInterpreterCaptionHost
                         continue;
 
                     string text = (current.Name ?? "").Trim();
-                    if (String.IsNullOrWhiteSpace(text) || IgnoredText.Contains(text) || ContainsCaptionTitle(text))
+                    if (String.IsNullOrWhiteSpace(text) || IgnoredText.Contains(text) || IsCaptionTitleLabel(text))
                         continue;
 
                     if (text.Length > 4000)
