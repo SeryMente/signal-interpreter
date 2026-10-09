@@ -44,7 +44,7 @@ assert.match(background, /CALL_INCOMING_EARNINGS_PREFETCH_REQUESTED/);
 assert.match(background, /CALL_EARNINGS_BASELINE_CAPTURED/);
 assert.match(background, /earningsPeriodKey\("today"/);
 assert.doesNotMatch(background, /source:"official-sync-fallback"/);
-assert.match(background, /source:"local-reconciled-state"/);
+assert.match(content, /source: "local-reconciled-state"/);
 assert.match(background, /await captureCallEarningsBaseline\(callId, state\.callStartedAt\)/);
 assert.match(background, /periodKey:expectedPeriodKey/);
 assert.match(background, /baselines:Object\.assign\(\{today:null,currentMonth:null\},activeBaselines\)/);
