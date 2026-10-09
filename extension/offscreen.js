@@ -98,7 +98,7 @@ async function startCapture(streamId,sessionId,muted,captionPreview,tabId){
     var micApplied=await applyMicMute(initialMute);
     if(!micApplied.ok)throw new Error("No se pudo verificar el estado inicial del micrófono de la extensión.");
     tabRecorder=arm("cliente",tabStream);micRecorder=arm("yo",micStream);if(!tabRecorder||!micRecorder)throw new Error("No se pudieron iniciar los dos grabadores.");
-    if(captionPreview===true){startCaptionPreview({tab:false,mic:true});}
+    if(captionPreview===true){startCaptionPreview({tab:true,mic:false});}
     startTimer("cliente",tabRecorder);startTimer("yo",micRecorder);
     if(micMuteWatchdog)clearInterval(micMuteWatchdog);
     micMuteWatchdog=setInterval(function(){
