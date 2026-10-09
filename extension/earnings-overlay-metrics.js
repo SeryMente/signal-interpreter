@@ -150,7 +150,8 @@
     callStartsInPeriod: callStartsInPeriod,
     intervalSecondsInPeriod: intervalSecondsInPeriod,
     activeSecondsInPeriod: activeSecondsInPeriod,
-    elapsedSeconds: elapsedSeconds
+    elapsedSeconds: elapsedSeconds,
+    combinePeriodMetrics: combinePeriodMetrics
   };
   root.SignalInterpreterEarningsMetrics = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
