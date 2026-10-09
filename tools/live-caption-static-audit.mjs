@@ -92,7 +92,7 @@ assert.ok(hostManifest.allowed_origins[0].startsWith("chrome-extension://"));
 assert.equal(hostManifest.allowed_origins[0],"chrome-extension://ldpbjhobnfgmhdoehehdmnbhhjckebmj/");
 assert.ok(hostManifest.allowed_origins[0].endsWith("/"));
 assert.ok(register.includes("FromBase64String"));
-assert.ok(register.includes("551F2CCE3E6C2447C053573EBB97FD1C808FDB612C13876EFCA23D7FDEE0D2B5"));
+assert.ok(register.includes("F281C21139F60511A4709716F95D3C832166F60ED85215F02866085095E2B86B"));
 assert.ok(register.includes("HKCU:\\Software\\Google\\Chrome\\NativeMessagingHosts"));
 assert.ok(register.includes("SignalInterpreter.CaptionHost.exe"));
 assert.ok(hostSource.includes("System.Windows.Automation"));
@@ -103,7 +103,7 @@ assert.ok(payload.length>18000);
 const decoded=Buffer.from(payload,"base64");
 assert.ok(decoded.length>10000);
 assert.equal(decoded.subarray(0,2).toString("ascii"),"MZ");
-assert.equal(crypto.createHash("sha256").update(decoded).digest("hex").toUpperCase(),"551F2CCE3E6C2447C053573EBB97FD1C808FDB612C13876EFCA23D7FDEE0D2B5");
+assert.equal(crypto.createHash("sha256").update(decoded).digest("hex").toUpperCase(),"F281C21139F60511A4709716F95D3C832166F60ED85215F02866085095E2B86B");
 
 assert.equal(exists("extension/native/main.go"),false);
 assert.equal(exists("extension/native/SignalInterpreter.CaptionHost.ps1"),false);
