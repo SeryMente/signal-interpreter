@@ -5,8 +5,8 @@ $Manifest = Join-Path $Root "$HostName.json"
 $Template = Join-Path $Root "$HostName.json"
 $Exe = Join-Path $Root "SignalInterpreter.CaptionHost.exe"
 $Payload = Join-Path $Root "SignalInterpreter.CaptionHost.exe.b64"
-$ExpectedSha256 = "672A66DA5CF60EC4FBD148D55B54131508EAE773CDA96DBB72760B3CD149AD00"
-$ExpectedSourceSha256 = "AF6BAC92319D9175AE2A040885D829558FD333683E65FD55A674E5F663EE7088"
+$ExpectedSha256 = "7526667D537E65840D3DDB68F25DCC7271C11CD5639B25C834ABEA15E4F56DB6"
+$ExpectedSourceSha256 = "B6C9713E063CF1AAB24314810968954398D7A452B382CAD1012E3B91D67A1E33"
 
 if (-not (Test-Path $Payload)) { throw "No existe $Payload" }
 $base64 = ([IO.File]::ReadAllText($Payload)).Trim()
