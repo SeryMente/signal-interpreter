@@ -43,7 +43,7 @@ assert.ok(manifest.commands["toggle-extension-microphone"].description.includes(
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 assert.match(manifest.content_security_policy.extension_pages,/https:\/\/signal-interpreter-observability-re\.vercel\.app/);
 
-assert.ok(background.includes('importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js","platform-screenshot.js")'));
+assert.ok(background.includes('importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js","platform-screenshot.js","auth-bootstrap.js")'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync"'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync-retry"'));
 assert.ok(background.includes('SignalObservationSync.flush("startup"'));
