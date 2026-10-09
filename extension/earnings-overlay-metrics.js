@@ -11,14 +11,14 @@
     var text = String(value == null ? "" : value).trim();
     if (!text) return null;
 
-    if (/^\\d{1,3}:\\d{2}(?::\\d{2}(?:[.,]\\d+)?)?$/.test(text)) {
+    if (/^\d{1,3}:\d{2}(?::\d{2}(?:[.,]\d+)?)?$/.test(text)) {
       var parts = text.split(":").map(function (part) { return Number(part.replace(",", ".")); });
       if (parts.some(function (part) { return !Number.isFinite(part) || part < 0; })) return null;
       if (parts.length === 3) return parts[0] * 60 + parts[1] + parts[2] / 60;
       return parts[0] + parts[1] / 60;
     }
 
-    var unitPattern = /(\\d+(?:[.,]\\d+)?)\\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\\b/gi;
+    var unitPattern = /(\d+(?:[.,]\d+)?)\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\b/gi;
     var unitMatch, unitTotal = 0, foundUnit = false;
     while ((unitMatch = unitPattern.exec(text)) !== null) {
       foundUnit = true;
