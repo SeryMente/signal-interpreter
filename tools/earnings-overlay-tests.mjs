@@ -36,6 +36,8 @@ assert.match(content, /EFFECTIF_REFRESH_EXCHANGE_RATE/);
 assert.match(content, /earningsMetrics\.combinePeriodMetrics\(period, baseline, fallback, activeStartedAt, rate, now\)/);
 assert.match(content, /totalUsd: calculated\.totalUsd/);
 assert.match(content, /info\.periodMinutes\.toFixed\(2\) \+ " min del periodo"/);
+assert.match(content, /Base oficial de Cloud Interpreter sincronizada/);
+assert.match(content, /Estimación local: base oficial no confirmada/);
 assert.match(content, /earningsMetrics\.activeSecondsInPeriod/);
 assert.match(content, /todayInfo\.livePeriodSeconds/);
 assert.match(content, /earningsNow\("currentMonth"\)\.livePeriodSeconds \/ 60/);
