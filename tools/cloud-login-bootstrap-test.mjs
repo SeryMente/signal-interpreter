@@ -11,7 +11,7 @@ const assist = read("extension/auth-signin-assist.js");
 const popupHtml = read("extension/ui/popup.html");
 const popupJs = read("extension/ui/popup.js");
 
-assert.equal(manifest.version, "0.10.17");
+assert.equal(manifest.version, "0.10.18");
 assert.ok(background.includes('"auth-bootstrap.js"'));
 assert.ok(manifest.content_scripts.some((entry) =>
   entry.matches && entry.matches.includes("https://app.cloudinterpreter.com/auth/signin*") &&
@@ -23,6 +23,9 @@ assert.ok(bootstrap.includes('chrome.tabs.create({ url: SIGNIN_URL, active: fals
 assert.ok(bootstrap.includes('chrome.tabs.update(probeTab.id, { active: true })'));
 assert.ok(bootstrap.includes('storeState("authenticated", reason)'));
 assert.ok(assist.includes('cloudInterpreterLoginUsername'));
+assert.ok(assist.includes('var DEFAULT_USERNAME = "victor.hugo.queretaro@proton.me";'));
+assert.ok(assist.includes("|| DEFAULT_USERNAME"));
+assert.ok(assist.includes("chrome.storage.local.set({ cloudInterpreterLoginUsername: DEFAULT_USERNAME })"));
 assert.ok(assist.includes("chrome.storage.onChanged.addListener"));
 assert.ok(assist.includes('password.focus'));
 assert.ok(!assist.includes('setInputValue(password'));
