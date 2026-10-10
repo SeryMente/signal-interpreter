@@ -83,7 +83,7 @@ assert.equal(previewBlock.includes("KhoraTelemetryDB"),false);
 assert.ok(offscreen.includes("previewTabRecorder"));
 assert.ok(offscreen.includes("previewMicRecorder"));
 assert.ok(offscreen.includes("startCaptionPreview"));
-assert.ok(offscreen.includes('recorder.start(source === "yo" ? 1800 : 2800)'), "la voz del LEP usa fragmentos de menor latencia");
+assert.ok(offscreen.includes("recorder.start(1800)"), "todos los previews bilingües usan fragmentos de audio cortos");
 assert.ok(offscreen.includes("SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK"));
 assert.ok(offscreen.includes("captionPreview===true"));
 assert.ok(offscreen.includes('startCaptionPreview({tab:true,mic:false})'));
