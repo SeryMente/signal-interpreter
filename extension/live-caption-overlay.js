@@ -550,6 +550,7 @@
     sourceTabId = Number.isFinite(Number(result.sourceTabId)) ? Number(result.sourceTabId) : null;
     isSourceTab = result.isSourceTab === true;
     callActive = result.callActive === true;
+    sessionEnded = !callActive && result.sessionEnded === true;
     youtubeTarget = isYoutubeTargetPage();
     pageAllowed = result.pageAllowed === true || youtubeTarget;
     if (hydrate && Array.isArray(result.history)) hydrateHistory(result.history);
@@ -646,7 +647,8 @@
         var container = root.querySelector(".transcript");
         if (container) container.scrollTop = 0;
       }
-      render();
+      render(true);
+      syncContext(false);
     } else if (message.type === "SIGNAL_CAPTION_SESSION_END") {
       active = false;
       callActive = false;
