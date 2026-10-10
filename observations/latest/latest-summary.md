@@ -1,26 +1,27 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-82cde15b-9a10-466f-a4de-957443b6ef41
-- Creado: 2026-10-10T17:03:17.393Z
-- Trigger: event-window
+- Batch: batch-5e0488e3-b893-4108-bb3a-8bbbf8695d73
+- Creado: 2026-10-10T17:04:14.116Z
+- Trigger: critical
 - Extensión: 0.10.27
-- Eventos: 7
+- Eventos: 5
 - Errores: 0
-- Warnings: 0
-- Secuencia: 116 → 122
+- Warnings: 1
+- Secuencia: 191 → 195
 - Identidades de plataforma: 8
-- Snapshots de plataforma: 591
-- Deltas de plataforma: 591
+- Snapshots de plataforma: 592
+- Deltas de plataforma: 592
 
 ## Categorías
 
 {
-  "RUNTIME": 7
+  "RUNTIME": 4,
+  "SESSION": 1
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 6,
-  "TELEMETRY_MAINTENANCE": 1
+  "AUTO_ANSWER_READINESS": 4,
+  "CONNECT_FLOW_FAILED_NO_CALL_ROUTE": 1
 }
