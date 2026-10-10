@@ -1,36 +1,35 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-25409a10-f48b-4452-abbc-d4258fd9d676
-- Creado: 2026-10-10T17:01:16.146Z
+- Batch: batch-dfbd2f96-ef54-4a40-b56b-fe582efc03c6
+- Creado: 2026-10-10T17:02:27.525Z
 - Trigger: critical
-- Extensión: 0.10.5
-- Eventos: 17
+- Extensión: 0.10.27
+- Eventos: 13
 - Errores: 0
-- Warnings: 1
-- Secuencia: 8737 → 8753
+- Warnings: 0
+- Secuencia: 78 → 90
 - Identidades de plataforma: 8
-- Snapshots de plataforma: 583
-- Deltas de plataforma: 583
+- Snapshots de plataforma: 590
+- Deltas de plataforma: 590
 
 ## Categorías
 
 {
-  "RUNTIME": 15,
-  "PORTAL": 2
+  "PORTAL": 1,
+  "RUNTIME": 9,
+  "BILLING": 1,
+  "SOUND": 2
 }
 
 ## Acciones
 
 {
-  "TAB_LIFECYCLE": 1,
-  "AUTO_ANSWER_READINESS": 6,
-  "PERFORMANCE_HEARTBEAT": 1,
-  "PLATFORM_SESSION_STARTED": 1,
-  "OBSERVER_STARTED": 1,
-  "PLATFORM_INTEGRITY_CHECK": 1,
-  "PLATFORM_SURFACE_SNAPSHOT": 1,
-  "SCREEN_MAP": 1,
-  "PAGE_VISIBILITY_CHANGED": 1,
-  "PAGE_LIFECYCLE": 2,
-  "NETWORK_REQUEST_ERROR": 1
+  "PLATFORM_MIRROR_UPDATED": 1,
+  "PAGE_LIFECYCLE": 1,
+  "PLATFORM_TELEMETRY_RECONCILED": 1,
+  "AUTO_ANSWER_READINESS": 3,
+  "EXCHANGE_RATE_UPDATED": 1,
+  "EXTENSION_MICROPHONE_MUTE_REQUESTED": 2,
+  "EXTENSION_MICROPHONE_MUTE_APPLIED": 2,
+  "EXTENSION_MICROPHONE_SOUND_PLAYED": 2
 }
