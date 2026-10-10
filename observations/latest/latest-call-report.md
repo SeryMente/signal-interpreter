@@ -1,41 +1,40 @@
 # Signal Interpreter — informe de cierre de llamada
 
 - Estado de recolección: **partial**
-- Referencia opaca: 5ac5b855641b8671c7bc135b
-- Versión runtime: unknown
+- Referencia opaca: 914fd064feac1a1e2c17b942
+- Versión runtime: 0.10.29
 - Modalidad/estado: OPI / completed
 - Inicio: no observado
 - Fin: no observado
-- Duración observada / plataforma / facturable asumida (s): 560.631 / 558 / 558
-- Ingreso estimado: 1.86 USD
+- Duración observada / plataforma / facturable asumida (s): 870.422 / 868 / 868
+- Ingreso estimado: 2.8933 USD
 - Fin por: rating-route
 
 ## Confirmación de calificación
 
 - Ruta de calificación observada: true
-- Estrellas visibles confirmadas: false
-- Método de detección: unknown
+- Estrellas visibles confirmadas: true
+- Método de detección: star-class-or-title-heuristic
 - Valor seleccionado observado: false
 - Envío de valoración observado: false
 - Checkpoint final entregado al paquete: true
 
 ## Cobertura y señales
 
-- Eventos correlacionados: 681
-- Warnings / errores / eventos fallidos-bloqueados: 0 / 0 / 0
-- Muestras de rendimiento / media: 0 / 563
-- Conteo por grupos: {"other":9,"answerFlow":2,"billingAndEarnings":16,"platformAndUi":38,"mediaAndCapture":564,"transcriptionAndCaptions":2,"ratingAndClose":5,"observabilityPipeline":1,"microphoneAndSafety":22,"runtimeAndRecovery":22}
+- Eventos correlacionados: 2543
+- Warnings / errores / eventos fallidos-bloqueados: 2 / 0 / 1
+- Muestras de rendimiento / media: 30 / 872
+- Conteo por grupos: {"answerFlow":1365,"other":28,"overlayActivation":71,"platformAndUi":96,"mediaAndCapture":873,"performanceAndNetwork":30,"transcriptionAndCaptions":2,"ratingAndClose":6,"billingAndEarnings":1,"observabilityPipeline":1,"microphoneAndSafety":35,"runtimeAndRecovery":35}
 
 ## Señales ausentes o incompletas
 
-- rating-stars-confirmation-not-observed
-- performance-samples-not-observed
-- platform-surface-snapshot-not-observed
 
 ## Errores, advertencias y fallos
 
 | Momento | Acción | Nivel | Categoría | Motivo |
 |---|---|---|---|---|
+| 2026-10-10T20:25:08.047Z | LIVE_CAPTION_OVERLAY_LOCAL_ROUTE_FALLBACK | warn | CAPTION | spa-call-route-observed |
+| 2026-10-10T20:25:13.182Z | EARNINGS_OVERLAY_CHART_SYNC_ERROR | warn | RUNTIME |  |
 
 ## Privacidad
 
