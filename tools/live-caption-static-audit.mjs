@@ -27,8 +27,7 @@ assert.ok(manifest.key && manifest.key.length > 300);
 assert.ok(manifest.key);
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://app.cloudinterpreter.com/*")&&Array.isArray(e.js)&&e.js.includes("live-caption-core.js")&&e.js.includes("live-caption-overlay.js")&&e.js.includes("content.js")));
-assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("http://*/*")&&e.matches?.includes("https://*/*")&&e.exclude_matches?.includes("https://app.cloudinterpreter.com/*")&&e.js?.includes("live-caption-overlay.js")));
-assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://www.youtube.com/watch*")&&e.js?.includes("youtube-caption-adapter.js")));
+assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("http://*/*")&&e.matches?.includes("https://*/*")&&e.exclude_matches?.includes("https://app.cloudinterpreter.com/*")&&e.js?.includes("live-caption-overlay.js")&&e.js?.includes("youtube-caption-adapter.js")), "overlay must initialize before the guarded YouTube adapter");
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 
 assert.ok(background.includes('importScripts("live-caption-core.js","live-caption-bridge.js"'));
