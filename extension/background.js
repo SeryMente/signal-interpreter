@@ -2832,8 +2832,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       return;
     }
 
-    // La fuente nativa puede recuperar la prioridad mientras Groq procesa el fragmento.
-    if (source !== "yo" && SignalCaptionBridge.isFresh(4500)) return;
+    // En modo bilingüe, aceptar ambos idiomas aunque Chrome mantenga captions nativos frescos.
+    // La deduplicación de textos compatibles evita la repetición; el idioma separa los carriles.
 
     // Descartar resultados tardíos tras cambiar o terminar la llamada, la sesión o la preferencia.
     var latestStored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
