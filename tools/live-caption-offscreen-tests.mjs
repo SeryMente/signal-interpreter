@@ -90,7 +90,7 @@ assert.equal(recorders.length, 3, "dos grabadores durables y un preview de pesta
 assert.equal(recorders[0].stream.id, "tab-audio");
 assert.equal(recorders[1].stream.id, "microphone");
 assert.equal(recorders[2].stream.id, "tab-audio", "el preview debe usar el audio de la pestaña");
-assert.deepEqual(recorders[2].startIntervals, [2800]);
+assert.deepEqual(recorders[2].startIntervals, [1800]);
 
 const nativeFresh = await send({
   target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: true, tabEnabled: false, micEnabled: false
@@ -108,7 +108,7 @@ assert.equal(fallback.tabEnabled, true);
 assert.equal(fallback.micEnabled, false, "el fallback no debe crear una segunda transcripción del micrófono");
 assert.equal(recorders.length, 4);
 assert.equal(recorders[3].stream.id, "tab-audio");
-assert.deepEqual(recorders[3].startIntervals, [2800]);
+assert.deepEqual(recorders[3].startIntervals, [1800]);
 recorders[3].emitData();
 await new Promise((resolve) => setImmediate(resolve));
 assert.ok(messages.some((m) => m.type === "SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK" && m.sessionId === "session-a"));
