@@ -41,6 +41,8 @@ assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Dirección: Ave
   { type: "address", text: "Avenida Reforma 123, Colonia Juárez, Querétaro, Qro" },
   { type: "phone", text: "+52 442 123 4567" }
 ], "la dirección debe conservar colonia, ciudad y estado en la búsqueda de Maps");
+assert.equal(core.findSmartTokens("Avenida Reforma 123, Colonia Juárez. Llámeme al +52 442 123 4567.")[0].text,
+  "Avenida Reforma 123, Colonia Juárez", "el detector de direcciones no debe consumir palabras de la oración siguiente");
 assert.equal(core.findSmartTokens("La cita es a las 10:30 y son 3 pacientes.").length, 0,
   "no se deben marcar horas o cifras cortas como teléfonos");
 
