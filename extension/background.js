@@ -2490,9 +2490,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       }
       await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id,muted:!!state.microphoneMuted,captionPreview:cachedConfig.liveCaptionOverlayEnabled !== false && hasActiveCall(state),tabId:state.callSourceTabId||session.tabId||session.sourceTabId||0});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
       signalActiveSessionId=session.id;
-      if(hasActiveCall(state) && cachedConfig.liveCaptionOverlayEnabled !== false) {
-        setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "microphone-state-applied").catch(function () {});
-      }
+
       try {
         if (cachedConfig.liveCaptionOverlayEnabled !== false && hasActiveCall(state)) {
           SignalCaptionBridge.start(state.callSourceTabId, state.callId);
@@ -2527,6 +2525,9 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       }else{
         state.microphoneMuteStatus="applied";
         await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+      }
+      if(hasActiveCall(state) && cachedConfig.liveCaptionOverlayEnabled !== false) {
+        setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "microphone-state-applied").catch(function () {});
       }
       recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_STARTED",{sessionId:session.id,sourceTabId:session.sourceTabId,model:config.groqModel||GROQ_MODEL});broadcastSignalEvent({type:"signal.groq.status",sessionId:session.id,status:"connected",tabAudio:true,microphone:true,timestamp:iso()});
       if(sendResponse)sendResponse({ok:true,session:signalSessionCopy(session,true)});return{ok:true};
@@ -2809,11 +2810,12 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
           Number(latestYoutubeState.tabId) !== Number(message.tabId) ||
           !latestYoutubeTab || !isCaptionTestVideoUrl(latestYoutubeTab.url) ||
           hasActiveCall(latestYoutubeCallState) || latestYoutubeConfig.liveCaptionOverlayEnabled === false) return;
+      var youtubeLanguage = SignalCaptionCore.resolveLanguage(result.language, text);
       try {
         await publishCaptionToOverlay({
           text: text.slice(0, 1500),
-          language: SignalCaptionCore.resolveLanguage(result.language, text),
-          source: "cliente",
+          language: youtubeLanguage,
+          source: youtubeLanguage === "es" ? "yo" : "cliente",
           live: false,
           native: false,
           sequence: sequence,
@@ -2941,6 +2943,23 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
 
 
 
+  chrome.tabs.onRemoved.addListener(function (tabId) {
+    readYoutubeCaptionPreviewState().then(function (current) {
+      if (current.active === true && Number(current.tabId) === Number(tabId)) {
+        stopYoutubeCaptionPreview(tabId, "tab-closed").catch(function () {});
+      }
+    }).catch(function () {});
+  });
+  chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    if (!changeInfo || !changeInfo.url) return;
+    readYoutubeCaptionPreviewState().then(function (current) {
+      if (current.active === true && Number(current.tabId) === Number(tabId) &&
+          !isCaptionTestVideoUrl(tab && tab.url || changeInfo.url)) {
+        stopYoutubeCaptionPreview(tabId, "video-navigation").catch(function () {});
+      }
+    }).catch(function () {});
+  });
+
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (!message) return false;
     if (message.type === "SIGNAL_CAPTION_OPEN_LOOKUP") {
@@ -2975,6 +2994,19 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         sendResponse({ ok: false, error: String(error && error.message || error).slice(0, 200) });
       });
       return true;
+    }
+    if (message.target === "offscreen" && message.type === "SIGNAL_YOUTUBE_CAPTION_PREVIEW_OFFSCREEN_STOPPED") {
+      readYoutubeCaptionPreviewState().then(async function (current) {
+        if (message.sessionId && current.sessionId && String(message.sessionId) !== String(current.sessionId)) return;
+        if (current.active === true) {
+          await setYoutubeCaptionPreviewState({
+            active: false, tabId: current.tabId, sessionId: current.sessionId,
+            startedAt: current.startedAt, stoppedAt: Date.now()
+          });
+        }
+        await notifyYoutubeCaptionPreview(message.tabId != null ? message.tabId : current.tabId, false, "capture-stopped");
+      }).catch(function () {});
+      return false;
     }
     if (message.type === "SIGNAL_CAPTION_OVERLAY_HELLO") {
       getCaptionOverlayContext(sender && sender.tab).then(sendResponse).catch(function () {
