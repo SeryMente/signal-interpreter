@@ -643,6 +643,7 @@
     if (!clean) return;
     source = source === "yo" || source === "chrome-live-caption" ? source : "cliente";
     language = core.resolveLanguage(language, clean);
+    if (language === "es") source = "yo";
     var now = Number(timestamp);
     if (!Number.isFinite(now) || now <= 0) now = Date.now();
     var lane = laneForSource(source);
