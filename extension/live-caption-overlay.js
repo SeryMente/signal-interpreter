@@ -616,7 +616,8 @@
       var time = node.querySelector(".time");
       var text = node.querySelector(".text");
       var nextText = String(item.text || "");
-      if (role && role.textContent !== core.roleForLanguage(language)) role.textContent = core.roleForLanguage(language);
+      var speakerRole = typeof core.roleForSource === "function" ? core.roleForSource(item.source, language) : core.roleForLanguage(language);
+      if (role && role.textContent !== speakerRole) role.textContent = speakerRole;
       if (lang && lang.textContent !== core.languageLabel(language)) lang.textContent = core.languageLabel(language);
       if (time) time.textContent = formatTime(item.at);
       if (text && text.textContent !== nextText) renderSmartText(text, nextText);
@@ -649,7 +650,6 @@
     if (!clean) return;
     source = source === "yo" || source === "chrome-live-caption" ? source : "cliente";
     language = core.resolveLanguage(language, clean);
-    if (language === "es") source = "yo";
     var now = Number(timestamp);
     if (!Number.isFinite(now) || now <= 0) now = Date.now();
     var lane = laneForSource(source);
