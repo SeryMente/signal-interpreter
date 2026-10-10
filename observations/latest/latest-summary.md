@@ -1,38 +1,30 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-785d7ddb-03e5-4043-b2d2-717061f5fcb7
-- Creado: 2026-10-10T19:38:36.913Z
-- Trigger: event-window
+- Batch: batch-b264c93a-71fb-41b5-ba18-ef2071aa1220
+- Creado: 2026-10-10T19:40:41.434Z
+- Trigger: call-answered
 - Extensión: 0.10.29
-- Eventos: 26
+- Eventos: 4
 - Errores: 0
 - Warnings: 0
-- Secuencia: 3483 → 3508
+- Secuencia: 3671 → 3674
 - Identidades de plataforma: 8
-- Snapshots de plataforma: 684
-- Deltas de plataforma: 682
+- Snapshots de plataforma: 686
+- Deltas de plataforma: 684
 
 ## Categorías
 
 {
-  "PORTAL": 2,
-  "RUNTIME": 24
+  "SESSION": 2,
+  "TRANSCRIPT": 1,
+  "RUNTIME": 1
 }
 
 ## Acciones
 
 {
-  "PLATFORM_MIRROR_UPDATED": 2,
-  "PLATFORM_TELEMETRY_RECONCILED": 1,
-  "AUTO_ANSWER_READINESS": 10,
-  "PAGE_LIFECYCLE": 2,
-  "PAGE_VISIBILITY_CHANGED": 2,
-  "AUTO_ANSWER_BOOTSTRAP_REQUESTED": 1,
-  "INCOMING_DIALOG_DETECTED": 1,
-  "CONNECT_BUTTON_FOUND": 1,
-  "AUTO_ANSWER_ELIGIBLE": 1,
-  "USER_INTERACTION": 2,
-  "CONNECT_CLICKED": 1,
-  "PLATFORM_INTEGRITY_CHECK": 1,
-  "SCREEN_MAP": 1
+  "CALL_OBSERVABILITY_CHECKPOINT": 1,
+  "CALL_ANSWERED_OVERLAY_REFRESH_REQUESTED": 1,
+  "TRANSCRIPTION_MODULE_READY": 1,
+  "AUTO_ANSWER_READINESS": 1
 }
