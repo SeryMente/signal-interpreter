@@ -50,6 +50,11 @@
   var overlayLastLocalDay = null;
   var overlayLastLocalMonth = null;
   var overlayFxRefreshRequestedDate = null;
+  var overlayActivationWatchdog = null;
+  var overlayDiagnosticKeys = new Set();
+  var overlayLastVisibility = null;
+  var overlayLastRoute = location.pathname;
+  var overlayRecoveryAttempts = 0;
   var callDisplayStartedAt = null;
   var observer = null;
   var telemetryStarted = false;
@@ -1659,6 +1664,97 @@
     });
   }
 
+  function reportOverlayLifecycle(action, payload, level, dedupeKey) {
+    var callId = payload && payload.callId || currentCallId() || overlayLifecycleCallId || null;
+    var key = dedupeKey ? String(action) + "|" + String(callId || "no-call") + "|" + String(dedupeKey) : null;
+    if (key && overlayDiagnosticKeys.has(key)) return;
+    if (key) {
+      overlayDiagnosticKeys.add(key);
+      if (overlayDiagnosticKeys.size > 160) {
+        var keep = Array.from(overlayDiagnosticKeys).slice(-80);
+        overlayDiagnosticKeys = new Set(keep);
+      }
+    }
+    var rect = overlayHost && overlayHost.isConnected ? overlayHost.getBoundingClientRect() : null;
+    emit(action, Object.assign({
+      callId: callId,
+      runtimeVersion: RUNTIME_VERSION,
+      activeRoute: routeTemplate(),
+      documentReadyState: document.readyState || "unknown",
+      documentVisible: document.visibilityState === "visible",
+      overlayEnabled: config.overlayEnabled !== false,
+      lifecycleActive: overlayLifecycleActive,
+      hostConnected: !!(overlayHost && overlayHost.isConnected),
+      shadowRootReady: !!overlayRoot,
+      hostDisplay: overlayHost ? overlayHost.style.display || "default" : "unmounted",
+      hostWidth: rect ? Math.round(rect.width) : 0,
+      hostHeight: rect ? Math.round(rect.height) : 0
+    }, payload || {}), level || "info");
+  }
+
+  function stopOverlayActivationWatchdog(reason) {
+    if (overlayActivationWatchdog) clearInterval(overlayActivationWatchdog);
+    overlayActivationWatchdog = null;
+    if (reason) reportOverlayLifecycle("EARNINGS_OVERLAY_WATCHDOG_STOPPED", {
+      reasonCode: String(reason).slice(0, 80)
+    }, "info", "watchdog-stopped:" + String(reason));
+  }
+
+  function startOverlayActivationWatchdog(reason) {
+    if (!isTarget() || config.overlayEnabled === false) {
+      stopOverlayActivationWatchdog(config.overlayEnabled === false ? "preference-disabled" : "host-mismatch");
+      return;
+    }
+    if (overlayActivationWatchdog) return;
+    reportOverlayLifecycle("EARNINGS_OVERLAY_WATCHDOG_STARTED", {
+      reasonCode: String(reason || "extension-config-ready").slice(0, 80),
+      intervalMs: 1000, independentOfObserver: true,
+      autoAnswerEnabled: config.autoAnswerEnabled === true,
+      observationEnabled: config.observationEnabled !== false
+    }, "info", "watchdog-started:" + String(reason || "extension-config-ready"));
+    overlayActivationWatchdog = setInterval(function () {
+      if (!isTarget() || config.overlayEnabled === false) return;
+      var pathname = location.pathname;
+      if (pathname !== overlayLastRoute || pathname !== route) {
+        var previousPath = String(overlayLastRoute || route || "/")
+          .replace(/^\\/call\\/[^/]+/, "/call/<ID>")
+          .replace(/^\\/profile\\/[^/]+/, "/profile/<ID>");
+        overlayLastRoute = pathname;
+        reportOverlayLifecycle("EARNINGS_OVERLAY_ROUTE_WATCHDOG_DETECTED", {
+          reasonCode: "spa-route-change", previousRoute: previousPath,
+          currentRoute: routeTemplate(), observerActive: !!observer
+        }, "info");
+        trackRoute("overlay-route-watchdog");
+        observePlatformUrl("overlay-route-watchdog");
+      }
+      var callId = currentCallId();
+      if (!callId || ratingStarsVisible()) return;
+      var hostHealthy = !!(overlayHost && overlayHost.isConnected && overlayRoot &&
+        overlayRoot.getElementById && overlayRoot.getElementById("amount"));
+      var lifecycleHealthy = overlayLifecycleActive && overlayLifecycleCallId === callId;
+      var isDisplayed = hostHealthy && overlayHost.style.display !== "none" &&
+        (!overlayHost.getBoundingClientRect || overlayHost.getBoundingClientRect().width > 0);
+      if (lifecycleHealthy && hostHealthy && isDisplayed) return;
+      overlayRecoveryAttempts += 1;
+      reportOverlayLifecycle("EARNINGS_OVERLAY_RECOVERY_ATTEMPTED", {
+        reasonCode: !lifecycleHealthy ? "call-lifecycle-not-active" :
+          (!hostHealthy ? "overlay-host-missing-or-detached" : "overlay-not-visible"),
+        attempt: overlayRecoveryAttempts,
+        lifecycleCallMatchesRoute: overlayLifecycleCallId === callId,
+        observerActive: !!observer, autoAnswerEnabled: config.autoAnswerEnabled === true,
+        observationEnabled: config.observationEnabled !== false
+      }, "warn", "recovery:" + String(callId) + ":" + String(!lifecycleHealthy) + ":" + String(!hostHealthy) + ":" + String(!isDisplayed));
+      renderOverlay();
+      var nowHealthy = !!(overlayHost && overlayHost.isConnected && overlayRoot &&
+        overlayHost.style.display !== "none" && overlayRoot.getElementById("amount"));
+      if (nowHealthy) {
+        reportOverlayLifecycle("EARNINGS_OVERLAY_RECOVERED", {
+          reasonCode: "watchdog-remount", attempt: overlayRecoveryAttempts
+        }, "info", "recovered:" + String(callId));
+      }
+    }, 1000);
+  }
+
   function activateOverlayForCall(callId, reason) {
     if (!callId) return;
     overlayLifecycleActive = true;
@@ -1667,14 +1763,28 @@
     overlayPeriod = "today";
     overlayCurrency = /^(MXN|USD)$/.test(String(config.earningsDisplayCurrency || "")) ? config.earningsDisplayCurrency : "MXN";
     emit("EARNINGS_OVERLAY_STARTED", { callId: callId, reason: reason || "call-start" });
+    reportOverlayLifecycle("EARNINGS_OVERLAY_ACTIVATION_REQUESTED", {
+      activationReason: reason || "call-start", requestedCallId: callId,
+      autoAnswerEnabled: config.autoAnswerEnabled === true,
+      observationEnabled: config.observationEnabled !== false,
+      documentElementPresent: !!document.documentElement
+    }, "info", "activation-requested:" + String(callId));
     renderOverlay();
   }
   function ensureOverlay() {
     if (!config.overlayEnabled || !document.documentElement || !overlayLifecycleActive) {
+      var reasonCode = config.overlayEnabled === false ? "preference-disabled" :
+        (!document.documentElement ? "document-element-not-ready" : "call-lifecycle-inactive");
+      reportOverlayLifecycle("EARNINGS_OVERLAY_ACTIVATION_BLOCKED", {
+        reasonCode: reasonCode, requestedCallId: currentCallId(),
+        documentElementPresent: !!document.documentElement
+      }, reasonCode === "preference-disabled" ? "warn" : "info",
+      "activation-blocked:" + String(currentCallId() || "none") + ":" + reasonCode);
       if (!overlayLifecycleActive) stopOverlay();
       return;
     }
-    if (overlayHost && overlayHost.isConnected) return;
+    if (overlayHost && overlayHost.isConnected && overlayRoot) return;
+    try {
     overlayHost = document.createElement("div");
     overlayHost.id = "signal-interpreter-earnings-overlay";
     overlayHost.style.cssText = "all:initial;position:fixed;z-index:2147483647;top:12px;right:12px;pointer-events:auto";
@@ -1728,6 +1838,23 @@
       });
     });
     overlayTimer = setInterval(renderOverlay, 100);
+    reportOverlayLifecycle("EARNINGS_OVERLAY_MOUNTED", {
+      requestedCallId: overlayLifecycleCallId, mountReason: "ensure-overlay",
+      controlsReady: !!(overlayRoot.getElementById("amount") && overlayRoot.getElementById("mic")),
+      timerActive: !!overlayTimer
+    }, "info", "mounted:" + String(overlayLifecycleCallId || "none"));
+    } catch (error) {
+      try { if (overlayTimer) clearInterval(overlayTimer); } catch (_) {}
+      try { if (overlayHost) overlayHost.remove(); } catch (_) {}
+      overlayTimer = null;
+      overlayHost = null;
+      overlayRoot = null;
+      reportOverlayLifecycle("EARNINGS_OVERLAY_MOUNT_FAILED", {
+        reasonCode: "dom-mount-exception", requestedCallId: overlayLifecycleCallId,
+        errorType: String(error && error.name || "Error").slice(0, 80),
+        documentElementPresent: !!document.documentElement
+      }, "error", "mount-failed:" + String(overlayLifecycleCallId || "none"));
+    }
   }
   function renderOverlay() {
     var routeCallId = currentCallId();
@@ -1744,7 +1871,13 @@
       return;
     }
     ensureOverlay();
-    if (!overlayRoot) return;
+    if (!overlayRoot) {
+      reportOverlayLifecycle("EARNINGS_OVERLAY_RENDER_BLOCKED", {
+        reasonCode: "shadow-root-unavailable", requestedCallId: routeCallId,
+        lifecycleActive: overlayLifecycleActive
+      }, "warn", "render-blocked:" + String(routeCallId));
+      return;
+    }
     var info = earningsNow(overlayPeriod);
     var fxFresh = info.fx > 0 && info.fxDate === localDay();
     var currency = overlayCurrency === "USD" ? "USD" : "MXN";
@@ -1796,6 +1929,17 @@
     overlayRoot.getElementById("fx").textContent = fxFresh
       ? "USD/MXN " + info.fx.toFixed(4) + " · tasa de hoy " + info.fxDate
       : "Tasa USD/MXN de hoy no confirmada todavía";
+    var visible = !!(overlayHost && overlayHost.isConnected &&
+      overlayHost.style.display !== "none" && overlayHost.getBoundingClientRect().width > 0 &&
+      overlayRoot.getElementById("amount"));
+    if (overlayLastVisibility !== visible) {
+      overlayLastVisibility = visible;
+      reportOverlayLifecycle(visible ? "EARNINGS_OVERLAY_VISIBLE" : "EARNINGS_OVERLAY_NOT_VISIBLE", {
+        reasonCode: visible ? "render-confirmed" : "host-not-visible",
+        requestedCallId: routeCallId, controlsReady: !!overlayRoot.getElementById("amount"),
+        visibilityState: document.visibilityState || "unknown"
+      }, visible ? "info" : "warn", "visibility:" + String(routeCallId) + ":" + String(visible));
+    }
   }
   function installNavigationObservers() {
     if (navigationListenersInstalled) return;
@@ -1812,8 +1956,10 @@
     });
     window.addEventListener("pageshow", function () {
       if (isTarget() && (config.autoAnswerEnabled || config.observationEnabled) && !observer) start();
+      if (isTarget() && config.overlayEnabled !== false) startOverlayActivationWatchdog("pageshow");
       observePlatformUrl("pageshow");
       emitAutoAnswerReadiness("pageshow");
+      renderOverlay();
     });
     if (window.navigation && window.navigation.addEventListener) {
       window.navigation.addEventListener("navigate", function () {
@@ -1870,6 +2016,7 @@
   }
   function deactivateForHotload(reason) {
     var stopReason = reason || "hotload-replace";
+    stopOverlayActivationWatchdog("hotload:" + stopReason);
     try { window[SIGNAL_RUNTIME_MARKER] = { extensionId: chrome.runtime.id, version: RUNTIME_VERSION, active: false, stoppedAt: iso(), reason: stopReason }; } catch (_) {}
     if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; }
     if (ratingConfirmationTimer) { clearTimeout(ratingConfirmationTimer); ratingConfirmationTimer = null; }
@@ -1892,6 +2039,8 @@
   }
   function apply(next) {
     config = Object.assign({}, config, next || {});
+    if (isTarget() && config.overlayEnabled !== false) startOverlayActivationWatchdog("config-applied");
+    else stopOverlayActivationWatchdog(config.overlayEnabled === false ? "preference-disabled" : "host-mismatch");
     if (isTarget() && (config.autoAnswerEnabled || config.observationEnabled)) start();
     else stop("disabled-or-host-mismatch");
     detectAvailability();
@@ -2011,6 +2160,7 @@
   emitAutoAnswerReadiness("initial-route");
   installNavigationObservers();
   window.addEventListener("pagehide", function () {
+    stopOverlayActivationWatchdog("pagehide");
     if (readinessTimer) { clearInterval(readinessTimer); readinessTimer = null; }
     var activeCallId = currentCallId();
     if (activeCallId) {
