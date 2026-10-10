@@ -2,12 +2,22 @@
 
 **Repositorio canónico:** https://github.com/SeryMente/signal-interpreter
 **Especificación canónica:** https://github.com/SeryMente/signal-interpreter/blob/main/docs/USER-REQUIREMENT-LIVE-CAPTIONS-OVERLAY-VERBATIM-20261008.md
-**Versión integrada:** 0.10.24 — Overlay legible, desplazable y configurable.
-**Commit de producción:** `2607ff07107f1e1e4cf82b3ab6e8bb4516f0ba90` (PR #44, integrada en `main` el 2026-10-09).
+**Versión objetivo:** 0.10.25 — Transcripción bilingüe y verificación de datos críticos.
+**Rama de trabajo:** feat/0.10.25-bilingual-caption-lookup.
+**Versión anterior integrada:** 0.10.24 — Overlay legible, desplazable y configurable.
 
 ## Evolución de usabilidad 0.10.24
 
 La tarjeta compacta se sustituye por un panel de historial desplazable, con movimiento por arrastre del encabezado, redimensionado desde la esquina inferior derecha, ajuste por teclado y un control «Auto» que restaura el tamaño y la colocación automática. El posicionamiento automático puntúa ocho ubicaciones contra controles interactivos visibles. El alcance predeterminado es solo la pestaña de origen; la opción «Todas las pestañas web» distribuye la conversación a pestañas HTTP(S) mientras haya contexto de sesión. Las intervenciones se conservan en `chrome.storage.session`, no en almacenamiento local duradero; el historial se mantiene tras terminar una llamada y se limpia al comenzar una nueva o al cambiar de origen. La retención se limita a las 800 intervenciones más recientes y a 1.500 caracteres por intervención para mantenerse dentro del presupuesto de almacenamiento de sesión.
+
+## Evolución bilingüe 0.10.25
+
+- La ruta de la llamada puede activar un preview independiente del micrófono para capturar la voz del LEP en español además de los captions nativos del cliente. Su preferencia es liveCaptionInterpreterEnabled; nunca fuerza a habilitar el micrófono. El preview se detiene cuando el micrófono queda silenciado, el estado de mute no se verifica, el output reporta error o el usuario desactiva esta fuente.
+- El preview del LEP y el preview de audio de pestaña usan fragmentos de audio de 1.8 s. La preferencia liveCaptionBilingualTabEnabled está activada por defecto y mantiene el audio de pestaña en paralelo con los captions nativos para recuperar el idioma que la fuente nativa no represente; al desactivarla, el preview de pestaña vuelve a usarse solo cuando el caption nativo queda obsoleto. La fuente nativa conserva prioridad en la continuidad de captions compatibles. El procesador revalida sesión, llamada, pestaña, mute y preferencias antes de publicar el resultado.
+- El video de prueba TshOFzKQfG8 tiene una ruta distinta: desde el popup de la extensión, en ese video exacto, el usuario inicia/detiene la captura del audio de la pestaña. No se inicia el micrófono ni la captura si hay una llamada de Cloud Interpreter activa. Los fragmentos se envían al preview efímero y no al timeline durable ni a segmentos de llamada. Al navegar fuera del video, cerrar su pestaña o iniciar una llamada, la captura termina.
+- El preview de YouTube dura mientras el usuario lo mantenga activo y usa segmentos de aproximadamente 1.8 s. La detección automática de idioma clasifica captions en inglés como CLIENTE y español como LEP y separa ambos canales para reducir fusión entre hablantes diferentes.
+- live-caption-core.js reconoce patrones de teléfonos y direcciones en inglés y español. El overlay los convierte a nodos de texto seguros, sin interpretar transcripciones como HTML. Clic en teléfono/dirección copia el valor exacto; Ctrl+clic en una dirección abre Google Maps; Ctrl+clic en un teléfono abre una búsqueda literal; Ctrl+Mayús+clic sobre un término abre Linguee.
+- El service worker valida el tipo de búsqueda y construye URLs para Google Maps, Google Search o Linguee; los términos se limitan a 180 caracteres. Las acciones solo se ejecutan por interacción directa del usuario.
 
 ## Objetivo
 

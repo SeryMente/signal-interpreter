@@ -23,6 +23,7 @@
   var resizing = null;
   var positionRaf = null;
   var saveLayoutTimer = null;
+  var toastTimer = null;
   var screenshotPreviousVisibility = null;
   var contextReady = false;
 
@@ -91,6 +92,10 @@
       '.time{margin-left:auto;color:#687d90;font-size:9px;font-variant-numeric:tabular-nums}' +
       '.text{color:#eaf2f8;font-size:13px;line-height:1.52;overflow-wrap:anywhere;white-space:pre-wrap;user-select:text}' +
       '.row.live .text{color:#fff}' +
+      '.smart-token{display:inline;border:0;border-bottom:1px dotted #8fcfff;border-radius:2px;padding:0 1px;background:rgba(64,143,190,.10);color:inherit;font:inherit;cursor:pointer;user-select:text}' +
+      '.smart-token[data-smart-type="phone"]{border-bottom-color:#8ae2b1;background:rgba(75,187,126,.10)}' +
+      '.smart-token:hover,.smart-token:focus-visible{background:rgba(79,171,224,.24);outline:1px solid rgba(125,211,252,.55);outline-offset:1px}' +
+      '.action-toast{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);z-index:4;max-width:calc(100% - 22px);padding:7px 10px;border:1px solid #49657a;border-radius:8px;background:#132232;color:#f2f8fc;font:600 11px/1.35 Inter,system-ui,sans-serif;box-shadow:0 5px 18px rgba(0,0,0,.3);pointer-events:none;text-align:center}' +
       '.empty{padding:18px 8px;color:#9badbc;font-size:12px;line-height:1.55;text-align:center}' +
       '.unread{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:2;max-width:calc(100% - 24px);min-height:30px;padding:6px 12px;border:1px solid #42627a;border-radius:999px;background:#183047;color:#eaf6ff;box-shadow:0 4px 14px rgba(0,0,0,.32);font:700 11px Inter,system-ui,sans-serif;cursor:pointer}' +
       '.resize{position:absolute;right:3px;bottom:3px;z-index:3;width:23px;height:23px;min-width:23px;min-height:23px;padding:0;border:0;border-radius:5px;background:linear-gradient(135deg,transparent 46%,#7192aa 47%,#7192aa 53%,transparent 54%);color:#c5dced;cursor:nwse-resize;touch-action:none;pointer-events:auto}' +
@@ -102,7 +107,7 @@
       '<section class="card" role="region" aria-label="Subtítulos en vivo de Signal Interpreter">' +
         '<header class="header">' +
           '<button class="move" type="button" aria-label="Mover panel: arrastra este encabezado o usa las flechas del teclado">' +
-            '<span class="brand"><span class="title">Signal Interpreter</span><span class="subtitle">Historial de subtítulos · desplazamiento completo</span></span>' +
+            '<span class="brand"><span class="title">Signal Interpreter</span><span class="subtitle">Clic: copiar teléfono/dirección · Ctrl+clic: verificar · Ctrl+Mayús+clic: Linguee</span></span>' +
             '<span class="state"><i class="dot idle"></i><span class="stateLabel">EN ESPERA</span></span>' +
           '</button>' +
           '<div class="toolbar"><button class="tool auto" type="button" title="Restablecer posición y tamaño automáticos">Auto</button><button class="tool collapse" type="button" aria-expanded="true" title="Contraer o expandir el historial">−</button></div>' +
@@ -110,10 +115,12 @@
         '<div class="transcript" role="log" aria-label="Historial completo de subtítulos" aria-live="off" tabindex="0"><div class="empty">Esperando la primera intervención…</div></div>' +
         '<button class="unread" type="button" hidden>Nuevas intervenciones ↓</button>' +
         '<button class="resize" type="button" aria-label="Cambiar tamaño: arrastra la esquina o usa las flechas del teclado" title="Arrastra para redimensionar"></button>' +
+        '<div class="action-toast" role="status" aria-live="polite" hidden></div>' +
       '</section>';
 
     document.documentElement.appendChild(host);
     bindControls();
+    bindCaptionTextActions();
     applyLayout();
     updateAriaVisibility();
   }
@@ -385,6 +392,170 @@
     button.textContent = unreadCount === 1 ? "1 nueva intervención ↓" : String(unreadCount) + " nuevas intervenciones ↓";
   }
 
+  function renderSmartText(element, value) {
+    if (!element) return;
+    var text = String(value || "");
+    var tokens = typeof core.findSmartTokens === "function" ? core.findSmartTokens(text) : [];
+    element.textContent = "";
+    if (!tokens.length) {
+      element.textContent = text;
+      return;
+    }
+    var cursor = 0;
+    tokens.forEach(function (token) {
+      if (token.start > cursor) element.appendChild(document.createTextNode(text.slice(cursor, token.start)));
+      var node = document.createElement("span");
+      node.className = "smart-token";
+      node.dataset.smartType = token.type;
+      node.dataset.smartValue = token.text;
+      node.tabIndex = 0;
+      node.setAttribute("role", "button");
+      node.textContent = token.text;
+      node.title = token.type === "address"
+        ? "Clic: copiar dirección · Ctrl+clic: abrir Google Maps · Ctrl+Mayús+clic: Linguee"
+        : "Clic: copiar teléfono · Ctrl+clic: buscar teléfono · Ctrl+Mayús+clic: Linguee";
+      element.appendChild(node);
+      cursor = token.end;
+    });
+    if (cursor < text.length) element.appendChild(document.createTextNode(text.slice(cursor)));
+  }
+
+  function showActionToast(message, isError) {
+    if (!root) return;
+    var toast = root.querySelector(".action-toast");
+    if (!toast) return;
+    if (toastTimer) clearTimeout(toastTimer);
+    toast.textContent = String(message || "");
+    toast.hidden = false;
+    toast.style.borderColor = isError ? "#a85c63" : "#49657a";
+    toastTimer = setTimeout(function () {
+      if (toast) toast.hidden = true;
+      toastTimer = null;
+    }, 2600);
+  }
+
+  async function copySmartValue(value, label) {
+    var copied = false;
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        await navigator.clipboard.writeText(value);
+        copied = true;
+      }
+    } catch (_) {}
+    if (!copied && root) {
+      var field = document.createElement("textarea");
+      field.value = value;
+      field.setAttribute("readonly", "");
+      field.style.cssText = "position:fixed;left:-10000px;top:0;width:1px;height:1px;opacity:0";
+      root.appendChild(field);
+      field.select();
+      try { copied = !!document.execCommand("copy"); } catch (_) {}
+      field.remove();
+    }
+    showActionToast(copied ? label + " copiado al portapapeles" : "No se pudo copiar automáticamente; selecciona el texto y usa Ctrl+C", !copied);
+  }
+
+  function termAtPoint(event, textElement) {
+    var selected = "", selection = null;
+    try {
+      selection = window.getSelection ? window.getSelection() : null;
+      selected = String(selection || "").trim();
+      if (selected && selected.length <= 180 && selection.rangeCount > 0) {
+        var selectedRange = selection.getRangeAt(0);
+        if (textElement.contains(selectedRange.commonAncestorContainer)) return selected;
+      }
+    } catch (_) {}
+    var range = null;
+    try {
+      if (document.caretPositionFromPoint) {
+        var position = document.caretPositionFromPoint(event.clientX, event.clientY, { shadowRoots: [root] });
+        if (position && position.offsetNode) {
+          range = document.createRange();
+          range.setStart(position.offsetNode, position.offset);
+          range.collapse(true);
+        }
+      }
+    } catch (_) {}
+    if (!range) {
+      try { if (document.caretRangeFromPoint) range = document.caretRangeFromPoint(event.clientX, event.clientY); } catch (_) {}
+    }
+    if (!range || !textElement.contains(range.startContainer) || range.startContainer.nodeType !== 3) return "";
+    var raw = String(range.startContainer.nodeValue || "");
+    var offset = Math.max(0, Math.min(raw.length, Number(range.startOffset) || 0));
+    var pattern = /[\p{L}\p{N}][\p{L}\p{N}'’.-]*/gu;
+    var match;
+    while ((match = pattern.exec(raw))) {
+      if (offset >= match.index && offset <= match.index + match[0].length) return match[0].slice(0, 180);
+    }
+    return "";
+  }
+
+  function requestCaptionLookup(kind, query) {
+    chrome.runtime.sendMessage({ type: "SIGNAL_CAPTION_OPEN_LOOKUP", kind: kind, query: query }, function (response) {
+      if (chrome.runtime.lastError) {
+        showActionToast("No se pudo abrir la búsqueda.", true);
+        return;
+      }
+      if (!response || response.ok !== true) {
+        showActionToast(String(response && response.error || "No se pudo abrir la búsqueda."), true);
+        return;
+      }
+      showActionToast(kind === "address" ? "Abriendo Google Maps…" :
+        kind === "phone" ? "Verificando teléfono en Google…" : "Abriendo Linguee…", false);
+    });
+  }
+
+  function bindCaptionTextActions() {
+    if (!root) return;
+    var transcript = root.querySelector(".transcript");
+    if (!transcript || transcript.dataset.lookupBound === "true") return;
+    transcript.dataset.lookupBound = "true";
+    transcript.addEventListener("click", function (event) {
+      var textElement = event.target && event.target.closest ? event.target.closest(".text") : null;
+      if (!textElement) return;
+      if (event.ctrlKey && event.shiftKey) {
+        var term = termAtPoint(event, textElement);
+        if (!term) {
+          showActionToast("Selecciona un término o pulsa sobre una palabra para buscarla en Linguee.", true);
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        requestCaptionLookup("term", term);
+        return;
+      }
+      var token = event.target && event.target.closest ? event.target.closest(".smart-token") : null;
+      if (token) {
+        var kind = token.dataset.smartType;
+        var value = token.dataset.smartValue || token.textContent || "";
+        if (event.ctrlKey) {
+          event.preventDefault();
+          event.stopPropagation();
+          requestCaptionLookup(kind === "address" ? "address" : "phone", value);
+        } else {
+          event.preventDefault();
+          event.stopPropagation();
+          copySmartValue(value, kind === "address" ? "Dirección" : "Teléfono");
+        }
+        return;
+      }
+      if (event.ctrlKey) {
+        var searchTerm = termAtPoint(event, textElement);
+        if (!searchTerm) return;
+        event.preventDefault();
+        event.stopPropagation();
+        requestCaptionLookup("term", searchTerm);
+      }
+    });
+    transcript.addEventListener("keydown", function (event) {
+      var token = event.target && event.target.closest ? event.target.closest(".smart-token") : null;
+      if (!token || (event.key !== "Enter" && event.key !== " ")) return;
+      event.preventDefault();
+      copySmartValue(token.dataset.smartValue || token.textContent || "",
+        token.dataset.smartType === "address" ? "Dirección" : "Teléfono");
+    });
+  }
+
   function createRowNode() {
     var row = document.createElement("article");
     row.className = "row";
@@ -448,7 +619,7 @@
       if (role && role.textContent !== core.roleForLanguage(language)) role.textContent = core.roleForLanguage(language);
       if (lang && lang.textContent !== core.languageLabel(language)) lang.textContent = core.languageLabel(language);
       if (time) time.textContent = formatTime(item.at);
-      if (text && text.textContent !== nextText) text.textContent = nextText;
+      if (text && text.textContent !== nextText) renderSmartText(text, nextText);
     });
 
     var empty = container.querySelector(".empty");
@@ -478,6 +649,7 @@
     if (!clean) return;
     source = source === "yo" || source === "chrome-live-caption" ? source : "cliente";
     language = core.resolveLanguage(language, clean);
+    if (language === "es") source = "yo";
     var now = Number(timestamp);
     if (!Number.isFinite(now) || now <= 0) now = Date.now();
     var lane = laneForSource(source);
@@ -627,7 +799,12 @@
 
   chrome.runtime.onMessage.addListener(function (message) {
     if (!message) return;
-    if (message.type === "SIGNAL_CAPTION_UPDATE") {
+    if (message.type === "SIGNAL_YOUTUBE_CAPTION_PREVIEW_STATUS") {
+      if (youtubeTarget) {
+        active = message.active === true;
+        if (host) render(true);
+      }
+    } else if (message.type === "SIGNAL_CAPTION_UPDATE") {
       var caption = message.caption || {};
       if (!caption.text || !canShowOnThisPage()) return;
       active = true;

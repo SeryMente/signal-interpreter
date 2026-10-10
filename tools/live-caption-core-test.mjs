@@ -25,6 +25,33 @@ assert.equal(core.roleForLanguage("en"), "CLIENTE");
 assert.equal(core.roleForLanguage("es"), "LEP");
 assert.equal(core.languageLabel("en"), "ENGLISH");
 assert.equal(core.languageLabel("es"), "ESPAÑOL");
+assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Please call (555) 123-4567 at 123 Main Street, Austin, TX."))), [
+  { type: "phone", text: "(555) 123-4567", start: 12, end: 26 },
+  { type: "address", text: "123 Main Street, Austin, TX", start: 30, end: 57 }
+], "un teléfono entre paréntesis no puede ocultar la dirección posterior");
+assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Call +1 (415) 555-0123, then 77 Broadway Avenue, New York."))), [
+  { type: "phone", text: "+1 (415) 555-0123", start: 5, end: 22 },
+  { type: "address", text: "77 Broadway Avenue, New York", start: 29, end: 57 }
+], "la expresión internacional y la dirección de destino deben conservarse separadas");
+assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Vivo en Avenida Reforma 123, Colonia Juárez. Llámeme al +52 442 123 4567."))).map(x => ({type:x.type,text:x.text})), [
+  { type: "address", text: "Avenida Reforma 123, Colonia Juárez" },
+  { type: "phone", text: "+52 442 123 4567" }
+], "direcciones mexicanas y teléfonos internacionales se detectan sin perder puntuación");
+assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Dirección: Avenida Reforma 123, Colonia Juárez, Querétaro, Qro. Tel. +52 442 123 4567."))).map(x => ({type:x.type,text:x.text})), [
+  { type: "address", text: "Avenida Reforma 123, Colonia Juárez, Querétaro, Qro" },
+  { type: "phone", text: "+52 442 123 4567" }
+], "la dirección debe conservar colonia, ciudad y estado en la búsqueda de Maps");
+assert.equal(core.findSmartTokens("Avenida Reforma 123, Colonia Juárez. Llámeme al +52 442 123 4567.")[0].text,
+  "Avenida Reforma 123, Colonia Juárez", "el detector de direcciones no debe consumir palabras de la oración siguiente");
+assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Ship to 123 Main Street, Austin, TX 78701. Call 555-123-4567."))).map(x => ({type:x.type,text:x.text})), [
+  { type: "address", text: "123 Main Street, Austin, TX 78701" },
+  { type: "phone", text: "555-123-4567" }
+], "los códigos postales forman parte de la dirección y no desplazan el teléfono");
+assert.equal(core.findSmartTokens("The appointment is on 2026-10-09, call at 555-123-4567.").some(x => x.text === "2026-10-09"), false,
+  "una fecha no debe convertirse en teléfono copiable");
+assert.equal(core.findSmartTokens("La cita es a las 10:30 y son 3 pacientes.").length, 0,
+  "no se deben marcar horas o cifras cortas como teléfonos");
+
 assert.equal(core.roleForSource("chrome-live-caption", "en"), "CLIENTE");
 assert.equal(core.roleForSource("cliente", "en"), "CLIENTE");
 assert.equal(core.roleForSource("yo", "es"), "LEP");

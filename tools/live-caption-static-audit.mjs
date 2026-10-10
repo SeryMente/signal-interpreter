@@ -22,7 +22,28 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.24");
+assert.equal(manifest.version,"0.10.25");
+assert.ok(background.includes('liveCaptionInterpreterEnabled: true'), "la transcripción permite incluir la voz del LEP");
+assert.ok(background.includes('liveCaptionBilingualTabEnabled: true'), "la transcripción bilingüe de audio de pestaña está activada por defecto");
+assert.ok(background.includes('var outputSource = source === "yo" ? "yo" : (language === "es" ? "yo" : "cliente")'), "los resultados se asignan al carril según idioma detectado");
+assert.ok(background.includes("effectiveTabEnabled = !!tabEnabled || config.liveCaptionBilingualTabEnabled !== false"), "el modo paralelo se respeta al activar previews");
+assert.ok(overlay.includes('if (language === "es") source = "yo"'), "las intervenciones españolas se separan en el historial del overlay");
+assert.ok(popup.includes("captionBilingualTabEnabled"), "el popup permite configurar la transcripción bilingüe paralela");
+assert.ok(background.includes('config.liveCaptionInterpreterEnabled !== false'), "la fuente del LEP respeta la preferencia del usuario");
+assert.ok(background.includes('currentState.microphoneOutputMuted === true'), "la captura de voz del LEP queda bloqueada si el micrófono está silenciado");
+assert.ok(background.includes("SIGNAL_CAPTION_OPEN_LOOKUP"), "las búsquedas externas pasan por un router acotado");
+assert.ok(background.includes("isCaptionTestVideoUrl"), "la captura de audio de prueba está limitada a la URL autorizada");
+assert.ok(background.includes("SIGNAL_START_YOUTUBE_CAPTION_PREVIEW"), "hay una ruta de audio separada para el video de prueba");
+assert.ok(background.includes("SIGNAL_YOUTUBE_CAPTION_PREVIEW_OFFSCREEN_STOPPED"), "el cierre de la captura de prueba sincroniza su estado");
+assert.ok(offscreen.includes("recorder.start(1800)"), "la captura de prueba usa ventanas de audio cortas para reducir latencia");
+assert.ok(offscreen.includes("youtubePreview:true"), "la captura de prueba se distingue de los segmentos oficiales");
+assert.ok(core.includes("findSmartTokens"), "el núcleo detecta teléfonos y direcciones antes del render");
+assert.ok(overlay.includes("renderSmartText"), "las direcciones y teléfonos se renderizan como acciones seguras");
+assert.ok(overlay.includes("Ctrl+Mayús+clic"), "el overlay explica la búsqueda de términos en Linguee");
+assert.ok(overlay.includes("SIGNAL_CAPTION_OPEN_LOOKUP"), "el overlay puede abrir verificaciones con acción explícita");
+assert.ok(popup.includes("captionInterpreterEnabled"), "el popup permite activar/desactivar las captions del LEP");
+assert.ok(popup.includes("youtubeCaptionCapture"), "el popup permite iniciar y detener la captura aislada del video");
+
 assert.ok(manifest.key && manifest.key.length > 300);
 assert.ok(manifest.key);
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
@@ -67,7 +88,7 @@ assert.equal(previewBlock.includes("KhoraTelemetryDB"),false);
 assert.ok(offscreen.includes("previewTabRecorder"));
 assert.ok(offscreen.includes("previewMicRecorder"));
 assert.ok(offscreen.includes("startCaptionPreview"));
-assert.ok(offscreen.includes("recorder.start(2800)"));
+assert.ok(offscreen.includes("recorder.start(1800)"), "todos los previews bilingües usan fragmentos de audio cortos");
 assert.ok(offscreen.includes("SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK"));
 assert.ok(offscreen.includes("captionPreview===true"));
 assert.ok(offscreen.includes('startCaptionPreview({tab:true,mic:false})'));

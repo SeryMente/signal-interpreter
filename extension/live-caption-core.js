@@ -169,6 +169,43 @@
     return "LIVE";
   }
 
+  function findSmartTokens(value) {
+    var text = normalizeText(value);
+    var candidates = [];
+    function collect(pattern, type) {
+      pattern.lastIndex = 0;
+      var match;
+      while ((match = pattern.exec(text))) {
+        var value = match[0].trim();
+        if (!value) continue;
+        if (type === "phone") {
+          var digits = value.replace(/\D/g, "").length;
+          if (digits < 7 || digits > 15) continue;
+          if (/^\d{4}[-.]\d{1,2}[-.]\d{1,2}$/.test(value) ||
+              /^\d{1,2}[-.]\d{1,2}[-.]\d{2,4}$/.test(value)) continue;
+          if (!/[+().\s-]/.test(value) && digits !== 10 && digits !== 11) continue;
+        }
+        var start = match.index + match[0].indexOf(value);
+        candidates.push({ type: type, text: value, start: start, end: start + value.length });
+        if (match[0].length === 0) pattern.lastIndex += 1;
+      }
+    }
+    collect(/(?<![\d().-])\b\d{1,6}\s+(?:[\p{L}\d.'#-]+\s+){1,5}(?:street|st\.?|avenue|ave\.?|road|rd\.?|boulevard|blvd\.?|drive|dr\.?|lane|ln\.?|court|ct\.?|way|highway|hwy\.?|parkway|pkwy\.?|place|pl\.?|terrace|trail|circle|plaza)\b(?:\s*,?\s*(?:apt\.?|suite|unit|#)\s*[\p{L}\d-]+)?(?:\s*,\s*[\p{L}\d '-]{2,35}){0,2}/giu, "address");
+    collect(/\b(?:calle|avenida|av\.?|carrera|cra\.?|calzada|boulevard|blvd\.?|paseo|privada|prolongación|prol\.?|circuito|carretera|camino|andador|cerrada|retorno|periférico|eje)\s+[\p{L}\d .'-]{2,45}?\s+(?:n[úu]m(?:ero)?\.?\s*|no\.?\s*|#\s*)?\d{1,6}(?:[A-Za-z]\d{0,4})?(?:\s*,\s*(?:col(?:onia)?\.?|fracc(?:ionamiento)?\.?|cp|c\.?p\.?)\s*[\p{L}\d '-]{2,35})?(?:\s*,\s*[\p{L}\d '-]{2,35}){0,2}/giu, "address");
+    collect(/(?:\+\s*)?\(?\d(?:[\d().\s-]{5,}\d)\)?(?:\s*(?:ext\.?|x|anexo)\s*\d{1,6})?/giu, "phone");
+    candidates.sort(function (a, b) {
+      return a.start - b.start || (a.type === "address" ? -1 : 1) || b.end - a.end;
+    });
+    var result = [];
+    candidates.forEach(function (candidate) {
+      if (result.some(function (prior) {
+        return candidate.start < prior.end && candidate.end > prior.start;
+      })) return;
+      result.push(candidate);
+    });
+    return result.sort(function (a, b) { return a.start - b.start; });
+  }
+
   function overlapRatio(a, b) {
     var left = Math.max(a.left, b.left);
     var top = Math.max(a.top, b.top);
@@ -218,6 +255,7 @@
     roleForLanguage: roleForLanguage,
     roleForSource: roleForSource,
     languageLabel: languageLabel,
+    findSmartTokens: findSmartTokens,
     overlapRatio: overlapRatio,
     choosePositionCandidate: choosePositionCandidate
   };

@@ -56,6 +56,10 @@
           <div><strong id="caption-preferences-title">Subtítulos en vivo</strong><small>Historial legible, desplazable y ajustable</small></div>
           <label class="caption-enable"><input id="captionOverlayEnabled" type="checkbox" checked><span>Visible</span></label>
         </div>
+        <label class="caption-enable"><input id="captionInterpreterEnabled" type="checkbox" checked><span>Incluir voz del LEP desde el micrófono</span></label>
+        <small class="caption-help">La voz del intérprete solo se procesa si el micrófono está habilitado y su estado se ha verificado. No se fuerza la activación del micrófono.</small>
+        <label class="caption-enable"><input id="captionBilingualTabEnabled" type="checkbox" checked><span>Completar ambos idiomas desde el audio de pestaña</span></label>
+        <small class="caption-help">Permite que Groq detecte español e inglés en paralelo a los captions nativos. Las frases repetidas se fusionan cuando coinciden; no se añaden segmentos al registro durable desde este preview.</small>
         <label class="select-row" for="captionOverlayScope">
           <span>Visibilidad del overlay</span>
           <select id="captionOverlayScope">
@@ -64,6 +68,14 @@
           </select>
         </label>
         <small class="caption-help">Arrastra el encabezado para moverlo y la esquina inferior derecha para cambiar el tamaño. Usa la rueda o la barra de desplazamiento para revisar la conversación. «Auto» restaura el acomodo inteligente.</small>
+      </section>
+
+      <section class="sub-card caption-preferences" aria-labelledby="youtube-caption-test-title" id="youtubeCaptionTestTools">
+        <div class="sub-head">
+          <div><strong id="youtube-caption-test-title">Video de prueba</strong><small>Captura bilingüe aislada y con inicio explícito</small></div>
+        </div>
+        <button id="youtubeCaptionCapture" class="button secondary" type="button" hidden>Iniciar transcripción del video</button>
+        <small id="youtubeCaptionCaptureHelp" class="caption-help" hidden>Solo aparece en el video de prueba designado. Captura únicamente el audio de esa pestaña, no activa el micrófono y no agrega segmentos a la transcripción oficial. Requiere la llave local de Groq.</small>
       </section>
 
       <section class="today-card">
