@@ -255,6 +255,7 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
   }
   const inboxFiles=listJson(inbox);
   const publishHistory=derivePublishHistory(obs);
+  const terminalCallIds=new Set();
   let processedInbox=0,lastInput=null;
   for(const inboxFile of inboxFiles){
     const batch=readJson(inboxFile,null);
@@ -268,6 +269,14 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     index.routes=Array.from(new Set(Object.values(index.latestByIdentity).map(x=>x&&x.route).filter(Boolean))).sort();
     index.routeCount=index.routes.length;
     updatePublishHistory(publishHistory,batch);
+    if(isRealBatch(batch)&&Array.isArray(batch.events)){
+      for(const event of batch.events){
+        if(isTerminalCallEvent(event)){
+          const callId=eventCallId(event);
+          if(callId)terminalCallIds.add(callId);
+        }
+      }
+    }
     processedInbox+=1;
     if(!lastInput||batchTime(batch)>batchTime(lastInput))lastInput=batch;
     fs.rmSync(inboxFile,{force:true});
@@ -275,6 +284,9 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
 
   const latestReal=lastInput&&isRealBatch(lastInput)?lastInput:findLatestRealBatch(obs);
   const generatedAt=now();
+  const callReportIndex=updateCallReports(obs,Array.from(terminalCallIds),generatedAt);
+  const latestCallReport=callReportIndex.latestReportPath
+    ?readJson(path.join(obs,callReportIndex.latestReportPath),null):null;
   index.generatedAt=generatedAt;
   const screenshotIndex=deriveScreenshotIndex(obs);
   writeJson(path.join(obs,"platform-index.json"),index);
@@ -298,6 +310,16 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     extensionVersion:String(latestReal&&latestReal.extensionVersion||"unknown"),
     eventCount:Number(latestReal&&latestReal.summary&&latestReal.summary.eventsTotal||0),
     totalBatchFiles:listJson(batchesDir).length,
+    calls:{
+      reportCount:Number(callReportIndex.reportCount||0),
+      completedReports:Number(callReportIndex.completedCount||0),
+      partialReports:Number(callReportIndex.partialCount||0),
+      latestCallRef:callReportIndex.latestCallRef||null,
+      latestReportPath:callReportIndex.latestReportPath||null,
+      latestReportAt:callReportIndex.latestReportGeneratedAt||null,
+      latestReportStatus:callReportIndex.latestStatus||null,
+      latestRatingStarsObserved:callReportIndex.latestRatingStarsObserved===true
+    },
     platform:{
       observations:Number(index.observations||0),
       deltas:Number(index.deltas||0),
@@ -335,11 +357,17 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     platformScreenshotsUnchanged:Number(screenshotIndex.unchanged||0),
     platformScreenshotErrors:Number(screenshotIndex.errors||0),
     platformScreenshotRoutes:Number(screenshotIndex.routeCount||0),
+    callReportCount:Number(callReportIndex.reportCount||0),
+    latestCallReportPath:callReportIndex.latestReportPath||null,
+    latestCallReportAt:callReportIndex.latestReportGeneratedAt||null,
+    latestCallReportStatus:callReportIndex.latestStatus||null,
+    latestCallRatingStarsObserved:callReportIndex.latestRatingStarsObserved===true,
+    callReportCheckpointObserved:!!(latestCallReport&&latestCallReport.endConfirmation&&latestCallReport.endConfirmation.finalCheckpointObserved),
     inboxRemaining:listJson(inbox).length,
     status:"ok"
   };
   writeJson(path.join(obs,"health","github-build.json"),health);
-  return{manifest,index,health};
+  return{manifest,index,health,callReports:callReportIndex,latestCallReport:latestCallReport};
 }
 
 if(import.meta.url===`file://${process.argv[1]?.replaceAll("\\\\","/")}`){
