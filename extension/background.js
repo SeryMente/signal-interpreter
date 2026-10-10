@@ -192,7 +192,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     try { tabs = await chrome.tabs.query({}); } catch (_) {}
     var sends = tabs.map(function (tab) {
       if (!tab || tab.id == null || !/^https?:\/\//i.test(String(tab.url || ""))) return Promise.resolve();
-      if (!globalScope && Number(tab.id) !== activeSource) return Promise.resolve();
+      if (!globalScope && type !== "SIGNAL_CAPTION_SESSION_RESET" && Number(tab.id) !== activeSource) return Promise.resolve();
       try {
         var pending = chrome.tabs.sendMessage(tab.id, Object.assign({ type: type }, payload || {}));
         return pending && typeof pending.catch === "function" ? pending.catch(function () {}) : Promise.resolve();
@@ -244,8 +244,9 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       sourceTabId: sourceTabId,
       isSourceTab: isSourceTab,
       callActive: callActive,
+      sessionEnded: !youtubeTarget && session.ended === true,
       pageAllowed: pageAllowed,
-      history: pageAllowed ? session.rows.slice(-CAPTION_HISTORY_LIMIT) : []
+      history: pageAllowed && !youtubeTarget ? session.rows.slice(-CAPTION_HISTORY_LIMIT) : []
     };
   }
   async function setCaptionPreviewForActiveCall(tabEnabled, reason) {
