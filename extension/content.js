@@ -472,7 +472,6 @@
   function emit(action, payload, level) {
     var callId = payload && payload.callId || currentCallId();
     var eventPayload = payload && typeof payload === "object" ? Object.assign({}, payload) : {};
-    if (callId && eventPayload.callId == null) eventPayload.callId = callId;
     var event = {
       timestamp: iso(), action: action, level: level || "info",
       source: "content", host: location.hostname, url: location.origin + routeTemplate(),
