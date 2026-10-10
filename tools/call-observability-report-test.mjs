@@ -23,7 +23,7 @@ function event(id,action,payload,timestamp,level="info",extra={}){
 function batch(id,createdAt,events){
   return {
     schema:"signal-interpreter-observation-batch/v1",batchId:id,createdAt:createdAt,
-    trigger:"call-end-fixture",extensionVersion:"0.10.28",
+    trigger:"call-end-fixture",extensionVersion:"0.10.29",
     summary:{eventsTotal:events.length,errors:events.filter(e=>e.level==="error").length,
       warnings:events.filter(e=>e.level==="warn").length,firstSequence:events[0].sequence,
       lastSequence:events[events.length-1].sequence,categories:{SESSION:events.length},actions:{}},
