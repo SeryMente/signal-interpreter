@@ -74,14 +74,14 @@
 
   function currentCloudCallId() {
     if (!isCloudCallRoute()) return null;
-    var match = String(location.pathname || "").match(/^\\/call\\/([^/?#]+)\\/?$/);
+    var match = String(location.pathname || "").match(/^\/call\/([^/?#]+)\/?$/);
     return match ? match[1] : null;
   }
 
   function safeRoutePath(pathname) {
     return String(pathname || location.pathname || "/")
-      .replace(/^\\/call\\/[^/]+/, "/call/<ID>")
-      .replace(/^\\/profile\\/[^/]+/, "/profile/<ID>")
+      .replace(/^\/call\/[^/]+/, "/call/<ID>")
+      .replace(/^\/profile\/[^/]+/, "/profile/<ID>")
       .slice(0, 160);
   }
 
