@@ -13,6 +13,8 @@ const groq=read("extension/groq-transcriber.js");
 const overlay=read("extension/live-caption-overlay.js");
 const core=read("extension/live-caption-core.js");
 const bridge=read("extension/live-caption-bridge.js");
+const youtubeAdapter=read("extension/youtube-caption-adapter.js");
+const popup=read("extension/ui/popup.js");
 const hostManifest=JSON.parse(read("extension/native/com.signalinterpreter.captionhost.json"));
 const register=read("extension/native/register-caption-host.ps1");
 const hostSource=read("extension/native/SignalInterpreter.CaptionHost.cs");
@@ -20,11 +22,13 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.23");
+assert.equal(manifest.version,"0.10.24");
 assert.ok(manifest.key && manifest.key.length > 300);
 assert.ok(manifest.key);
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
-assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://app.cloudinterpreter.com/*")&&Array.isArray(e.js)&&e.js[0]==="live-caption-core.js"&&e.js[1]==="live-caption-overlay.js"&&e.js[2]==="content.js"));
+assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://app.cloudinterpreter.com/*")&&Array.isArray(e.js)&&e.js.includes("live-caption-core.js")&&e.js.includes("live-caption-overlay.js")&&e.js.includes("content.js")));
+assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("http://*/*")&&e.matches?.includes("https://*/*")&&e.exclude_matches?.includes("https://app.cloudinterpreter.com/*")&&e.js?.includes("live-caption-overlay.js")));
+assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://www.youtube.com/watch*")&&e.js?.includes("youtube-caption-adapter.js")));
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 
 assert.ok(background.includes('importScripts("live-caption-core.js","live-caption-bridge.js"'));
@@ -75,9 +79,15 @@ assert.ok(groq.includes("if(language)form.append(\"language\",language);"));
 assert.ok(groq.includes("language:String(data&&data.language||language||\"unknown\")"));
 
 assert.ok(overlay.includes("pointer-events:none"));
-assert.ok(overlay.includes("max-height:210px;overflow:hidden"), "el panel debe tener altura visual acotada para no cubrir la llamada");
-assert.ok(overlay.includes("-webkit-line-clamp:2;overflow:hidden"), "cada intervención debe limitarse a dos líneas visuales");
-assert.ok(overlay.includes("var MAX_ROWS = 4;"), "el panel debe mantener un diálogo reciente compacto");
+assert.ok(overlay.includes("MAX_HISTORY = 800"), "el panel conserva un historial amplio y acotado por sesión");
+assert.ok(overlay.includes("overflow:auto"), "el historial debe poder desplazarse verticalmente");
+assert.ok(overlay.includes("scrollHeight"), "el panel debe mantener la navegación hasta los turnos recientes");
+assert.ok(overlay.includes("startDrag"), "el encabezado debe permitir mover el panel");
+assert.ok(overlay.includes("startResize"), "la esquina debe permitir redimensionar el panel");
+assert.ok(overlay.includes("signalCaptionOverlayLayout"), "posición y tamaño deben persistir localmente");
+assert.ok(overlay.includes("choosePositionCandidate"), "el panel debe elegir una posición automática evitando controles");
+assert.ok(overlay.includes("liveCaptionOverlayScope"), "el panel debe obedecer el alcance de visibilidad");
+assert.ok(overlay.includes("!contextReady || !pageAllowed"), "el panel valida el contexto que devuelve el service worker");
 assert.ok(overlay.includes("attachShadow({ mode: \"closed\" })"));
 assert.ok(overlay.includes("interactiveRects"));
 assert.ok(overlay.includes("core.choosePositionCandidate(candidates, rects, w, h)"));
@@ -95,10 +105,19 @@ assert.ok(core.includes("ENGLISH"));
 assert.ok(core.includes("ESPAÑOL"));
 assert.ok(core.includes("roleForLanguage"));
 assert.ok(core.includes("detectLanguage"));
+assert.ok(youtubeAdapter.includes("TshOFzKQfG8"), "el adaptador de YouTube se limita al video de destino");
+assert.ok(background.includes("chrome.storage.session"), "el historial debe sobrevivir a la suspensión del service worker sin persistirse de forma duradera");
+assert.ok(background.includes("SIGNAL_CAPTION_OVERLAY_HELLO"), "el overlay hidrata el contexto y el historial actual");
+assert.ok(background.includes('liveCaptionOverlayScope === "all-tabs"'), "el service worker aplica el alcance global");
+assert.equal(/(?:Ã[\u0080-\u00ffƒ]|Â[\u0080-\u00ff]|â€[\u0080-\u00ff]|ï¿½|ðŸ|Ãƒ)/u.test(popup), false, "el popup no debe contener patrones comunes de mojibake");
+assert.ok(popup.includes("Configuración guardada"), "el estado de guardado debe usar caracteres UTF-8 correctos");
+assert.ok(popup.includes("captionOverlayScope"), "el popup debe exponer la preferencia de alcance");
 
 assert.ok(bridge.includes('connectNative(HOST_NAME)'));
 assert.ok(bridge.includes('HOST_NAME = "com.signalinterpreter.captionhost"'));
 assert.ok(bridge.includes('type: "SIGNAL_CAPTION_UPDATE"')||bridge.includes('"SIGNAL_CAPTION_UPDATE"'));
+assert.ok(bridge.includes("onCaption(caption, targetTabId)"), "el texto nativo debe pasar por el router de pestañas");
+assert.ok(bridge.includes("SIGNAL_CAPTION_SESSION_END"), "fin de llamada conserva historial en vez de borrarlo");
 
 assert.equal(hostManifest.name,"com.signalinterpreter.captionhost");
 assert.equal(hostManifest.type,"stdio");

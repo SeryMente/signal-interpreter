@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "minimum_chrome_version": "116",
   "name": "Signal Interpreter",
-  "version": "0.10.23",
-  "description": "Asistente independiente para interpretación médica en tiempo real; Auto-Answer, observabilidad y métricas para Cloud Interpreter.",
+  "version": "0.10.24",
+  "description": "Asistente independiente para interpretación médica en tiempo real; overlay de subtítulos con historial desplazable y controles de accesibilidad para Cloud Interpreter.",
   "permissions": [
     "storage",
     "tabs",
@@ -77,6 +77,33 @@
       "run_at": "document_start",
       "world": "ISOLATED",
       "all_frames": true
+    },
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "exclude_matches": [
+        "https://app.cloudinterpreter.com/*"
+      ],
+      "js": [
+        "live-caption-core.js",
+        "live-caption-overlay.js"
+      ],
+      "run_at": "document_idle",
+      "world": "ISOLATED",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://www.youtube.com/watch*"
+      ],
+      "js": [
+        "youtube-caption-adapter.js"
+      ],
+      "run_at": "document_idle",
+      "world": "ISOLATED",
+      "all_frames": false
     },
     {
       "matches": [

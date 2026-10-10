@@ -47,6 +47,207 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   var microphoneMuteQueue = Promise.resolve();
   var captionPreviewDispatcher = null;
   var captionPreviewLastErrorAt = Object.create(null);
+
+  var CAPTION_SESSION_KEY = "signalCaptionOverlaySession";
+  var CAPTION_HISTORY_LIMIT = 800;
+  var captionHistoryQueue = Promise.resolve();
+  var captionSessionMemory = { callId: null, sourceTabId: null, rows: [], ended: false, updatedAt: 0 };
+
+  function validCaptionTabId(value) {
+    return value != null && value !== "" && Number.isFinite(Number(value)) ? Number(value) : null;
+  }
+
+  function withCaptionSession(mutator) {
+    var task = captionHistoryQueue.then(async function () {
+      var stored = {};
+      try {
+        if (chrome.storage.session) stored = await chrome.storage.session.get([CAPTION_SESSION_KEY]);
+      } catch (_) {}
+      var current = stored[CAPTION_SESSION_KEY] || captionSessionMemory;
+      current = {
+        callId: current.callId == null ? null : String(current.callId),
+        sourceTabId: validCaptionTabId(current.sourceTabId),
+        rows: Array.isArray(current.rows) ? current.rows.slice(-CAPTION_HISTORY_LIMIT) : [],
+        ended: current.ended === true,
+        updatedAt: Number(current.updatedAt) || 0
+      };
+      var next = await mutator(current) || current;
+      next.updatedAt = Date.now();
+      captionSessionMemory = next;
+      try {
+        if (chrome.storage.session) await chrome.storage.session.set({ [CAPTION_SESSION_KEY]: next });
+      } catch (_) {}
+      return next;
+    });
+    captionHistoryQueue = task.catch(function () {});
+    return task;
+  }
+
+  async function readCaptionSession() {
+    await captionHistoryQueue;
+    try {
+      if (chrome.storage.session) {
+        var stored = await chrome.storage.session.get([CAPTION_SESSION_KEY]);
+        if (stored && stored[CAPTION_SESSION_KEY]) {
+          captionSessionMemory = stored[CAPTION_SESSION_KEY];
+          return captionSessionMemory;
+        }
+      }
+    } catch (_) {}
+    return captionSessionMemory;
+  }
+
+  function resetCaptionOverlaySession(sourceTabId, reason) {
+    return withCaptionSession(function (current) {
+      var newSource = validCaptionTabId(sourceTabId);
+      return {
+        callId: null,
+        sourceTabId: newSource != null ? newSource : current.sourceTabId,
+        rows: [],
+        ended: false,
+        resetReason: String(reason || "session-reset").slice(0, 80),
+        updatedAt: Date.now()
+      };
+    }).then(function (session) {
+      return dispatchCaptionOverlayMessage("SIGNAL_CAPTION_SESSION_RESET", {
+        reason: String(reason || "session-reset")
+      }, session.sourceTabId);
+    }).catch(function () {});
+  }
+
+  function appendCaptionOverlayHistory(caption, sourceTabId) {
+    return withCaptionSession(async function (current) {
+      var tabId = validCaptionTabId(sourceTabId);
+      var stateStored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
+      var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stateStored.effectifState || {})));
+      var config = Object.assign({}, DEFAULT_CONFIG, stateStored.effectifConfig || {});
+      if (config.liveCaptionOverlayEnabled === false) return current;
+      var stateSource = validCaptionTabId(state.callSourceTabId);
+      var callId = state.callId == null ? current.callId : String(state.callId);
+      if (current.sourceTabId != null && tabId != null && current.sourceTabId !== tabId) {
+        current.rows = [];
+        current.ended = false;
+      }
+      current.sourceTabId = tabId != null ? tabId : (stateSource != null ? stateSource : current.sourceTabId);
+      current.callId = callId == null ? null : String(callId);
+      var text = SignalCaptionCore.normalizeText(caption && caption.text).slice(0, 1500);
+      if (!text) return current;
+      var source = caption.source === "yo" ? "yo" : (caption.source === "chrome-live-caption" ? "chrome-live-caption" : "cliente");
+      var language = SignalCaptionCore.resolveLanguage(caption.language, text);
+      var now = Date.now();
+      var lane = source === "yo" ? "yo" : "cliente";
+      var candidate = null;
+      for (var i = current.rows.length - 1; i >= 0; i -= 1) {
+        var prior = current.rows[i];
+        if ((prior.source === "yo" ? "yo" : "cliente") !== lane) continue;
+        if (now - Number(prior.at || 0) > 12000) break;
+        candidate = prior;
+        break;
+      }
+      if (candidate) {
+        var relation = SignalCaptionCore.captionRelation(candidate.text, text);
+        if (relation === "duplicate") {
+          candidate.at = now;
+          if (language !== "unknown") candidate.language = language;
+          candidate.live = caption.live === true;
+          return current;
+        }
+        if (relation === "stale") return current;
+        if (relation !== "new") {
+          candidate.text = SignalCaptionCore.mergeCaptionText(candidate.text, text).slice(0, 1500);
+          candidate.at = now;
+          if (language !== "unknown" || candidate.language === "unknown") candidate.language = language;
+          candidate.source = source;
+          candidate.live = caption.live === true;
+          return current;
+        }
+      }
+      current.rows.push({
+        id: String(caption.sequence || "") + "-" + now + "-" + current.rows.length,
+        text: text,
+        language: language,
+        source: source,
+        live: caption.live === true,
+        at: now
+      });
+      if (current.rows.length > CAPTION_HISTORY_LIMIT) current.rows.splice(0, current.rows.length - CAPTION_HISTORY_LIMIT);
+      current.ended = false;
+      return current;
+    });
+  }
+
+  async function dispatchCaptionOverlayMessage(type, payload, sourceTabId) {
+    var stored = await chrome.storage.local.get(["effectifConfig", "effectifState"]);
+    var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+    if (config.liveCaptionOverlayEnabled === false) return;
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    var session = await readCaptionSession();
+    var rememberedSource = validCaptionTabId(session.sourceTabId);
+    var explicitSource = validCaptionTabId(sourceTabId);
+    var stateSource = validCaptionTabId(state.callSourceTabId);
+    var activeSource = explicitSource != null ? explicitSource :
+      (hasActiveCall(state) && stateSource != null ? stateSource : rememberedSource != null ? rememberedSource : stateSource);
+    var globalScope = config.liveCaptionOverlayScope === "all-tabs";
+    var tabs = [];
+    try { tabs = await chrome.tabs.query({}); } catch (_) {}
+    var sends = tabs.map(function (tab) {
+      if (!tab || tab.id == null || !/^https?:\/\//i.test(String(tab.url || ""))) return Promise.resolve();
+      if (!globalScope && Number(tab.id) !== activeSource) return Promise.resolve();
+      try {
+        var pending = chrome.tabs.sendMessage(tab.id, Object.assign({ type: type }, payload || {}));
+        return pending && typeof pending.catch === "function" ? pending.catch(function () {}) : Promise.resolve();
+      } catch (_) { return Promise.resolve(); }
+    });
+    await Promise.all(sends);
+  }
+
+  async function publishCaptionToOverlay(caption, sourceTabId) {
+    if (!caption || !caption.text) return;
+    var stored = await chrome.storage.local.get(["effectifConfig"]);
+    var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+    if (config.liveCaptionOverlayEnabled === false) return;
+    var session = await appendCaptionOverlayHistory(caption, sourceTabId);
+    await dispatchCaptionOverlayMessage("SIGNAL_CAPTION_UPDATE", {
+      caption: Object.assign({}, caption, {
+        text: String(caption.text).slice(0, 1500),
+        timestamp: Date.now()
+      })
+    }, session.sourceTabId);
+  }
+
+  async function getCaptionOverlayContext(senderTab) {
+    var stored = await chrome.storage.local.get(["effectifConfig", "effectifState"]);
+    var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    var session = await readCaptionSession();
+    var callActive = hasActiveCall(state);
+    var stateSource = validCaptionTabId(state.callSourceTabId);
+    var savedSource = validCaptionTabId(session.sourceTabId);
+    var sourceTabId = callActive && stateSource != null ? stateSource : (savedSource != null ? savedSource : stateSource);
+    var currentTabId = senderTab && validCaptionTabId(senderTab.id);
+    var sourceOnly = config.liveCaptionOverlayScope !== "all-tabs";
+    var isSourceTab = sourceTabId != null && currentTabId === sourceTabId;
+    var hasHistory = Array.isArray(session.rows) && session.rows.length > 0;
+    var youtubeTarget = false;
+    try {
+      var parsedUrl = new URL(String(senderTab && senderTab.url || ""));
+      youtubeTarget = parsedUrl.hostname === "www.youtube.com" && parsedUrl.pathname === "/watch" &&
+        parsedUrl.searchParams.get("v") === "TshOFzKQfG8";
+    } catch (_) {}
+    var pageAllowed = config.liveCaptionOverlayEnabled !== false && (
+      youtubeTarget || (sourceOnly ? isSourceTab && (callActive || hasHistory) : callActive || hasHistory)
+    );
+    return {
+      ok: true,
+      enabled: config.liveCaptionOverlayEnabled !== false,
+      scope: sourceOnly ? "source-only" : "all-tabs",
+      sourceTabId: sourceTabId,
+      isSourceTab: isSourceTab,
+      callActive: callActive,
+      pageAllowed: pageAllowed,
+      history: pageAllowed ? session.rows.slice(-CAPTION_HISTORY_LIMIT) : []
+    };
+  }
   async function setCaptionPreviewForActiveCall(tabEnabled, reason) {
     var trigger = String(reason || "native-status").slice(0, 80);
     try {
@@ -115,7 +316,25 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   }
 
   try {
+    SignalCaptionBridge.onCaption = function (caption, sourceTabId) {
+      publishCaptionToOverlay(caption, sourceTabId).catch(function (error) {
+        record("SIGNAL_CAPTION_OVERLAY_PUBLISH_ERROR", { errorType: String(error && error.name || "Error").slice(0, 80) }, "warn", "caption");
+      });
+    };
+    SignalCaptionBridge.onSessionEvent = function (type, payload, sourceTabId) {
+      if (type === "SIGNAL_CAPTION_SESSION_RESET") {
+        resetCaptionOverlaySession(sourceTabId, payload && payload.reason || "session-reset");
+      } else if (type === "SIGNAL_CAPTION_SESSION_END") {
+        withCaptionSession(function (current) { current.ended = true; return current; })
+          .then(function (session) { return dispatchCaptionOverlayMessage("SIGNAL_CAPTION_SESSION_END", payload || {}, session.sourceTabId); })
+          .catch(function () {});
+      }
+    };
     SignalCaptionBridge.onStatus = function (status) {
+      chrome.storage.local.get(["effectifState"]).then(function (stored) {
+        var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+        return dispatchCaptionOverlayMessage("SIGNAL_CAPTION_NATIVE_STATUS", status || {}, state.callSourceTabId);
+      }).catch(function () {});
       setCaptionPreviewForActiveCall(!(status && status.active === true), status && status.reason || "native-status")
         .catch(function () {});
     };
@@ -2456,18 +2675,15 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var tabId = Number(latestState.callSourceTabId);
     if (!Number.isFinite(tabId)) return;
     try {
-      await chrome.tabs.sendMessage(tabId, {
-        type: "SIGNAL_CAPTION_UPDATE",
-        caption: {
-          text: text.slice(0, 4000),
-          language: language,
-          source: source,
-          live: false,
-          native: false,
-          sequence: sequence,
-          startedAt: Number(message.startedAt || 0)
-        }
-      });
+      await publishCaptionToOverlay({
+        text: text.slice(0, 1500),
+        language: language,
+        source: source,
+        live: false,
+        native: false,
+        sequence: sequence,
+        startedAt: Number(message.startedAt || 0)
+      }, tabId);
     } catch (_) {
       recordCaptionPreviewFailure(source, "overlay-message-failed");
     }
@@ -2562,6 +2778,12 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
 
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (!message) return false;
+    if (message.type === "SIGNAL_CAPTION_OVERLAY_HELLO") {
+      getCaptionOverlayContext(sender && sender.tab).then(sendResponse).catch(function () {
+        sendResponse({ ok: false, enabled: false, scope: "source-only", pageAllowed: false, history: [] });
+      });
+      return true;
+    }
     if(message.type==="SIGNAL_OBSERVATION_SYNC_NOW"){try{SignalObservationSync.flush("manual").then(function(r){sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})})}catch(e){sendResponse({ok:false,error:String(e)})}return true;}
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_AUDIO_CHUNK") { handleGroqAudioChunk(message); return false; }
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK") { handleGroqCaptionPreviewChunk(message); return false; }
