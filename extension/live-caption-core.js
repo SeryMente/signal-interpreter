@@ -207,9 +207,9 @@
   }
 
   function isCloudInterpreterCallRoute(hostname, pathname) {
-    var host = String(hostname == null ? "" : hostname).toLowerCase().replace(/\\.$/, "");
+    var host = String(hostname == null ? "" : hostname).toLowerCase().replace(/\.$/, "");
     var path = String(pathname == null ? "" : pathname);
-    return host === "app.cloudinterpreter.com" && /^\\/call\\/[^/?#]+\\/?$/.test(path);
+    return host === "app.cloudinterpreter.com" && /^\/call\/[^/?#]+\/?$/.test(path);
   }
 
   function overlapRatio(a, b) {
