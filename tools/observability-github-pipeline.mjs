@@ -267,7 +267,7 @@ function callEventDigest(event){
     category:reportSafeText(event.category||"RUNTIME",40),component:reportSafeText(event.component||event.source||"unknown",40),
     phase:reportSafeText(event.phase||"event",24),outcome:reportSafeText(event.outcome||"observed",24),
     durationMs:reportNumber(event.durationMs),
-    reasonCode:reportSafeText(event.reasonCode||p.reasonCode||p.reason||"",80)||null
+    reasonCode:reportSafeText(event.reasonCode||p.reasonCode||"",80)||null
   };
 }
 function callKeySignal(event){
@@ -275,7 +275,7 @@ function callKeySignal(event){
   if(!/ANSWER_FLOW|AUTO_ANSWER|CONNECT_|CALL_ROUTE_ENTERED|CALL_TIMER_STOPPED|EXTENSION_MICROPHONE|MICROPHONE|GROQ_CAPTURE|GROQ_TRANSCRIBER|TRANSCRIPTION|CAPTION_PREVIEW|SIGNAL_CAPTION|PLATFORM_INTEGRITY|CALL_END_EARNINGS|CALL_EARNINGS|EXCHANGE_RATE|HOTLOAD|SCREENSHOT/.test(action))return null;
   const payload=callReportPayload(event);
   const signal=callEventDigest(event);
-  const allow=["status","phase","reason","reasonCode","source","trigger","modality","engine","period","ready","authorizedProfile","verified","muted","desired","previousMuted","recoveryMuted","captureVerified","outputVerified","outputMuted","trackCount","senderCount","attempts","latencyMs","durationMs","timeoutMs","routeConfirmation","confirmation","captureStatus","tabAudio","microphone","microphoneMuted","microphoneOutputMuted","effectiveType","rttMs","downlinkMbps"];
+  const allow=["status","phase","reasonCode","source","trigger","modality","engine","period","ready","authorizedProfile","verified","muted","desired","previousMuted","recoveryMuted","captureVerified","outputVerified","outputMuted","trackCount","senderCount","attempts","latencyMs","durationMs","timeoutMs","routeConfirmation","confirmation","captureStatus","tabAudio","microphone","microphoneMuted","microphoneOutputMuted","effectiveType","rttMs","downlinkMbps"];
   allow.forEach(key=>{
     const value=payload[key];
     if(value===null||value===undefined)return;
