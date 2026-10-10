@@ -1,200 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-34b3804e-54cd-4a74-8879-ef16eb67c9e4",
-  "createdAt": "2026-10-10T15:13:00.926Z",
-  "trigger": "alarm",
+  "batchId": "batch-c04ebc92-c78e-4e3b-9d52-ac33f7762c0e",
+  "createdAt": "2026-10-10T15:17:01.579Z",
+  "trigger": "critical",
   "extensionVersion": "0.10.5",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "55e27fbb-45e6-44ba-8406-235afb37791e",
-      "sequence": 8724,
-      "timestamp": "2026-10-10T15:11:59.530Z",
-      "ingestedAt": "2026-10-10T15:11:59.531Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "runtime",
-      "extensionVersion": "0.10.5",
-      "host": "",
-      "url": "",
-      "phase": "started",
-      "action": "EXTENSION_RUNTIME_STARTED",
-      "outcome": "success",
-      "traceId": "91ebbf23-4e19-4c4a-b346-9dd12c71051b",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.5",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "manifestVersion": "0.10.5"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "4c991fd3-8f80-4a16-8d95-b0127c8d4c43",
-      "sequence": 8725,
-      "timestamp": "2026-10-10T15:12:00.500Z",
-      "ingestedAt": "2026-10-10T15:12:00.500Z",
+      "id": "876be647-ecd5-4bf2-9e0a-a10d030bbdfd",
+      "sequence": 8731,
+      "timestamp": "2026-10-10T15:16:59.817Z",
+      "ingestedAt": "2026-10-10T15:16:59.818Z",
       "level": "warn",
       "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.5",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "OBSERVATION_SYNC_RETRY_SCHEDULED",
-      "outcome": "observed",
-      "traceId": "3ed73a78-1ae5-4dec-9733-7e30f4da1879",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.5",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": "TypeError: Failed to fetch",
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "retryMs": 15000,
-        "error": "TypeError: Failed to fetch",
-        "sequence": null
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "51cd36ce-2eef-44fb-a4cf-f535a46f6078",
-      "sequence": 8726,
-      "timestamp": "2026-10-10T15:12:00.952Z",
-      "ingestedAt": "2026-10-10T15:12:00.952Z",
-      "level": "warn",
-      "category": "BILLING",
       "component": "background",
       "extensionVersion": "0.10.5",
       "host": "",
       "url": "",
       "phase": "error",
-      "action": "EXCHANGE_RATE_ERROR",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
       "outcome": "error",
-      "traceId": "a32afd22-6ebc-4314-b5e6-82b9268869d6",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.5",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "startup",
-      "error": "TypeError: Failed to fetch | TypeError: Failed to fetch | TypeError: Failed to fetch",
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "pair": "USD/MXN",
-        "message": "TypeError: Failed to fetch | TypeError: Failed to fetch | TypeError: Failed to fetch",
-        "reason": "startup"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "27444305-245b-4eaa-8336-0959d4db8bee",
-      "sequence": 8727,
-      "timestamp": "2026-10-10T15:12:05.024Z",
-      "ingestedAt": "2026-10-10T15:12:05.024Z",
-      "level": "warn",
-      "category": "BILLING",
-      "component": "background",
-      "extensionVersion": "0.10.5",
-      "host": "",
-      "url": "",
-      "phase": "error",
-      "action": "EXCHANGE_RATE_ERROR",
-      "outcome": "error",
-      "traceId": "811c4e8c-2ce9-4a47-ae44-391c65d12536",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.5",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "alarm",
-      "error": "TypeError: Failed to fetch | TypeError: Failed to fetch | TypeError: Failed to fetch",
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "pair": "USD/MXN",
-        "message": "TypeError: Failed to fetch | TypeError: Failed to fetch | TypeError: Failed to fetch",
-        "reason": "alarm"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "9afd4670-d573-4917-a97c-0a0830377835",
-      "sequence": 8728,
-      "timestamp": "2026-10-10T15:12:59.157Z",
-      "ingestedAt": "2026-10-10T15:12:59.158Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.5",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "TELEMETRY_MAINTENANCE",
-      "outcome": "observed",
-      "traceId": "b0ed8a72-a0a5-47e3-9933-f02a4a88b36b",
+      "traceId": "48dba745-8828-472d-aa37-e959e0aab979",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -209,7 +35,7 @@
       "expected": null,
       "observed": null,
       "reasonCode": null,
-      "error": null,
+      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
       "metrics": {},
       "context": {},
       "privacy": {
@@ -218,48 +44,28 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "pruned": {
-          "cutoff": "[PHONE]T15:12:58.919Z",
-          "expiredEvents": 0,
-          "expiredSnapshots": 0,
-          "expiredSignalSegments": 0,
-          "excessEvents": 0,
-          "excessSignalSegments": 0
-        },
-        "stats": {
-          "database": "signal-interpreter-telemetry",
-          "events": 8727,
-          "snapshots": 11,
-          "signalSegments": 0,
-          "oldestEventAt": "[PHONE]T18:56:51.212Z",
-          "newestEventAt": "[PHONE]T15:12:05.024Z",
-          "usageBytes": 8083808,
-          "quotaBytes": 72016935264
-        }
+        "trigger": "hourly",
+        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
       }
     }
   ],
   "summary": {
-    "eventsTotal": 5,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 3,
+    "warnings": 1,
     "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 8724,
-    "lastSequence": 8728,
-    "firstTimestamp": "2026-10-10T15:11:59.530Z",
-    "lastTimestamp": "2026-10-10T15:12:59.157Z",
+    "firstSequence": 8731,
+    "lastSequence": 8731,
+    "firstTimestamp": "2026-10-10T15:16:59.817Z",
+    "lastTimestamp": "2026-10-10T15:16:59.817Z",
     "actions": {
-      "EXTENSION_RUNTIME_STARTED": 1,
-      "OBSERVATION_SYNC_RETRY_SCHEDULED": 1,
-      "EXCHANGE_RATE_ERROR": 2,
-      "TELEMETRY_MAINTENANCE": 1
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
     },
     "categories": {
-      "RUNTIME": 3,
-      "BILLING": 2
+      "RUNTIME": 1
     }
   }
 }
