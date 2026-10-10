@@ -160,7 +160,7 @@ function startCaptionPreviewRecorder(source,stream,sessionId,tabId){
   recorder.onerror=function(e){
     send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(e&&e.error||e)});
   };
-  try{recorder.start(source === "yo" ? 1800 : 2800);}
+  try{recorder.start(1800);}
   catch(error){
     send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"caption-preview-"+source,error:String(error)});
     return null;
