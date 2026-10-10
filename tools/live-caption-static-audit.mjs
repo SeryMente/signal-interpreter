@@ -22,12 +22,14 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.25");
+assert.equal(manifest.version,"0.10.26");
 assert.ok(background.includes('liveCaptionInterpreterEnabled: true'), "la transcripción permite incluir la voz del LEP");
 assert.ok(background.includes('liveCaptionBilingualTabEnabled: true'), "la transcripción bilingüe de audio de pestaña está activada por defecto");
-assert.ok(background.includes('var outputSource = source === "yo" ? "yo" : (language === "es" ? "yo" : "cliente")'), "los resultados se asignan al carril según idioma detectado");
+assert.ok(background.includes('var outputSource = source === "yo" ? "yo" : "cliente"'), "la atribución del preview procede del canal de audio, no del idioma");
+assert.equal(background.includes('if (language === "es") source = "yo"'), false, "el historial del service worker no debe convertir idioma en identidad del hablante");
+assert.ok(overlay.includes('core.roleForSource(item.source, language)'), "el render respeta la fuente del hablante");
 assert.ok(background.includes("effectiveTabEnabled = !!tabEnabled || config.liveCaptionBilingualTabEnabled !== false"), "el modo paralelo se respeta al activar previews");
-assert.ok(overlay.includes('if (language === "es") source = "yo"'), "las intervenciones españolas se separan en el historial del overlay");
+assert.equal(overlay.includes('if (language === "es") source = "yo"'), false, "el idioma no debe reasignar una fuente de audio verificada");
 assert.ok(popup.includes("captionBilingualTabEnabled"), "el popup permite configurar la transcripción bilingüe paralela");
 assert.ok(background.includes('config.liveCaptionInterpreterEnabled !== false'), "la fuente del LEP respeta la preferencia del usuario");
 assert.ok(background.includes('currentState.microphoneOutputMuted === true'), "la captura de voz del LEP queda bloqueada si el micrófono está silenciado");

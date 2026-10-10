@@ -2,8 +2,8 @@
 
 **Repositorio canónico:** https://github.com/SeryMente/signal-interpreter
 **Especificación canónica:** https://github.com/SeryMente/signal-interpreter/blob/main/docs/USER-REQUIREMENT-LIVE-CAPTIONS-OVERLAY-VERBATIM-20261008.md
-**Versión objetivo:** 0.10.25 — Transcripción bilingüe y verificación de datos críticos.
-**Rama de trabajo:** feat/0.10.25-bilingual-caption-lookup.
+**Versión objetivo:** 0.10.26 — Atribución de hablantes por fuente de audio.
+**Rama de trabajo:** fix/0.10.26-source-grounded-caption-roles.
 **Versión anterior integrada:** 0.10.24 — Overlay legible, desplazable y configurable.
 
 ## Evolución de usabilidad 0.10.24
@@ -18,6 +18,14 @@ La tarjeta compacta se sustituye por un panel de historial desplazable, con movi
 - El preview de YouTube dura mientras el usuario lo mantenga activo y usa segmentos de aproximadamente 1.8 s. La detección automática de idioma clasifica captions en inglés como CLIENTE y español como LEP y separa ambos canales para reducir fusión entre hablantes diferentes.
 - live-caption-core.js reconoce patrones de teléfonos y direcciones en inglés y español. El overlay los convierte a nodos de texto seguros, sin interpretar transcripciones como HTML. Clic en teléfono/dirección copia el valor exacto; Ctrl+clic en una dirección abre Google Maps; Ctrl+clic en un teléfono abre una búsqueda literal; Ctrl+Mayús+clic sobre un término abre Linguee.
 - El service worker valida el tipo de búsqueda y construye URLs para Google Maps, Google Search o Linguee; los términos se limitan a 180 caracteres. Las acciones solo se ejecutan por interacción directa del usuario.
+
+## Corrección 0.10.26 — atribución basada en fuente
+
+- En Cloud Interpreter, el flujo de audio de pestaña identifica al cliente y el preview del micrófono identifica al LEP. El idioma se mantiene como metadato lingüístico y no reemplaza la fuente de captura.
+- El overlay representa el rol con `roleForSource(item.source, language)` y conserva la fuente durante la inserción y deduplicación de filas. Una intervención del cliente en español continúa siendo del cliente; una intervención del LEP en inglés continúa siendo del LEP.
+- YouTube conserva una asignación separada explícita por idioma porque su captura de prueba es una sola pista de audio, no una pareja tab/micrófono.
+- Pruebas de regresión: roles por fuente en ambos idiomas y auditoría estática para impedir que el idioma reasigne una fuente verificada.
+- La validación automatizada no sustituye la prueba de llamada real en Chrome.
 
 ## Objetivo
 
