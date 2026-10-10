@@ -129,4 +129,36 @@ const rejected = await send({
 assert.equal(rejected.ok, false, "no se permite iniciar preview sin captura activa");
 assert.equal(rejected.error, "audio-capture-not-running");
 
+const beforeYoutubeCapture = messages.length;
+const youtubeStarted = await send({
+  target: "offscreen", type: "SIGNAL_START_YOUTUBE_CAPTION_PREVIEW",
+  streamId: "youtube-stream-token", sessionId: "youtube-preview-55-a", tabId: 55
+});
+assert.equal(youtubeStarted.ok, true, JSON.stringify(youtubeStarted));
+assert.equal(youtubeStarted.intervalMs, 1800, "el preview aislado usa fragmentos cortos para reducir latencia");
+assert.equal(recorders.length, 5, "la prueba de YouTube utiliza solo un grabador adicional");
+assert.equal(streams[2].constraints.audio.mandatory.chromeMediaSourceId, "youtube-stream-token");
+assert.equal(recorders[4].stream.id, "microphone", "el grabador aislado usa la nueva pista de pestaña simulada");
+assert.deepEqual(recorders[4].startIntervals, [1800]);
+recorders[4].emitData();
+await new Promise((resolve) => setImmediate(resolve));
+const youtubeChunk = messages.slice(beforeYoutubeCapture).find((m) =>
+  m.type === "SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK" && m.youtubePreview === true
+);
+assert.ok(youtubeChunk, "la captura de prueba produce fragmentos marcados como aislados");
+assert.equal(youtubeChunk.sessionId, "youtube-preview-55-a");
+assert.equal(youtubeChunk.tabId, 55);
+assert.equal(youtubeChunk.source, "cliente");
+assert.equal(messages.slice(beforeYoutubeCapture).some((m) => m.type === "SIGNAL_GROQ_AUDIO_CHUNK"), false,
+  "el audio aislado jamás se mezcla con segmentos oficiales de una llamada");
+
+const youtubeStopped = await send({
+  target: "offscreen", type: "SIGNAL_STOP_YOUTUBE_CAPTION_PREVIEW",
+  sessionId: "youtube-preview-55-a", tabId: 55
+});
+assert.equal(youtubeStopped.ok, true);
+assert.equal(youtubeStopped.active, false);
+assert.equal(streams[2].stream.track.stopped, true, "detener el video libera su pista de audio");
+assert.equal(messages.some((m) => m.type === "SIGNAL_YOUTUBE_CAPTION_PREVIEW_OFFSCREEN_STOPPED"), true);
+
 console.log("LIVE_CAPTION_OFFSCREEN_TEST=PASS");
