@@ -25,6 +25,17 @@ assert.equal(core.roleForLanguage("en"), "CLIENTE");
 assert.equal(core.roleForLanguage("es"), "LEP");
 assert.equal(core.languageLabel("en"), "ENGLISH");
 assert.equal(core.languageLabel("es"), "ESPAÑOL");
+assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Please call (555) 123-4567 at 123 Main Street, Austin, TX."))), [
+  { type: "phone", text: "(555) 123-4567", start: 12, end: 26 },
+  { type: "address", text: "123 Main Street, Austin, TX", start: 30, end: 57 }
+], "teléfonos y direcciones en inglés se detectan por separado para copiarlos/verificarlos");
+assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Vivo en Avenida Reforma 123, Colonia Juárez. Llámeme al +52 442 123 4567.")).map(x => ({type:x.type,text:x.text})), [
+  { type: "address", text: "Avenida Reforma 123, Colonia Juárez" },
+  { type: "phone", text: "+52 442 123 4567" }
+], "direcciones mexicanas y teléfonos internacionales se detectan sin perder puntuación");
+assert.equal(core.findSmartTokens("La cita es a las 10:30 y son 3 pacientes.").length, 0,
+  "no se deben marcar horas o cifras cortas como teléfonos");
+
 assert.equal(core.roleForSource("chrome-live-caption", "en"), "CLIENTE");
 assert.equal(core.roleForSource("cliente", "en"), "CLIENTE");
 assert.equal(core.roleForSource("yo", "es"), "LEP");
