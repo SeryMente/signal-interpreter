@@ -3,9 +3,10 @@
 > **Autoridad documental:** este es el único informe canónico del esfuerzo/sprint de transcripción, Live Caption y overlay de subtítulos de Signal Interpreter. Las notas antiguas de implementación, los requisitos verbatim y las notas de versión son fuentes históricas o técnicas subordinadas; no son informes alternativos del esfuerzo.  
 > **Ruta canónica:** `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`  
 > **Repositorio:** https://github.com/SeryMente/signal-interpreter  
-> **Última versión documentada:** **0.10.30 — Preview independiente de llamada y exportación automática diagnosticable**
+> **Última versión documentada:** **0.10.31 — Preview independiente, recuperación y exportación automática diagnosticable**
 > **Integración previa al ciclo correctivo:** [PR #52](https://github.com/SeryMente/signal-interpreter/pull/52)
-> **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.30 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
+> **Solicitud de integración del ciclo correctivo:** [PR #53](https://github.com/SeryMente/signal-interpreter/pull/53)
+> **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.31 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
 
 ## 1. Regla inequívoca de documentación
 
@@ -230,6 +231,14 @@ No se declara resuelto el reconocimiento real únicamente por YouTube, fixtures,
 ### Instrucción recuperada VERBATIM
 
 > Era el token, not enia los permisos adecuiados. Intenta de nuevo, resolver conforme la instruccion que te di anteriormente, verbatim, punto por punto. Sin excepcion.
+
+### Versionado y publicación comprobada
+
+La solicitud [PR #53](https://github.com/SeryMente/signal-interpreter/pull/53) fue creada y recibió el commit `bb8bb5440102ab7e3df1335de6980a0ee9858888`. Para ese primer candidato 0.10.30 se verificaron `audit`, `compile-and-protocol-smoke-test` en Windows y Vercel con resultado success. El trabajo posterior se identifica como **0.10.31**, distinto del ZIP 0.10.30 ya entregado, para no atribuir a dos builds diferentes la misma versión de runtime. La integración se autoriza solo tras comprobar las compuertas del último head efectivo.
+
+El arnés Node de audio no pudo resolver Playwright en el entorno reanudado. Se inventariaron las dependencias y se utilizó el arnés Python instalado, sin modificar el repositorio ni simular una repetición exitosa. Chromium real volvió a producir tres fragmentos del preview y FFmpeg volvió a decodificar los tres independientemente como Opus. No se usó una llamada real ni se certificó el servicio Groq.
+
+La versión 0.10.31 y la preparación de su instalación conservan el criterio de aceptación real pendiente. Una integración en main y una preparación local exitosa NO son evidencia de subtítulos durante una llamada.
 
 ### Endurecimiento adicional previo a publicación
 

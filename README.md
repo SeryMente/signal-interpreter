@@ -87,8 +87,8 @@ La versión 0.10.28 corrige la atribución de hablantes: Cloud Interpreter usa e
 
 El overlay conserva su historial desplazable, controles para mover/redimensionar, posición automática y alcance source-only/all-tabs. El historial hablado se retiene en chrome.storage.session, no en almacenamiento local duradero. Consulta docs/versions/0.10.28.md para el alcance, los controles y los límites de validación.
 
-## Corrección de transcripción 0.10.30
+## Corrección de transcripción 0.10.31
 
-El relato único del esfuerzo y sus límites está en [el documento canónico](docs/TRANSCRIPTION-SPRINT-CANONICAL.md#11-ciclo-correctivo-01030--activación-independiente-y-cierre-diagnosticable). El preview de llamada puede funcionar sin consola ni sesión durable; el micrófono requiere mute verificado. Prepare el host y la clave local con `extension/PREPARE-CAPTIONS.cmd` bajo su cuenta Windows normal, fuera de una llamada, y recargue la extensión. Si Chrome exige invocación, abrir el popup existente en la pestaña de Cloud Interpreter reintenta la captura.
+El relato único del esfuerzo y sus límites está en [el documento canónico](docs/TRANSCRIPTION-SPRINT-CANONICAL.md#12-reanudación-autorizada--cotejo-punto-por-punto). El preview de llamada puede funcionar sin consola ni sesión durable; el micrófono requiere mute verificado. Prepare el host y la clave local con `extension/PREPARE-CAPTIONS.cmd` bajo su cuenta Windows normal, fuera de una llamada, y recargue la extensión. Si Chrome exige invocación, abrir el popup existente en la pestaña de Cloud Interpreter reintenta la captura.
 
 Los informes de cierre exponen `captionDiagnosis` y `exportEvidence`; la publicación del checkpoint no espera a consultas de ingresos. La evidencia de audio sintético/fixtures no sustituye una llamada real en Cloud Interpreter.

@@ -5,7 +5,7 @@ $root = Split-Path -Parent $PSScriptRoot
 $manifestFile = Join-Path $root 'manifest.json'
 if (-not (Test-Path -LiteralPath $manifestFile)) { throw 'Extension manifest missing; no changes applied.' }
 $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestFile | ConvertFrom-Json
-if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.30') { throw 'Expected Signal Interpreter 0.10.30; no changes applied.' }
+if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.31') { throw 'Expected Signal Interpreter 0.10.31; no changes applied.' }
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 $principal = [Security.Principal.WindowsPrincipal]::new($identity)
 if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { throw 'Run under your normal Chrome account, not an elevated administrator terminal.' }
