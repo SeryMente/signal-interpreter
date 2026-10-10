@@ -24,6 +24,11 @@ const relay=read("extension/observability-relay.js");
 
 assert.equal(manifest.version,"0.10.25");
 assert.ok(background.includes('liveCaptionInterpreterEnabled: true'), "la transcripción permite incluir la voz del LEP");
+assert.ok(background.includes('liveCaptionBilingualTabEnabled: true'), "la transcripción bilingüe de audio de pestaña está activada por defecto");
+assert.ok(background.includes('var outputSource = source === "yo" ? "yo" : (language === "es" ? "yo" : "cliente")'), "los resultados se asignan al carril según idioma detectado");
+assert.ok(background.includes("effectiveTabEnabled = !!tabEnabled || config.liveCaptionBilingualTabEnabled !== false"), "el modo paralelo se respeta al activar previews");
+assert.ok(overlay.includes('if (language === "es") source = "yo"'), "las intervenciones españolas se separan en el historial del overlay");
+assert.ok(popup.includes("captionBilingualTabEnabled"), "el popup permite configurar la transcripción bilingüe paralela");
 assert.ok(background.includes('micEnabled: config.liveCaptionInterpreterEnabled !== false'), "la fuente del LEP respeta la preferencia del usuario");
 assert.ok(background.includes('currentState.microphoneOutputMuted === true'), "la captura de voz del LEP queda bloqueada si el micrófono está silenciado");
 assert.ok(background.includes("SIGNAL_CAPTION_OPEN_LOOKUP"), "las búsquedas externas pasan por un router acotado");
