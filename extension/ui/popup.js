@@ -23,7 +23,7 @@
     overlayCompact: true,
     liveCaptionOverlayEnabled: true,
     liveCaptionOverlayScope: "source-only",
-    liveCaptionInterpreterEnabled: true,
+    liveCaptionInterpreterEnabled: false,
     liveCaptionBilingualTabEnabled: true,
     usdMxnRate: null,
     exchangeRateDate: null,
@@ -129,7 +129,7 @@
     $("overlayEnabled").checked = !!config.overlayEnabled;
     if ($("captionOverlayEnabled")) $("captionOverlayEnabled").checked = config.liveCaptionOverlayEnabled !== false;
     if ($("captionOverlayScope")) $("captionOverlayScope").value = config.liveCaptionOverlayScope === "all-tabs" ? "all-tabs" : "source-only";
-    if ($("captionInterpreterEnabled")) $("captionInterpreterEnabled").checked = config.liveCaptionInterpreterEnabled !== false;
+    if ($("captionInterpreterEnabled")) { $("captionInterpreterEnabled").checked = false; $("captionInterpreterEnabled").disabled = true; }
     if ($("captionBilingualTabEnabled")) $("captionBilingualTabEnabled").checked = config.liveCaptionBilingualTabEnabled !== false;
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
@@ -229,7 +229,7 @@
     finally{ button.disabled=false; renderMicrophone(); }
   });
   if ($("captionInterpreterEnabled")) $("captionInterpreterEnabled").addEventListener("change", function () {
-    save({ liveCaptionInterpreterEnabled: this.checked });
+    save({ liveCaptionInterpreterEnabled: false });
   });
   if ($("captionBilingualTabEnabled")) $("captionBilingualTabEnabled").addEventListener("change", function () {
     save({ liveCaptionBilingualTabEnabled: this.checked });

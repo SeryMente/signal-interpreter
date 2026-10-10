@@ -23,7 +23,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     transcriptionAvailable: true,
     transcriptionEnabled: true,
     liveCaptionOverlayEnabled: true,
-    liveCaptionInterpreterEnabled: true,
+    liveCaptionInterpreterEnabled: false,
     liveCaptionBilingualTabEnabled: true,
     instantPreviewEnabled: false,
     audioSafetyMode: true,
@@ -384,10 +384,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   var captionControlQueue = Promise.resolve();
   var captionCaptureBlock = null;
   var captionDurableReservationUntil = 0;
-  function captionMicrophoneAllowed(state, config, allowInterpreterPreview) {
-    return allowInterpreterPreview !== false && config.liveCaptionInterpreterEnabled !== false &&
-      state.microphoneMuted !== true && state.microphoneMuteStatus === "applied" &&
-      state.microphoneOutputStatus !== "error" && state.microphoneOutputMuted !== true;
+  function captionMicrophoneAllowed() {
+    return false; // Current scope: browser tab output only, regardless of stale config/mute state.
   }
   function setCaptionPreviewForActiveCall(tabEnabled, reason, allowInterpreterPreview) {
     var run = captionControlQueue.then(function () { return setCaptionPreviewForActiveCallInternal(tabEnabled, reason, allowInterpreterPreview); });
@@ -458,7 +456,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         }
         captionCaptureBlock = null;
         record("SIGNAL_CALL_CAPTION_PREVIEW_STARTED", { callId: state.callId, tabId: state.callSourceTabId,
-          trigger: trigger, tabAudio: true, microphone: !!previewResponse.micEnabled, reused: !!previewResponse.reused,
+          trigger: trigger, tabAudio: true, microphone: false, captureScope: "tab-only", reused: !!previewResponse.reused,
           durable: false, intervalMs: 1800 }, "info", "caption");
         return previewResponse;
       }
@@ -477,12 +475,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         type: "SIGNAL_SET_CAPTION_PREVIEW",
         enabled: true,
         tabEnabled: effectiveTabEnabled,
-        micEnabled: allowInterpreterPreview !== false &&
-          config.liveCaptionInterpreterEnabled !== false &&
-          state.microphoneMuted !== true &&
-          state.microphoneMuteStatus === "applied" &&
-          state.microphoneOutputStatus !== "error" &&
-          state.microphoneOutputMuted !== true,
+        micEnabled: false,
         reason: trigger
       });
       if (response && response.ok) {
@@ -490,10 +483,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
           callId: state.callId || null,
           sourceMode: config.liveCaptionBilingualTabEnabled !== false ? "bilingual-groq-parallel" : (effectiveTabEnabled ? "native-stale-groq-fallback" : "native-caption-fresh"),
           tabPreviewEnabled: effectiveTabEnabled,
-          micPreviewEnabled: allowInterpreterPreview !== false &&
-            config.liveCaptionInterpreterEnabled !== false &&
-            state.microphoneMuted !== true && state.microphoneMuteStatus === "applied" &&
-            state.microphoneOutputStatus !== "error" && state.microphoneOutputMuted !== true,
+          micPreviewEnabled: false, captureScope: "tab-only",
           trigger: trigger
         }, "info", "caption");
       } else {
@@ -983,7 +973,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var expectedSessionId = String(state.hotLoadLease.transcriptionSessionId || "");
       if (offscreenCapture && offscreenCapture.ok === true && offscreenCapture.running === true &&
           String(offscreenCapture.sessionId || "") === expectedSessionId &&
-          offscreenCapture.tabAudio === true && offscreenCapture.microphone === true) {
+          offscreenCapture.tabAudio === true && offscreenCapture.microphone === false) {
         record("HOTLOAD_CAPTURE_REUSE_EXISTING", {
           callId: state.callId, tabId: callTabId, sessionId: expectedSessionId,
           status: "offscreen-session-verified"
@@ -2654,7 +2644,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         }
       } catch (_) {}
       state.microphoneMuteStatus="pending";
-      await updateGroqCaptureState({status:"connected",tabAudio:true,microphone:true,microphoneMuted:!!state.microphoneMuted,startedAt:iso(),lastChunkAt:null,error:null});
+      await updateGroqCaptureState({status:"connected",tabAudio:true,microphone:false,captureScope:"tab-only",microphoneMuted:!!state.microphoneMuted,startedAt:iso(),lastChunkAt:null,error:null});
       if(hasActiveCall(state)){
         var callMuteResult=await setMainClientMicrophoneMuted(state.callSourceTabId,!!state.microphoneMuted,"capture-start");
         if(callMuteResult&&callMuteResult.verified===true&&!!callMuteResult.muted===!!state.microphoneMuted){
@@ -2685,7 +2675,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       if(hasActiveCall(state) && cachedConfig.liveCaptionOverlayEnabled !== false) {
         setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "microphone-state-applied").catch(function () {});
       }
-      recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_STARTED",{sessionId:session.id,sourceTabId:session.sourceTabId,model:config.groqModel||GROQ_MODEL});broadcastSignalEvent({type:"signal.groq.status",sessionId:session.id,status:"connected",tabAudio:true,microphone:true,timestamp:iso()});
+      recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_STARTED",{sessionId:session.id,sourceTabId:session.sourceTabId,captureScope:"tab-only",microphone:false,model:config.groqModel||GROQ_MODEL});broadcastSignalEvent({type:"signal.groq.status",sessionId:session.id,status:"connected",tabAudio:true,microphone:false,captureScope:"tab-only",timestamp:iso()});
       if(sendResponse)sendResponse({ok:true,session:signalSessionCopy(session,true)});return{ok:true};
     }catch(error){await updateGroqCaptureState({status:"error",error:String(error)}).catch(function(){});recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_ERROR",{sessionId:sessionId,error:String(error)},"error");if(sendResponse)sendResponse({ok:false,error:String(error)});return{ok:false,error:String(error)}}
   }
@@ -2898,6 +2888,9 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
 
   async function processGroqCaptionPreviewChunk(message) {
     if (!message || !message.base64) return;
+    if (message.source !== "cliente") {
+      recordCaptionPreviewFailure("yo", "audio-source-outside-tab-only-scope"); return;
+    }
     var source = message.source === "yo" ? "yo" : "cliente";
     var youtubePreview = message.youtubePreview === true;
     var callPreview = message.callPreview === true;
@@ -3052,6 +3045,9 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     });
   }
   function handleGroqAudioChunk(message){
+    if (!message || message.source !== "cliente") {
+      recordSignalDiagnostic("SIGNAL_AUDIO_SOURCE_REJECTED",{reasonCode:"audio-source-outside-tab-only-scope",captureScope:"tab-only"},"warn"); return;
+    }
     signalGroqQueue=signalGroqQueue.then(async function(){
       var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId,session=data.sessions.find(function(s){return s.id===id});if(!session)return;
       if(message.source==="yo"){

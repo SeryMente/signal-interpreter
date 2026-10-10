@@ -56,7 +56,7 @@ const chrome = {
 };
 const navigator = { mediaDevices: { async getUserMedia(constraints) {
   streamIndex += 1;
-  const stream = makeStream(streamIndex === 1 ? "tab-audio" : "microphone");
+  const stream = makeStream("tab-audio");
   streams.push({ constraints, stream });
   return stream;
 } } };
@@ -86,11 +86,11 @@ const started = await send({
   sessionId: "session-a", muted: false, captionPreview: true, tabId: 7
 });
 assert.equal(started.ok, true, JSON.stringify(started));
-assert.equal(recorders.length, 3, "dos grabadores durables y un preview de pestaña");
+assert.equal(recorders.length, 2, "un grabador durable y un preview, ambos de pestaña");
+assert.equal(streams.length,1,"no microphone access");
 assert.equal(recorders[0].stream.id, "tab-audio");
-assert.equal(recorders[1].stream.id, "microphone");
-assert.equal(recorders[2].stream.id, "tab-audio", "el preview debe usar el audio de la pestaña");
-assert.deepEqual(recorders[2].startIntervals, [1800]);
+assert.equal(recorders[1].stream.id, "tab-audio", "el preview debe usar el audio de la pestaña");
+assert.deepEqual(recorders[1].startIntervals, [1800]);
 
 const nativeFresh = await send({
   target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: true, tabEnabled: false, micEnabled: false
@@ -98,7 +98,7 @@ const nativeFresh = await send({
 assert.equal(nativeFresh.ok, true);
 assert.equal(nativeFresh.tabEnabled, false);
 assert.equal(nativeFresh.micEnabled, false);
-assert.equal(recorders[2].state, "inactive", "el preview tab se detiene al volver texto nativo reciente");
+assert.equal(recorders[1].state, "inactive", "el preview tab se detiene al volver texto nativo reciente");
 
 const fallback = await send({
   target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: true, tabEnabled: true, micEnabled: false
@@ -106,10 +106,10 @@ const fallback = await send({
 assert.equal(fallback.ok, true);
 assert.equal(fallback.tabEnabled, true);
 assert.equal(fallback.micEnabled, false, "el fallback no debe crear una segunda transcripción del micrófono");
-assert.equal(recorders.length, 4);
-assert.equal(recorders[3].stream.id, "tab-audio");
-assert.deepEqual(recorders[3].startIntervals, [1800]);
-recorders[3].emitData();
+assert.equal(recorders.length, 3);
+assert.equal(recorders[2].stream.id, "tab-audio");
+assert.deepEqual(recorders[2].startIntervals, [1800]);
+recorders[2].emitData();
 await new Promise((resolve) => setImmediate(resolve));
 assert.ok(messages.some((m) => m.type === "SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK" && m.sessionId === "session-a"));
 assert.equal(messages.some((m) => m.type === "SIGNAL_GROQ_AUDIO_CHUNK" && m.source === "cliente"), false,
@@ -119,24 +119,19 @@ const interpreterPreview = await send({
   target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: true, tabEnabled: true, micEnabled: true
 });
 assert.equal(interpreterPreview.ok, true);
-assert.equal(interpreterPreview.micEnabled, true);
-assert.equal(recorders.length, 5, "la voz del LEP usa un preview del micrófono separado del cliente");
-assert.equal(recorders[4].stream.id, "microphone");
-assert.deepEqual(recorders[4].startIntervals, [1800], "la voz del LEP usa ventanas de 1.8 s");
-recorders[4].emitData();
-await new Promise((resolve) => setImmediate(resolve));
-assert.equal(messages.some((m) => m.type === "SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK" && m.source === "yo"), true,
-  "el preview del micrófono emite la fuente del LEP sin persistirla");
+assert.equal(interpreterPreview.micEnabled, false);
+assert.equal(recorders.length, 3, "stale mic preference cannot create a recorder");
+assert.equal(streams.length,1);
+assert.equal(messages.some(m=>m.source==="yo"),false);
 
 const disabled = await send({ target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: false });
 assert.equal(disabled.ok, true);
 assert.equal(disabled.tabEnabled, false);
-assert.equal(recorders[3].state, "inactive");
-assert.equal(recorders[4].state, "inactive");
+assert.equal(recorders[2].state, "inactive");
 
 const stopped = await send({ target: "offscreen", type: "SIGNAL_STOP_GROQ_CAPTURE" });
 assert.equal(stopped.ok, true);
-assert.equal(streams.every((item) => item.stream.track.stopped), true, "al cerrar se liberan ambas pistas");
+assert.equal(streams.every((item) => item.stream.track.stopped), true, "al cerrar se libera la pista de pestaña");
 const rejected = await send({
   target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: true, tabEnabled: true, micEnabled: false
 });
@@ -150,11 +145,11 @@ const youtubeStarted = await send({
 });
 assert.equal(youtubeStarted.ok, true, JSON.stringify(youtubeStarted));
 assert.equal(youtubeStarted.intervalMs, 1800, "el preview aislado usa fragmentos cortos para reducir latencia");
-assert.equal(recorders.length, 6, "la prueba de YouTube utiliza su grabador aislado adicional");
-assert.equal(streams[2].constraints.audio.mandatory.chromeMediaSourceId, "youtube-stream-token");
-assert.equal(recorders[5].stream.id, "microphone", "el grabador aislado usa la nueva pista de pestaña simulada");
-assert.deepEqual(recorders[5].startIntervals, [1800]);
-recorders[5].emitData();
+assert.equal(recorders.length, 4, "la prueba de YouTube utiliza su grabador aislado adicional");
+assert.equal(streams[1].constraints.audio.mandatory.chromeMediaSourceId, "youtube-stream-token");
+assert.equal(recorders[3].stream.id, "tab-audio", "el grabador aislado usa la nueva pista de pestaña simulada");
+assert.deepEqual(recorders[3].startIntervals, [1800]);
+recorders[3].emitData();
 await new Promise((resolve) => setImmediate(resolve));
 const youtubeChunk = messages.slice(beforeYoutubeCapture).find((m) =>
   m.type === "SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK" && m.youtubePreview === true
@@ -172,7 +167,7 @@ const youtubeStopped = await send({
 });
 assert.equal(youtubeStopped.ok, true);
 assert.equal(youtubeStopped.active, false);
-assert.equal(streams[2].stream.track.stopped, true, "detener el video libera su pista de audio");
+assert.equal(streams[1].stream.track.stopped, true, "detener el video libera su pista de audio");
 assert.equal(messages.some((m) => m.type === "SIGNAL_YOUTUBE_CAPTION_PREVIEW_OFFSCREEN_STOPPED"), true);
 
 console.log("LIVE_CAPTION_OFFSCREEN_TEST=PASS");

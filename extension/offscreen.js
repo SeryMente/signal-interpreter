@@ -169,40 +169,11 @@ function armCallPreview(current, source, stream) {
     if (callPreview === current && current.sources[source] === part && recorder.state !== "inactive") recorder.stop();
   }, 1800);
 }
-async function updateCallPreviewMicrophone(current, enabled) {
-  if (!enabled) { stopCallPreviewSource(current, "yo"); return; }
-  if (current.sources.yo || current.micStarting) return;
-  current.micStarting = true;
-  var stream;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
-    var state = stored.effectifState || {}, config = stored.effectifConfig || {};
-    if (callPreview !== current || !current.micRequested || state.callId !== current.callId ||
-        Number(state.callSourceTabId) !== current.tabId || state.microphoneMuted === true ||
-        state.microphoneMuteStatus !== "applied" || state.microphoneOutputStatus === "error" ||
-        state.microphoneOutputMuted === true || config.liveCaptionInterpreterEnabled === false) {
-      stopStream(stream); return;
-    }
-    current.sources.yo = { stream: stream, recorder: null, timer: null };
-    watchCallPreviewStream(current, "yo", stream);
-    armCallPreview(current, "yo", stream);
-    send({ type: "SIGNAL_CALL_CAPTION_PREVIEW_SOURCE_STARTED", callId: current.callId,
-      tabId: current.tabId, source: "yo", reasonCode: "verified-microphone-preview" });
-  } catch (_) {
-    stopStream(stream);
-    send({ type: "SIGNAL_CALL_CAPTION_PREVIEW_ERROR", callId: current.callId,
-      tabId: current.tabId, source: "yo", reasonCode: "microphone-permission-or-device-unavailable" });
-  } finally {
-    current.micStarting = false;
-  }
-}
 async function startCallCaptionPreview(message) {
   if (running || youtubePreviewRecorder) return { ok: false, reasonCode: "other-capture-active" };
   var current = callPreview;
   if (current && current.callId === message.callId && current.tabId === Number(message.tabId)) {
-    current.micRequested = message.micEnabled === true;
-    updateCallPreviewMicrophone(current, current.micRequested).catch(function () {});
+    current.micRequested = false; // Microphone transcription is outside the current operator-authorized scope.
     return { ok: true, active: true, micEnabled: !!current.sources.yo, micPending: !!current.micStarting, reused: true };
   }
   await stopCallCaptionPreview();
@@ -219,7 +190,7 @@ async function startCallCaptionPreview(message) {
     if (generation !== callPreviewGeneration || running) { stopStream(stream); await context.close(); return { ok: false, reasonCode: "call-context-changed" }; }
     current = { callId: String(message.callId), sessionId: "caption:" + message.callId,
       tabId: Number(message.tabId), context: context, sequence: 0,
-      micRequested: message.micEnabled === true,
+      micRequested: false,
       sources: { cliente: { stream: stream, recorder: null, timer: null } } };
     callPreview = current;
     watchCallPreviewStream(current, "cliente", stream);
@@ -241,7 +212,6 @@ async function startCallCaptionPreview(message) {
       } catch (_) { current.micRequested = false; stopCallPreviewSource(current, "yo"); }
     }, 250);
     armCallPreview(current, "cliente", stream);
-    updateCallPreviewMicrophone(current, current.micRequested).catch(function () {});
     return { ok: true, active: callPreview === current, micEnabled: !!current.sources.yo, micPending: !!current.micStarting, intervalMs: 1800 };
   } catch (_) {
     if (callPreview === current && current) await stopCallCaptionPreview();
@@ -250,7 +220,7 @@ async function startCallCaptionPreview(message) {
   }
 }
 
-function arm(source,stream){
+function arm(source,stream){if(source!=="cliente")return null;
   if(!stream)return null;
   var startedAt=Date.now(),seq=++chunkSeq,chunks=[],r,currentSessionId=captureSessionId;
   try{r=new MediaRecorder(stream,{mimeType:"audio/webm;codecs=opus"});}catch(_){try{r=new MediaRecorder(stream)}catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:source,error:String(error)});return null}}
@@ -271,6 +241,7 @@ function stopCaptionPreview(){
   previewSeq=0;previewSessionId=null;previewTabId=null;
 }
 function startCaptionPreviewRecorder(source,stream,sessionId,tabId){
+  if(source!=="cliente")return null;
   if(!stream||!sessionId)return null;
   var recorder=null,session=String(sessionId),targetTabId=Number(tabId||0),startedAt=Date.now();
   try{
@@ -326,7 +297,7 @@ function startCaptionPreview(mode){
     stopCaptionPreview();
     previewSessionId=captureSessionId;previewTabId=targetTab;
   }
-  var nextTab=!!mode.tab,nextMic=mode.mic!==false;
+  var nextTab=!!mode.tab,nextMic=false; // Ignore stale persisted/requested microphone preferences.
   captionPreviewTabEnabled=nextTab;captionPreviewMicEnabled=nextMic;
   if(nextTab){
     if(!previewTabRecorder||previewTabRecorder.state==="inactive"){
@@ -344,7 +315,7 @@ function startTimer(source,rec){var timer=setTimeout(function(){try{if(rec&&rec.
 async function applyMicMute(muted){
   var desired=!!muted;
   var tracks=micStream&&typeof micStream.getAudioTracks==="function"?micStream.getAudioTracks():[];
-  if(!tracks.length)return{ok:!running,muted:desired,verified:!running,trackCount:0,inactive:!running,error:running?"La pista del micrófono no está disponible.":null};
+  if(!tracks.length)return{ok:true,muted:desired,verified:true,trackCount:0,inactive:true,captureScope:"tab-only"};
   micMuteDesired=desired;
   tracks.forEach(function(track){track.enabled=!desired;});
   var verified=tracks.every(function(track){return track.enabled===!desired;});
@@ -358,20 +329,11 @@ async function startCapture(streamId,sessionId,muted,captionPreview,tabId){
   try{
     tabStream=await navigator.mediaDevices.getUserMedia({audio:{mandatory:{chromeMediaSource:"tab",chromeMediaSourceId:streamId}}});
     audioContext=new AudioContext();var input=audioContext.createMediaStreamSource(tabStream);input.connect(audioContext.destination);await audioContext.resume();
-    micStream=await navigator.mediaDevices.getUserMedia({audio:true});running=true;chunkSeq=0;
-    var initialMute=!!muted;
-    var micApplied=await applyMicMute(initialMute);
-    if(!micApplied.ok)throw new Error("No se pudo verificar el estado inicial del micrófono de la extensión.");
-    tabRecorder=arm("cliente",tabStream);micRecorder=arm("yo",micStream);if(!tabRecorder||!micRecorder)throw new Error("No se pudieron iniciar los dos grabadores.");
+    running=true;chunkSeq=0;micMuteDesired=!!muted;
+    tabRecorder=arm("cliente",tabStream);if(!tabRecorder)throw new Error("No se pudo iniciar el grabador de pestaña.");
     if(captionPreview===true){startCaptionPreview({tab:true,mic:false});}
-    startTimer("cliente",tabRecorder);startTimer("yo",micRecorder);
-    if(micMuteWatchdog)clearInterval(micMuteWatchdog);
-    micMuteWatchdog=setInterval(function(){
-      if(!running||!micStream)return;
-      var watchdogTracks=micStream.getAudioTracks?micStream.getAudioTracks():[];
-      watchdogTracks.forEach(function(track){try{track.enabled=!micMuteDesired}catch(_){}});
-    },50);
-    send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"connected",tabAudio:true,microphone:true,microphoneMuted:initialMute,timestamp:new Date().toISOString()});return{ok:true};
+    startTimer("cliente",tabRecorder);
+    send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"connected",tabAudio:true,microphone:false,captureScope:"tab-only",microphoneMuted:!!muted,timestamp:new Date().toISOString()});return{ok:true,captureScope:"tab-only"};
   }catch(error){await stopCapture();return{ok:false,error:String(error)}}
 }
 async function stopCapture(){running=false;stopCaptionPreview();try{if(tabTimer)clearTimeout(tabTimer);if(micTimer)clearTimeout(micTimer);if(micMuteWatchdog)clearInterval(micMuteWatchdog)}catch(_){}tabTimer=null;micTimer=null;micMuteWatchdog=null;try{if(tabRecorder&&tabRecorder.state!=="inactive")tabRecorder.stop()}catch(_){}try{if(micRecorder&&micRecorder.state!=="inactive")micRecorder.stop()}catch(_){}tabRecorder=null;micRecorder=null;stopStream(tabStream);stopStream(micStream);tabStream=null;micStream=null;captureSessionId=null;if(audioContext){try{await audioContext.close()}catch(_){}audioContext=null}send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"stopped",timestamp:new Date().toISOString()});return{ok:true}}
@@ -422,7 +384,7 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
         sendResponse({ok:false,enabled:true,started:false,tabEnabled:false,micEnabled:false,error:"audio-capture-not-running"});
         return true;
       }
-      var previewTabRequested=message.tabEnabled===true,previewMicRequested=message.micEnabled!==false;
+      var previewTabRequested=message.tabEnabled===true,previewMicRequested=false;
       var previewResult=startCaptionPreview({tab:previewTabRequested,mic:previewMicRequested});
       var noPreviewSourceRequested=!previewTabRequested&&!previewMicRequested;
       sendResponse({ok:!!previewResult||noPreviewSourceRequested,enabled:true,started:!!previewResult,tabEnabled:captionPreviewTabEnabled,micEnabled:captionPreviewMicEnabled,error:previewResult||noPreviewSourceRequested?null:"preview-recorder-unavailable"});

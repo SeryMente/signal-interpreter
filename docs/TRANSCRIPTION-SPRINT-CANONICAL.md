@@ -1,12 +1,14 @@
 # DOCUMENTO CANÓNICO ÚNICO — Sprint de transcripción y overlay de subtítulos
 
-> **Autoridad documental:** este es el único informe canónico del esfuerzo/sprint de transcripción, Live Caption y overlay de subtítulos de Signal Interpreter. Las notas antiguas de implementación, los requisitos verbatim y las notas de versión son fuentes históricas o técnicas subordinadas; no son informes alternativos del esfuerzo.  
-> **Ruta canónica:** `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`  
-> **Repositorio:** https://github.com/SeryMente/signal-interpreter  
-> **Última versión documentada:** **0.10.31 — Preview independiente, recuperación y exportación automática diagnosticable**
+> **Autoridad documental:** este es el único informe canónico del esfuerzo/sprint de transcripción, Live Caption y overlay de subtítulos de Signal Interpreter. Las notas antiguas de implementación, los requisitos verbatim y las notas de versión son fuentes históricas o técnicas subordinadas; no son informes alternativos del esfuerzo.
+> **Ruta canónica:** `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`
+> **Repositorio:** https://github.com/SeryMente/signal-interpreter
+> **Última versión documentada:** **0.10.32 — Audio entrante de pestaña exclusivamente, sin captura de micrófono**
 > **Integración previa al ciclo correctivo:** [PR #52](https://github.com/SeryMente/signal-interpreter/pull/52)
 > **Solicitud de integración del ciclo correctivo:** [PR #53](https://github.com/SeryMente/signal-interpreter/pull/53)
-> **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.31 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
+> **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.32 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
+
+> **ALCANCE VIGENTE Y PREVALENTE (aclaración del operador):** calidad de vida para interpretación telefónica, sobre el audio que sale de la pestaña de Cloud Interpreter. **No se captura ni se transcribe el micrófono del operador en este ciclo**, aunque existan preferencias antiguas activadas. Los controles de mute de la llamada permanecen independientes. Las referencias anteriores a captura de micrófono son historia, no autorización vigente. Véase §13.
 
 ## 1. Regla inequívoca de documentación
 
@@ -29,7 +31,7 @@ Proporcionar durante una llamada en Cloud Interpreter un overlay integrado, visu
 
 ### 3.1. Instrucción funcional original — registrada en PR #31
 
-> Actualmente, Chrome, mediante servicio de accesibildad, hace un trabajo decente a la hora de transcribir la saluda de audio, y mostramrelka. Para dos idiomas en español, e ingles. 
+> Actualmente, Chrome, mediante servicio de accesibildad, hace un trabajo decente a la hora de transcribir la saluda de audio, y mostramrelka. Para dos idiomas en español, e ingles.
 >
 > La pregunta que te quiero hac eres la siguiente: Puedo hacer que teniendo el switch de subtitulso automaticos en posicionde encendido, pero habiendo cerrado los subitutlos tras su aparicion (Sale una ventanita con los subtitulso automaticos, pero si la cierro se queda el switch de Subtitulso Automaticos encendido, y ya no muestra la ventana) tu utilizes la extension para mostrarme en la misma pantalla donde tomo la llamada en la plataforma de cloud interpreter, un recuaddro, que armonize con la plataforma visualmente, sin obstruir por ejemplo el keypad para conferncia, etc. ni ninguna otra funcion, dobnde aparezcan los subtitlos, poniendome, por turnos, lo ue salga en ingles, yu luego lo que salga en español, de otro color, uno para el cliente, y otro para el LEP (Limited English Profficient) lo cual es terminologiad ela indsutria del interpetacion para los ahblantes de español que sirvo en als llamadas
 
@@ -259,6 +261,40 @@ La versión 0.10.31 y la preparación de su instalación conservan el criterio d
 | Resolver extremo a extremo sin simulación | Código, pruebas, documentación única, integración con compuertas, preparador e instalador con respaldo/reversión | Última aceptación requiere Windows + Chrome + Cloud Interpreter reales |
 
 Sin cambios de diseño del panel, sin permisos nuevos del manifiesto y sin servicios residentes adicionales. Los pendientes de llamada real no se reclasifican como resueltos por superar pruebas automáticas.
+
+## 13. Alcance vigente — calidad de vida para interpretación telefónica
+
+### 13.1. Aclaraciones del operador VERBATIM
+
+> Otra cosa, perdon por interrumpir, pero todo lo que la exrtension registra es la salida de audio del navegador, en ese url de llamada, no registra mi entrada de microfono aun, no hemos llegado a esa parte. Seguimos en el mismo canal/pagina tu y yo al respecto?
+
+> Si, es decir, necesito que comprendas el p`roposito. Yo soy interprete OPI, y ya utilizo subittulos automaticos de chrome para registrar la saluda de audio, lo que estoy implementando es calidad de vida. No quiero regresiones respecto a lo implementado, pero si puedes comprender el objetivo, podras resolver la solucion. Nos entendemos?
+
+### 13.2. Propósito y corrección de alcance
+
+El operador es intérprete telefónico (OPI) y ya usa los subtítulos automáticos de Chrome para leer el audio entrante. La extensión debe mejorar esa experiencia: integración discreta, continuidad al cargar la llamada y con el switch encendido aunque se cierre la burbuja nativa, historial, separación visual inglés/español y observabilidad que permita iterar sin adivinar. No se reemplaza un flujo nativo operativo por la promesa de un mock ni se amplía a capturar la voz del operador.
+
+La interpretación anterior de micrófono como fuente del LEP fue incorrecta para este ciclo. 0.10.32 corrige tanto el preview efímero como la captura durable: solo solicitan la pista `chromeMediaSource: tab`. Ignoran solicitudes/preferencias antiguas de micrófono, rechazan chunks de fuentes ajenas a la pestaña antes de acceder al transcriptor y no muestran el control de micrófono como disponible. El micrófono de la plataforma y sus atajos/tonos/guardas de mute se conservan; la extensión no adquiere una pista nueva de micrófono para transcripción.
+
+Los carriles CLIENTE · ENGLISH y LEP · ESPAÑOL se conservan para el audio entrante según el idioma observado, como solicitó el requisito original. Son una convención visual por idioma; no prueban identidad de hablante. Una mezcla de pestaña no permite afirmar que cada persona esté aislada ni que la fuente española sea el micrófono del operador.
+
+### 13.3. Preservación sin regresiones
+
+- Se mantienen montaje/recuperación del overlay, historial desplazable, posición/tamaño, alcance de pestaña, acciones de copia/búsqueda y aislamiento de llamadas.
+- Se conserva el puente nativo como fuente preferente cuando Chrome expone texto accesible; switch encendido no demuestra por sí solo que Windows exponga texto con la burbuja cerrada. No se manipula el switch ni se fuerza la apertura del recuadro.
+- Se conserva el respaldo efímero independiente por llamada, sus fragmentos WebM completos de 1.8 s y la recuperación de pistas terminadas. Chrome puede exigir invocación explícita para `tabCapture`; abrir el popup existente reintenta la adquisición, sin eludir permisos del navegador.
+- Se conserva la exportación automática al cierre, independiente de reconciliación lenta de ingresos, con objetivo de secuencia persistente y reintento si GitHub no confirma entrega. La observabilidad distingue checkpoint entregado, envío automático/manual y errores específicos; no contiene audio ni texto hablado.
+- `captionDiagnosis.captureScope` solo dice `tab-only` cuando lo observa en eventos correlacionados; en paquetes históricos sin evidencia queda `not-observed`, no se inventa alcance retrospectivo.
+
+### 13.4. Evidencia y compuerta final
+
+Pruebas causales: preferencias de micrófono activadas, solicitud `micEnabled:true`, mute ON/OFF, preview independiente y captura durable producen únicamente pista de pestaña; los chunks de micrófono son rechazados antes de procesamiento. Los tests preservan controles de mute de la plataforma y carriles bilingües.
+
+Chromium real, sobre audio sintético local: tres fragmentos actuales independientes decodificados con ffprobe/FFmpeg como Opus; el arnés aborta si se solicita una fuente no tab. Esto prueba estructura de audio y exclusión de micrófono, **no** reconocimiento de una llamada real ni lectura de subtítulos Windows.
+
+El parser de PowerShell verifica scripts de preparación/registro/aplicación y la identidad original de la extensión. La batería local completa de 24 suites y auditorías aprobó en este ciclo; también aprobaron la decodificación de los tres WebM y el parser/identidad PowerShell. Las compuertas Linux/Windows del commit publicado deben aprobarse antes de integrar. No se altera `main` con una compuerta fallida.
+
+**Aceptación operativa aún NO VERIFICADA:** primera llamada real en Windows/Chrome/Cloud Interpreter después de instalar 0.10.32, burbuja abierta/cerrada con switch ON, subtítulos de ambos idiomas, ausencia de obstrucción/duplicados, continuidad tras cambio de llamada y publicación automática del informe con estados actuales. No se declara esta prueba ejecutada por fixtures, YouTube ni compilación remota.
 
 ## Anexo A — documento de implementación preexistente conservado
 
