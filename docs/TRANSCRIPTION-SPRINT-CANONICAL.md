@@ -3,9 +3,9 @@
 > **Autoridad documental:** este es el único informe canónico del esfuerzo/sprint de transcripción, Live Caption y overlay de subtítulos de Signal Interpreter. Las notas antiguas de implementación, los requisitos verbatim y las notas de versión son fuentes históricas o técnicas subordinadas; no son informes alternativos del esfuerzo.  
 > **Ruta canónica:** `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`  
 > **Repositorio:** https://github.com/SeryMente/signal-interpreter  
-> **Última versión documentada:** **0.10.29 — Auto-recuperación del overlay y observabilidad de activación**  
-> **Última integración clave:** [PR #52](https://github.com/SeryMente/signal-interpreter/pull/52)  
-> **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.29 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
+> **Última versión documentada:** **0.10.30 — Preview independiente de llamada y exportación automática diagnosticable**
+> **Integración previa al ciclo correctivo:** [PR #52](https://github.com/SeryMente/signal-interpreter/pull/52)
+> **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.30 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
 
 ## 1. Regla inequívoca de documentación
 
@@ -160,6 +160,96 @@ Pruebas automatizadas registradas en los artefactos de versión y PRs:
 - [PR #52 — auto-recuperación y telemetría 0.10.29](https://github.com/SeryMente/signal-interpreter/pull/52)
 - [Requisito original VERBATIM](USER-REQUIREMENT-LIVE-CAPTIONS-OVERLAY-VERBATIM-20261008.md)
 - [Notas 0.10.25](versions/0.10.25.md), [0.10.26](versions/0.10.26.md), [0.10.27](versions/0.10.27.md), [0.10.28](versions/0.10.28.md), [0.10.29](versions/0.10.29.md)
+
+## 11. Ciclo correctivo 0.10.30 — activación independiente y cierre diagnosticable
+
+### 11.1. Retroalimentación del operador — VERBATIM
+
+> En estos momentos, la versión actual me entrega una extensión que cuando carga la llamada no funciona, es decir, no está transmitiendo del live caption, que por cierto, mientras el switch de subtítulos automáticos está encendido, se suponía que debería de poder reportar a la extensión sin importar que el recuadro nativo de los subtítulos esté abierto o no. Puedo cerrar el recuadro, pero mientras que el switch esté encendido, eso debería dar acceso para que funcione la extensión. En estos momentos, cuando carga la llamada, no está funcionando. Y de hecho, también se había fortalecido la observabilidad para que aportara datos útiles para este desarrollo. En este momento estoy publicando la observabilidad de la extensión, puesto que tomé algunas llamadas y el paquete de observabilidad debería aportarte los datos necesarios para que diagnosticaras el bug y además de otros datos útiles. Si no es así, como parte del esfuerzo de este ciclo, haz que la observabilidad sea útil, repito, haz que la observabilidad sea útil y asegúrate que cuando se termine una llamada se exporte automáticamente. Ahorita lo exporté manual, pero también quiero que revises si se estuvo exportando automáticamente cuando finalizaban las llamadas, porque así es como debe de ser. Se finaliza una llamada, se exporta la observabilidad, yo regreso contigo, te retroalimento y junto con el paquete de observabilidad, tú decides cuál es el mejor camino para seguir desarrollando. Entonces, esa es la retroalimentación. Resuelve de extremo a extremo para darme lo que se supone que debe de darme este desarrollo. Dime, el documento canónico te deja claro todo o qué necesitas por mi parte para resolver de extremo a extremo sin detenerte hasta terminar.
+
+> una pregunta, ¿tienes una herramienta de computadora virtual para que te instales la extensión y utilizando algún, es decir, si había utilizado el video de YouTube para poder probarla, pero al parecer las pruebas en el video de YouTube dan positivo y no sirve la extensión en la plataforma Cloud Interpreter. Entonces, la idea es que, ¿ideas alguna forma de experimentar en una herramienta de computadora virtual para que ya me la entregues lista y probada? ¿Crees que puedas hacer eso?
+
+> ah bueno, entonces continúa, pero trata de dejarla lo menos propensa a que falle cuando yo la utilice. No te detengas hasta terminar, resuelve de extremo a extremo.
+
+Estos textos fueron recuperados de esta conversación. No se atribuye literalidad a instrucciones no recuperadas.
+
+### 11.2. Evidencia primaria inspeccionada
+
+- Base del análisis: `main@ad9abc2b9eaec13648a263021f46e0bffd63af26`.
+- El informe de la llamada con referencia opaca `914fd064feac1a1e2c17b942` identifica runtime 0.10.29. Se observa panel montado y visible, con cero filas en sus muestras de salud; montaje no equivale a reconocimiento.
+- Los lotes históricos contienen `SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR` con el tipo genérico `NativeMessagingError`, sin causa específica ni correlación propia de llamada. Esta evidencia NO permite distinguir retroactivamente host ausente, acceso denegado o salida del proceso.
+- El respaldo anterior consultaba `SIGNAL_GET_GROQ_CAPTURE_STATE` y salía si la captura durable no estaba iniciada. La apertura del panel y del puente no iniciaba esa captura; por ello el respaldo no era independiente de la consola.
+- Hay entrega automática verificable: `batch-1fe6034b-3876-4aee-be2a-295ee98b28f8`, trigger `call-ended`, creado `2026-10-10T20:46:38.372Z`, contiene el checkpoint de cierre de la llamada referida. El lote manual posterior no fue el único mecanismo de publicación.
+- El evento de fin está fechado `2026-10-10T20:39:38.065Z`; el checkpoint aparece en `2026-10-10T20:46:37.524Z`. El código esperaba a la reconciliación de ingresos antes de solicitar el checkpoint. Este acoplamiento se elimina.
+- El saneamiento anterior convierte `startedAt` y `endedAt` en `[PHONE]T…`. El generador seleccionaba ese valor no válido antes de intentar el timestamp válido del evento. Esto explicaba un informe `partial` con checkpoint recibido y sin una explicación suficiente de fechas faltantes.
+
+### 11.3. Corrección y mínima expresión arquitectónica
+
+No se agregan permisos al manifiesto, servicios Windows, tareas programadas, infraestructura externa ni diseños nuevos de panel. Se reutilizan el puente nativo, el documento offscreen, la captura de pestaña y Groq ya autorizados.
+
+- El preview de llamada puede iniciar sin consola LIVE ni sesión durable. Usa una sesión efímera `caption:<callId>`, valida llamada/pestaña antes y después de la transcripción y jamás llama a la ruta de segmentos oficiales.
+- La adquisición se serializa: callbacks nativos concurrentes no solicitan capturas duplicadas. Se reutiliza la captura offscreen verificada; las capturas durables y de prueba no deben competir con el preview independiente.
+- Cada fragmento del preview independiente se graba con un MediaRecorder nuevo, se cierra y se envía como WebM completo. No se envían fragmentos posteriores de un único archivo como si fueran archivos autónomos.
+- La voz del micrófono solo se incorpora cuando el mute y el estado de salida están verificados. El documento offscreen revalida el permiso lógico después de resolver getUserMedia; detiene esa fuente al entrar en mute pendiente, si falla la verificación o si cambia la llamada. Si falta permiso de micrófono, se conserva el preview de pestaña y se registra el motivo.
+- Un guardarraíl offscreen libera fuentes al cerrar/cambiar llamada o desactivar la preferencia. Los callbacks y resultados tardíos no pueden reactivar una llamada terminada.
+- El puente registra códigos seguros de causa —host no registrado, acceso denegado, proceso terminado, protocolo inválido o conexión fallida— con contexto de llamada, sin exportar mensajes crudos o rutas personales.
+- La falta de clave, captura, permiso o activación deja eventos explícitos. Chrome puede exigir que el usuario invoque la extensión sobre la pestaña: abrir el popup existente reintenta el preview sin añadir controles ni abrir la consola.
+- El checkpoint final se solicita antes de reconciliar ingresos y el cierre espera el resultado del intento de entrega. Un resultado incompleto se registra como pendiente, no como exportación exitosa; la cola conserva el objetivo y lo reintenta mediante alarma.
+- La lista acotada de campos temporales ISO mantiene fechas válidas; los teléfonos y el contenido hablado siguen saneados. El generador usa el timestamp válido del evento si el campo temporal histórico quedó corrupto y enumera las carencias reales.
+- Los informes incluyen `captionDiagnosis` y `exportEvidence`: filas visibles, frescura nativa, preview iniciado, resultados/con texto, motivos, trigger de publicación y recepción del checkpoint. Una llamada puede tener informe completo y subtítulos fallidos: son estados distintos.
+
+**Ventana nativa cerrada:** el interruptor encendido no es evidencia de texto accesible. La lectura nativa se usa si Chrome la expone; si desaparece o queda obsoleta, el respaldo independiente debe mantener el flujo sujeto a las capacidades/permisos reales del navegador. No se promete una interfaz interna de Chrome no comprobada.
+
+### 11.4. Preparación de instalación
+
+`extension/PREPARE-CAPTIONS.cmd` invoca `extension/native/prepare-caption-runtime.ps1` bajo la cuenta Windows normal de Chrome, sin elevación. Verifica nombre/versión e identidad de la extensión; ejecuta el registro existente que valida el hash del binario y confirma registro y origen permitido.
+
+Se conserva `groq-secret.local.js` si existe. Si falta, se recupera el token cifrado del almacén existente de esa cuenta; si tampoco existe, se solicita mediante un prompt local oculto, nunca en chat. No se incluyen credenciales en el repositorio ni en el paquete. Presencia del secreto local no certifica que el proveedor acepte la credencial.
+
+Preparar y recargar fuera de una llamada. Si Chrome rechaza la captura por falta de invocación, abrir el popup existente en la pestaña de Cloud Interpreter; el motivo debe figurar como `tab-capture-user-activation-required`.
+
+### 11.5. Pruebas y compuertas
+
+- Regresión del controlador y offscreen: preview sin sesión durable, serialización/reutilización, clave faltante, activación denegada, mute, permiso tardío, llamada consecutiva, micrófono denegado, limpieza al fin y ausencia de segmentos oficiales.
+- Regresión de exportación: backlog de 450 eventos, caída del transporte, objetivo persistido, reinicio del worker, reanudación automática hasta recibir el checkpoint, preservación de fechas, redacción de teléfono y omisión del texto hablado.
+- Batería heredada de llamadas, ingresos, micrófono, puente, transcriptor, observabilidad y recuperación; sin sustituir contratos funcionales por coincidencias de versión históricas.
+- Chromium real en una página local con audio sintético: tres fragmentos del nuevo preview. Los tres se validaron mediante ffprobe y se decodificaron íntegramente mediante FFmpeg como audio Opus. Esta prueba no usa Groq, subtítulos nativos Windows ni Cloud Interpreter; NO se etiqueta como validación de llamada real.
+- Integración continua ejecuta las nuevas regresiones y las existentes. Los resultados remotos de cada candidato se verifican antes de su integración.
+
+### 11.6. Estado y aceptación pendiente
+
+Corrección de código y validación controlada: disponibles en la candidata 0.10.30. El primer intento de publicación fue bloqueado por `403 Resource not accessible by personal access token`; no hubo mutación remota en ese intento. El operador corrigió los permisos del token y el segundo intento creó efectivamente la rama `fix/0.10.30-call-caption-runtime` desde `main@f728fb421fbf04c8de3315e23bf309e3eb3cb47c`. La integración requiere verificar las pruebas remotas y el estado efectivo de la solicitud de integración; crear la rama no equivale a integrar. Se verificó sintaxis del preparador y aplicador con PowerShell oficial, y el cálculo de identidad de la extensión; eso no acredita su ejecución en Windows. La prueba de funcionamiento en Windows + Chrome + Cloud Interpreter permanece **NO VERIFICADA** hasta una llamada posterior a instalar y preparar esta versión.
+
+Para aceptación: texto bilingüe visible; cerrar/reabrir la burbuja nativa sin silencio permanente; atribución por fuente; mute respetado; ninguna mezcla entre llamadas; no obstrucción; y checkpoint publicado automáticamente sin pulsar exportación manual. El informe debe distinguir panel montado de texto recibido y especificar cualquier razón de bloqueo.
+
+No se declara resuelto el reconocimiento real únicamente por YouTube, fixtures, compilación o ausencia de errores.
+
+
+## 12. Reanudación autorizada — cotejo punto por punto
+
+### Instrucción recuperada VERBATIM
+
+> Era el token, not enia los permisos adecuiados. Intenta de nuevo, resolver conforme la instruccion que te di anteriormente, verbatim, punto por punto. Sin excepcion.
+
+### Endurecimiento adicional previo a publicación
+
+- Una solicitud de permiso de micrófono pendiente no bloquea la captura de pestaña, la cola de control ni la siguiente llamada. Los resultados tardíos liberan sus pistas si la llamada ya terminó.
+- Un track terminado o un error de grabador libera el preview y registra su causa, para que el heartbeat pueda readquirirlo; no se reutiliza como activo un stream terminado.
+- La apertura voluntaria de transcripción durable reserva la captura durante su arranque, evitando que un callback nativo readquiera el preview e interfiera con el token de audio solicitado por el popup.
+
+| Exigencia del operador | Implementación/evidencia | Compuerta de aceptación |
+|---|---|---|
+| Subtítulos al cargar la llamada | Arranque por ruta/call-start; recuperación en heartbeat; preview sin consola | Texto en una llamada real posterior: NO VERIFICADO |
+| Continuidad al cerrar el recuadro nativo con switch encendido | Nativo cuando expone texto; respaldo efímero independiente si no hay texto fresco | Cerrar y reabrir burbuja en Windows: NO VERIFICADO |
+| Observabilidad útil para diagnosticar el bug | Eventos con llamada, fuente y motivo seguro; `captionDiagnosis`; resultados de preview sin texto hablado | Verificar informe de la versión instalada |
+| Exportación automática cuando termina una llamada | Checkpoint antes de ingresos; drenaje hasta secuencia final y objetivo persistido/reintentos | Fixtures de caída/reinicio aprobados; recepción real posterior: NO VERIFICADA |
+| Revisar si ya hubo exportación automática | Lote histórico `call-ended` identificado en §11.2 | Evidencia primaria disponible; no atribuir todo a la exportación manual |
+| Usar informe y retroalimentación para el siguiente ciclo | Informe separa montaje, reconocimiento, transporte y aceptación; conserva causas accionables | No declarar diagnóstico operativo cerrado sin nueva evidencia real |
+| Probar algo que no sea solo YouTube | Regresiones del controlador de llamada/offscreen; Chromium y audio sintético; suites remotas | Pruebas controladas no se rotulan como llamada real |
+| Reducir probabilidad de fallo en uso | Mute verificado, serialización, permisos pendientes, tracks terminados, WebM independientes, resultados tardíos y aislamiento | Pruebas específicas aprobadas antes de integración |
+| Resolver extremo a extremo sin simulación | Código, pruebas, documentación única, integración con compuertas, preparador e instalador con respaldo/reversión | Última aceptación requiere Windows + Chrome + Cloud Interpreter reales |
+
+Sin cambios de diseño del panel, sin permisos nuevos del manifiesto y sin servicios residentes adicionales. Los pendientes de llamada real no se reclasifican como resueltos por superar pruebas automáticas.
 
 ## Anexo A — documento de implementación preexistente conservado
 

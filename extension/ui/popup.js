@@ -298,7 +298,7 @@
   refreshYoutubeCaptionCaptureButton();
 
   var openTranscript=$("openTranscript");
-  if(openTranscript)openTranscript.addEventListener("click",function(){openTranscript.disabled=true;status("Preparando captura de audio…");chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab||tab.id==null)throw new Error("No hay pestaña activa.");return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){return{tab:tab,streamId:streamId}})}).then(function(x){var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:x.tab.id,audioStreamId:x.streamId,sourceUrl:x.tab.url||"",sourceTitle:x.tab.title||""};return chrome.runtime.sendMessage(payload)}).then(function(response){status(response&&response.ok?"Groq: consola abierta y captura iniciada":"No se pudo iniciar: "+String(response&&response.error||"desconocido"),!(response&&response.ok));}).catch(function(error){status("No se pudo iniciar la captura: "+String(error),true);}).finally(function(){openTranscript.disabled=false;});});
+  if(openTranscript)openTranscript.addEventListener("click",function(){openTranscript.disabled=true;status("Preparando captura de audio…");chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab||tab.id==null)throw new Error("No hay pestaña activa.");return chrome.runtime.sendMessage({type:"SIGNAL_CAPTION_PREPARE_DURABLE_CAPTURE"}).then(function(){return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id});}).then(function(streamId){return{tab:tab,streamId:streamId}})}).then(function(x){var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:x.tab.id,audioStreamId:x.streamId,sourceUrl:x.tab.url||"",sourceTitle:x.tab.title||""};return chrome.runtime.sendMessage(payload)}).then(function(response){status(response&&response.ok?"Groq: consola abierta y captura iniciada":"No se pudo iniciar: "+String(response&&response.error||"desconocido"),!(response&&response.ok));}).catch(function(error){status("No se pudo iniciar la captura: "+String(error),true);}).finally(function(){openTranscript.disabled=false;});});
   $("groqModel").addEventListener("change",function(){save({groqModel:this.value});});
   var loginUsernameInput = $("cloudInterpreterUsername");
   if (loginUsernameInput) loginUsernameInput.addEventListener("change", function () {
@@ -560,6 +560,7 @@
   try {
     chrome.runtime.sendMessage({type:"RECONCILE_PLATFORM_TELEMETRY",trigger:"popup-open"}, function(){ loadPopupState(); });
   } catch (_) { loadPopupState(); }
+  chrome.runtime.sendMessage({type:"SIGNAL_CAPTION_RETRY_ACTIVE_CALL"}).catch(function(){});
   setTimeout(loadPopupState, 750);
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local") return;

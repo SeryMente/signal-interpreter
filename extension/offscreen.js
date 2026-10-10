@@ -1,6 +1,7 @@
 (function(){
 "use strict";
 var tabStream=null,micStream=null,tabRecorder=null,micRecorder=null,previewTabRecorder=null,previewMicRecorder=null,tabTimer=null,micTimer=null,audioContext=null,running=false,chunkSeq=0,previewSeq=0,captureSessionId=null,previewSessionId=null,previewTabId=null,captionPreviewTabEnabled=false,captionPreviewMicEnabled=false,micMuteWatchdog=null,micMuteDesired=false,youtubePreviewStream=null,youtubePreviewRecorder=null,youtubePreviewAudioContext=null,youtubePreviewSessionId=null,youtubePreviewTabId=null,youtubePreviewStartedAt=0,youtubePreviewSequence=0;
+var callPreview = null, callPreviewGeneration = 0;
 function send(message){try{var p=chrome.runtime.sendMessage(Object.assign({target:"offscreen"},message));if(p&&p.catch)p.catch(function(){});}catch(_){} }
 async function playTone(volume, cue){
   if(!audioContext || audioContext.state==="closed") audioContext=new AudioContext();
@@ -99,6 +100,153 @@ async function startYoutubeCaptionPreview(streamId,sessionId,tabId){
       youtubePreviewSessionId=null;youtubePreviewTabId=null;youtubePreviewStartedAt=0;youtubePreviewSequence=0;
     }
     return{ok:false,error:String(error&&error.message||error).slice(0,240)};
+  }
+}
+
+function stopCallPreviewSource(current, source) {
+  var part = current && current.sources[source];
+  if (!part) return;
+  delete current.sources[source];
+  if (part.timer) clearTimeout(part.timer);
+  try { if (part.recorder && part.recorder.state !== "inactive") part.recorder.stop(); } catch (_) {}
+  stopStream(part.stream);
+}
+function watchCallPreviewStream(current, source, stream) {
+  stream.getTracks().forEach(function (track) {
+    if (typeof track.addEventListener !== "function") return;
+    track.addEventListener("ended", function () {
+      if (callPreview !== current || !current.sources[source]) return;
+      send({ type: "SIGNAL_CALL_CAPTION_PREVIEW_ERROR", callId: current.callId,
+        tabId: current.tabId, source: source, reasonCode: "preview-audio-track-ended" });
+      if (source === "cliente") stopCallCaptionPreview().catch(function () {});
+      else stopCallPreviewSource(current, source);
+    }, { once: true });
+  });
+}
+async function stopCallCaptionPreview() {
+  callPreviewGeneration += 1;
+  var current = callPreview; callPreview = null;
+  if (!current) return { ok: true, active: false };
+  if (current.guard) clearInterval(current.guard);
+  Object.keys(current.sources).forEach(function (source) { stopCallPreviewSource(current, source); });
+  try { await current.context.close(); } catch (_) {}
+  return { ok: true, active: false };
+}
+function armCallPreview(current, source, stream) {
+  if (callPreview !== current || !current.sources[source]) return;
+  var part = current.sources[source], chunks = [], startedAt = Date.now(), recorder;
+  try { recorder = new MediaRecorder(stream, { mimeType: "audio/webm;codecs=opus" }); }
+  catch (_) { recorder = new MediaRecorder(stream); }
+  part.recorder = recorder;
+  recorder.ondataavailable = function (event) { if (event.data && event.data.size) chunks.push(event.data); };
+  recorder.onstop = function () {
+    if (callPreview !== current || current.sources[source] !== part) return;
+    var blob = new Blob(chunks, { type: "audio/webm" }); chunks = [];
+    if (blob.size) {
+      var reader = new FileReader(), sequence = ++current.sequence, endedAt = Date.now();
+      reader.onloadend = function () {
+        if (callPreview !== current || current.sources[source] !== part) return;
+        var base64 = String(reader.result || "").split(",")[1] || "";
+        if (base64) send({ type: "SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK", callPreview: true,
+          callId: current.callId, sessionId: current.sessionId, tabId: current.tabId,
+          source: source, base64: base64, bytes: blob.size, sequence: sequence,
+          startedAt: startedAt, endedAt: endedAt });
+      };
+      reader.readAsDataURL(blob);
+    }
+    // Every request is a new, complete WebM, not a headerless timeslice.
+    armCallPreview(current, source, stream);
+  };
+  recorder.onerror = function () {
+    if (callPreview !== current) return;
+    send({ type: "SIGNAL_CALL_CAPTION_PREVIEW_ERROR", callId: current.callId,
+      tabId: current.tabId, source: source, reasonCode: "preview-recorder-error" });
+    if (source === "cliente") stopCallCaptionPreview().catch(function () {});
+    else stopCallPreviewSource(current, source);
+  };
+  recorder.start();
+  part.timer = setTimeout(function () {
+    if (callPreview === current && current.sources[source] === part && recorder.state !== "inactive") recorder.stop();
+  }, 1800);
+}
+async function updateCallPreviewMicrophone(current, enabled) {
+  if (!enabled) { stopCallPreviewSource(current, "yo"); return; }
+  if (current.sources.yo || current.micStarting) return;
+  current.micStarting = true;
+  var stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
+    var state = stored.effectifState || {}, config = stored.effectifConfig || {};
+    if (callPreview !== current || !current.micRequested || state.callId !== current.callId ||
+        Number(state.callSourceTabId) !== current.tabId || state.microphoneMuted === true ||
+        state.microphoneMuteStatus !== "applied" || state.microphoneOutputStatus === "error" ||
+        state.microphoneOutputMuted === true || config.liveCaptionInterpreterEnabled === false) {
+      stopStream(stream); return;
+    }
+    current.sources.yo = { stream: stream, recorder: null, timer: null };
+    watchCallPreviewStream(current, "yo", stream);
+    armCallPreview(current, "yo", stream);
+    send({ type: "SIGNAL_CALL_CAPTION_PREVIEW_SOURCE_STARTED", callId: current.callId,
+      tabId: current.tabId, source: "yo", reasonCode: "verified-microphone-preview" });
+  } catch (_) {
+    stopStream(stream);
+    send({ type: "SIGNAL_CALL_CAPTION_PREVIEW_ERROR", callId: current.callId,
+      tabId: current.tabId, source: "yo", reasonCode: "microphone-permission-or-device-unavailable" });
+  } finally {
+    current.micStarting = false;
+  }
+}
+async function startCallCaptionPreview(message) {
+  if (running || youtubePreviewRecorder) return { ok: false, reasonCode: "other-capture-active" };
+  var current = callPreview;
+  if (current && current.callId === message.callId && current.tabId === Number(message.tabId)) {
+    current.micRequested = message.micEnabled === true;
+    updateCallPreviewMicrophone(current, current.micRequested).catch(function () {});
+    return { ok: true, active: true, micEnabled: !!current.sources.yo, micPending: !!current.micStarting, reused: true };
+  }
+  await stopCallCaptionPreview();
+  if (!message.streamId || !message.callId || !Number.isFinite(Number(message.tabId))) return { ok: false, reasonCode: "missing-preview-parameters" };
+  var generation = callPreviewGeneration, stream = null, context = null;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { mandatory: {
+      chromeMediaSource: "tab", chromeMediaSourceId: String(message.streamId) } } });
+    if (generation !== callPreviewGeneration || running) { stopStream(stream); return { ok: false, reasonCode: "call-context-changed" }; }
+    if (!stream.getAudioTracks().length) throw new Error("missing-tab-audio-track");
+    context = new AudioContext();
+    context.createMediaStreamSource(stream).connect(context.destination);
+    await context.resume();
+    if (generation !== callPreviewGeneration || running) { stopStream(stream); await context.close(); return { ok: false, reasonCode: "call-context-changed" }; }
+    current = { callId: String(message.callId), sessionId: "caption:" + message.callId,
+      tabId: Number(message.tabId), context: context, sequence: 0,
+      micRequested: message.micEnabled === true,
+      sources: { cliente: { stream: stream, recorder: null, timer: null } } };
+    callPreview = current;
+    watchCallPreviewStream(current, "cliente", stream);
+    current.guard = setInterval(async function () {
+      if (callPreview !== current) return;
+      try {
+        var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
+        var state = stored.effectifState || {}, config = stored.effectifConfig || {};
+        if (state.callId !== current.callId || Number(state.callSourceTabId) !== current.tabId ||
+            config.liveCaptionOverlayEnabled === false) {
+          if (callPreview === current) await stopCallCaptionPreview();
+          return;
+        }
+        if (state.microphoneMuted === true || state.microphoneMuteStatus !== "applied" ||
+            state.microphoneOutputStatus === "error" || state.microphoneOutputMuted === true ||
+            config.liveCaptionInterpreterEnabled === false) {
+          current.micRequested = false; stopCallPreviewSource(current, "yo");
+        }
+      } catch (_) { current.micRequested = false; stopCallPreviewSource(current, "yo"); }
+    }, 250);
+    armCallPreview(current, "cliente", stream);
+    updateCallPreviewMicrophone(current, current.micRequested).catch(function () {});
+    return { ok: true, active: callPreview === current, micEnabled: !!current.sources.yo, micPending: !!current.micStarting, intervalMs: 1800 };
+  } catch (_) {
+    if (callPreview === current && current) await stopCallCaptionPreview();
+    stopStream(stream); if (context) { try { await context.close(); } catch (_) {} }
+    return { ok: false, reasonCode: "tab-audio-capture-unavailable" };
   }
 }
 
@@ -229,7 +377,19 @@ async function startCapture(streamId,sessionId,muted,captionPreview,tabId){
 async function stopCapture(){running=false;stopCaptionPreview();try{if(tabTimer)clearTimeout(tabTimer);if(micTimer)clearTimeout(micTimer);if(micMuteWatchdog)clearInterval(micMuteWatchdog)}catch(_){}tabTimer=null;micTimer=null;micMuteWatchdog=null;try{if(tabRecorder&&tabRecorder.state!=="inactive")tabRecorder.stop()}catch(_){}try{if(micRecorder&&micRecorder.state!=="inactive")micRecorder.stop()}catch(_){}tabRecorder=null;micRecorder=null;stopStream(tabStream);stopStream(micStream);tabStream=null;micStream=null;captureSessionId=null;if(audioContext){try{await audioContext.close()}catch(_){}audioContext=null}send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"stopped",timestamp:new Date().toISOString()});return{ok:true}}
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
   if(!message||message.target!=="offscreen")return false;
+  if(message.type==="SIGNAL_CALL_CAPTION_MIC_STOP"){
+    if(callPreview){callPreview.micRequested=false;stopCallPreviewSource(callPreview,"yo");}
+    sendResponse({ok:true});return false;
+  }
+  if(message.type==="SIGNAL_START_CALL_CAPTION_PREVIEW"){
+    startCallCaptionPreview(message).then(sendResponse).catch(function(){sendResponse({ok:false,reasonCode:"preview-start-failed"});});
+    return true;
+  }
+  if(message.type==="SIGNAL_STOP_CALL_CAPTION_PREVIEW"){
+    stopCallCaptionPreview().then(sendResponse); return true;
+  }
   if(message.type==="SIGNAL_START_YOUTUBE_CAPTION_PREVIEW"){
+    if(callPreview){sendResponse({ok:false,error:"active-call-preview"});return false;}
     startYoutubeCaptionPreview(message.streamId,message.sessionId,Number(message.tabId)).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)});});
     return true;
   }
@@ -238,7 +398,7 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
     return true;
   }
   if(message.type==="SIGNAL_GET_GROQ_CAPTURE_STATE"){
-    sendResponse({ok:true,running:!!running,sessionId:captureSessionId,tabAudio:!!tabStream,microphone:!!micStream,microphoneMuted:!!micMuteDesired});
+    sendResponse({ok:true,running:!!running,sessionId:captureSessionId,tabAudio:!!tabStream,microphone:!!micStream,microphoneMuted:!!micMuteDesired,callPreviewActive:!!callPreview,callPreviewCallId:callPreview&&callPreview.callId,callPreviewTabId:callPreview&&callPreview.tabId});
     return false;
   }
   if(message.type==="EFFECTIF_PLAY_SOUND"){
@@ -247,6 +407,7 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
     return true;
   }
   if(message.type==="SIGNAL_SET_MICROPHONE_MUTED"){
+    if(callPreview && message.muted===true){callPreview.micRequested=false;stopCallPreviewSource(callPreview,"yo");}
     applyMicMute(!!message.muted).then(function(result){
       if(result.verified){
         send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:running?"connected":"idle",tabAudio:!!tabStream,microphone:!!micStream,microphoneMuted:!!message.muted,timestamp:new Date().toISOString()});
@@ -272,7 +433,7 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
     return true;
   }
   if(message.type==="SIGNAL_START_GROQ_CAPTURE"){
-    startCapture(message.streamId,message.sessionId,!!message.muted,!!message.captionPreview,Number(message.tabId||0)).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)})});
+    stopCallCaptionPreview().then(function(){return startCapture(message.streamId,message.sessionId,!!message.muted,!!message.captionPreview,Number(message.tabId||0));}).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)})});
     return true;
   }
   if(message.type==="SIGNAL_STOP_GROQ_CAPTURE"){

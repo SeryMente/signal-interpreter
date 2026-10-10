@@ -16,6 +16,8 @@ function scrub(value,key,depth){
   if(/rawAudio|rawTranscript|transcriptText|captionText|utterance|innerText|textContent|outerHTML|innerHTML|inputValue|requestBody|responseBody|bodyText|htmlText|cssText|javascriptSource|audioBlob|base64/i.test(k))return"[OMITTED]";
   if(/^(?:url|href|src|initiator)$/i.test(k))return safeEventUrl(value);
   if(typeof value==="string"){
+    if (/^(?:startedAt|endedAt|confirmedAt|capturedAt|createdAt|updatedAt|lastHeartbeatAt|checkpointAt|timestamp)$/.test(k) &&
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(value) && Number.isFinite(Date.parse(value))) return value;
     return String(value)
       .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi,"Bearer [REDACTED]")
       .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,"[EMAIL]")

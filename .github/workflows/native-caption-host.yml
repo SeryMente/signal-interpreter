@@ -15,6 +15,22 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Parse caption preparation scripts and verify extension identity
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          foreach ($file in @("extension/native/prepare-caption-runtime.ps1", "extension/native/register-caption-host.ps1", "tools/apply-transcription-fix.ps1")) {
+            $tokens = $null
+            $errors = $null
+            [Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $file), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          }
+          $manifest = Get-Content -Raw -Encoding UTF8 extension/manifest.json | ConvertFrom-Json
+          $sha = [Security.Cryptography.SHA256]::Create()
+          try { $digest = $sha.ComputeHash([Convert]::FromBase64String([string]$manifest.key)) } finally { $sha.Dispose() }
+          $id = -join ($digest[0..15] | ForEach-Object { [char](97 + ($_ -shr 4)); [char](97 + ($_ -band 15)) })
+          if ($id -ne 'ldpbjhobnfgmhdoehehdmnbhhjckebmj') { throw "Extension identity mismatch" }
+          Write-Output "CAPTION_PREPARATION_SYNTAX_AND_IDENTITY=PASS"
       - name: Compile the checked-in UI Automation host source
         shell: pwsh
         run: |

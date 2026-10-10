@@ -33,13 +33,23 @@
     sendToTab(type, payload, tabId);
   }
 
+  function nativeErrorCode(error) {
+    var message = String(error && error.message || error || "").toLowerCase();
+    if (/not found|not registered|specified native messaging host/.test(message)) return "native-host-not-registered";
+    if (/forbidden|access|permission/.test(message)) return "native-host-access-denied";
+    if (/exited|broken pipe/.test(message)) return "native-host-exited";
+    if (/reconnect-exhausted/.test(message)) return "native-reconnect-exhausted";
+    if (/invalid|malformed/.test(message)) return "native-host-protocol-error";
+    return "native-host-connection-error";
+  }
+  function getContext() { return { callId: targetCallId, tabId: targetTabId }; }
   function markError(error) {
     var now = Date.now();
     if (lastErrorAt > 0 && now >= lastErrorAt && now - lastErrorAt < 10000) return;
     lastErrorAt = now;
     try {
       if (root.SignalCaptionBridge && root.SignalCaptionBridge.onError) {
-        root.SignalCaptionBridge.onError(String(error || "native-caption-error").slice(0, 240));
+        root.SignalCaptionBridge.onError(nativeErrorCode(error), getContext());
       }
     } catch (_) {}
   }
@@ -55,6 +65,8 @@
     var fresh = isFresh(4500);
     var active = raw.active === true && fresh;
     var status = {
+      callId: targetCallId,
+      tabId: targetTabId,
       active: active,
       visible: visible,
       captionFresh: fresh,
@@ -218,6 +230,8 @@
   }
 
   root.SignalCaptionBridge = {
+    nativeErrorCode: nativeErrorCode,
+    getContext: getContext,
     start: start,
     stop: stop,
     isFresh: isFresh,
