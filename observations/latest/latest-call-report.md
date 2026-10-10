@@ -1,29 +1,29 @@
 # Signal Interpreter — informe de cierre de llamada
 
-- Estado de recolección: **partial**
+- Estado de recolección: **complete**
 - Referencia opaca: ce92e5f74717e118a530ee0a
-- Versión runtime: unknown
-- Modalidad/estado: unknown / unknown
+- Versión runtime: 0.10.31
+- Modalidad/estado: OPI / completed
 - Inicio: 2026-10-10T22:03:31.668Z
-- Fin: no observado
-- Duración observada / plataforma / facturable asumida (s): unknown / unknown / unknown
-- Ingreso estimado: unknown
-- Fin por: unknown
+- Fin: 2026-10-10T22:32:52.506Z
+- Duración observada / plataforma / facturable asumida (s): 1760.838 / 1759 / 1759
+- Ingreso estimado: 5.8633 USD
+- Fin por: rating-route
 
 ## Confirmación de calificación
 
-- Ruta de calificación observada: false
-- Estrellas visibles confirmadas: false
-- Método de detección: unknown
+- Ruta de calificación observada: true
+- Estrellas visibles confirmadas: true
+- Método de detección: star-class-or-title-heuristic
 - Valor seleccionado observado: false
 - Envío de valoración observado: false
-- Checkpoint final entregado al paquete: false
+- Checkpoint final entregado al paquete: true
 
 ## Entrega automática
-- Checkpoint recibido: false
-- Disparador del lote: no observado
-- Envío automático: false
-- Publicación del lote: no observada
+- Checkpoint recibido: true
+- Disparador del lote: critical
+- Envío automático: true
+- Publicación del lote: 2026-10-10T22:33:01.020Z
 
 ## Diagnóstico de subtítulos
 - Máximo de filas observado: 0
@@ -35,16 +35,13 @@
 
 ## Cobertura y señales
 
-- Eventos correlacionados: 463
-- Warnings / errores / eventos fallidos-bloqueados: 7 / 0 / 3
-- Muestras de rendimiento / media: 5 / 133
-- Conteo por grupos: {"answerFlow":236,"other":18,"overlayActivation":22,"platformAndUi":21,"mediaAndCapture":134,"performanceAndNetwork":5,"transcriptionAndCaptions":13,"ratingAndClose":1,"billingAndEarnings":1,"observabilityPipeline":2,"microphoneAndSafety":5,"runtimeAndRecovery":5}
+- Eventos correlacionados: 5242
+- Warnings / errores / eventos fallidos-bloqueados: 37 / 0 / 3
+- Muestras de rendimiento / media: 60 / 1764
+- Conteo por grupos: {"answerFlow":2862,"other":48,"overlayActivation":130,"platformAndUi":186,"mediaAndCapture":1765,"performanceAndNetwork":60,"transcriptionAndCaptions":43,"ratingAndClose":6,"billingAndEarnings":1,"observabilityPipeline":3,"microphoneAndSafety":69,"runtimeAndRecovery":69}
 
 ## Señales ausentes o incompletas
 
-- call-end-timestamp-not-observed
-- rating-stars-confirmation-not-observed
-- final-observability-checkpoint-not-observed
 
 ## Errores, advertencias y fallos
 
@@ -57,6 +54,36 @@
 | 2026-10-10T22:04:06.542Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
 | 2026-10-10T22:04:44.991Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
 | 2026-10-10T22:05:23.779Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:06:01.865Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:06:47.219Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:07:31.364Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:08:16.561Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:09:16.542Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:10:17.132Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:11:16.538Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:12:16.500Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:13:17.341Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:14:16.512Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:15:16.435Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:16:16.416Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:17:16.333Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:18:16.339Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:19:16.305Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:19:46.498Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:20:46.354Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:21:46.385Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:22:46.304Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:23:46.496Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:24:46.316Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:25:31.206Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:26:16.324Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:27:16.345Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:28:16.309Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:29:16.300Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:30:16.325Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:31:16.286Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:32:16.480Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
+| 2026-10-10T22:32:47.029Z | SIGNAL_CAPTION_PREVIEW_UNAVAILABLE | warn | LIVE_CAPTION | missing-api-key |
 
 ## Privacidad
 
