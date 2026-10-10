@@ -2,7 +2,23 @@
   "use strict";
 
   var core = globalThis.SignalCaptionCore;
-  if (!core || !globalThis.chrome || !chrome.runtime || !chrome.storage) return;
+  if (!core || !globalThis.chrome || !chrome.runtime || !chrome.storage) {
+    try {
+      if (globalThis.chrome && chrome.runtime && typeof chrome.runtime.sendMessage === "function") {
+        chrome.runtime.sendMessage({ type: "EFFECTIF_EVENT", event: {
+          timestamp: new Date().toISOString(), action: "LIVE_CAPTION_OVERLAY_BOOT_FAILED", level: "error",
+          category: "CAPTION", component: "live-caption-overlay", phase: "boot", outcome: "failure",
+          source: "content", payload: {
+            reasonCode: !core ? "caption-core-unavailable" : (!chrome.runtime ? "runtime-api-unavailable" : "storage-api-unavailable"),
+            hostname: typeof location !== "undefined" ? String(location.hostname || "") : null,
+            runtimeAvailable: !!(globalThis.chrome && chrome.runtime),
+            storageAvailable: !!(globalThis.chrome && chrome.storage)
+          }
+        }});
+      }
+    } catch (_) {}
+    return;
+  }
 
   var MAX_HISTORY = 800;
   var rows = [];
@@ -26,6 +42,20 @@
   var toastTimer = null;
   var screenshotPreviousVisibility = null;
   var contextReady = false;
+  var contextSyncInFlight = false;
+  var contextSyncPendingHydrate = false;
+  var contextRetryTimer = null;
+  var contextRetryDelayMs = 500;
+  var contextSyncAttempts = 0;
+  var contextSyncFailures = 0;
+  var routeWatchTimer = null;
+  var healthWatchTimer = null;
+  var lastRouteKey = location.pathname + location.search;
+  var lastDiagnosticKey = "";
+  var lastBlockedKey = "";
+  var lastVisibleState = null;
+  var lastCaptionAt = 0;
+  var lastHealthAt = 0;
 
   function isCloudInterpreterPage() {
     return location.hostname === "app.cloudinterpreter.com";
@@ -35,6 +65,73 @@
     if (location.hostname !== "www.youtube.com" || location.pathname !== "/watch") return false;
     try { return new URLSearchParams(location.search).get("v") === "TshOFzKQfG8"; }
     catch (_) { return false; }
+  }
+
+  function isCloudCallRoute() {
+    return !!(core && typeof core.isCloudInterpreterCallRoute === "function" &&
+      core.isCloudInterpreterCallRoute(location.hostname, location.pathname));
+  }
+
+  function currentCloudCallId() {
+    if (!isCloudCallRoute()) return null;
+    var match = String(location.pathname || "").match(/^\\/call\\/([^/?#]+)\\/?$/);
+    return match ? match[1] : null;
+  }
+
+  function safeRoutePath(pathname) {
+    return String(pathname || location.pathname || "/")
+      .replace(/^\\/call\\/[^/]+/, "/call/<ID>")
+      .replace(/^\\/profile\\/[^/]+/, "/profile/<ID>")
+      .slice(0, 160);
+  }
+
+  function reportLifecycle(action, payload, level, dedupeKey) {
+    var routePath = safeRoutePath(location.pathname);
+    var details = Object.assign({
+      callId: currentCloudCallId(),
+      route: routePath,
+      extensionVersion: chrome.runtime && chrome.runtime.getManifest
+        ? chrome.runtime.getManifest().version : null
+    }, payload || {});
+    if (dedupeKey) {
+      var key = String(action) + "|" + String(dedupeKey);
+      if (key === lastDiagnosticKey) return;
+      lastDiagnosticKey = key;
+    }
+    try {
+      chrome.runtime.sendMessage({
+        type: "EFFECTIF_EVENT",
+        event: {
+          timestamp: new Date().toISOString(),
+          action: String(action || "LIVE_CAPTION_OVERLAY_DIAGNOSTIC"),
+          level: level || "info",
+          category: "CAPTION",
+          component: "live-caption-overlay",
+          phase: "lifecycle",
+          outcome: level === "error" ? "failure" : (level === "warn" ? "degraded" : "observed"),
+          source: "content",
+          callId: details.callId,
+          session: { callId: details.callId },
+          context: {
+            route: routePath,
+            visibility: document.visibilityState || "unknown",
+            online: navigator.onLine !== false
+          },
+          payload: details
+        }
+      }, function () {
+        try { void chrome.runtime.lastError; } catch (_) {}
+      });
+    } catch (_) {}
+  }
+
+  function currentBlockReason() {
+    if (config.liveCaptionOverlayEnabled === false) return "preference-disabled";
+    if (!contextReady) return "context-not-ready";
+    if (!pageAllowed) return isCloudCallRoute() ? "call-route-not-authorized" : "page-not-allowed";
+    if (!youtubeTarget && !isCloudCallRoute() && !scopeIsGlobal() && !isSourceTab) return "not-source-tab";
+    if (!youtubeTarget && !isCloudCallRoute() && !callActive && rows.length === 0 && !sessionEnded) return "call-context-inactive";
+    return null;
   }
 
   function clamp(value, min, max) {
@@ -48,14 +145,33 @@
   function canShowOnThisPage() {
     if (config.liveCaptionOverlayEnabled === false || !contextReady || !pageAllowed) return false;
     if (youtubeTarget) return true;
+    // La ruta activa es evidencia local suficiente para mostrar el panel mientras el
+    // estado de llamada del service worker termina de reconciliarse.
+    if (isCloudCallRoute()) return true;
     if (scopeIsGlobal()) return callActive || rows.length > 0 || sessionEnded;
     return isSourceTab && (callActive || rows.length > 0 || sessionEnded);
   }
 
   function ensureHost() {
-    if (!canShowOnThisPage() || !document.documentElement) return;
+    if (!canShowOnThisPage()) {
+      var blockReason = currentBlockReason();
+      if (blockReason && (isCloudCallRoute() || host)) {
+        reportLifecycle("LIVE_CAPTION_OVERLAY_ACTIVATION_BLOCKED", {
+          reasonCode: blockReason, contextReady: contextReady, pageAllowed: pageAllowed,
+          callActive: callActive, sourceTabMatched: isSourceTab, historyRows: rows.length
+        }, blockReason === "preference-disabled" ? "warn" : "info", blockReason);
+      }
+      return;
+    }
+    if (!document.documentElement) {
+      reportLifecycle("LIVE_CAPTION_OVERLAY_MOUNT_DEFERRED", {
+        reasonCode: "document-element-not-ready", documentReadyState: document.readyState || "unknown"
+      }, "warn", "document-element-not-ready");
+      return;
+    }
     if (host && host.isConnected) return;
 
+    try {
     host = document.createElement("div");
     host.id = "signal-interpreter-live-caption-overlay";
     host.setAttribute("aria-hidden", "true");
@@ -123,6 +239,20 @@
     bindCaptionTextActions();
     applyLayout();
     updateAriaVisibility();
+    reportLifecycle("LIVE_CAPTION_OVERLAY_HOST_MOUNTED", {
+      hostConnected: !!(host && host.isConnected), shadowRootReady: !!root,
+      display: host.style.display || "default", rowCount: rows.length,
+      width: host.getBoundingClientRect().width, height: host.getBoundingClientRect().height
+    }, "info", "host-mounted:" + String(currentCloudCallId() || "non-call"));
+    } catch (error) {
+      try { if (host) host.remove(); } catch (_) {}
+      host = null;
+      root = null;
+      reportLifecycle("LIVE_CAPTION_OVERLAY_HOST_MOUNT_FAILED", {
+        reasonCode: "dom-mount-exception", errorType: String(error && error.name || "Error").slice(0, 80),
+        documentElementPresent: !!document.documentElement
+      }, "error", "mount-failed:" + String(currentCloudCallId() || "non-call"));
+    }
   }
 
   function interactiveRects() {
@@ -576,10 +706,29 @@
     return row;
   }
 
+  function reportVisibility(reason) {
+    var visible = !!(host && host.isConnected && host.style.display !== "none" && host.getBoundingClientRect().width > 0);
+    if (lastVisibleState === visible) return;
+    lastVisibleState = visible;
+    reportLifecycle("LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED", {
+      visible: visible, reason: reason || "render", hostConnected: !!(host && host.isConnected),
+      contextReady: contextReady, pageAllowed: pageAllowed, callActive: callActive,
+      sourceTabMatched: isSourceTab, rowCount: rows.length, display: host ? host.style.display : "unmounted"
+    }, visible ? "info" : "warn");
+  }
+
   function render(skipUnreadTracking) {
     if (!canShowOnThisPage()) {
       if (host) host.style.display = "none";
       updateAriaVisibility();
+      var blockReason = currentBlockReason();
+      if (blockReason && (isCloudCallRoute() || host)) {
+        reportLifecycle("LIVE_CAPTION_OVERLAY_ACTIVATION_BLOCKED", {
+          reasonCode: blockReason, contextReady: contextReady, pageAllowed: pageAllowed,
+          callActive: callActive, sourceTabMatched: isSourceTab, rowCount: rows.length
+        }, blockReason === "preference-disabled" ? "warn" : "info", blockReason);
+      }
+      reportVisibility(blockReason || "not-allowed");
       return;
     }
     ensureHost();
@@ -625,8 +774,10 @@
     }
     if (dot) dot.className = "dot" + (active ? "" : " idle");
     if (stateLabel) stateLabel.textContent = active ? "EN VIVO" : (sessionEnded ? "HISTORIAL" : "EN ESPERA");
-    host.style.display = collapsed ? "block" : "block";
+    host.style.display = "block";
     updateAriaVisibility();
+    reportVisibility("render");
+    lastBlockedKey = "";
     if (wasNearBottom && !collapsed) {
       container.scrollTop = container.scrollHeight;
       unreadCount = 0;
@@ -641,6 +792,7 @@
   function addRow(text, language, source, isLive, timestamp) {
     var clean = core.normalizeText(text).slice(0, 1500);
     if (!clean) return;
+    lastCaptionAt = Date.now();
     source = source === "yo" || source === "chrome-live-caption" ? source : "cliente";
     language = core.resolveLanguage(language, clean);
     var now = Number(timestamp);
@@ -708,28 +860,131 @@
   }
 
   function applyContext(result, hydrate) {
-    if (!result || result.ok !== true) return;
+    if (!result || result.ok !== true) {
+      reportLifecycle("LIVE_CAPTION_OVERLAY_CONTEXT_INVALID", {
+        reasonCode: "invalid-context-response", responsePresent: !!result,
+        responseOk: !!(result && result.ok === true), contextSyncAttempts: contextSyncAttempts
+      }, "warn");
+      if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+        activateLocalCallFallback("invalid-context-response");
+      }
+      return false;
+    }
     contextReady = true;
     config.liveCaptionOverlayEnabled = result.enabled !== false;
     config.liveCaptionOverlayScope = result.scope === "all-tabs" ? "all-tabs" : "source-only";
-    sourceTabId = Number.isFinite(Number(result.sourceTabId)) ? Number(result.sourceTabId) : null;
-    isSourceTab = result.isSourceTab === true;
-    callActive = result.callActive === true;
-    sessionEnded = !callActive && result.sessionEnded === true;
+    sourceTabId = result.sourceTabId != null && Number.isFinite(Number(result.sourceTabId))
+      ? Number(result.sourceTabId) : null;
     youtubeTarget = isYoutubeTargetPage();
-    pageAllowed = result.pageAllowed === true || youtubeTarget;
+    var localCallRoute = isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false;
+    isSourceTab = result.isSourceTab === true || localCallRoute;
+    callActive = result.callActive === true || localCallRoute;
+    sessionEnded = !callActive && result.sessionEnded === true;
+    pageAllowed = result.pageAllowed === true || youtubeTarget || localCallRoute;
     if (hydrate && Array.isArray(result.history)) hydrateHistory(result.history);
+    reportLifecycle("LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED", {
+      enabled: config.liveCaptionOverlayEnabled !== false, scope: config.liveCaptionOverlayScope,
+      pageAllowed: pageAllowed, callActive: callActive, sourceTabMatched: isSourceTab,
+      sourceTabKnown: sourceTabId != null, routeFallbackApplied: localCallRoute && result.pageAllowed !== true,
+      historyRows: Array.isArray(result.history) ? result.history.length : rows.length,
+      contextSyncAttempts: contextSyncAttempts, contextSyncFailures: contextSyncFailures
+    }, "info", "context-applied:" + String(localCallRoute) + ":" + String(pageAllowed) + ":" + String(isSourceTab));
     if (canShowOnThisPage()) ensureHost();
     render();
+    return true;
+  }
+
+  function scheduleContextRetry(reasonCode) {
+    if (contextRetryTimer || config.liveCaptionOverlayEnabled === false) return;
+    if (!isCloudCallRoute() && !host && contextSyncAttempts >= 5) return;
+    var delay = contextRetryDelayMs;
+    contextRetryDelayMs = Math.min(15000, contextRetryDelayMs * 2);
+    reportLifecycle("LIVE_CAPTION_OVERLAY_CONTEXT_RETRY_SCHEDULED", {
+      reasonCode: reasonCode || "context-sync-failed", attempt: contextSyncAttempts,
+      delayMs: delay, activeCallRoute: isCloudCallRoute()
+    }, "warn", "retry:" + String(contextSyncAttempts) + ":" + String(delay));
+    contextRetryTimer = setTimeout(function () {
+      contextRetryTimer = null;
+      syncContext(contextSyncPendingHydrate);
+    }, delay);
+  }
+
+  function cancelContextRetry() {
+    if (contextRetryTimer) clearTimeout(contextRetryTimer);
+    contextRetryTimer = null;
+    contextRetryDelayMs = 500;
+  }
+
+  function activateLocalCallFallback(reasonCode) {
+    if (!isCloudCallRoute() || config.liveCaptionOverlayEnabled === false) return false;
+    var wasReady = contextReady;
+    contextReady = true;
+    pageAllowed = true;
+    isSourceTab = true;
+    callActive = true;
+    sessionEnded = false;
+    reportLifecycle("LIVE_CAPTION_OVERLAY_LOCAL_ROUTE_FALLBACK", {
+      reasonCode: String(reasonCode || "call-route-reconciliation-pending"),
+      contextReadyFromServiceWorker: wasReady, sourceTabKnown: sourceTabId != null,
+      preferenceEnabled: config.liveCaptionOverlayEnabled !== false
+    }, "warn", "local-route-fallback:" + String(currentCloudCallId()) + ":" + String(reasonCode || "pending"));
+    ensureHost();
+    render(true);
+    return true;
   }
 
   function syncContext(hydrate) {
+    if (contextSyncInFlight) {
+      contextSyncPendingHydrate = contextSyncPendingHydrate || hydrate === true;
+      return;
+    }
+    contextSyncInFlight = true;
+    contextSyncAttempts += 1;
+    var attempt = contextSyncAttempts;
+    var requestStartedAt = Date.now();
     try {
       chrome.runtime.sendMessage({ type: "SIGNAL_CAPTION_OVERLAY_HELLO" }, function (result) {
-        if (chrome.runtime.lastError) return;
-        applyContext(result, hydrate === true);
+        var runtimeError = chrome.runtime.lastError;
+        contextSyncInFlight = false;
+        if (runtimeError || !result || result.ok !== true) {
+          contextSyncFailures += 1;
+          reportLifecycle("LIVE_CAPTION_OVERLAY_CONTEXT_SYNC_FAILED", {
+            reasonCode: runtimeError ? "runtime-message-error" : (!result ? "empty-response" : "invalid-response"),
+            errorType: runtimeError ? "RuntimeMessageError" : "NoValidContext",
+            attempt: attempt, durationMs: Math.max(0, Date.now() - requestStartedAt),
+            activeCallRoute: isCloudCallRoute(), failureCount: contextSyncFailures
+          }, "warn");
+          if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+            activateLocalCallFallback(runtimeError ? "runtime-message-error" : "context-response-invalid");
+          }
+          scheduleContextRetry(runtimeError ? "runtime-message-error" : "invalid-context-response");
+        } else {
+          cancelContextRetry();
+          contextSyncFailures = 0;
+          applyContext(result, hydrate === true);
+          if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false && !canShowOnThisPage()) {
+            activateLocalCallFallback("call-route-context-gate-recovery");
+          }
+        }
+        if (contextSyncPendingHydrate) {
+          var pendingHydrate = contextSyncPendingHydrate;
+          contextSyncPendingHydrate = false;
+          setTimeout(function () { syncContext(pendingHydrate); }, 0);
+        }
       });
-    } catch (_) {}
+    } catch (error) {
+      contextSyncInFlight = false;
+      contextSyncFailures += 1;
+      reportLifecycle("LIVE_CAPTION_OVERLAY_CONTEXT_SYNC_FAILED", {
+        reasonCode: "send-message-threw", errorType: String(error && error.name || "Error").slice(0, 80),
+        attempt: attempt, durationMs: Math.max(0, Date.now() - requestStartedAt),
+        activeCallRoute: isCloudCallRoute(), failureCount: contextSyncFailures
+      }, "warn");
+      if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+        activateLocalCallFallback("send-message-threw");
+      }
+      scheduleContextRetry("send-message-threw");
+    }
   }
 
   function applyConfig(next) {
@@ -737,10 +992,17 @@
     youtubeTarget = isYoutubeTargetPage();
     if (config.liveCaptionOverlayEnabled === false) {
       active = false;
+      cancelContextRetry();
       if (host) host.style.display = "none";
       updateAriaVisibility();
+      reportLifecycle("LIVE_CAPTION_OVERLAY_ACTIVATION_BLOCKED", {
+        reasonCode: "preference-disabled", contextReady: contextReady,
+        hostConnected: !!(host && host.isConnected)
+      }, "warn", "preference-disabled");
+      reportVisibility("preference-disabled");
       return;
     }
+    if (isCloudCallRoute() && !contextReady) activateLocalCallFallback("preference-enabled-on-call-route");
     if (canShowOnThisPage()) ensureHost();
     render(true);
   }
@@ -765,9 +1027,73 @@
         manual: saved.manual === true
       };
     }
+    if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+      activateLocalCallFallback("initial-storage-call-route");
+    }
+    startRecoveryWatchdogs();
     syncContext(true);
     if (canShowOnThisPage()) { ensureHost(); applyLayout(); render(); }
   });
+
+  function startRecoveryWatchdogs() {
+    if (!routeWatchTimer) {
+      routeWatchTimer = setInterval(function () {
+        var routeKey = location.pathname + location.search;
+        if (routeKey !== lastRouteKey) {
+          var previousPath = safeRoutePath(lastRouteKey.split("?")[0]);
+          lastRouteKey = routeKey;
+          reportLifecycle("LIVE_CAPTION_OVERLAY_ROUTE_CHANGED", {
+            previousRoute: previousPath, currentRoute: safeRoutePath(location.pathname),
+            activeCallRoute: isCloudCallRoute()
+          }, "info");
+          if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+            activateLocalCallFallback("spa-call-route-observed");
+          }
+          syncContext(true);
+        }
+        if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+          if (!contextReady || !pageAllowed) activateLocalCallFallback("call-route-watchdog-context-recovery");
+          if (!host || !host.isConnected || host.style.display === "none" || !root) {
+            reportLifecycle("LIVE_CAPTION_OVERLAY_RECOVERY_ATTEMPTED", {
+              reasonCode: !host || !host.isConnected ? "host-missing" : (!root ? "shadow-root-missing" : "host-hidden"),
+              hostConnected: !!(host && host.isConnected), shadowRootReady: !!root,
+              contextReady: contextReady, pageAllowed: pageAllowed, callActive: callActive,
+              retryCount: contextSyncAttempts
+            }, "warn");
+            render(true);
+            if (!host || !host.isConnected || !root) ensureHost();
+          }
+        }
+      }, 1000);
+    }
+    if (!healthWatchTimer) {
+      healthWatchTimer = setInterval(function () {
+        if (!isCloudCallRoute() && !host) return;
+        var rect = host && host.isConnected ? host.getBoundingClientRect() : null;
+        reportLifecycle("LIVE_CAPTION_OVERLAY_HEALTH", {
+          activeCallRoute: isCloudCallRoute(), contextReady: contextReady, pageAllowed: pageAllowed,
+          callActive: callActive, sourceTabMatched: isSourceTab, sourceTabKnown: sourceTabId != null,
+          hostConnected: !!(host && host.isConnected), shadowRootReady: !!root,
+          visible: !!(host && host.isConnected && host.style.display !== "none" && rect && rect.width > 0),
+          display: host && host.isConnected ? host.style.display : "unmounted",
+          rowCount: rows.length, active: active, sessionEnded: sessionEnded,
+          lastCaptionAgeMs: lastCaptionAt > 0 ? Math.max(0, Date.now() - lastCaptionAt) : null,
+          contextSyncAttempts: contextSyncAttempts, contextSyncFailures: contextSyncFailures,
+          documentReadyState: document.readyState || "unknown", online: navigator.onLine !== false
+        }, "info");
+        lastHealthAt = Date.now();
+      }, 15000);
+    }
+  }
+
+  function stopRecoveryWatchdogs() {
+    if (routeWatchTimer) clearInterval(routeWatchTimer);
+    if (healthWatchTimer) clearInterval(healthWatchTimer);
+    if (contextRetryTimer) clearTimeout(contextRetryTimer);
+    routeWatchTimer = null;
+    healthWatchTimer = null;
+    contextRetryTimer = null;
+  }
 
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local") return;
@@ -836,6 +1162,7 @@
       screenshotPreviousVisibility = null;
     } else if (message.type === "EFFECTIF_HOTLOAD_REPLACE") {
       active = false;
+      stopRecoveryWatchdogs();
       if (host) host.remove();
       host = null;
       root = null;
@@ -870,7 +1197,11 @@
     }
     window.addEventListener("pagehide", function () {
       if (saveLayoutTimer) clearTimeout(saveLayoutTimer);
+      stopRecoveryWatchdogs();
       if (host) host.remove();
+      host = null;
+      root = null;
+      reportLifecycle("LIVE_CAPTION_OVERLAY_PAGEHIDE", { hostRemoved: true }, "info");
     });
   }
 
@@ -891,5 +1222,4 @@
   }
 
   youtubeTarget = isYoutubeTargetPage();
-  syncContext(true);
 })();
