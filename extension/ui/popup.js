@@ -261,6 +261,8 @@
     }).catch(function () {
       youtubeCaptionCaptureButton.hidden = true;
       if (youtubeCaptionCaptureHelp) youtubeCaptionCaptureHelp.hidden = true;
+      var youtubeCaptureSection = $("youtubeCaptionTestTools");
+      if (youtubeCaptureSection) youtubeCaptureSection.hidden = true;
     });
   }
   if (youtubeCaptionCaptureButton) youtubeCaptionCaptureButton.addEventListener("click", function () {
