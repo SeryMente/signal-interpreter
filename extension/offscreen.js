@@ -83,7 +83,10 @@ async function startYoutubeCaptionPreview(streamId,sessionId,tabId){
         reader.readAsDataURL(e.data);
       }catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"youtube-caption-preview",error:String(error)});}
     };
-    recorder.onerror=function(e){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"youtube-caption-preview",error:String(e&&e.error||e)});};
+    recorder.onerror=function(e){
+      send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"youtube-caption-preview",error:String(e&&e.error||e)});
+      stopYoutubeCaptionPreview(localSession,localTabId).catch(function(){});
+    };
     recorder.start(1800);
     send({type:"SIGNAL_YOUTUBE_CAPTION_PREVIEW_OFFSCREEN_STARTED",tabId:localTabId,sessionId:localSession});
     return{ok:true,active:true,tabId:localTabId,sessionId:localSession,intervalMs:1800};
