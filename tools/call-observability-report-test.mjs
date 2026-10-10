@@ -48,7 +48,25 @@ const snapshot=event("surface","PLATFORM_SURFACE_SNAPSHOT",{
   callId:callId,schema:"signal-interpreter-platform-surface-event/v1",
   platformSurface:{schema:"signal-interpreter-platform-surface/v1",page:{origin:"https://app.cloudinterpreter.com",route:"/call/<ID>/rate",path:"/call/<ID>/rate",searchKeys:[]},controls:{buttons:[],links:[],fields:[],headings:[]},dom:{tagCounts:{body:1},elements:[]},css:{stylesheets:[]},javascript:{scripts:[]},resources:{recent:[]}}
 },"2026-10-10T16:05:00.000Z");
-fs.writeFileSync(path.join(inbox,"start.json"),JSON.stringify(batch("start",startedAt,[started,performanceEvent,mediaEvent,snapshot])));
+const overlayContext=event("overlay-context","LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",{
+  callId:callId,component:"live-caption-overlay",enabled:true,scope:"source-only",
+  contextReady:true,pageAllowed:true,callActive:true,sourceTabMatched:true,sourceTabKnown:true,
+  routeFallbackApplied:true,contextSyncAttempts:2,contextSyncFailures:1,historyRows:0
+},"2026-10-10T16:00:00.250Z");
+const overlayMounted=event("overlay-mounted","LIVE_CAPTION_OVERLAY_HOST_MOUNTED",{
+  callId:callId,component:"live-caption-overlay",hostConnected:true,shadowRootReady:true,
+  display:"block",rowCount:0,width:560,height:400
+},"2026-10-10T16:00:00.500Z");
+const overlayVisible=event("overlay-visible","LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",{
+  callId:callId,component:"live-caption-overlay",visible:true,hostConnected:true,
+  contextReady:true,pageAllowed:true,callActive:true,sourceTabMatched:true,rowCount:0,display:"block"
+},"2026-10-10T16:00:00.600Z");
+const earningsOverlayVisible=event("earnings-overlay-visible","EARNINGS_OVERLAY_VISIBLE",{
+  callId:callId,component:"earnings-overlay",visible:true,hostConnected:true,shadowRootReady:true,
+  reasonCode:"render-confirmed",hostWidth:296,hostHeight:200,independentOfObserver:true
+},"2026-10-10T16:00:00.700Z");
+fs.writeFileSync(path.join(inbox,"start.json"),JSON.stringify(batch("start",startedAt,
+  [started,performanceEvent,mediaEvent,overlayContext,overlayMounted,overlayVisible,earningsOverlayVisible,snapshot])));
 
 const partial=buildObservabilityPackage(root);
 assert.equal(partial.callReports.reportCount,0,"no per-call report should be made without a terminal trigger");
@@ -97,6 +115,14 @@ assert.equal(built.latestCallReport.telemetry.warnings,1);
 assert.equal(built.latestCallReport.completeness.missingSignals.length,0,"complete fixture must contain all modeled lifecycle evidence");
 assert.ok(built.latestCallReport.telemetry.eventTimeline.some(e=>e.action==="CALL_RATING_STARS_CONFIRMED"),"ordered diagnostic timeline must expose the star confirmation");
 assert.ok(built.latestCallReport.telemetry.keySignals.some(e=>e.action==="CALL_TIMER_STOPPED"&&e.modality==="OPI"),"whitelisted key signals include call modality and timing close");
+assert.ok(built.latestCallReport.telemetry.keySignals.some(e=>e.action==="LIVE_CAPTION_OVERLAY_HOST_MOUNTED"&&e.hostConnected===true&&e.shadowRootReady===true),
+  "per-call key signals preserve proof the live caption panel mounted");
+assert.ok(built.latestCallReport.telemetry.keySignals.some(e=>e.action==="LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED"&&e.visible===true),
+  "per-call key signals distinguish panel visibility from text recognition");
+assert.ok(built.latestCallReport.telemetry.keySignals.some(e=>e.action==="EARNINGS_OVERLAY_VISIBLE"&&e.independentOfObserver===true),
+  "per-call key signals include earnings overlay health");
+assert.ok(built.latestCallReport.telemetry.featureSignals.overlayActivation>=4,
+  "all overlay lifecycle signals get their own feature group in reports");
 assert.ok(built.latestCallReport.telemetry.errorTimeline.some(e=>e.reasonCode==="groq-timeout"));
 assert.equal(built.manifest.calls.reportCount,1);
 assert.equal(built.health.callReportCheckpointObserved,true);
