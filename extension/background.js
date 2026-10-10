@@ -351,7 +351,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       youtubeTarget = parsedUrl.hostname === "www.youtube.com" && parsedUrl.pathname === "/watch" &&
         parsedUrl.searchParams.get("v") === "TshOFzKQfG8";
       cloudCallRoute = parsedUrl.hostname.toLowerCase() === "app.cloudinterpreter.com" &&
-        /^\\/call\\/[^/?#]+\\/?$/.test(parsedUrl.pathname);
+        /^\/call\/[^/?#]+\/?$/.test(parsedUrl.pathname);
     } catch (_) {}
     // La URL activa de la llamada reconcilia el origen aunque el estado durable
     // del service worker esté unos instantes retrasado respecto de la navegación SPA.
