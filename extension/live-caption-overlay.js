@@ -412,7 +412,7 @@
     return row;
   }
 
-  function render() {
+  function render(skipUnreadTracking) {
     if (!canShowOnThisPage()) {
       if (host) host.style.display = "none";
       updateAriaVisibility();
@@ -465,7 +465,7 @@
     if (wasNearBottom && !collapsed) {
       container.scrollTop = container.scrollHeight;
       unreadCount = 0;
-    } else if (data.length > 0) {
+    } else if (data.length > 0 && skipUnreadTracking !== true) {
       unreadCount = Math.min(999, unreadCount + 1);
     }
     updateUnreadButton();
@@ -535,7 +535,7 @@
         id: item && item.id || null
       };
     }).filter(function (item) { return !!item.text; });
-    render();
+    render(true);
     var container = root && root.querySelector(".transcript");
     if (container) {
       container.scrollTop = previousScroll > 0 ? previousScroll : container.scrollHeight;
@@ -576,7 +576,7 @@
       return;
     }
     if (canShowOnThisPage()) ensureHost();
-    render();
+    render(true);
   }
 
   function schedulePosition() {
@@ -636,7 +636,7 @@
       active = message.captionFresh === false
         ? false
         : (message.active === true || (message.captionFresh == null && message.visible === true));
-      if (host) render();
+      if (host) render(true);
     } else if (message.type === "SIGNAL_CAPTION_SESSION_RESET") {
       rows = [];
       active = false;
@@ -651,7 +651,7 @@
       active = false;
       callActive = false;
       sessionEnded = rows.length > 0;
-      render();
+      render(true);
     } else if (message.type === "EFFECTIF_SCREENSHOT_PREPARE") {
       if (host && host.isConnected && screenshotPreviousVisibility === null) {
         screenshotPreviousVisibility = host.style.visibility;
@@ -680,7 +680,7 @@
   document.addEventListener("signal-interpreter-youtube-caption-status", function (event) {
     if (!youtubeTarget || !event || !event.detail) return;
     active = event.detail.active === true;
-    render();
+    render(true);
   });
 
   if (window) {

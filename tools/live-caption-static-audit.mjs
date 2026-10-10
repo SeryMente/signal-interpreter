@@ -90,7 +90,7 @@ assert.ok(overlay.includes("liveCaptionOverlayScope"), "el panel debe obedecer e
 assert.ok(overlay.includes("!contextReady || !pageAllowed"), "el panel valida el contexto que devuelve el service worker");
 assert.ok(overlay.includes("attachShadow({ mode: \"closed\" })"));
 assert.ok(overlay.includes("interactiveRects"));
-assert.ok(overlay.includes("core.choosePositionCandidate(candidates, rects, w, h)"));
+assert.ok(overlay.includes("core.choosePositionCandidate(candidates, rects, width, height)"));
 assert.ok(overlay.includes("createRowNode"));
 assert.ok(overlay.includes("EFFECTIF_SCREENSHOT_PREPARE"));
 assert.ok(overlay.includes("EFFECTIF_SCREENSHOT_RESTORE"));
@@ -98,7 +98,7 @@ assert.ok(core.includes("captionRelation"));
 assert.ok(core.includes("mergeCaptionText"));
 assert.ok(core.includes("createLatestOnlyDispatcher"));
 assert.ok(core.includes("choosePositionCandidate"));
-assert.ok(overlay.includes("core.choosePositionCandidate(candidates, rects, w, h)"));
+assert.ok(overlay.includes("core.choosePositionCandidate(candidates, rects, width, height)"));
 assert.ok(core.includes("CLIENTE"));
 assert.ok(core.includes("LEP"));
 assert.ok(core.includes("ENGLISH"));
