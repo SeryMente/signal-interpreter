@@ -7,7 +7,7 @@ const content = read("../extension/content.js");
 const background = read("../extension/background.js");
 const manifest = JSON.parse(read("../extension/manifest.json"));
 
-assert.equal(manifest.version, "0.10.25");
+assert.equal(manifest.version, "0.10.26");
 assert.match(content, /location\.pathname\.match\(\/\^\\\/call\\/);
 assert.match(content, /signal-interpreter-earnings-overlay/);
 assert.match(content, /var routeCallId = currentCallId\(\);[\s\S]*?if \(!routeCallId\)/);
