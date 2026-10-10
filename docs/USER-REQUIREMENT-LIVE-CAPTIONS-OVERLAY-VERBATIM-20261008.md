@@ -1,3 +1,5 @@
+> **Alcance de este archivo:** fuente primaria de requisitos originales VERBATIM; no es el informe del sprint. Para la narrativa única y completa del esfuerzo, use [DOCUMENTO CANÓNICO ÚNICO — Sprint de transcripción y overlay de subtítulos](TRANSCRIPTION-SPRINT-CANONICAL.md).
+
 # Requisito del usuario — Live Caption + overlay de subtítulos para Cloud Interpreter
 
 **Fecha de registro:** 2026-10-08  
