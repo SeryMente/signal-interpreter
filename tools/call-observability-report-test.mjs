@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {buildObservabilityPackage} from "./observability-github-pipeline.mjs";
+import {auditObservabilityPackage} from "./observability-package-audit.mjs";
 
 const root=fs.mkdtempSync(path.join(os.tmpdir(),"signal-call-report-"));
 const inbox=path.join(root,"observations","inbox");
@@ -57,6 +58,13 @@ const rating=event("rating","CALL_RATING_STARS_CONFIRMED",{
   ratingPromptVisible:true,ratingValueObserved:false,ratingSubmissionObserved:false,
   evidence:{schema:"signal-interpreter-rating-star-evidence/v1",routeMatched:true,starsVisible:true,method:"accessible-label-or-test-id",candidateCount:5,namedStarCandidateCount:5,starLikeCandidateCount:5,visibleButtonCount:6,visibleRadioCount:0}
 },starAt);
+fs.writeFileSync(path.join(inbox,"rating.json"),JSON.stringify(batch("rating",starAt,[rating])));
+const starOnly=buildObservabilityPackage(root);
+assert.equal(starOnly.callReports.reportCount,1);
+assert.equal(starOnly.callReports.partialCount,1,"star visibility creates a partial report until the final checkpoint arrives");
+assert.equal(starOnly.latestCallReport.status,"partial");
+assert.equal(starOnly.latestCallReport.endConfirmation.ratingStarsVisible,true);
+
 const stop=event("stop","CALL_TIMER_STOPPED",{
   callId:callId,startedAt:startedAt,endedAt:endedAt,modality:"OPI",status:"completed",
   observedSeconds:364,platformSeconds:360,billableSecondsAssumed:360,ratePerMinute:0.2,
@@ -68,7 +76,7 @@ const checkpoint=event("checkpoint","CALL_OBSERVABILITY_CHECKPOINT",{
   callState:"closed",finalCall:{callId:callId,startedAt:startedAt,endedAt:endedAt,modality:"OPI",status:"completed",observedSeconds:364,platformSeconds:360,billableSecondsAssumed:360,ratePerMinute:0.2,estimatedRevenue:1.2,countedInEarnings:true,currency:"USD",billingRule:"pro_rata_by_second_assumed",endSource:"rating-route",runtimeVersion:"0.10.28"}
 },endedAt);
 const warning=event("warning","GROQ_TRANSCRIPTION_TIMEOUT",{callId:callId,reasonCode:"groq-timeout",transcriptText:"SENSITIVE UTTERANCE NOT FOR REPORT"}, "2026-10-10T16:03:00.000Z","warn");
-fs.writeFileSync(path.join(inbox,"end.json"),JSON.stringify(batch("end",endedAt,[rating,warning,stop,checkpoint])));
+fs.writeFileSync(path.join(inbox,"end.json"),JSON.stringify(batch("end",endedAt,[warning,stop,checkpoint])));
 
 const built=buildObservabilityPackage(root);
 assert.equal(built.callReports.reportCount,1);
@@ -89,6 +97,9 @@ assert.equal(built.latestCallReport.telemetry.warnings,1);
 assert.ok(built.latestCallReport.telemetry.errorTimeline.some(e=>e.reasonCode==="groq-timeout"));
 assert.equal(built.manifest.calls.reportCount,1);
 assert.equal(built.health.callReportCheckpointObserved,true);
+const audited=auditObservabilityPackage(path.join(root,"observations"));
+assert.equal(audited.callReportCount,1);
+assert.equal(audited.callReportCompleteCount,1);
 assert.equal(fs.existsSync(path.join(root,"observations","latest","latest-call-report.json")),true);
 assert.equal(fs.existsSync(path.join(root,"observations","latest","latest-call-report.md")),true);
 const reportPath=path.join(root,"observations",built.callReports.latestReportPath);
