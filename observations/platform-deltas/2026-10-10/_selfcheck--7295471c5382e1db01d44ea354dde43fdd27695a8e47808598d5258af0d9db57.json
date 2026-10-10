@@ -2,30 +2,39 @@
   "schema": "signal-interpreter-platform-delta/v1",
   "type": "changed",
   "identityKey": "https://app.cloudinterpreter.com|/selfcheck|",
-  "fromSnapshotId": "snap-960ff03c-ed7a-4e9f-84d1-74ba29f2711a",
-  "toSnapshotId": "snap-0274c129-4888-4a38-8e78-882bf7178e39",
-  "fromHash": "5b57619749274c05f0e997764c54f208ed6a78539f04dd7d13ee3747812be957",
+  "fromSnapshotId": "snap-8ed94fe6-65fd-4cfe-ba64-2576196938a3",
+  "toSnapshotId": "snap-9eb932d8-75f2-40a7-9e31-3db2172c98f0",
+  "fromHash": "63e438a5c967612dae2b1230e60086e08b335dae65c5dcb920b9a99c30616abb",
   "toHash": "7295471c5382e1db01d44ea354dde43fdd27695a8e47808598d5258af0d9db57",
-  "capturedAt": "2026-10-10T19:27:01.923Z",
+  "capturedAt": "2026-10-10T19:27:15.229Z",
   "summary": {
     "added": 0,
-    "removed": 1,
-    "changed": 0,
+    "removed": 0,
+    "changed": 1,
     "sections": [
       "resources"
     ]
   },
   "changes": [
     {
-      "kind": "removed",
-      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/user.getUserProfileInOrganisation?input=<VALUE>|fetch]",
-      "value": {
-        "url": "https://app.cloudinterpreter.com/api/trpc/user.getUserProfileInOrganisation?input=<VALUE>",
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>|fetch]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>",
         "initiatorType": "fetch",
-        "durationMs": 1078,
-        "transferBytes": 3330,
-        "encodedBytes": 3030,
-        "decodedBytes": 17512,
+        "durationMs": 1642,
+        "transferBytes": 734,
+        "encodedBytes": 434,
+        "decodedBytes": 785,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 1219,
+        "transferBytes": 727,
+        "encodedBytes": 427,
+        "decodedBytes": 781,
         "protocol": "http/1.1"
       }
     }

@@ -1,0 +1,91 @@
+{
+  "schema": "signal-interpreter-platform-delta/v1",
+  "type": "changed",
+  "identityKey": "https://app.cloudinterpreter.com|/selfcheck|",
+  "fromSnapshotId": "snap-5d8fb521-ef5f-4cc0-a5b7-253f289db24d",
+  "toSnapshotId": "snap-5999a6f0-2bb4-4324-96af-f4962ae34e80",
+  "fromHash": "6834c7de12575a6c4ef7dd6a717d6f69456bedec71df1a91eb3ef5f1efa3a43e",
+  "toHash": "31ddb3b8c2bbc49e01dd3454ad84fcd8ddc44bb3823e5c2441e6366b65cfd46d",
+  "capturedAt": "2026-10-10T19:28:45.227Z",
+  "summary": {
+    "added": 1,
+    "removed": 1,
+    "changed": 2,
+    "sections": [
+      "resources"
+    ]
+  },
+  "changes": [
+    {
+      "kind": "added",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/logFetcher.fetchInterpreterLogs|fetch]",
+      "value": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/logFetcher.fetchInterpreterLogs",
+        "initiatorType": "fetch",
+        "durationMs": 165,
+        "transferBytes": 699,
+        "encodedBytes": 399,
+        "decodedBytes": 814,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>|fetch]",
+      "value": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 1357,
+        "transferBytes": 738,
+        "encodedBytes": 438,
+        "decodedBytes": 790,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/utils.heartbeat|fetch]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
+        "initiatorType": "fetch",
+        "durationMs": 2494,
+        "transferBytes": 384,
+        "encodedBytes": 84,
+        "decodedBytes": 71,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
+        "initiatorType": "fetch",
+        "durationMs": 149,
+        "transferBytes": 384,
+        "encodedBytes": 84,
+        "decodedBytes": 71,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://sdk.twilio.com|xmlhttprequest]",
+      "before": {
+        "url": "https://sdk.twilio.com",
+        "initiatorType": "xmlhttprequest",
+        "durationMs": 3,
+        "transferBytes": 0,
+        "encodedBytes": 0,
+        "decodedBytes": 0,
+        "protocol": ""
+      },
+      "after": {
+        "url": "https://sdk.twilio.com",
+        "initiatorType": "xmlhttprequest",
+        "durationMs": 5,
+        "transferBytes": 0,
+        "encodedBytes": 0,
+        "decodedBytes": 0,
+        "protocol": ""
+      }
+    }
+  ],
+  "truncated": false
+}

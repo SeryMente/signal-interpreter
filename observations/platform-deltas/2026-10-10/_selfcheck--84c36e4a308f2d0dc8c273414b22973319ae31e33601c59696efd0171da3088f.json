@@ -1,0 +1,78 @@
+{
+  "schema": "signal-interpreter-platform-delta/v1",
+  "type": "changed",
+  "identityKey": "https://app.cloudinterpreter.com|/selfcheck|",
+  "fromSnapshotId": "snap-0e9bce26-d311-474d-8174-0b81857d2a8f",
+  "toSnapshotId": "snap-729fbe41-fe79-433d-bf11-f8433df00a0a",
+  "fromHash": "a8e3c5538595fc73cb882ce7c39e2a6ad06466381e4c79738ee3ac05ddf518cb",
+  "toHash": "84c36e4a308f2d0dc8c273414b22973319ae31e33601c59696efd0171da3088f",
+  "capturedAt": "2026-10-10T19:29:31.816Z",
+  "summary": {
+    "added": 0,
+    "removed": 1,
+    "changed": 2,
+    "sections": [
+      "resources"
+    ]
+  },
+  "changes": [
+    {
+      "kind": "removed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>|fetch]",
+      "value": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 1779,
+        "transferBytes": 350,
+        "encodedBytes": 50,
+        "decodedBytes": 33,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/utils.heartbeat|fetch]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
+        "initiatorType": "fetch",
+        "durationMs": 2494,
+        "transferBytes": 384,
+        "encodedBytes": 84,
+        "decodedBytes": 71,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
+        "initiatorType": "fetch",
+        "durationMs": 149,
+        "transferBytes": 384,
+        "encodedBytes": 84,
+        "decodedBytes": 71,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://sdk.twilio.com|xmlhttprequest]",
+      "before": {
+        "url": "https://sdk.twilio.com",
+        "initiatorType": "xmlhttprequest",
+        "durationMs": 3,
+        "transferBytes": 0,
+        "encodedBytes": 0,
+        "decodedBytes": 0,
+        "protocol": ""
+      },
+      "after": {
+        "url": "https://sdk.twilio.com",
+        "initiatorType": "xmlhttprequest",
+        "durationMs": 8,
+        "transferBytes": 0,
+        "encodedBytes": 0,
+        "decodedBytes": 0,
+        "protocol": ""
+      }
+    }
+  ],
+  "truncated": false
+}
