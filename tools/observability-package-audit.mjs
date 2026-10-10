@@ -127,5 +127,5 @@ export function auditObservabilityPackage(observationsRoot){
 if(import.meta.url==="file://"+process.argv[1].replace(/\\\\/g,"/")){
   const result=auditObservabilityPackage(process.argv[2]||"observations");
   console.log("OBSERVABILITY_PACKAGE_AUDIT=PASS");
-  console.log(JSON.stringify({identityCount:result.identityCount,observations:result.observations,deltas:result.deltas,routeCount:result.routeCount}));
+  console.log(JSON.stringify({identityCount:result.identityCount,observations:result.observations,deltas:result.deltas,routeCount:result.routeCount,callReportCount:result.callReportCount,callReportCompleteCount:result.callReportCompleteCount,callReportPartialCount:result.callReportPartialCount}));
 }
