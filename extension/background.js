@@ -250,7 +250,6 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       if (!text) return current;
       var source = caption.source === "yo" ? "yo" : (caption.source === "chrome-live-caption" ? "chrome-live-caption" : "cliente");
       var language = SignalCaptionCore.resolveLanguage(caption.language, text);
-      if (language === "es") source = "yo";
       var now = Date.now();
       var lane = source === "yo" ? "yo" : "cliente";
       var candidate = null;
