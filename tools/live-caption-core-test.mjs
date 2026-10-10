@@ -43,6 +43,12 @@ assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Dirección: Ave
 ], "la dirección debe conservar colonia, ciudad y estado en la búsqueda de Maps");
 assert.equal(core.findSmartTokens("Avenida Reforma 123, Colonia Juárez. Llámeme al +52 442 123 4567.")[0].text,
   "Avenida Reforma 123, Colonia Juárez", "el detector de direcciones no debe consumir palabras de la oración siguiente");
+assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Ship to 123 Main Street, Austin, TX 78701. Call 555-123-4567."))).map(x => ({type:x.type,text:x.text})), [
+  { type: "address", text: "123 Main Street, Austin, TX 78701" },
+  { type: "phone", text: "555-123-4567" }
+], "los códigos postales forman parte de la dirección y no desplazan el teléfono");
+assert.equal(core.findSmartTokens("The appointment is on 2026-10-09, call at 555-123-4567.").some(x => x.text === "2026-10-09"), false,
+  "una fecha no debe convertirse en teléfono copiable");
 assert.equal(core.findSmartTokens("La cita es a las 10:30 y son 3 pacientes.").length, 0,
   "no se deben marcar horas o cifras cortas como teléfonos");
 
