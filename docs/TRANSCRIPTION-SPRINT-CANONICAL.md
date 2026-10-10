@@ -7,7 +7,8 @@
 > **Integración previa al ciclo correctivo:** [PR #52](https://github.com/SeryMente/signal-interpreter/pull/52)
 > **Corrección previa de recuperación/exportación:** [PR #53](https://github.com/SeryMente/signal-interpreter/pull/53)
 > **Integración histórica del alcance 0.10.32:** [PR #54](https://github.com/SeryMente/signal-interpreter/pull/54)
-> **Hotloading verificable 0.10.33:** [PR #55](https://github.com/SeryMente/signal-interpreter/pull/55)
+> **Hotloading histórico 0.10.33:** [PR #55](https://github.com/SeryMente/signal-interpreter/pull/55)
+> **Corrección nativa exclusiva 0.10.34:** [PR #56](https://github.com/SeryMente/signal-interpreter/pull/56)
 > **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.34 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
 
 > **ALCANCE VIGENTE Y PREVALENTE (§15):** la extensión es una mejora visual para interpretación telefónica (OPI): copia exclusivamente texto accesible de Live Caption nativo de Chrome. No captura audio de pestaña ni micrófono, no llama a Groq y no reproduce conversación. Las rutas de captura descritas en §§6–14 y el anexo son HISTORIA SUPERADA, no autorización vigente. Los controles de mute existentes permanecen independientes.

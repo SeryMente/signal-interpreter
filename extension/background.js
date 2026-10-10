@@ -1,5 +1,4 @@
-try{importScripts("groq-secret.local.js");}catch(_){/* Se genera localmente; no se versiona. */}
-importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js","platform-screenshot.js","auth-bootstrap.js");
+importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js");
 (function () {
   "use strict";
 
@@ -3091,7 +3090,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
 
   async function markObservabilityBuildCheckpoint(reason, previousVersion) {
     try {
-      var files=["manifest.json","background.js","content.js","offscreen.js","groq-transcriber.js","ui/popup.js","ui/popup.html","ui/popup.css","ui/time-format.js"];
+      var files=["manifest.json","background.js","content.js","offscreen.js","ui/popup.js","ui/popup.html","ui/popup.css","ui/time-format.js"];
       var texts=await Promise.all(files.map(function(file){return fetch(chrome.runtime.getURL(file),{cache:"no-store"}).then(function(response){if(!response.ok)throw new Error("No se pudo leer "+file);return response.text();});}));
       var bytes=new TextEncoder().encode(texts.join("\n/* SIGNAL OBSERVABILITY BUILD BOUNDARY */\n"));
       var digest=await crypto.subtle.digest("SHA-256",bytes);
