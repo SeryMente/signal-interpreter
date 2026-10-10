@@ -240,6 +240,8 @@
       var url = String(tab && tab.url || "");
       var target = !!(tab && tab.id != null && /^https:\/\/www\.youtube\.com\/watch(?:\?|#|$)/i.test(url) &&
         /(?:\?|&)v=TshOFzKQfG8(?:&|$)/.test(url));
+      var youtubeCaptureSection = $("youtubeCaptionTestTools");
+      if (youtubeCaptureSection) youtubeCaptureSection.hidden = !target;
       youtubeCaptionCaptureButton.hidden = !target;
       if (youtubeCaptionCaptureHelp) youtubeCaptionCaptureHelp.hidden = !target;
       if (!target) return;
