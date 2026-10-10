@@ -1760,6 +1760,8 @@
     overlayLifecycleActive = true;
     overlayLifecycleCallId = callId;
     overlayRatingStopEmitted = false;
+    overlayLastVisibility = null;
+    overlayRecoveryAttempts = 0;
     overlayPeriod = "today";
     overlayCurrency = /^(MXN|USD)$/.test(String(config.earningsDisplayCurrency || "")) ? config.earningsDisplayCurrency : "MXN";
     emit("EARNINGS_OVERLAY_STARTED", { callId: callId, reason: reason || "call-start" });
