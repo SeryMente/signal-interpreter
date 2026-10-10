@@ -54,6 +54,8 @@ assert.ok(background.includes("SignalCaptionBridge"));
 assert.ok(background.includes("no-tab-create-no-navigation-no-reload"));
 
 assert.ok(content.includes("PLATFORM_SURFACE_SNAPSHOT"));
+assert.ok(content.includes('portalStructureSnapshot("call-rating-stars-confirmed", true, callId)'), "rating-screen surface evidence stays correlated to the ended call");
+assert.ok(content.includes("callId: associatedCallId || currentCallId() || null"), "forced platform surface snapshots preserve call correlation");
 assert.ok(content.includes("PLATFORM_URL_CHANGED"));
 assert.ok(content.includes("extractPortalStructure"));
 assert.ok(content.includes("stylesheetSurface"));
