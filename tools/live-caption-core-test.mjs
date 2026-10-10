@@ -55,6 +55,8 @@ assert.equal(core.findSmartTokens("La cita es a las 10:30 y son 3 pacientes.").l
 assert.equal(core.roleForSource("chrome-live-caption", "en"), "CLIENTE");
 assert.equal(core.roleForSource("cliente", "en"), "CLIENTE");
 assert.equal(core.roleForSource("yo", "es"), "LEP");
+assert.equal(core.roleForSource("cliente", "es"), "CLIENTE", "el idioma no debe cambiar el canal de audio del cliente");
+assert.equal(core.roleForSource("yo", "en"), "LEP", "la fuente del micrófono debe conservar el carril LEP si cambia de idioma");
 assert.equal(core.captionRelation("I need the appointment", "I need the appointment tomorrow"), "progressive");
 assert.equal(core.captionRelation("I need the appointment tomorrow", "I need the appointment"), "stale");
 assert.equal(core.captionRelation("Please call me tomorrow", "call me tomorrow morning"), "overlap");
