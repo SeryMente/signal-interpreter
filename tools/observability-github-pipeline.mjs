@@ -334,7 +334,7 @@ function makeCallReport(callId,events,generatedAt){
       errorTimeline.push({
         at:reportDate(event.timestamp,null),action:action,level:level,category:category,component:component,
         phase:reportSafeText(event.phase||"event",30),outcome:reportSafeText(event.outcome||"observed",30),
-        reasonCode:reportSafeText(event.reasonCode||p.reasonCode||p.reason||"",100),
+        reasonCode:reportSafeText(event.reasonCode||p.reasonCode||"",100),
         errorType:reportSafeText(p.errorType||p.name||"",80)
       });
     }
