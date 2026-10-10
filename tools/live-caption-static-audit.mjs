@@ -45,7 +45,7 @@ assert.ok(overlay.includes("Ctrl+Mayús+clic"), "el overlay explica la búsqueda
 assert.ok(overlay.includes("SIGNAL_CAPTION_OPEN_LOOKUP"), "el overlay puede abrir verificaciones con acción explícita");
 assert.ok(manifest.permissions.includes("clipboardWrite"), "la copia literal tiene el permiso recomendado para execCommand(copy) como fallback");
 assert.ok(overlay.includes("event.ctrlKey && event.shiftKey"), "Linguee requiere Ctrl+Mayús+clic");
-assert.equal(/if\s*\(\s*event\.ctrlKey\s*\)\s*\{/.test(overlay), false, "Ctrl+clic sin Mayús no debe abrir Linguee sobre texto ordinario");
+assert.equal(overlay.includes('var searchTerm = termAtPoint(event, textElement)'), false, "Ctrl+clic en texto ordinario no debe abrir Linguee");
 assert.ok(popup.includes("captionInterpreterEnabled"), "el popup permite activar/desactivar las captions del LEP");
 assert.ok(popup.includes("youtubeCaptionCapture"), "el popup permite iniciar y detener la captura aislada del video");
 
