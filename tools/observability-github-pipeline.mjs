@@ -207,6 +207,304 @@ function buildLatestSummary(latestBatch,index){
 function isRealBatch(batch){
   return !!batch&&batch.trigger!=="observability-self-test"&&batch.extensionVersion!=="self-test";
 }
+function eventCallId(event){
+  const p=event&&event.payload&&typeof event.payload==="object"?event.payload:{};
+  const finalCall=p.finalCall&&typeof p.finalCall==="object"?p.finalCall:{};
+  return String(p.callId||finalCall.callId||event&&event.session&&event.session.callId||event&&event.context&&event.context.callId||"").trim();
+}
+function isTerminalCallEvent(event){
+  const action=String(event&&event.action||"");
+  const p=event&&event.payload&&typeof event.payload==="object"?event.payload:{};
+  return action==="CALL_RATING_STARS_CONFIRMED"||action==="CALL_TIMER_STOPPED"||
+    (action==="CALL_OBSERVABILITY_CHECKPOINT"&&p.checkpoint==="call-ended");
+}
+function reportDate(value,fallback){
+  const time=Date.parse(value||"");
+  return Number.isFinite(time)?new Date(time).toISOString():fallback;
+}
+function reportNumber(value){
+  const number=Number(value);
+  return value!==null&&value!==undefined&&value!==""&&Number.isFinite(number)?number:null;
+}
+function reportSafeText(value,max=160){
+  return String(value==null?"":value)
+    .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi,"Bearer [REDACTED]")
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,"[EMAIL]")
+    .replace(/(?:\+?\d[\d\s().-]{7,}\d)/g,"[PHONE]")
+    .replace(/[\r\n\t]+/g," ").slice(0,max);
+}
+function reportResourceName(value){
+  try{
+    const url=new URL(String(value||""),"https://app.cloudinterpreter.com");
+    return url.origin+url.pathname.replace(/\/call\/[^/]+/g,"/call/<ID>").replace(/\/profile\/[^/]+/g,"/profile/<ID>");
+  }catch(_){return "[RESOURCE]";}
+}
+function reportFeature(action){
+  const a=String(action||"").toUpperCase();
+  const groups=[
+    ["answerFlow",/ANSWER|CONNECT|INCOMING|AUTO_ANSWER/],
+    ["ratingAndClose",/RATING|CALL_ROUTE_ENDED|CALL_TIMER_STOPPED|CALL_OBSERVABILITY_CHECKPOINT/],
+    ["microphoneAndSafety",/MICROPHONE|MIC_GUARD|MUTE|AUDIO_SAFETY/],
+    ["mediaAndCapture",/MEDIA_HEALTH|MEDIA_|CAPTURE|GROQ_AUDIO|AUDIO_/],
+    ["transcriptionAndCaptions",/TRANSCRIPTION|TRANSCRIPT|CAPTION|GROQ/],
+    ["performanceAndNetwork",/PERFORMANCE|NETWORK|RESOURCE|LONG_TASK|LAYOUT_SHIFT/],
+    ["platformAndUi",/PLATFORM_|PORTAL_|SCREEN_MAP|SCREENSHOT|MIRROR|UI_/],
+    ["billingAndEarnings",/EARNINGS|BILLING|EXCHANGE|REVENUE/],
+    ["runtimeAndRecovery",/HOTLOAD|RUNTIME|WORKER|RECOVERY|RECONNECT/],
+    ["observabilityPipeline",/OBSERVATION|OBSERVABILITY|TELEMETRY|SYNC_|BATCH|RELAY/]
+  ];
+  for(const pair of groups)if(pair[1].test(a))return pair[0];
+  return "other";
+}
+function callReportPayload(event){
+  return event&&event.payload&&typeof event.payload==="object"?event.payload:{};
+}
+function makeCallReport(callId,events,generatedAt){
+  const related=events.filter(event=>eventCallId(event)===callId)
+    .sort((a,b)=>(Date.parse(a.timestamp||"")||0)-(Date.parse(b.timestamp||"")||0));
+  const starEvent=related.find(event=>event.action==="CALL_RATING_STARS_CONFIRMED")||null;
+  const checkpointEvents=related.filter(event=>event.action==="CALL_OBSERVABILITY_CHECKPOINT"&&callReportPayload(event).checkpoint==="call-ended");
+  const checkpoint=checkpointEvents.length?checkpointEvents[checkpointEvents.length-1]:null;
+  const stopped=related.filter(event=>event.action==="CALL_TIMER_STOPPED");
+  const timerStop=stopped.length?stopped[stopped.length-1]:null;
+  const starts=related.filter(event=>/CALL_TIMER_STARTED|CALL_ROUTE_ENTERED|ANSWER_FLOW_ROUTE_CONFIRMED/.test(String(event.action||"")));
+  const timerStart=starts.length?starts[0]:null;
+  const checkpointPayload=callReportPayload(checkpoint);
+  const stopPayload=callReportPayload(timerStop);
+  const finalCall=checkpointPayload.finalCall&&typeof checkpointPayload.finalCall==="object"?checkpointPayload.finalCall:stopPayload;
+  const starPayload=callReportPayload(starEvent);
+  const starEvidence=starPayload.evidence&&typeof starPayload.evidence==="object"?starPayload.evidence:{};
+  const callRef=sha256("signal-interpreter-call:"+callId).slice(0,24);
+  const startAt=reportDate(finalCall.startedAt||timerStart&&timerStart.timestamp,null);
+  const endAt=reportDate(finalCall.endedAt||timerStop&&timerStop.timestamp||checkpoint&&checkpoint.timestamp,null);
+  const actions={},categories={},components={},levels={},featureSignals={};
+  let warnings=0,errors=0,failed=0,sequenceMin=null,sequenceMax=null;
+  const performanceEvents=[],mediaEvents=[],networkCount={total:0},errorTimeline=[];
+  related.forEach(event=>{
+    const action=String(event.action||"UNKNOWN").slice(0,100);
+    const category=String(event.category||"RUNTIME").slice(0,60);
+    const component=String(event.component||event.source||"unknown").slice(0,60);
+    const level=String(event.level||"info").slice(0,20);
+    actions[action]=(actions[action]||0)+1;categories[category]=(categories[category]||0)+1;
+    components[component]=(components[component]||0)+1;levels[level]=(levels[level]||0)+1;
+    const feature=reportFeature(action);featureSignals[feature]=(featureSignals[feature]||0)+1;
+    if(level==="warn")warnings++;if(level==="error")errors++;
+    if(/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/.test(action))failed++;
+    const seq=reportNumber(event.sequence);
+    if(seq!==null){sequenceMin=sequenceMin===null?seq:Math.min(sequenceMin,seq);sequenceMax=sequenceMax===null?seq:Math.max(sequenceMax,seq);}
+    const p=callReportPayload(event);
+    if(action==="PERFORMANCE_HEARTBEAT")performanceEvents.push({event:event,payload:p});
+    if(action==="MEDIA_HEALTH")mediaEvents.push({event:event,payload:p});
+    if(/NETWORK|RESOURCE|FETCH|XHR/.test(action))networkCount.total++;
+    if(level==="warn"||level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/.test(action)){
+      errorTimeline.push({
+        at:reportDate(event.timestamp,null),action:action,level:level,category:category,component:component,
+        phase:reportSafeText(event.phase||"event",30),outcome:reportSafeText(event.outcome||"observed",30),
+        reasonCode:reportSafeText(event.reasonCode||p.reasonCode||p.reason||"",100),
+        errorType:reportSafeText(p.errorType||p.name||"",80)
+      });
+    }
+  });
+  const lastPerf=performanceEvents.length?performanceEvents[performanceEvents.length-1].payload:{};
+  const peak=performanceEvents.reduce((out,item)=>{
+    const p=item.payload.performance||{};
+    out.longestTaskMs=Math.max(out.longestTaskMs,reportNumber(p.longestTaskMs)||0);
+    out.longTaskTotalMs=Math.max(out.longTaskTotalMs,reportNumber(p.longTaskTotalMs)||0);
+    out.layoutShiftScore=Math.max(out.layoutShiftScore,reportNumber(p.layoutShiftScore)||0);
+    out.longTasks=Math.max(out.longTasks,reportNumber(p.longTasks)||0);
+    out.layoutShifts=Math.max(out.layoutShifts,reportNumber(p.layoutShifts)||0);
+    return out;
+  },{longTasks:0,longestTaskMs:0,longTaskTotalMs:0,layoutShifts:0,layoutShiftScore:0});
+  const slowest=(Array.isArray(lastPerf.resources&&lastPerf.resources.slowest)?lastPerf.resources.slowest:[]).slice(0,8).map(item=>({
+    name:reportResourceName(item.name||item.url),type:reportSafeText(item.type||"other",40),
+    durationMs:reportNumber(item.durationMs),transferBytes:reportNumber(item.transferBytes)
+  }));
+  const lastMedia=mediaEvents.length?mediaEvents[mediaEvents.length-1].payload:{};
+  const media=Array.isArray(lastMedia.media)?lastMedia.media:[];
+  const stars=!!starEvent&&starPayload.ratingPromptVisible===true&&starEvidence.starsVisible===true;
+  const complete=!!checkpoint&&!!finalCall.callId&&!!endAt;
+  const missing=[];
+  if(!timerStart&&!startAt)missing.push("call-start-not-observed");
+  if(!timerStop&&!endAt)missing.push("call-end-timestamp-not-observed");
+  if(!stars)missing.push("rating-stars-confirmation-not-observed");
+  if(!checkpoint)missing.push("final-observability-checkpoint-not-observed");
+  if(!performanceEvents.length)missing.push("performance-samples-not-observed");
+  if(!mediaEvents.length)missing.push("media-health-not-observed");
+  if(!related.some(event=>event.action==="PLATFORM_SURFACE_SNAPSHOT"))missing.push("platform-surface-snapshot-not-observed");
+  return {
+    schema:"signal-interpreter-call-report/v1",generatedAt:generatedAt,updatedAt:generatedAt,
+    callRef:callRef,status:complete?"complete":"partial",
+    completeness:{complete:complete,missingSignals:missing},
+    time:{firstObservedAt:related.length?reportDate(related[0].timestamp,null):null,lastObservedAt:related.length?reportDate(related[related.length-1].timestamp,null):null},
+    call:{
+      callRef:callRef,status:reportSafeText(finalCall.status||(complete?"closed":"unknown"),40),
+      modality:reportSafeText(finalCall.modality||"",20)||null,startedAt:startAt,endedAt:endAt,
+      duration:{
+        observedSeconds:reportNumber(finalCall.observedSeconds),platformSeconds:reportNumber(finalCall.platformSeconds),
+        billableSecondsAssumed:reportNumber(finalCall.billableSecondsAssumed),
+        platformMinusObservedSeconds:(reportNumber(finalCall.platformSeconds)!==null&&reportNumber(finalCall.observedSeconds)!==null)
+          ?Math.round((Number(finalCall.platformSeconds)-Number(finalCall.observedSeconds))*1000)/1000:null
+      },
+      earnings:{
+        ratePerMinute:reportNumber(finalCall.ratePerMinute),estimatedRevenue:reportNumber(finalCall.estimatedRevenue),
+        countedInEarnings:finalCall.countedInEarnings===true,currency:reportSafeText(finalCall.currency||"",12)||null,
+        billingRule:reportSafeText(finalCall.billingRule||"",80)||null
+      },
+      endSource:reportSafeText(finalCall.endSource||"",60)||null,
+      runtimeVersion:reportSafeText(finalCall.runtimeVersion||starPayload.extensionVersion||"",40)||null
+    },
+    endConfirmation:{
+      ratingRouteObserved:!!starEvent||related.some(event=>event.action==="RATING_ROUTE_ENTERED"),
+      ratingStarsVisible:stars,ratingMethod:reportSafeText(starEvidence.method||"",80)||null,
+      candidateCount:reportNumber(starEvidence.candidateCount),namedStarCandidateCount:reportNumber(starEvidence.namedStarCandidateCount),
+      starLikeCandidateCount:reportNumber(starEvidence.starLikeCandidateCount),visibleButtonCount:reportNumber(starEvidence.visibleButtonCount),
+      visibleRadioCount:reportNumber(starEvidence.visibleRadioCount),ratingValueObserved:starPayload.ratingValueObserved===true,
+      ratingSubmissionObserved:starPayload.ratingSubmissionObserved===true,
+      confirmedAt:reportDate(starPayload.confirmedAt||starEvent&&starEvent.timestamp,null),
+      finalCheckpointObserved:!!checkpoint,checkpointAt:reportDate(checkpoint&&checkpoint.timestamp,null),
+      confirmationFallbacks:related.filter(event=>event.action==="RATING_ROUTE_FAILED").length
+    },
+    correlation:{
+      eventCount:related.length,firstSequence:sequenceMin,lastSequence:sequenceMax,
+      batches:Array.from(new Set(related.map(event=>String(event.batchId||"")).filter(Boolean))).slice(0,40),
+      actionCount:Object.keys(actions).length,categoryCount:Object.keys(categories).length,
+      sourceTabs:Array.from(new Set(related.map(event=>reportNumber(event.tabId)).filter(value=>value!==null))).slice(0,20)
+    },
+    telemetry:{
+      eventLevels:levels,actions:actions,categories:categories,components:components,featureSignals:featureSignals,
+      warnings:warnings,errors:errors,failedOrBlockedEvents:failed,errorTimeline:errorTimeline.slice(-60),
+      performance:{
+        samples:performanceEvents.length,lastAt:performanceEvents.length?reportDate(performanceEvents[performanceEvents.length-1].event.timestamp,null):null,
+        latest:{
+          uptimeMs:reportNumber(lastPerf.uptimeMs),nodeCount:reportNumber(lastPerf.document&&lastPerf.document.nodes),
+          online:lastPerf.document&&typeof lastPerf.document.online==="boolean"?lastPerf.document.online:null,
+          visibility:reportSafeText(lastPerf.document&&lastPerf.document.visibility||"",30)||null,
+          connection:{
+            effectiveType:reportSafeText(lastPerf.connection&&lastPerf.connection.effectiveType||"",20)||null,
+            rttMs:reportNumber(lastPerf.connection&&lastPerf.connection.rttMs),downlinkMbps:reportNumber(lastPerf.connection&&lastPerf.connection.downlinkMbps)
+          },
+          memory:{
+            usedBytes:reportNumber(lastPerf.memory&&lastPerf.memory.usedBytes),totalBytes:reportNumber(lastPerf.memory&&lastPerf.memory.totalBytes),
+            limitBytes:reportNumber(lastPerf.memory&&lastPerf.memory.limitBytes)
+          },
+          resources:{
+            newResources:reportNumber(lastPerf.resources&&lastPerf.resources.newResources),
+            totalDurationMs:reportNumber(lastPerf.resources&&lastPerf.resources.totalDurationMs),
+            transferBytes:reportNumber(lastPerf.resources&&lastPerf.resources.transferBytes),slowest:slowest
+          },
+          mutations:lastPerf.mutations&&typeof lastPerf.mutations==="object"?{
+            batches:reportNumber(lastPerf.mutations.batches),addedNodes:reportNumber(lastPerf.mutations.addedNodes),
+            removedNodes:reportNumber(lastPerf.mutations.removedNodes),attributes:reportNumber(lastPerf.mutations.attributes),
+            textChanges:reportNumber(lastPerf.mutations.textChanges)
+          }:null
+        },
+        peak:peak
+      },
+      media:{
+        samples:mediaEvents.length,mediaElementsFound:reportNumber(lastMedia.mediaElementsFound),
+        tracksObserved:media.reduce((sum,item)=>sum+(Array.isArray(item.tracks)?item.tracks.length:0),0),
+        mutedElements:media.filter(item=>item.muted===true).length,pausedElements:media.filter(item=>item.paused===true).length,
+        endedElements:media.filter(item=>item.ended===true).length,
+        elementsWithoutStream:media.filter(item=>item.hasSrcObject!==true).length,
+        interpretation:reportSafeText(lastMedia.interpretation||"",120)
+      },
+      networkEvents:networkCount.total
+    },
+    privacy:{
+      rawAudioIncluded:false,rawTranscriptIncluded:false,rawTranscriptTextIncluded:false,fullCallIdIncluded:false,
+      ratingValueIncluded:false,ratingSubmissionClaimed:false,rawHtmlIncluded:false,rawCssIncluded:false,
+      rawJavascriptIncluded:false,credentialsIncluded:false,resourceNamesNormalized:true
+    }
+  };
+}
+function callReportMarkdown(report){
+  const call=report.call||{},duration=call.duration||{},earnings=call.earnings||{},end=report.endConfirmation||{},telemetry=report.telemetry||{};
+  const lines=[
+    "# Signal Interpreter — informe de cierre de llamada","",
+    "- Estado de recolección: **"+report.status+"**","- Referencia opaca: "+report.callRef,
+    "- Versión runtime: "+String(call.runtimeVersion||"unknown"),
+    "- Modalidad/estado: "+String(call.modality||"unknown")+" / "+String(call.status||"unknown"),
+    "- Inicio: "+String(call.startedAt||"no observado"),"- Fin: "+String(call.endedAt||"no observado"),
+    "- Duración observada / plataforma / facturable asumida (s): "+[duration.observedSeconds,duration.platformSeconds,duration.billableSecondsAssumed].map(v=>v==null?"unknown":String(v)).join(" / "),
+    "- Ingreso estimado: "+(earnings.estimatedRevenue==null?"unknown":String(earnings.estimatedRevenue)+" "+String(earnings.currency||"unknown")),
+    "- Fin por: "+String(call.endSource||"unknown"),"","## Confirmación de calificación","",
+    "- Ruta de calificación observada: "+String(end.ratingRouteObserved),
+    "- Estrellas visibles confirmadas: "+String(end.ratingStarsVisible),
+    "- Método de detección: "+String(end.ratingMethod||"unknown"),
+    "- Valor seleccionado observado: "+String(end.ratingValueObserved),
+    "- Envío de valoración observado: "+String(end.ratingSubmissionObserved),
+    "- Checkpoint final entregado al paquete: "+String(end.finalCheckpointObserved),"",
+    "## Cobertura y señales","",
+    "- Eventos correlacionados: "+String(report.correlation&&report.correlation.eventCount||0),
+    "- Warnings / errores / eventos fallidos-bloqueados: "+String(telemetry.warnings||0)+" / "+String(telemetry.errors||0)+" / "+String(telemetry.failedOrBlockedEvents||0),
+    "- Muestras de rendimiento / media: "+String(telemetry.performance&&telemetry.performance.samples||0)+" / "+String(telemetry.media&&telemetry.media.samples||0),
+    "- Conteo por grupos: "+JSON.stringify(telemetry.featureSignals||{}),"","## Señales ausentes o incompletas","",
+    ...(report.completeness&&report.completeness.missingSignals||[]).map(value=>"- "+value),"",
+    "## Errores, advertencias y fallos","","| Momento | Acción | Nivel | Categoría | Motivo |","|---|---|---|---|---|",
+    ...(telemetry.errorTimeline||[]).map(item=>"| "+String(item.at||"unknown")+" | "+String(item.action||"")+" | "+String(item.level||"")+" | "+String(item.category||"")+" | "+String(item.reasonCode||"")+" |"),"",
+    "## Privacidad","",
+    "- Audio/transcripción crudos, texto de transcripción, HTML/CSS/JS completos y credenciales no forman parte del informe.",
+    "- Las estrellas indican visibilidad del prompt; no se infiere ni afirma un valor seleccionado ni un envío.",
+    "- Los IDs de llamada se sustituyen por una referencia opaca."
+  ];
+  return lines.join("\n")+"\n";
+}
+function updateCallReports(obs,candidateCallIds,generatedAt){
+  const reportsRoot=path.join(obs,"call-reports");
+  const indexFile=path.join(reportsRoot,"index.json");
+  const index=readJson(indexFile,{schema:"signal-interpreter-call-report-index/v1",generatedAt:null,reportCount:0,latestCallRef:null,reportsByCallRef:{}});
+  index.schema="signal-interpreter-call-report-index/v1";
+  index.reportsByCallRef=index.reportsByCallRef&&typeof index.reportsByCallRef==="object"?index.reportsByCallRef:{};
+  const ids=Array.from(new Set(candidateCallIds||[])).filter(Boolean);
+  if(ids.length){
+    const allEvents=[];
+    for(const batchFile of listJson(path.join(obs,"batches"))){
+      const batch=readJson(batchFile,null);
+      if(!batch||batch.schema!==BATCH_SCHEMA||!isRealBatch(batch)||!Array.isArray(batch.events))continue;
+      batch.events.forEach(event=>allEvents.push(Object.assign({batchId:batch.batchId},event)));
+    }
+    for(const callId of ids){
+      const callRef=sha256("signal-interpreter-call:"+callId).slice(0,24);
+      const related=allEvents.filter(event=>eventCallId(event)===String(callId));
+      if(!related.length)continue;
+      const report=makeCallReport(String(callId),related,generatedAt);
+      const previous=index.reportsByCallRef[callRef]||{};
+      let reportPath=previous.reportPath||null;
+      if(!reportPath){
+        const anchor=report.call.endedAt||report.endConfirmation.confirmedAt||report.time.firstObservedAt||generatedAt;
+        const day=String(anchor).slice(0,10)||generatedAt.slice(0,10);
+        reportPath="call-reports/"+day+"/call-"+callRef+".json";
+      }
+      report.reportPath=reportPath;
+      writeJson(path.join(obs,reportPath),report);
+      index.reportsByCallRef[callRef]={
+        callRef:callRef,reportPath:reportPath,generatedAt:generatedAt,startedAt:report.call.startedAt,
+        endedAt:report.call.endedAt,status:report.status,ratingStarsObserved:report.endConfirmation.ratingStarsVisible,
+        eventCount:report.correlation.eventCount,missingSignalCount:report.completeness.missingSignals.length
+      };
+    }
+  }
+  const entries=Object.values(index.reportsByCallRef).filter(entry=>entry&&entry.reportPath);
+  entries.sort((a,b)=>(Date.parse(a.endedAt||a.generatedAt||"")||0)-(Date.parse(b.endedAt||b.generatedAt||"")||0));
+  index.generatedAt=generatedAt;index.reportCount=entries.length;
+  index.completedCount=entries.filter(entry=>entry.status==="complete").length;
+  index.partialCount=entries.filter(entry=>entry.status!=="complete").length;
+  const latest=entries.length?entries[entries.length-1]:null;
+  index.latestCallRef=latest?latest.callRef:null;index.latestReportPath=latest?latest.reportPath:null;
+  if(latest){
+    const report=readJson(path.join(obs,latest.reportPath),null);
+    if(report){
+      writeJson(path.join(obs,"latest","latest-call-report.json"),report);
+      fs.writeFileSync(path.join(obs,"latest","latest-call-report.md"),callReportMarkdown(report),"utf8");
+      index.latestStatus=report.status;
+      index.latestRatingStarsObserved=report.endConfirmation&&report.endConfirmation.ratingStarsVisible===true;
+      index.latestReportGeneratedAt=report.generatedAt;
+    }
+  }
+  writeJson(indexFile,index);
+  return index;
+}
+
 function batchTime(batch){
   const t=Date.parse(batch&&batch.createdAt||"");
   return Number.isFinite(t)?t:0;
