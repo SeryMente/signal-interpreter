@@ -2849,7 +2849,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var tabId = Number(latestState.callSourceTabId);
     if (!Number.isFinite(tabId)) return;
     if (latestConfig.liveCaptionBilingualTabEnabled === false && source !== "yo" && SignalCaptionBridge.isFresh(4500)) return;
-    var outputSource = source === "yo" ? "yo" : (language === "es" ? "yo" : "cliente");
+    var outputSource = source === "yo" ? "yo" : "cliente";
     try {
       await publishCaptionToOverlay({
         text: text.slice(0, 1500),
