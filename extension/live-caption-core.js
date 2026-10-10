@@ -189,7 +189,7 @@
       }
     }
     collect(/\b\d{1,6}\s+(?:[\p{L}\d.'#-]+\s+){1,5}(?:street|st\.?|avenue|ave\.?|road|rd\.?|boulevard|blvd\.?|drive|dr\.?|lane|ln\.?|court|ct\.?|way|highway|hwy\.?|parkway|pkwy\.?|place|pl\.?|terrace|trail|circle|plaza)\b(?:\s*,?\s*(?:apt\.?|suite|unit|#)\s*[\p{L}\d-]+)?(?:\s*,\s*[\p{L} .'-]{2,35}){0,2}/giu, "address");
-    collect(/\b(?:calle|avenida|av\.?|carrera|cra\.?|calzada|boulevard|blvd\.?|paseo|privada|prolongación|prol\.?|circuito|carretera|camino|andador|cerrada|retorno|periférico|eje)\s+[\p{L}\d .'-]{2,45}?\s+(?:n[úu]m(?:ero)?\.?\s*|no\.?\s*|#\s*)?\d{1,6}(?:[A-Za-z]\d{0,4})?(?:\s*,\s*(?:col(?:onia)?\.?|fracc(?:ionamiento)?\.?|cp|c\.?p\.?)\s*[\p{L}\d .'-]{2,35})?/giu, "address");
+    collect(/\b(?:calle|avenida|av\.?|carrera|cra\.?|calzada|boulevard|blvd\.?|paseo|privada|prolongación|prol\.?|circuito|carretera|camino|andador|cerrada|retorno|periférico|eje)\s+[\p{L}\d .'-]{2,45}?\s+(?:n[úu]m(?:ero)?\.?\s*|no\.?\s*|#\s*)?\d{1,6}(?:[A-Za-z]\d{0,4})?(?:\s*,\s*(?:col(?:onia)?\.?|fracc(?:ionamiento)?\.?|cp|c\.?p\.?)\s*[\p{L}\d .'-]{2,35})?(?:\s*,\s*[\p{L} .'-]{2,35}){0,2}/giu, "address");
     collect(/\+?\d(?:[\d().\s-]{5,}\d)(?:\s*(?:ext\.?|x|anexo)\s*\d{1,6})?/giu, "phone");
     candidates.sort(function (a, b) {
       return a.start - b.start || (a.type === "address" ? -1 : 1) || b.end - a.end;
