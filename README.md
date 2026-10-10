@@ -12,11 +12,11 @@ Además, el overlay de subtítulos de llamada utiliza una ruta híbrida:
 
 **Chrome Live Caption → puente nativo mínimo (cuando la burbuja expone texto) → overlay**
 
-y, cuando Chrome no expone texto accesible (incluido el caso en que el usuario cierra la burbuja), usa:
+y, para completar el idioma que Chrome Live Caption no transcriba, mantiene un preview bilingüe de audio de pestaña en paralelo; si esa opción se desactiva, conserva el fallback cuando el caption nativo queda obsoleto:
 
-**Audio de pestaña → preview Groq de baja latencia → overlay**
+**Audio de pestaña → fragmentos de 1.8 s → preview Groq con detección inglés/español → overlay**
 
-El preview es efímero: no se persiste en el timeline ni se incorpora al paquete de observabilidad.
+El preview es efímero: no se persiste en el timeline durable ni se incorpora al paquete de observabilidad. La preferencia liveCaptionBilingualTabEnabled lo mantiene en paralelo a los captions nativos por defecto; liveCaptionInterpreterEnabled controla por separado la fuente de micrófono del LEP, siempre sujeta a verificación de mute.
 
 - **CLIENTE:** audio de la pestaña activa.
 - **YO:** micrófono físico.
