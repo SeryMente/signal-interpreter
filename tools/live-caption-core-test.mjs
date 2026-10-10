@@ -28,7 +28,11 @@ assert.equal(core.languageLabel("es"), "ESPAÑOL");
 assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Please call (555) 123-4567 at 123 Main Street, Austin, TX."))), [
   { type: "phone", text: "(555) 123-4567", start: 12, end: 26 },
   { type: "address", text: "123 Main Street, Austin, TX", start: 30, end: 57 }
-], "teléfonos y direcciones en inglés se detectan por separado para copiarlos/verificarlos");
+], "un teléfono entre paréntesis no puede ocultar la dirección posterior");
+assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Call +1 (415) 555-0123, then 77 Broadway Avenue, New York."))), [
+  { type: "phone", text: "+1 (415) 555-0123", start: 5, end: 22 },
+  { type: "address", text: "77 Broadway Avenue, New York", start: 29, end: 57 }
+], "la expresión internacional y la dirección de destino deben conservarse separadas");
 assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Vivo en Avenida Reforma 123, Colonia Juárez. Llámeme al +52 442 123 4567."))).map(x => ({type:x.type,text:x.text})), [
   { type: "address", text: "Avenida Reforma 123, Colonia Juárez" },
   { type: "phone", text: "+52 442 123 4567" }
