@@ -33,8 +33,8 @@ assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Vivo en Avenida
   { type: "address", text: "Avenida Reforma 123, Colonia Juárez" },
   { type: "phone", text: "+52 442 123 4567" }
 ], "direcciones mexicanas y teléfonos internacionales se detectan sin perder puntuación");
-assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Dirección: Avenida Reforma 123, Colonia Juárez, Querétaro, Qro. Tel. +52 442 123 4567.")).map(x => ({type:x.type,text:x.text})), [
-  { type: "address", text: "Avenida Reforma 123, Colonia Juárez, Querétaro, Qro" },
+assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Dirección: Avenida Reforma 123, Colonia Juárez, Querétaro, Qro. Tel. +52 442 123 4567."))).map(x => ({type:x.type,text:x.text})), [
+  { type: "address", text: "Avenida Reforma 123, Colonia Juárez, Querétaro, Qro." },
   { type: "phone", text: "+52 442 123 4567" }
 ], "la dirección debe conservar colonia, ciudad y estado en la búsqueda de Maps");
 assert.equal(core.findSmartTokens("La cita es a las 10:30 y son 3 pacientes.").length, 0,
