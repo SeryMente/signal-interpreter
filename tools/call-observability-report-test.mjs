@@ -49,7 +49,7 @@ const snapshot=event("surface","PLATFORM_SURFACE_SNAPSHOT",{
   platformSurface:{schema:"signal-interpreter-platform-surface/v1",page:{origin:"https://app.cloudinterpreter.com",route:"/call/<ID>/rate",path:"/call/<ID>/rate",searchKeys:[]},controls:{buttons:[],links:[],fields:[],headings:[]},dom:{tagCounts:{body:1},elements:[]},css:{stylesheets:[]},javascript:{scripts:[]},resources:{recent:[]}}
 },"2026-10-10T16:05:00.000Z");
 const overlayContext=event("overlay-context","LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",{
-  callId:callId,component:"live-caption-overlay",enabled:true,scope:"source-only",
+  callId:callId,component:"live-caption-overlay",enabled:true,scope:"source-only",captureScope:"tab-only",
   contextReady:true,pageAllowed:true,callActive:true,sourceTabMatched:true,sourceTabKnown:true,
   routeFallbackApplied:true,contextSyncAttempts:2,contextSyncFailures:1,historyRows:0
 },"2026-10-10T16:00:00.250Z");
@@ -99,6 +99,7 @@ fs.writeFileSync(path.join(inbox,"end.json"),JSON.stringify(batch("end",endedAt,
 const built=buildObservabilityPackage(root);
 assert.equal(built.callReports.reportCount,1);
 assert.equal(built.callReports.completedCount,1);
+assert.equal(built.latestCallReport.captionDiagnosis.captureScope,"tab-only");
 assert.equal(built.latestCallReport.schema,"signal-interpreter-call-report/v1");
 assert.equal(built.latestCallReport.status,"complete");
 assert.equal(built.latestCallReport.call.duration.observedSeconds,364);

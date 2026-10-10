@@ -22,16 +22,16 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.31");
-assert.ok(background.includes('liveCaptionInterpreterEnabled: true'), "la transcripción permite incluir la voz del LEP");
+assert.equal(manifest.version,"0.10.32");
+assert.ok(background.includes('liveCaptionInterpreterEnabled: false'), "el micrófono está fuera del alcance actual");
 assert.ok(background.includes('liveCaptionBilingualTabEnabled: true'), "la transcripción bilingüe de audio de pestaña está activada por defecto");
-assert.ok(background.includes('var outputSource = source === "yo" ? "yo" : "cliente"'), "la atribución del preview procede del canal de audio, no del idioma");
+assert.ok(background.includes('var outputSource = source === "yo" ? "yo" : "cliente"'), "la fuente de audio sigue siendo pestaña aunque el render distinga idioma");
 assert.equal(background.includes('if (language === "es") source = "yo"'), false, "el historial del service worker no debe convertir idioma en identidad del hablante");
 assert.ok(overlay.includes('core.roleForSource(item.source, language)'), "el render respeta la fuente del hablante");
 assert.ok(background.includes("effectiveTabEnabled = !!tabEnabled || config.liveCaptionBilingualTabEnabled !== false"), "el modo paralelo se respeta al activar previews");
 assert.equal(overlay.includes('if (language === "es") source = "yo"'), false, "el idioma no debe reasignar una fuente de audio verificada");
 assert.ok(popup.includes("captionBilingualTabEnabled"), "el popup permite configurar la transcripción bilingüe paralela");
-assert.ok(background.includes('config.liveCaptionInterpreterEnabled !== false'), "la fuente del LEP respeta la preferencia del usuario");
+assert.ok(background.includes('return false; // Current scope: browser tab output only'), "configuración antigua no puede habilitar captura de micrófono");
 assert.ok(background.includes('currentState.microphoneOutputMuted === true'), "la captura de voz del LEP queda bloqueada si el micrófono está silenciado");
 assert.ok(background.includes("SIGNAL_CAPTION_OPEN_LOOKUP"), "las búsquedas externas pasan por un router acotado");
 assert.ok(background.includes("isCaptionTestVideoUrl"), "la captura de audio de prueba está limitada a la URL autorizada");
@@ -46,7 +46,7 @@ assert.ok(overlay.includes("SIGNAL_CAPTION_OPEN_LOOKUP"), "el overlay puede abri
 assert.ok(manifest.permissions.includes("clipboardWrite"), "la copia literal tiene el permiso recomendado para execCommand(copy) como fallback");
 assert.ok(overlay.includes("event.ctrlKey && event.shiftKey"), "Linguee requiere Ctrl+Mayús+clic");
 assert.equal(overlay.includes('var searchTerm = termAtPoint(event, textElement)'), false, "Ctrl+clic en texto ordinario no debe abrir Linguee");
-assert.ok(popup.includes("captionInterpreterEnabled"), "el popup permite activar/desactivar las captions del LEP");
+assert.ok(popup.includes("captionInterpreterEnabled"), "el popup conserva el control existente desactivado por alcance");
 assert.ok(popup.includes("youtubeCaptionCapture"), "el popup permite iniciar y detener la captura aislada del video");
 
 assert.ok(manifest.key && manifest.key.length > 300);
@@ -186,3 +186,5 @@ assert.equal(/127\\.0\\.0\\.1:\\d+/.test(obsSync),false);
 assert.equal(/localhost:\\d+/.test(obsSync),false);
 
 console.log("LIVE_CAPTION_STATIC_AUDIT=PASS");
+assert.equal(/getUserMedia\(\{\s*audio:\s*true/.test(offscreen),false,"offscreen must never request a microphone");
+assert.ok(background.includes('message.source !== "cliente"'),"non-tab audio rejected before transcription");

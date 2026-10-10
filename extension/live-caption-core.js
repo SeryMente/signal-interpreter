@@ -159,7 +159,7 @@
 
   function roleForSource(source, language) {
     if (source === "yo") return "LEP";
-    if (source === "cliente" || source === "chrome-live-caption") return "CLIENTE";
+    if (source === "cliente" || source === "chrome-live-caption") return roleForLanguage(language); // Tab mix: language lane, not physical microphone or speaker verification.
     return roleForLanguage(language);
   }
 
