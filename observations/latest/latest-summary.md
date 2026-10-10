@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-7c3079ad-ea2d-425e-865e-6b91a6729bc9
-- Creado: 2026-10-10T19:01:15.546Z
-- Trigger: critical
+- Batch: batch-0c282c94-4969-4333-ad71-baf90377661e
+- Creado: 2026-10-10T19:01:35.315Z
+- Trigger: event-window
 - Extensión: 0.10.29
 - Eventos: 22
-- Errores: 1
+- Errores: 0
 - Warnings: 0
-- Secuencia: 5849 → 5870
+- Secuencia: 5871 → 5892
 - Identidades de plataforma: 8
 - Snapshots de plataforma: 622
 - Deltas de plataforma: 622
@@ -16,27 +16,18 @@
 
 {
   "RUNTIME": 20,
-  "PORTAL": 2
+  "BILLING": 1,
+  "PORTAL": 1
 }
 
 ## Acciones
 
 {
-  "HOTLOAD_EXISTING_TAB_REHYDRATED": 1,
-  "HOTLOAD_EXISTING_TABS_SCAN_COMPLETED": 1,
-  "HOTLOAD_EXISTING_WEB_TABS_SCAN_DEDUPED": 1,
-  "EARNINGS_OVERLAY_WATCHDOG_STARTED": 1,
-  "PERFORMANCE_HEARTBEAT": 1,
-  "PLATFORM_SESSION_STARTED": 1,
-  "OBSERVER_STARTED": 1,
-  "PLATFORM_INTEGRITY_CHECK": 1,
-  "AUTO_ANSWER_READINESS": 6,
-  "PLATFORM_SURFACE_SNAPSHOT": 1,
-  "AVAILABILITY_STATE": 1,
   "SCREEN_MAP": 1,
-  "HOTLOAD_EXISTING_WEB_TABS_SCAN_COMPLETED": 1,
-  "PLATFORM_MIRROR_UPDATED": 1,
+  "AUTO_ANSWER_READINESS": 14,
+  "PAGE_LIFECYCLE": 3,
+  "PLATFORM_TELEMETRY_RECONCILED": 1,
+  "EXCHANGE_RATE_UPDATED": 1,
   "PAGE_VISIBILITY_CHANGED": 1,
-  "PAGE_LIFECYCLE": 1,
-  "PLATFORM_SCREENSHOT_CAPTURE_ERROR": 1
+  "NETWORK_ACTIVITY_WINDOW": 1
 }
