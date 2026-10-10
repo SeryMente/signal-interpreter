@@ -1766,7 +1766,7 @@
     overlayCurrency = /^(MXN|USD)$/.test(String(config.earningsDisplayCurrency || "")) ? config.earningsDisplayCurrency : "MXN";
     emit("EARNINGS_OVERLAY_STARTED", { callId: callId, reason: reason || "call-start" });
     reportOverlayLifecycle("EARNINGS_OVERLAY_ACTIVATION_REQUESTED", {
-      activationReason: reason || "call-start", requestedCallId: callId,
+      activationReason: reason || "call-start",
       autoAnswerEnabled: config.autoAnswerEnabled === true,
       observationEnabled: config.observationEnabled !== false,
       documentElementPresent: !!document.documentElement
@@ -1778,7 +1778,7 @@
       var reasonCode = config.overlayEnabled === false ? "preference-disabled" :
         (!document.documentElement ? "document-element-not-ready" : "call-lifecycle-inactive");
       reportOverlayLifecycle("EARNINGS_OVERLAY_ACTIVATION_BLOCKED", {
-        reasonCode: reasonCode, requestedCallId: currentCallId(),
+        reasonCode: reasonCode,
         documentElementPresent: !!document.documentElement
       }, reasonCode === "preference-disabled" ? "warn" : "info",
       "activation-blocked:" + String(currentCallId() || "none") + ":" + reasonCode);
@@ -1852,7 +1852,7 @@
       overlayHost = null;
       overlayRoot = null;
       reportOverlayLifecycle("EARNINGS_OVERLAY_MOUNT_FAILED", {
-        reasonCode: "dom-mount-exception", requestedCallId: overlayLifecycleCallId,
+        reasonCode: "dom-mount-exception",
         errorType: String(error && error.name || "Error").slice(0, 80),
         documentElementPresent: !!document.documentElement
       }, "error", "mount-failed:" + String(overlayLifecycleCallId || "none"));
@@ -1875,7 +1875,7 @@
     ensureOverlay();
     if (!overlayRoot) {
       reportOverlayLifecycle("EARNINGS_OVERLAY_RENDER_BLOCKED", {
-        reasonCode: "shadow-root-unavailable", requestedCallId: routeCallId,
+        reasonCode: "shadow-root-unavailable",
         lifecycleActive: overlayLifecycleActive
       }, "warn", "render-blocked:" + String(routeCallId));
       return;
