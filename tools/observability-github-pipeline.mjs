@@ -496,15 +496,19 @@ function updateCallReports(obs,candidateCallIds,generatedAt){
   index.reportsByCallRef=index.reportsByCallRef&&typeof index.reportsByCallRef==="object"?index.reportsByCallRef:{};
   const ids=Array.from(new Set(candidateCallIds||[])).filter(Boolean);
   if(ids.length){
-    const allEvents=[];
+    const relatedByCallId=new Map(ids.map(callId=>[String(callId),[]]));
     for(const batchFile of listJson(path.join(obs,"batches"))){
       const batch=readJson(batchFile,null);
       if(!batch||batch.schema!==BATCH_SCHEMA||!isRealBatch(batch)||!Array.isArray(batch.events))continue;
-      batch.events.forEach(event=>allEvents.push(Object.assign({batchId:batch.batchId},event)));
+      batch.events.forEach(event=>{
+        const callId=eventCallId(event);
+        const related=relatedByCallId.get(String(callId||""));
+        if(related)related.push(Object.assign({batchId:batch.batchId},event));
+      });
     }
     for(const callId of ids){
       const callRef=sha256("signal-interpreter-call:"+callId).slice(0,24);
-      const related=allEvents.filter(event=>eventCallId(event)===String(callId));
+      const related=relatedByCallId.get(String(callId))||[];
       if(!related.length)continue;
       const report=makeCallReport(String(callId),related,generatedAt);
       const previous=index.reportsByCallRef[callRef]||{};
