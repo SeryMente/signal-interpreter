@@ -24,6 +24,7 @@
     liveCaptionOverlayEnabled: true,
     liveCaptionOverlayScope: "source-only",
     liveCaptionInterpreterEnabled: true,
+    liveCaptionBilingualTabEnabled: true,
     usdMxnRate: null,
     exchangeRateDate: null,
     exchangeRateUpdatedAt: null
@@ -129,6 +130,7 @@
     if ($("captionOverlayEnabled")) $("captionOverlayEnabled").checked = config.liveCaptionOverlayEnabled !== false;
     if ($("captionOverlayScope")) $("captionOverlayScope").value = config.liveCaptionOverlayScope === "all-tabs" ? "all-tabs" : "source-only";
     if ($("captionInterpreterEnabled")) $("captionInterpreterEnabled").checked = config.liveCaptionInterpreterEnabled !== false;
+    if ($("captionBilingualTabEnabled")) $("captionBilingualTabEnabled").checked = config.liveCaptionBilingualTabEnabled !== false;
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
     $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
@@ -228,6 +230,9 @@
   });
   if ($("captionInterpreterEnabled")) $("captionInterpreterEnabled").addEventListener("change", function () {
     save({ liveCaptionInterpreterEnabled: this.checked });
+  });
+  if ($("captionBilingualTabEnabled")) $("captionBilingualTabEnabled").addEventListener("change", function () {
+    save({ liveCaptionBilingualTabEnabled: this.checked });
   });
 
   var youtubeCaptionCaptureButton = $("youtubeCaptionCapture");
