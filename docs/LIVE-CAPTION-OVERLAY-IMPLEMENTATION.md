@@ -2,8 +2,8 @@
 
 **Repositorio canónico:** https://github.com/SeryMente/signal-interpreter
 **Especificación canónica:** https://github.com/SeryMente/signal-interpreter/blob/main/docs/USER-REQUIREMENT-LIVE-CAPTIONS-OVERLAY-VERBATIM-20261008.md
-**Versión objetivo:** 0.10.28 — Informe persistente de observabilidad al cierre de llamada.
-**Rama de trabajo:** feat/0.10.28-call-end-observability-report.
+**Versión objetivo:** 0.10.29 — Auto-recuperación del overlay y observabilidad de activación.
+**Rama de trabajo:** feat/0.10.29-self-healing-overlay.
 **Versión anterior integrada:** 0.10.24 — Overlay legible, desplazable y configurable.
 
 ## Evolución de usabilidad 0.10.24
@@ -110,3 +110,15 @@ No se ha ejecutado una llamada bilingüe real en esta sesión. Por tanto, perman
 La versión 0.10.24 deja revisar el historial reciente mediante desplazamiento vertical, permite mover y redimensionar el panel y configura la visibilidad por pestaña de origen o en todas las pestañas web. La ubicación automática intenta minimizar el solapamiento con controles interactivos visibles y el host conserva `pointer-events: none`, con interacción explícita solo en los controles del propio panel.
 
 La versión 0.10.22 había integrado el flujo primario/fallback en `main`. El flujo primario/fallback, el overlay y el host nativo están incluidos en la versión canónica. Para habilitar la ruta primaria en Windows, hay que ejecutar el script de registro incluido en `extension/native/register-caption-host.ps1` desde la carpeta materializada de la extensión; después, recargar la extensión y comprobar los permisos/captura necesarios para el fallback. Esta actualización se trabaja exclusivamente en GitHub; no se modifican instalaciones locales mediante RDC.
+
+## Auto-recuperación de activación 0.10.29
+
+- El core expone un predicado estricto de ruta Cloud Interpreter `/call/<ID>` (no incluye `/rate`), compartido por las pruebas y la recuperación.
+- El overlay de subtítulos registra fallos de carga, bloqueos, intentos/errores del handshake, contexto aplicado, montaje, visibilidad y salud periódica. El primer saludo fallido usa reintentos con retroceso exponencial acotado; la ruta activa proporciona un fallback visual local mientras llega la reconciliación del service worker.
+- Un vigilante ligero detecta cambios SPA y recupera el host si desaparece, queda desconectado o no se muestra. Los informes incluyen estados y métricas de renderizado acotadas, no contenido hablado.
+- El contexto del service worker reconoce la ruta activa como evidencia de origen cuando el estado durable todavía está rezagado, evitando bloquear el panel solo por una carrera de reconciliación.
+- El panel de ingresos añade un vigilante propio, independiente de los ajustes `autoAnswerEnabled` y `observationEnabled`. Comprueba la ruta cada segundo durante el runtime activo y registra activación, bloqueos, montaje exitoso/fallido, render y recuperación.
+- El pipeline agrega las señales de ambos paneles en el grupo `overlayActivation` del informe individual; señales seleccionadas entran en `keySignals` con estado del host, Shadow DOM, visibilidad, intentos de recuperación y razón técnica.
+- La regresión `tools/overlay-activation-regression-test.mjs` verifica el contrato de ruta, reintentos, diagnóstico, watchdogs y la inclusión de la evidencia en CI.
+
+La comprobación estática y los fixtures automatizados no sustituyen la recarga de la extensión ni una llamada real en Chrome. Se requiere validar el primer informe de llamada posterior a la instalación de 0.10.29.
