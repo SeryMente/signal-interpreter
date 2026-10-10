@@ -364,7 +364,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       history: pageAllowed && !youtubeTarget ? session.rows.slice(-CAPTION_HISTORY_LIMIT) : []
     };
   }
-  async function setCaptionPreviewForActiveCall(tabEnabled, reason) {
+  async function setCaptionPreviewForActiveCall(tabEnabled, reason, allowInterpreterPreview) {
     var trigger = String(reason || "native-status").slice(0, 80);
     try {
       var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
@@ -403,7 +403,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         type: "SIGNAL_SET_CAPTION_PREVIEW",
         enabled: true,
         tabEnabled: !!tabEnabled,
-        micEnabled: config.liveCaptionInterpreterEnabled !== false &&
+        micEnabled: allowInterpreterPreview !== false &&
+          config.liveCaptionInterpreterEnabled !== false &&
           state.microphoneMuted !== true &&
           state.microphoneMuteStatus === "applied" &&
           state.microphoneOutputStatus !== "error" &&
@@ -415,7 +416,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
           callId: state.callId || null,
           sourceMode: tabEnabled ? "native-stale-groq-fallback" : "native-caption-fresh",
           tabPreviewEnabled: !!tabEnabled,
-          micPreviewEnabled: config.liveCaptionInterpreterEnabled !== false &&
+          micPreviewEnabled: allowInterpreterPreview !== false &&
+            config.liveCaptionInterpreterEnabled !== false &&
             state.microphoneMuted !== true && state.microphoneMuteStatus === "applied" &&
             state.microphoneOutputStatus !== "error" && state.microphoneOutputMuted !== true,
           trigger: trigger
@@ -2494,7 +2496,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       try {
         if (cachedConfig.liveCaptionOverlayEnabled !== false && hasActiveCall(state)) {
           SignalCaptionBridge.start(state.callSourceTabId, state.callId);
-          setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "capture-start").catch(function () {});
+          setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "capture-start", false).catch(function () {});
         }
       } catch (_) {}
       state.microphoneMuteStatus="pending";
