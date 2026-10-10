@@ -22,7 +22,7 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.32");
+assert.equal(manifest.version,"0.10.33");
 assert.ok(background.includes('liveCaptionInterpreterEnabled: false'), "el micrófono está fuera del alcance actual");
 assert.ok(background.includes('liveCaptionBilingualTabEnabled: true'), "la transcripción bilingüe de audio de pestaña está activada por defecto");
 assert.ok(background.includes('var outputSource = source === "yo" ? "yo" : "cliente"'), "la fuente de audio sigue siendo pestaña aunque el render distinga idioma");

@@ -20,6 +20,33 @@
     return;
   }
 
+  var previousOverlayRuntime = globalThis.__SIGNAL_CAPTION_OVERLAY_RUNTIME__;
+  if (previousOverlayRuntime && typeof previousOverlayRuntime.dispose === "function") previousOverlayRuntime.dispose("runtime-reinjected");
+  var runtimeDisposed = false, runtimeStorageReady = false, runtimeEventBindings = [];
+  var runtimeVersion = String(chrome.runtime.getManifest().version || "unknown");
+  var runtimeApi = { version: runtimeVersion, dispose: disposeOverlay };
+  globalThis.__SIGNAL_CAPTION_OVERLAY_RUNTIME__ = runtimeApi;
+  function listen(target, type, listener, options) {
+    target.addEventListener(type, listener, options);
+    runtimeEventBindings.push([target, type, listener, options]);
+  }
+  function disposeOverlay(reason) {
+    if (runtimeDisposed) return;
+    try { reportLifecycle("LIVE_CAPTION_OVERLAY_RUNTIME_DISPOSED", { reasonCode: String(reason || "runtime-replaced"), runtimeVersion: runtimeVersion }, "info"); } catch (_) {}
+    runtimeDisposed = true;
+    stopRecoveryWatchdogs();
+    if (saveLayoutTimer) clearTimeout(saveLayoutTimer);
+    if (toastTimer) clearTimeout(toastTimer);
+    if (positionRaf) cancelAnimationFrame(positionRaf);
+    if (mutationObserver) mutationObserver.disconnect();
+    try { chrome.storage.onChanged.removeListener(onOverlayStorageChanged); } catch (_) {}
+    try { chrome.runtime.onMessage.removeListener(onOverlayRuntimeMessage); } catch (_) {}
+    runtimeEventBindings.forEach(function (binding) { try { binding[0].removeEventListener(binding[1], binding[2], binding[3]); } catch (_) {} });
+    runtimeEventBindings = [];
+    if (host) host.remove(); host = null; root = null;
+    if (globalThis.__SIGNAL_CAPTION_OVERLAY_RUNTIME__ === runtimeApi) delete globalThis.__SIGNAL_CAPTION_OVERLAY_RUNTIME__;
+  }
+
   var MAX_HISTORY = 800;
   var rows = [];
   var host = null;
@@ -86,6 +113,7 @@
   }
 
   function reportLifecycle(action, payload, level, dedupeKey) {
+    if (runtimeDisposed) return;
     var routePath = safeRoutePath(location.pathname);
     var details = Object.assign({
       callId: currentCloudCallId(),
@@ -153,6 +181,7 @@
   }
 
   function ensureHost() {
+    if (runtimeDisposed) return;
     if (!canShowOnThisPage()) {
       var blockReason = currentBlockReason();
       if (blockReason && (isCloudCallRoute() || host)) {
@@ -172,6 +201,8 @@
     if (host && host.isConnected) return;
 
     try {
+    var orphanHost = document.getElementById("signal-interpreter-live-caption-overlay");
+    if (orphanHost) orphanHost.remove();
     host = document.createElement("div");
     host.id = "signal-interpreter-live-caption-overlay";
     host.setAttribute("aria-hidden", "true");
@@ -411,8 +442,8 @@
     var resize = root.querySelector(".resize");
     var unread = root.querySelector(".unread");
     if (move) {
-      move.addEventListener("pointerdown", startDrag);
-      move.addEventListener("keydown", function (event) {
+      listen(move, "pointerdown", startDrag);
+      listen(move, "keydown", function (event) {
         var delta = event.shiftKey ? 64 : 16;
         var left = Number.parseFloat(host.style.left) || 6;
         var top = Number.parseFloat(host.style.top) || 6;
@@ -431,7 +462,7 @@
         saveManualPosition();
       });
     }
-    if (auto) auto.addEventListener("click", function () {
+    if (auto) listen(auto, "click", function () {
       layout = { left:null, top:null, width:560, height:400, manual:false };
       collapsed = false;
       applyCollapsedState();
@@ -439,15 +470,15 @@
       persistLayoutSoon();
       schedulePosition();
     });
-    if (collapseButton) collapseButton.addEventListener("click", function () {
+    if (collapseButton) listen(collapseButton, "click", function () {
       collapsed = !collapsed;
       applyCollapsedState();
       if (!collapsed) schedulePosition();
       else if (host) host.style.height = "46px";
     });
     if (resize) {
-      resize.addEventListener("pointerdown", startResize);
-      resize.addEventListener("keydown", function (event) {
+      listen(resize, "pointerdown", startResize);
+      listen(resize, "keydown", function (event) {
         var delta = event.shiftKey ? 64 : 24;
         var changed = true;
         if (event.key === "ArrowLeft") layout.width -= delta;
@@ -464,7 +495,7 @@
         saveManualPosition();
       });
     }
-    if (unread) unread.addEventListener("click", scrollToBottom);
+    if (unread) listen(unread, "click", scrollToBottom);
   }
 
   function applyCollapsedState() {
@@ -640,7 +671,7 @@
     var transcript = root.querySelector(".transcript");
     if (!transcript || transcript.dataset.lookupBound === "true") return;
     transcript.dataset.lookupBound = "true";
-    transcript.addEventListener("click", function (event) {
+    listen(transcript, "click", function (event) {
       var textElement = event.target && event.target.closest ? event.target.closest(".text") : null;
       if (!textElement) return;
       if (event.ctrlKey && event.shiftKey) {
@@ -670,7 +701,7 @@
         return;
       }
     });
-    transcript.addEventListener("keydown", function (event) {
+    listen(transcript, "keydown", function (event) {
       var token = event.target && event.target.closest ? event.target.closest(".smart-token") : null;
       if (!token || (event.key !== "Enter" && event.key !== " ")) return;
       event.preventDefault();
@@ -718,6 +749,7 @@
   }
 
   function render(skipUnreadTracking) {
+    if (runtimeDisposed) return;
     if (!canShowOnThisPage()) {
       if (host) host.style.display = "none";
       updateAriaVisibility();
@@ -895,6 +927,7 @@
   }
 
   function scheduleContextRetry(reasonCode) {
+    if (runtimeDisposed) return;
     if (contextRetryTimer || config.liveCaptionOverlayEnabled === false) return;
     if (!isCloudCallRoute() && !host && contextSyncAttempts >= 5) return;
     var delay = contextRetryDelayMs;
@@ -934,6 +967,7 @@
   }
 
   function syncContext(hydrate) {
+    if (runtimeDisposed) return;
     if (contextSyncInFlight) {
       contextSyncPendingHydrate = contextSyncPendingHydrate || hydrate === true;
       return;
@@ -944,6 +978,7 @@
     var requestStartedAt = Date.now();
     try {
       chrome.runtime.sendMessage({ type: "SIGNAL_CAPTION_OVERLAY_HELLO" }, function (result) {
+        if (runtimeDisposed) return;
         var runtimeError = chrome.runtime.lastError;
         contextSyncInFlight = false;
         if (runtimeError || !result || result.ok !== true) {
@@ -1008,6 +1043,7 @@
   }
 
   function schedulePosition() {
+    if (runtimeDisposed) return;
     if (positionRaf) return;
     positionRaf = requestAnimationFrame(function () {
       positionRaf = null;
@@ -1016,6 +1052,8 @@
   }
 
   chrome.storage.local.get(["effectifConfig", "signalCaptionOverlayLayout"], function (stored) {
+    if (runtimeDisposed) return;
+    runtimeStorageReady = true;
     config = Object.assign({}, config, stored.effectifConfig || {});
     var saved = stored.signalCaptionOverlayLayout;
     if (saved && typeof saved === "object") {
@@ -1036,8 +1074,12 @@
   });
 
   function startRecoveryWatchdogs() {
+    if (runtimeDisposed) return;
     if (!routeWatchTimer) {
       routeWatchTimer = setInterval(function () {
+        if (runtimeDisposed) return;
+        try { if (!chrome.runtime.getManifest()) throw new Error("runtime-invalidated"); }
+        catch (_) { disposeOverlay("runtime-invalidated"); return; }
         var routeKey = location.pathname + location.search;
         if (routeKey !== lastRouteKey) {
           var previousPath = safeRoutePath(lastRouteKey.split("?")[0]);
@@ -1095,7 +1137,8 @@
     contextRetryTimer = null;
   }
 
-  chrome.storage.onChanged.addListener(function (changes, area) {
+  function onOverlayStorageChanged(changes, area) {
+    if (runtimeDisposed) return;
     if (area !== "local") return;
     if (changes.effectifConfig) {
       config = Object.assign({}, config, changes.effectifConfig.newValue || {});
@@ -1114,9 +1157,17 @@
       applyLayout();
       if (collapsed) applyCollapsedState();
     }
-  });
+  }
+  chrome.storage.onChanged.addListener(onOverlayStorageChanged);
 
-  chrome.runtime.onMessage.addListener(function (message) {
+  function onOverlayRuntimeMessage(message, sender, sendResponse) {
+    if (runtimeDisposed) return false;
+    if (message && message.type === "SIGNAL_CAPTION_OVERLAY_PROBE") {
+      if (typeof sendResponse === "function") sendResponse({ ok: true, ready: runtimeStorageReady, runtimeVersion: runtimeVersion,
+        enabled: config.liveCaptionOverlayEnabled !== false, hostMounted: !!(host && host.isConnected && root),
+        contextReady: contextReady, rowCount: rows.length, callActive: callActive });
+      return false;
+    }
     if (!message) return;
     if (message.type === "SIGNAL_YOUTUBE_CAPTION_PREVIEW_STATUS") {
       if (youtubeTarget) {
@@ -1161,41 +1212,37 @@
       }
       screenshotPreviousVisibility = null;
     } else if (message.type === "EFFECTIF_HOTLOAD_REPLACE") {
-      active = false;
-      stopRecoveryWatchdogs();
-      if (host) host.remove();
-      host = null;
-      root = null;
-      syncContext(true);
+      disposeOverlay("hotload-replace");
     }
-  });
+  }
+  chrome.runtime.onMessage.addListener(onOverlayRuntimeMessage);
 
-  document.addEventListener("signal-interpreter-youtube-caption", function (event) {
+  listen(document, "signal-interpreter-youtube-caption", function (event) {
     if (!youtubeTarget || !event || !event.detail || !event.detail.text) return;
     active = true;
     addRow(event.detail.text, event.detail.language || "unknown", "chrome-live-caption", true, event.detail.timestamp || Date.now());
   });
 
-  document.addEventListener("signal-interpreter-youtube-caption-status", function (event) {
+  listen(document, "signal-interpreter-youtube-caption-status", function (event) {
     if (!youtubeTarget || !event || !event.detail) return;
     active = event.detail.active === true;
     render(true);
   });
 
   if (window) {
-    window.addEventListener("pointermove", handlePointerMove, true);
-    window.addEventListener("pointerup", handlePointerUp, true);
-    window.addEventListener("pointercancel", handlePointerUp, true);
-    window.addEventListener("resize", function () {
+    listen(window, "pointermove", handlePointerMove, true);
+    listen(window, "pointerup", handlePointerUp, true);
+    listen(window, "pointercancel", handlePointerUp, true);
+    listen(window, "resize", function () {
       applyLayout();
       schedulePosition();
     });
-    window.addEventListener("scroll", schedulePosition, true);
+    listen(window, "scroll", schedulePosition, true);
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", schedulePosition);
-      window.visualViewport.addEventListener("scroll", schedulePosition);
+      listen(window.visualViewport, "resize", schedulePosition);
+      listen(window.visualViewport, "scroll", schedulePosition);
     }
-    window.addEventListener("pagehide", function () {
+    listen(window, "pagehide", function () {
       if (saveLayoutTimer) clearTimeout(saveLayoutTimer);
       stopRecoveryWatchdogs();
       if (host) host.remove();

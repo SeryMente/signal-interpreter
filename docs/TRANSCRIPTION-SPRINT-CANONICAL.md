@@ -3,11 +3,12 @@
 > **Autoridad documental:** este es el único informe canónico del esfuerzo/sprint de transcripción, Live Caption y overlay de subtítulos de Signal Interpreter. Las notas antiguas de implementación, los requisitos verbatim y las notas de versión son fuentes históricas o técnicas subordinadas; no son informes alternativos del esfuerzo.
 > **Ruta canónica:** `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`
 > **Repositorio:** https://github.com/SeryMente/signal-interpreter
-> **Última versión documentada:** **0.10.32 — Audio entrante de pestaña exclusivamente, sin captura de micrófono**
+> **Última versión documentada:** **0.10.33 — Hotloading del overlay verificable, exclusivamente audio entrante de pestaña**
 > **Integración previa al ciclo correctivo:** [PR #52](https://github.com/SeryMente/signal-interpreter/pull/52)
 > **Corrección previa de recuperación/exportación:** [PR #53](https://github.com/SeryMente/signal-interpreter/pull/53)
 > **Integración del alcance vigente 0.10.32:** [PR #54](https://github.com/SeryMente/signal-interpreter/pull/54)
-> **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.32 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
+> **Hotloading verificable 0.10.33:** [PR #55](https://github.com/SeryMente/signal-interpreter/pull/55)
+> **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.33 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
 
 > **ALCANCE VIGENTE Y PREVALENTE (aclaración del operador):** calidad de vida para interpretación telefónica, sobre el audio que sale de la pestaña de Cloud Interpreter. **No se captura ni se transcribe el micrófono del operador en este ciclo**, aunque existan preferencias antiguas activadas. Los controles de mute de la llamada permanecen independientes. Las referencias anteriores a captura de micrófono son historia, no autorización vigente. Véase §13.
 
@@ -296,6 +297,45 @@ Chromium real, sobre audio sintético local: tres fragmentos actuales independie
 El parser de PowerShell verifica scripts de preparación/registro/aplicación y la identidad original de la extensión. La batería local completa de 24 suites y auditorías aprobó en este ciclo; también aprobaron la decodificación de los tres WebM y el parser/identidad PowerShell. Las compuertas Linux/Windows del commit publicado deben aprobarse antes de integrar. No se altera `main` con una compuerta fallida.
 
 **Aceptación operativa aún NO VERIFICADA:** primera llamada real en Windows/Chrome/Cloud Interpreter después de instalar 0.10.32, burbuja abierta/cerrada con switch ON, subtítulos de ambos idiomas, ausencia de obstrucción/duplicados, continuidad tras cambio de llamada y publicación automática del informe con estados actuales. No se declara esta prueba ejecutada por fixtures, YouTube ni compilación remota.
+
+## 14. Hotloading durante llamada — preparación segura del escritorio
+
+### 14.1. Instrucción del operador VERBATIM
+
+> Alista la extension en el escritorio, pero antes dale capacidades de hotloading por que estoy en llamad,a yt que si funcione, garantizala.
+
+### 14.2. Evidencia del equipo y hueco encontrado
+
+Inspección autorizada por Desktop Commander Remote, PC-8, sin cerrar Chrome ni navegar la llamada: la carpeta registrada por Chrome Profile 3 es `C:\Users\PC 8\Desktop\Entorno Persistente\signal-interpreter`; el manifiesto en disco informa 0.10.31. No se encontró registro del host en las cuatro ubicaciones HKCU/HKLM, 32/64 bits comprobadas. No existían el archivo local de llave Groq ni el almacén DPAPI esperado; esto **no demuestra ausencia de una llave en chrome.storage**, cuyo contenido no se leyó ni se exportó. No había archivo DevToolsActivePort; no se reinició Chrome para crearlo.
+
+El código anterior reinyectaba el runtime de llamada pero no `live-caption-core.js` / `live-caption-overlay.js`. Además, podía anunciar recuperación de captura tras ignorar un resultado `ok:false`. Estos huecos invalidaban una promesa de hotloading operativo del panel.
+
+### 14.3. Corrección 0.10.33 y compuertas
+
+- Reinyecta explícitamente núcleo + overlay en la pestaña Cloud existente, sin navegar ni recargar la página, reiniciar Chrome o crear una segunda llamada.
+- Espera inicialización asíncrona y consulta `SIGNAL_CAPTION_OVERLAY_PROBE`: exige versión actual y host montado cuando corresponde. Panel viejo/ausente no equivale a recuperación. La preferencia de overlay desactivado se respeta.
+- Cada runtime del overlay dispone sus timers, listeners y MutationObserver antes del reemplazo; los callbacks tardíos no resucitan el panel. Contextos invalidados se desmontan. El historial se rehidrata desde la sesión y no se duplica el panel.
+- Antes de la recarga coordinada en llamada, comprueba pestaña de llamada válida y una vía de captions nativa fresca o respaldo Groq configurado; si faltan, queda bloqueada y preserva el runtime vigente. Configuración de Groq no equivale a credencial aceptada ni permiso tabCapture vigente.
+- Persiste la identidad/contexto de llamada antes de recargar exclusivamente la extensión. El éxito de recuperación durable exige resultado `ok:true`, no solo ausencia de excepción. Captura de micrófono sigue excluida.
+- Diagnósticos de reinyección/probe/recuperación se publican como metadatos de llamada, nunca como texto hablado o audio. La herramienta de prueba nativa conserva únicamente conteos/estados y termina exclusivamente el proceso que ella inicia.
+
+### 14.4. Pruebas y distribución
+
+La regresión ejecutable prueba reinyección, espera de inicialización, rechazo de panel viejo/ausente, preferencia desactivada, persistencia previa a recarga y bloqueo sin vía de recuperación/pestaña válida. Chromium real sobre una página local simulada prueba un único host/listener, hidratación de historial, desmontaje sin resurrección y limpieza al invalidar el contexto. No es una llamada real ni una prueba de reconocimiento de voz.
+
+La distribución durante una llamada se prepara en una carpeta independiente del escritorio. No se sobrescribe silenciosamente la carpeta cargada por Chrome ni se mezcla código de dos versiones. El aplicador clásico conserva la negativa a reemplazar con Chrome abierto; preparar la carpeta/host no equivale a cargarla. No se solicitan secretos en chat ni se modifica la captura del micrófono.
+
+**Compuerta de garantía:** no se garantiza funcionamiento en vivo solo por pruebas, archivos preparados o registro del host. La activación real y el primer informe automático deben demostrar versión nueva, overlay montado, fuente de captions operativa y continuidad de la llamada. Sin esa evidencia, el estado es PREPARADA / ACTIVACIÓN EN CHROME NO VERIFICADA. Se preserva la llamada del operador por encima de forzar una prueba disruptiva.
+
+### 14.5. Resultado de preparación real y bloqueo vigente
+
+En PC-8 se materializaron ZIP y carpeta independiente `Desktop\Signal-Interpreter-0.10.33-hotload-370da87c\extension`, con versión/identidad y 41 hashes de payload verificados. El ZIP original tiene SHA-256 `370da87cdbf740d857b718421f4696d03980e51482f144abb431a382b25817d6`. La carpeta registrada anteriormente conserva manifiesto 0.10.31; esto no identifica por sí solo la versión del runtime que Chrome tiene en memoria.
+
+La preparación del host abortó antes de registrar por token administrativo de Desktop Commander. Un intento de delegación mediante Shell.Application también devolvió `NORMAL_USER_REQUIRED`: `Prepared=false`, `NativeHostRegistered=false`, `NormalChromeUserVerified=false`. No se declara una prueba nativa en PC-8 ejecutada. No se relajó la compuerta ni se reinició Chrome, recargó la página o sobrescribió la carpeta anterior. La razón interna por la que el broker conservó elevación no se infiere.
+
+Se incluye `tools/prepare-caption-device.ps1` para ejecutarse desde la cuenta **realmente no elevada** del usuario de Chrome. Verifica identidad del usuario/proceso, versión, identidad de extensión, hashes, registro y protocolo; escribe únicamente un resultado de metadatos en la carpeta preparada. No solicita Groq en texto, no exporta transcripciones y no activa automáticamente la extensión. La preparación nativa y posterior activación quedan pendientes de esa sesión normal y evidencia real, no de más intentos administrativos.
+
+Evidencia aprobada de este ciclo: 25 suites/auditorías locales, fixture Chromium real de reinyección/limpieza/hidratación y controles Linux/Windows del primer commit publicado. El helper adicional y el canon actualizado requieren las compuertas del commit final antes de integración. El límite de cuota de Vercel permanece externo; no cambió el servicio alojado ni se afirma un nuevo deploy.
 
 ## Anexo A — documento de implementación preexistente conservado
 
