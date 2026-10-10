@@ -2,8 +2,8 @@
 
 **Repositorio canónico:** https://github.com/SeryMente/signal-interpreter
 **Especificación canónica:** https://github.com/SeryMente/signal-interpreter/blob/main/docs/USER-REQUIREMENT-LIVE-CAPTIONS-OVERLAY-VERBATIM-20261008.md
-**Versión objetivo:** 0.10.26 — Atribución de hablantes por fuente de audio.
-**Rama de trabajo:** fix/0.10.26-source-grounded-caption-roles.
+**Versión objetivo:** 0.10.27 — Atajos de verificación congruentes y copia fiable.
+**Rama de trabajo:** fix/0.10.27-caption-shortcuts-clipboard.
 **Versión anterior integrada:** 0.10.24 — Overlay legible, desplazable y configurable.
 
 ## Evolución de usabilidad 0.10.24
@@ -26,6 +26,13 @@ La tarjeta compacta se sustituye por un panel de historial desplazable, con movi
 - YouTube conserva una asignación separada explícita por idioma porque su captura de prueba es una sola pista de audio, no una pareja tab/micrófono.
 - Pruebas de regresión: roles por fuente en ambos idiomas y auditoría estática para impedir que el idioma reasigne una fuente verificada.
 - La validación automatizada no sustituye la prueba de llamada real en Chrome.
+
+## Corrección 0.10.27 — atajos congruentes y copia fiable
+
+- `Ctrl+clic` sobre un teléfono o dirección conserva su verificación externa; en texto ordinario no lanza ninguna búsqueda.
+- `Ctrl+Mayús+clic` es el único gesto de búsqueda de términos en Linguee sobre texto ordinario. Esto alinea la conducta con las instrucciones visibles del encabezado.
+- Se declara el permiso `clipboardWrite`, recomendado por Chromium para extensiones que utilizan `document.execCommand('copy')` como fallback cuando `navigator.clipboard.writeText` no está disponible o falla. Chrome puede mostrar la capacidad como permiso de modificación del portapapeles durante la instalación/actualización.
+- La auditoría estática comprueba el permiso, el gesto combinado de Linguee y la ausencia de un manejador que dispare búsquedas con Ctrl+clic solo.
 
 ## Objetivo
 

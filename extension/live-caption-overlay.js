@@ -539,13 +539,6 @@
         }
         return;
       }
-      if (event.ctrlKey) {
-        var searchTerm = termAtPoint(event, textElement);
-        if (!searchTerm) return;
-        event.preventDefault();
-        event.stopPropagation();
-        requestCaptionLookup("term", searchTerm);
-      }
     });
     transcript.addEventListener("keydown", function (event) {
       var token = event.target && event.target.closest ? event.target.closest(".smart-token") : null;

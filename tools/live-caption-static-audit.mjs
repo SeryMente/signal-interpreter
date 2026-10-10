@@ -22,7 +22,7 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.26");
+assert.equal(manifest.version,"0.10.27");
 assert.ok(background.includes('liveCaptionInterpreterEnabled: true'), "la transcripción permite incluir la voz del LEP");
 assert.ok(background.includes('liveCaptionBilingualTabEnabled: true'), "la transcripción bilingüe de audio de pestaña está activada por defecto");
 assert.ok(background.includes('var outputSource = source === "yo" ? "yo" : "cliente"'), "la atribución del preview procede del canal de audio, no del idioma");
@@ -43,6 +43,9 @@ assert.ok(core.includes("findSmartTokens"), "el núcleo detecta teléfonos y dir
 assert.ok(overlay.includes("renderSmartText"), "las direcciones y teléfonos se renderizan como acciones seguras");
 assert.ok(overlay.includes("Ctrl+Mayús+clic"), "el overlay explica la búsqueda de términos en Linguee");
 assert.ok(overlay.includes("SIGNAL_CAPTION_OPEN_LOOKUP"), "el overlay puede abrir verificaciones con acción explícita");
+assert.ok(manifest.permissions.includes("clipboardWrite"), "la copia literal tiene el permiso recomendado para execCommand(copy) como fallback");
+assert.ok(overlay.includes("event.ctrlKey && event.shiftKey"), "Linguee requiere Ctrl+Mayús+clic");
+assert.equal(overlay.includes('var searchTerm = termAtPoint(event, textElement)'), false, "Ctrl+clic en texto ordinario no debe abrir Linguee");
 assert.ok(popup.includes("captionInterpreterEnabled"), "el popup permite activar/desactivar las captions del LEP");
 assert.ok(popup.includes("youtubeCaptionCapture"), "el popup permite iniciar y detener la captura aislada del video");
 
