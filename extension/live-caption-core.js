@@ -206,6 +206,12 @@
     return result.sort(function (a, b) { return a.start - b.start; });
   }
 
+  function isCloudInterpreterCallRoute(hostname, pathname) {
+    var host = String(hostname == null ? "" : hostname).toLowerCase().replace(/\.$/, "");
+    var path = String(pathname == null ? "" : pathname);
+    return host === "app.cloudinterpreter.com" && /^\/call\/[^/?#]+\/?$/.test(path);
+  }
+
   function overlapRatio(a, b) {
     var left = Math.max(a.left, b.left);
     var top = Math.max(a.top, b.top);
@@ -257,6 +263,7 @@
     languageLabel: languageLabel,
     findSmartTokens: findSmartTokens,
     overlapRatio: overlapRatio,
-    choosePositionCandidate: choosePositionCandidate
+    choosePositionCandidate: choosePositionCandidate,
+    isCloudInterpreterCallRoute: isCloudInterpreterCallRoute
   };
 })(typeof globalThis !== "undefined" ? globalThis : window);

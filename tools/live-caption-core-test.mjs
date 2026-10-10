@@ -8,6 +8,13 @@ vm.runInNewContext(source, sandbox);
 const core = sandbox.globalThis.SignalCaptionCore;
 
 assert.ok(core);
+
+assert.equal(core.isCloudInterpreterCallRoute("app.cloudinterpreter.com", "/call/call-123"), true);
+assert.equal(core.isCloudInterpreterCallRoute("APP.CLOUDINTERPRETER.COM", "/call/call-123/"), true);
+assert.equal(core.isCloudInterpreterCallRoute("app.cloudinterpreter.com", "/call/call-123/rate"), false,
+  "la pantalla final de estrellas no se confunde con una llamada activa");
+assert.equal(core.isCloudInterpreterCallRoute("app.cloudinterpreter.com", "/profile/call-123"), false);
+assert.equal(core.isCloudInterpreterCallRoute("example.com", "/call/call-123"), false);
 assert.equal(core.normalizeText("  hello   world  "), "hello world");
 assert.equal(core.detectLanguage("The patient needs the appointment today."), "en");
 assert.equal(core.detectLanguage("Necesito verificar la cita con usted."), "es");
