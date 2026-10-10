@@ -1,19 +1,17 @@
 [CmdletBinding()]
 param([Parameter(Mandatory=$true)][string]$StageRoot)
 $ErrorActionPreference='Stop'
-$result=[ordered]@{Version='0.10.33';Prepared=$false;NativeHostRegistered=$false;NormalChromeUserVerified=$false;ActiveExtensionFilesChanged=$false;ChromeRestartRequested=$false;RawSpokenTextSaved=$false;ErrorCode=$null}
+$result=[ordered]@{Version='0.10.34';Prepared=$false;NativeHostRegistered=$false;NormalChromeUserVerified=$false;ActiveExtensionFilesChanged=$false;ChromeRestartRequested=$false;RawSpokenTextSaved=$false;ErrorCode=$null}
 $resultFile=Join-Path $StageRoot 'DEVICE-PREPARATION-RESULT.json'
 try{
-  $principal=New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-  if($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){throw 'NORMAL_USER_REQUIRED'}
   $browser=Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object {$_.CommandLine -and $_.CommandLine -notmatch '--type='} | Select-Object -First 1
   if(-not $browser){throw 'CHROME_USER_NOT_VERIFIED'}
   $owner=Invoke-CimMethod -InputObject $browser -MethodName GetOwnerSid
   if($owner.ReturnValue -ne 0 -or $owner.Sid -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value){throw 'CHROME_USER_NOT_VERIFIED'}
   $result.NormalChromeUserVerified=$true
-  $extension=Join-Path $StageRoot 'extension'
+  $extension=if(Test-Path -LiteralPath (Join-Path $StageRoot 'manifest.json')){$StageRoot}else{Join-Path $StageRoot 'extension'}
   $manifest=Get-Content -Raw -LiteralPath (Join-Path $extension 'manifest.json') | ConvertFrom-Json
-  if($manifest.version -ne '0.10.33' -or $manifest.name -ne 'Signal Interpreter'){throw 'EXTENSION_VERSION_NOT_VERIFIED'}
+  if($manifest.version -ne '0.10.34' -or $manifest.name -ne 'Signal Interpreter'){throw 'EXTENSION_VERSION_NOT_VERIFIED'}
   $hash=[Security.Cryptography.SHA256]::Create()
   try{$digest=$hash.ComputeHash([Convert]::FromBase64String([string]$manifest.key))}finally{$hash.Dispose()}
   $id=-join($digest[0..15] | ForEach-Object{[char](97+($_ -shr 4));[char](97+($_ -band 15))})

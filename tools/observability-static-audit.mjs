@@ -31,7 +31,7 @@ const githubPipelineTest=read("tools/observability-github-pipeline-test.mjs");
 const platformLearning=read("tools/observability/platform-learning.mjs");
 const platformLearningTest=read("tools/observability/platform-learning-test.mjs");
 
-assert.equal(manifest.version,"0.10.33");
+assert.equal(manifest.version,"0.10.34");
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
@@ -89,7 +89,7 @@ assert.ok(background.includes("async function hotloadExistingCloudTabs"));
 assert.ok(background.includes('if (active) await scheduleSafeRuntimeReload("update-available-active-call", true);'));
 assert.ok(background.includes('phase: activeCall ? "applying-active-call" : "applying"'));
 assert.ok(background.includes("HOTLOAD_UPDATE_APPLYING_ACTIVE_CALL"));
-assert.ok(background.includes("HOTLOAD_CAPTURE_ACTIVE_WITHOUT_VERIFIED_OFFSCREEN_SESSION"));
+assert.ok(background.includes('captureExpected: false, captureStatus: "native-text-only"'));
 assert.ok(offscreen.includes('message.type==="SIGNAL_GET_GROQ_CAPTURE_STATE"'));
 assert.ok(background.includes("chrome.tabs.query({ url: [AUTHORIZED_ORIGIN + \"/*\"]"));
 assert.ok(background.includes("EFFECTIF_HOTLOAD_REPLACE"));
@@ -139,8 +139,6 @@ assert.ok(timeFormat.includes("hace ") && timeFormat.includes("ayer"));
 
 assert.ok(workflow.includes("observations/inbox/**"));
 assert.ok(background.includes("SIGNAL_EXTENSION_MICROPHONE_TOGGLE"));
-assert.ok(background.includes("SIGNAL_GROQ_CAPTURE_MIC_OUTPUT_VERIFY_ERROR"));
-assert.ok(background.includes('"capture-start"'));
 assert.ok(background.includes("setExtensionMicrophoneMuted"));
 assert.ok(background.includes("toggleExtensionMicrophoneMuted"));
 assert.ok(background.includes('requestKeyboardMicrophoneToggle("keyboard-command")'));
@@ -148,17 +146,12 @@ assert.ok(background.includes("checkMicrophoneCommandShortcut"));
 assert.ok(background.includes("toggle-extension-microphone"));
 assert.ok(background.includes("EXTENSION_MICROPHONE_MUTE_APPLIED"));
 assert.ok(background.includes("EXTENSION_MICROPHONE_MUTE_ERROR"));
-assert.ok(background.includes("EXTENSION_MICROPHONE_AUDIO_CHUNK_SUPPRESSED_MUTED"));
-assert.ok(background.includes("microphoneMuted:!!state.microphoneMuted"));
+assert.ok(background.includes("microphoneMuted: !!state.microphoneMuted"));
 assert.ok(offscreen.includes('message.type==="SIGNAL_SET_MICROPHONE_MUTED"') || offscreen.includes('message.type === "SIGNAL_SET_MICROPHONE_MUTED"'));
 assert.ok(content.includes("id=\"mic\""));
 assert.ok(content.includes("SIGNAL_EXTENSION_MICROPHONE_TOGGLE"));
 assert.ok(content.includes("state.microphoneMuted"));
-assert.ok(offscreen.includes("track.enabled=!desired"));
-assert.ok(offscreen.includes("verified:verified"));
-assert.ok(offscreen.includes("micMuteWatchdog"));
 assert.equal(/getUserMedia\(\{\s*audio:\s*true/.test(offscreen),false,"transcription must not acquire microphone");
-assert.ok(offscreen.includes('captureScope:"tab-only"'));
 assert.ok(fs.readFileSync("extension/mic-guard-main.js","utf8").includes("recoveryBaselineAttempted"),"call mute safety remains independently implemented");
 assert.ok(background.includes("microphoneMuteQueue"));
 assert.ok(background.includes("setExtensionMicrophoneMutedInternal"));
@@ -271,3 +264,6 @@ assert.equal(observationSync.includes("com.signalinterpreter.captionhost"),false
 assert.equal(relay.includes("com.signalinterpreter.captionhost"),false,"Live Caption host leaked into observability relay.");
 
 console.log("OBSERVABILITY_STATIC_AUDIT=PASS");
+
+assert.equal(/getUserMedia|MediaRecorder|createMediaStreamSource/.test(offscreen),false);
+assert.ok(offscreen.includes('captureScope:"native-text-only"'));

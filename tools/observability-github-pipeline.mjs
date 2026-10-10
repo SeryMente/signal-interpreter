@@ -376,7 +376,9 @@ function makeCallReport(callId,events,generatedAt){
     callRef:callRef,status:complete?"complete":"partial",
     completeness:{complete:complete,missingSignals:missing},
     captionDiagnosis:{
-      captureScope:related.some(event=>callReportPayload(event).captureScope==="tab-only")?"tab-only":"not-observed",
+      captureScope:related.some(event=>callReportPayload(event).captureScope==="native-text-only")?"native-text-only":related.some(event=>callReportPayload(event).captureScope==="tab-only")?"tab-only":"not-observed",
+      nativeTextForwarded:related.filter(event=>event.action==="SIGNAL_CAPTION_NATIVE_TEXT_FORWARDED").length,
+      nonNativeBlocked:related.filter(event=>event.action==="SIGNAL_CAPTION_NON_NATIVE_BLOCKED").length,
       maximumVisibleRows:related.reduce((max,event)=>Math.max(max,reportNumber(callReportPayload(event).rowCount)||0),0),
       nativeFreshObserved:related.some(event=>event.action==="SIGNAL_CAPTION_NATIVE_STATUS"&&callReportPayload(event).captionFresh===true),
       nativeBridgeFailures:related.filter(event=>event.action==="SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR").length,
@@ -501,8 +503,9 @@ function callReportMarkdown(report){
     "",
     "## Diagnóstico de subtítulos",
     "- Máximo de filas observado: "+String(report.captionDiagnosis&&report.captionDiagnosis.maximumVisibleRows||0),
+    "- Fragmentos nativos encaminados: "+String(report.captionDiagnosis&&report.captionDiagnosis.nativeTextForwarded||0),
     "- Texto nativo fresco observado: "+String(report.captionDiagnosis&&report.captionDiagnosis.nativeFreshObserved),
-    "- Respaldo independiente iniciado: "+String(report.captionDiagnosis&&report.captionDiagnosis.independentPreviewStarted),
+    "- Preview de audio histórico (no permitido en 0.10.34): "+String(report.captionDiagnosis&&report.captionDiagnosis.independentPreviewStarted),
     "- Resultados de preview / con texto: "+String(report.captionDiagnosis&&report.captionDiagnosis.previewResults||0)+" / "+String(report.captionDiagnosis&&report.captionDiagnosis.previewTextResults||0),
     "- Motivos registrados: "+JSON.stringify(report.captionDiagnosis&&report.captionDiagnosis.reasonCodes||[]),
     "- Montaje visible o ausencia de errores no prueban reconocimiento de voz.",
@@ -544,6 +547,8 @@ function updateCallReports(obs,candidateCallIds,generatedAt){
       const callRef=sha256("signal-interpreter-call:"+callId).slice(0,24);
       const related=relatedByCallId.get(String(callId))||[];
       if(!related.length)continue;
+      // Late diagnostics update a closed call; ordinary telemetry cannot create a report.
+      if(!related.some(isTerminalCallEvent) && !index.reportsByCallRef[callRef])continue;
       const report=makeCallReport(String(callId),related,generatedAt);
       const previous=index.reportsByCallRef[callRef]||{};
       let reportPath=previous.reportPath||null;
@@ -646,10 +651,8 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     updatePublishHistory(publishHistory,batch);
     if(isRealBatch(batch)&&Array.isArray(batch.events)){
       for(const event of batch.events){
-        if(isTerminalCallEvent(event)){
-          const callId=eventCallId(event);
-          if(callId)terminalCallIds.add(callId);
-        }
+        const callId=eventCallId(event);
+        if(callId)terminalCallIds.add(callId);
       }
     }
     processedInbox+=1;

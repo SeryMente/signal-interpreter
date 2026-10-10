@@ -12,6 +12,9 @@
   var reconnectAttempt = 0;
   var reconnectTimer = null;
   var connectionStartedAt = 0;
+  var lastMessageAt = 0;
+  var watchdogTimer = null;
+  var currentStatus = { active:false, reason:"native-stopped", captureScope:"native-text-only" };
   var RECONNECT_DELAYS = [1000, 2500, 5000, 10000];
 
   function sendToTab(type, payload, tabIdOverride) {
@@ -65,6 +68,8 @@
     var fresh = isFresh(4500);
     var active = raw.active === true && fresh;
     var status = {
+      captureScope: "native-text-only",
+      connected: !!port,
       callId: targetCallId,
       tabId: targetTabId,
       active: active,
@@ -74,8 +79,10 @@
       reason: String(reason || "native-status").slice(0, 80),
       error: raw.error ? String(raw.error).slice(0, 240) : null
     };
+    var reasonChanged = currentStatus.reason !== status.reason;
+    currentStatus = status;
     sendToTab("SIGNAL_CAPTION_NATIVE_STATUS", status);
-    if (force || active !== lastNotifiedActive || visible !== lastNotifiedVisible) {
+    if (force || reasonChanged || active !== lastNotifiedActive || visible !== lastNotifiedVisible) {
       lastNotifiedActive = active;
       lastNotifiedVisible = visible;
       try {
@@ -89,7 +96,11 @@
 
   function handleMessage(message, ownerPort) {
     if (!message || typeof message !== "object") return;
-    if (ownerPort && port && ownerPort !== port) return;
+    if (ownerPort && ownerPort !== port) return;
+    lastMessageAt = Date.now();
+    if (message.type === "ready") {
+      notifyStatus({active:false,visible:false}, "native-connected", true); return;
+    }
 
     if (message.type === "caption") {
       var text = String(message.text || "").trim();
@@ -111,7 +122,7 @@
       } catch (_) {
         sendToTab("SIGNAL_CAPTION_UPDATE", { caption: caption });
       }
-      notifyStatus({ active: true, visible: true }, "native-caption");
+      notifyStatus({ active: true, visible: message.visible !== false }, "native-caption");
       return;
     }
 
@@ -124,7 +135,7 @@
         active: message.active === true,
         visible: message.visible === true,
         error: message.error || null
-      }, message.type === "heartbeat" ? "native-heartbeat" : "native-status");
+      }, message.active !== true ? (message.visible === true ? "native-window-without-text" : "native-text-not-exposed") : (isFresh(4500) ? "native-caption" : "native-caption-stale"));
     }
   }
 
@@ -136,11 +147,7 @@
 
   function scheduleReconnect() {
     if (targetTabId == null || port || reconnectTimer) return;
-    if (reconnectAttempt >= RECONNECT_DELAYS.length) {
-      markError("native-reconnect-exhausted");
-      return;
-    }
-    var delay = RECONNECT_DELAYS[reconnectAttempt];
+    var delay = RECONNECT_DELAYS[Math.min(reconnectAttempt, RECONNECT_DELAYS.length - 1)];
     reconnectAttempt += 1;
     reconnectTimer = setTimeout(function () {
       reconnectTimer = null;
@@ -155,7 +162,7 @@
     port = null;
     lastCaptionAt = 0;
     connectionStartedAt = 0;
-    notifyStatus({ active: false, visible: false, error: error && error.message }, "native-disconnect", true);
+    notifyStatus({ active: false, visible: false, error: error && error.message }, error ? nativeErrorCode(error) : "native-disconnect", true);
     if (error) markError(error.message || error);
     scheduleReconnect();
   }
@@ -164,6 +171,16 @@
     if (targetTabId == null || port) return !!port;
     try {
       connectionStartedAt = Date.now();
+      lastMessageAt = connectionStartedAt;
+      if (!watchdogTimer && typeof setInterval === "function") watchdogTimer = setInterval(function () {
+        if (!port || Date.now() - lastMessageAt < 15000) return;
+        var stalePort = port;
+        port = null; lastCaptionAt = 0;
+        notifyStatus({active:false,visible:false}, "native-heartbeat-timeout", true);
+        markError("native-heartbeat-timeout");
+        try { stalePort.disconnect(); } catch (_) {}
+        scheduleReconnect();
+      }, 5000);
       var nextPort = chrome.runtime.connectNative(HOST_NAME);
       port = nextPort;
       nextPort.onMessage.addListener(function (message) { handleMessage(message, nextPort); });
@@ -173,6 +190,7 @@
     } catch (error) {
       port = null;
       markError(error);
+      notifyStatus({active:false,visible:false}, nativeErrorCode(error), true);
       return false;
     }
   }
@@ -194,6 +212,7 @@
     targetTabId = nextTabId;
     if (nextCallId) targetCallId = nextCallId;
     if (targetChanged || callChanged) {
+      clearReconnectTimer();
       var previousPort = port;
       port = null;
       resetCallState();
@@ -211,6 +230,8 @@
 
   function stop() {
     clearReconnectTimer();
+    if (watchdogTimer) { try { clearInterval(watchdogTimer); } catch (_) {} watchdogTimer = null; }
+    currentStatus = {active:false,reason:"native-stopped",captureScope:"native-text-only"};
     var current = port;
     var lostTabId = targetTabId;
     port = null;
@@ -232,6 +253,7 @@
   root.SignalCaptionBridge = {
     nativeErrorCode: nativeErrorCode,
     getContext: getContext,
+    getStatus: function () { return Object.assign({}, currentStatus); },
     start: start,
     stop: stop,
     isFresh: isFresh,

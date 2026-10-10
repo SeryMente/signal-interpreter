@@ -22,23 +22,14 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.33");
+assert.equal(manifest.version,"0.10.34");
 assert.ok(background.includes('liveCaptionInterpreterEnabled: false'), "el micrófono está fuera del alcance actual");
-assert.ok(background.includes('liveCaptionBilingualTabEnabled: true'), "la transcripción bilingüe de audio de pestaña está activada por defecto");
-assert.ok(background.includes('var outputSource = source === "yo" ? "yo" : "cliente"'), "la fuente de audio sigue siendo pestaña aunque el render distinga idioma");
 assert.equal(background.includes('if (language === "es") source = "yo"'), false, "el historial del service worker no debe convertir idioma en identidad del hablante");
 assert.ok(overlay.includes('core.roleForSource(item.source, language)'), "el render respeta la fuente del hablante");
-assert.ok(background.includes("effectiveTabEnabled = !!tabEnabled || config.liveCaptionBilingualTabEnabled !== false"), "el modo paralelo se respeta al activar previews");
 assert.equal(overlay.includes('if (language === "es") source = "yo"'), false, "el idioma no debe reasignar una fuente de audio verificada");
 assert.ok(popup.includes("captionBilingualTabEnabled"), "el popup permite configurar la transcripción bilingüe paralela");
-assert.ok(background.includes('return false; // Current scope: browser tab output only'), "configuración antigua no puede habilitar captura de micrófono");
-assert.ok(background.includes('currentState.microphoneOutputMuted === true'), "la captura de voz del LEP queda bloqueada si el micrófono está silenciado");
 assert.ok(background.includes("SIGNAL_CAPTION_OPEN_LOOKUP"), "las búsquedas externas pasan por un router acotado");
 assert.ok(background.includes("isCaptionTestVideoUrl"), "la captura de audio de prueba está limitada a la URL autorizada");
-assert.ok(background.includes("SIGNAL_START_YOUTUBE_CAPTION_PREVIEW"), "hay una ruta de audio separada para el video de prueba");
-assert.ok(background.includes("SIGNAL_YOUTUBE_CAPTION_PREVIEW_OFFSCREEN_STOPPED"), "el cierre de la captura de prueba sincroniza su estado");
-assert.ok(offscreen.includes("recorder.start(1800)"), "la captura de prueba usa ventanas de audio cortas para reducir latencia");
-assert.ok(offscreen.includes("youtubePreview:true"), "la captura de prueba se distingue de los segmentos oficiales");
 assert.ok(core.includes("findSmartTokens"), "el núcleo detecta teléfonos y direcciones antes del render");
 assert.ok(overlay.includes("renderSmartText"), "las direcciones y teléfonos se renderizan como acciones seguras");
 assert.ok(overlay.includes("Ctrl+Mayús+clic"), "el overlay explica la búsqueda de términos en Linguee");
@@ -53,13 +44,11 @@ assert.ok(manifest.key && manifest.key.length > 300);
 assert.ok(manifest.key);
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://app.cloudinterpreter.com/*")&&Array.isArray(e.js)&&e.js.includes("live-caption-core.js")&&e.js.includes("live-caption-overlay.js")&&e.js.includes("content.js")));
-assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("http://*/*")&&e.matches?.includes("https://*/*")&&e.exclude_matches?.includes("https://app.cloudinterpreter.com/*")&&e.js?.includes("live-caption-overlay.js")&&e.js?.includes("youtube-caption-adapter.js")), "overlay must initialize before the guarded YouTube adapter");
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 
 assert.ok(background.includes('importScripts("live-caption-core.js","live-caption-bridge.js"'));
 assert.ok(background.includes("SignalCaptionBridge.start(state.callSourceTabId, callId)"));
 assert.ok(background.includes("SignalCaptionBridge.stop()"));
-assert.ok(background.includes("SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK"));
 assert.ok(background.includes("handleGroqCaptionPreviewChunk"));
 assert.ok(background.includes("SignalCaptionBridge.isFresh(4500)"));
 assert.ok(background.includes("SIGNAL_CAPTION_UPDATE"));
@@ -82,21 +71,14 @@ assert.equal(stopCaptureBlock.trimStart().startsWith("async function stopGroqCap
 assert.ok(bridge.includes('message.type === "status" || message.type === "heartbeat"'));
 assert.ok(bridge.includes("RECONNECT_DELAYS"));
 assert.ok(bridge.includes('message.active !== true) lastCaptionAt = 0'));
-const previewStart=background.indexOf("async function processGroqCaptionPreviewChunk(message)");
-const previewEnd=background.indexOf("function handleGroqAudioChunk(message)",previewStart);
+const previewStart=background.indexOf("async function processGroqCaptionPreviewChunk()");
+const previewEnd=background.indexOf("function handleGroqAudioChunk()",previewStart);
 assert.ok(previewStart>=0&&previewEnd>previewStart);
 const previewBlock=background.slice(previewStart,previewEnd);
 assert.equal(previewBlock.includes("persistSignalSegment"),false);
 assert.equal(previewBlock.includes("broadcastSignalEvent"),false);
 assert.equal(previewBlock.includes("KhoraTelemetryDB"),false);
 
-assert.ok(offscreen.includes("previewTabRecorder"));
-assert.ok(offscreen.includes("previewMicRecorder"));
-assert.ok(offscreen.includes("startCaptionPreview"));
-assert.ok(offscreen.includes("recorder.start(1800)"), "todos los previews bilingües usan fragmentos de audio cortos");
-assert.ok(offscreen.includes("SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK"));
-assert.ok(offscreen.includes("captionPreview===true"));
-assert.ok(offscreen.includes('startCaptionPreview({tab:true,mic:false})'));
 assert.ok(offscreen.includes("SIGNAL_GET_GROQ_CAPTURE_STATE"));
 
 assert.ok(groq.includes("language=opts.language===null||opts.language===undefined?\"\":String(opts.language).trim()"));
@@ -187,4 +169,14 @@ assert.equal(/localhost:\\d+/.test(obsSync),false);
 
 console.log("LIVE_CAPTION_STATIC_AUDIT=PASS");
 assert.equal(/getUserMedia\(\{\s*audio:\s*true/.test(offscreen),false,"offscreen must never request a microphone");
-assert.ok(background.includes('message.source !== "cliente"'),"non-tab audio rejected before transcription");
+
+assert.equal(manifest.permissions.includes("tabCapture"),false);
+assert.equal(manifest.host_permissions.includes("https://api.groq.com/*"),false);
+assert.equal(manifest.content_scripts.some(e=>e.js?.includes("youtube-caption-adapter.js")),false);
+for(const code of [background,offscreen,popup]){
+ assert.equal(/getUserMedia|MediaRecorder|createMediaStreamSource|tabCapture\.getMediaStreamId/.test(code),false,"no conversational media acquisition or replay");
+}
+assert.ok(background.includes('caption.native !== true'));
+assert.ok(overlay.includes('if (source !== "chrome-live-caption") return;'));
+assert.ok(bridge.includes('native-heartbeat-timeout'));
+assert.ok(bridge.includes('Math.min(reconnectAttempt, RECONNECT_DELAYS.length - 1)'));

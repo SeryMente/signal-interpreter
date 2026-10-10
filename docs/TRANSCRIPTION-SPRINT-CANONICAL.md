@@ -3,14 +3,14 @@
 > **Autoridad documental:** este es el único informe canónico del esfuerzo/sprint de transcripción, Live Caption y overlay de subtítulos de Signal Interpreter. Las notas antiguas de implementación, los requisitos verbatim y las notas de versión son fuentes históricas o técnicas subordinadas; no son informes alternativos del esfuerzo.
 > **Ruta canónica:** `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`
 > **Repositorio:** https://github.com/SeryMente/signal-interpreter
-> **Última versión documentada:** **0.10.33 — Hotloading del overlay verificable, exclusivamente audio entrante de pestaña**
+> **Última versión documentada:** **0.10.34 — Solo texto nativo de Chrome; cero captura/reproducción de conversación**
 > **Integración previa al ciclo correctivo:** [PR #52](https://github.com/SeryMente/signal-interpreter/pull/52)
 > **Corrección previa de recuperación/exportación:** [PR #53](https://github.com/SeryMente/signal-interpreter/pull/53)
-> **Integración del alcance vigente 0.10.32:** [PR #54](https://github.com/SeryMente/signal-interpreter/pull/54)
+> **Integración histórica del alcance 0.10.32:** [PR #54](https://github.com/SeryMente/signal-interpreter/pull/54)
 > **Hotloading verificable 0.10.33:** [PR #55](https://github.com/SeryMente/signal-interpreter/pull/55)
-> **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.33 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
+> **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.34 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
 
-> **ALCANCE VIGENTE Y PREVALENTE (aclaración del operador):** calidad de vida para interpretación telefónica, sobre el audio que sale de la pestaña de Cloud Interpreter. **No se captura ni se transcribe el micrófono del operador en este ciclo**, aunque existan preferencias antiguas activadas. Los controles de mute de la llamada permanecen independientes. Las referencias anteriores a captura de micrófono son historia, no autorización vigente. Véase §13.
+> **ALCANCE VIGENTE Y PREVALENTE (§15):** la extensión es una mejora visual para interpretación telefónica (OPI): copia exclusivamente texto accesible de Live Caption nativo de Chrome. No captura audio de pestaña ni micrófono, no llama a Groq y no reproduce conversación. Las rutas de captura descritas en §§6–14 y el anexo son HISTORIA SUPERADA, no autorización vigente. Los controles de mute existentes permanecen independientes.
 
 ## 1. Regla inequívoca de documentación
 
@@ -336,6 +336,45 @@ La preparación del host abortó antes de registrar por token administrativo de 
 Se incluye `tools/prepare-caption-device.ps1` para ejecutarse desde la cuenta **realmente no elevada** del usuario de Chrome. Verifica identidad del usuario/proceso, versión, identidad de extensión, hashes, registro y protocolo; escribe únicamente un resultado de metadatos en la carpeta preparada. No solicita Groq en texto, no exporta transcripciones y no activa automáticamente la extensión. La preparación nativa y posterior activación quedan pendientes de esa sesión normal y evidencia real, no de más intentos administrativos.
 
 Evidencia aprobada de este ciclo: 25 suites/auditorías locales, fixture Chromium real de reinyección/limpieza/hidratación y controles Linux/Windows del primer commit publicado. El helper adicional y el canon actualizado requieren las compuertas del commit final antes de integración. El límite de cuota de Vercel permanece externo; no cambió el servicio alojado ni se afirma un nuevo deploy.
+
+## 15. Corrección 0.10.34 — contrato nativo exclusivo ratificado
+
+### 15.1. Retroalimentación e instrucción del operador VERBATIM
+
+> Cargué la extensión y sin embargo, el problema que encontré fue que al parecer pareciera como si se escuchara un eco en cuanto carga la extensión. De alguna manera no está registrando nada más el contenido del live caption nativo de Chrome, tal y como era la especificación, hacia el overlay, sino que por algún motivo que no entiendo, está reproduciendo un duplicado de lo que se dice y creo que incluso de lo que yo dijo, porque llegué a ver mis propias palabras en el live caption y eso es una anomalía. Entonces, revísalo. Otra cosa es que de hecho, en cierta parte dejó de mandar el contenido del live caption al overlay. Entonces, no está lista. No aparece el contenido en el overlay y se escucha un eco de lo que se está diciendo. Revísala por completo y entrégala.
+
+> Antes de que continues quiero saber si si entiendes el alcance
+
+> Correcto, entrégala con lo más pulida que puedas, resuelve de extremo a extremo, no te detengas hasta terminar.
+
+Alcance explicado por Samantha y confirmado por el operador: SOLO texto de Live Caption nativo; sin captura de pestaña/micrófono, transcripción Groq, replay ni fallback silencioso. No alterar audio, controles de llamada ni mute por la función de captions. Preservar carriles bilingües, historial, copiar/buscar, posición/tamaño, aislamiento, hotloading y observabilidad automática sin voz/texto crudos. Burbuja cerrada se intenta solo si Chrome expone su texto; si no, declarar esa limitación en lugar de sustituirlo por audio. YouTube/página sintética no son aceptación en vivo.
+
+### 15.2. Hallazgos y correcciones causales
+
+- El offscreen anterior enlazaba createMediaStreamSource con destination, reproduciendo audio capturado de pestaña. Es una ruta compatible con el eco descrito, NO una reproducción causal certificada en PC-8. Ver palabras propias en Chrome no demuestra por sí solo captura física del micrófono.
+- Se eliminan getUserMedia, MediaRecorder, createMediaStreamSource, tabCapture y llamadas de transcripción del flujo activo; permiso tabCapture y endpoint Groq también desaparecen del manifiesto. Mensajes heredados de captura son rechazados antes de consumir audio. Solo permanecen osciladores breves para avisos de mute preexistentes; no son audio de conversación.
+- Al arrancar, se cierra una vez el offscreen heredado y se fuerza estado de captura deshabilitado. Las actualizaciones del overlay requieren source=chrome-live-caption y native=true; se filtra historial sintético previo y se elimina el adaptador YouTube del runtime activo. No se solicita secreto Groq.
+- El puente abandonaba reconexión tras cuatro intentos: ahora continúa con retroceso limitado a 10 s mientras la llamada siga activa. Un watchdog de heartbeat a 15 s libera un puerto congelado y recupera; callbacks de puertos/llamadas antiguas son descartados. stop limpia timers/puerto y preserva historial de fin de sesión.
+- El host nativo ya no descarta una ventana/nodo de subtítulos únicamente por IsOffscreen. Lee exclusivamente la ventana Chrome con título de Live Caption reconocido y descendientes Text/Document que Windows realmente expone; visible=false no significa texto inexistente.
+- El estado del panel distingue host no registrado, conexión, texto no expuesto, ventana sin texto y obsolescencia. Una conexión o montaje sin texto no se anuncia como captions funcionales.
+
+### 15.3. Observabilidad y preparación
+
+Se conservan checkpoint final, drenaje por secuencia confirmada, retry persistente y exportación automática independiente del cálculo de ingresos. Los eventos tardíos de llamadas cerradas actualizan su informe sin crear informes antes del cierre ni duplicados. captionDiagnosis añade alcance nativo observado, conteo de fragmentos encaminados y motivos de fallo; no inventa captions a partir de rowCount/montaje. Los informes distinguen entrega automática/manual y no incluyen audio, texto hablado ni IDs crudos de llamada. La descarga manual de la consola se limita también a metadatos; la consola conserva sesiones históricas/notas, no promete grabación ni captions nuevos fuera del overlay. El conteo nativeTextForwarded prueba encaminamiento desde el worker, NO recepción/render confirmados; se coteja por separado con salud/rowCount del overlay.
+
+PC-8 no respondió a la llamada ping del conector: Timeout - no response from device. No se reintentó una operación pendiente ni se afirma instalación 0.10.34, registro, hotload físico o prueba en vivo. La última inspección efectiva no encontró host registrado. La preparación permite únicamente registro HKCU del mismo usuario Windows que Chrome, comprobado por SID; no solicita elevación, impersona cuentas ni instala servicios. El guard anterior basado solo en pertenencia a Administrators se reemplaza por identidad real, sin eliminar la verificación de usuario.
+
+La carpeta de entrega tiene manifest.json EN SU RAÍZ para evitar el error anterior de seleccionar un padre sin manifiesto. Se prepara en carpeta independiente; no sobrescribe la versión cargada ni reinicia/navega la llamada.
+
+### 15.4. Pruebas y compuerta real
+
+Evidencia local: 26 suites/auditorías aprobadas, además de sintaxis JavaScript, parser PowerShell y fixture Chromium real. El digest del binario compilado es `313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE`; fuente normalizado `1891B4D51F38F366116DD2B3E31C6352C3FD065580D56544B1C0E7321316890D`. La integración requiere los controles Linux/Windows del head final.
+
+Pruebas funcionales con APIs de audio envenenadas: cero invocaciones incluso con mensajes/preferencias heredadas; cierre de offscreen una sola vez ante callbacks concurrentes; inicio/fin/cambio de llamada y preferencia desactivada. Reconexión más allá de cuatro intentos, timeout y rechazo de callbacks tardíos. Regresiones conservan controles de mute/atajos, ingresos, historial, búsquedas y exportación/privacidad.
+
+Chromium real local comprueba hidratación solo nativa, rechazo de fila no nativa, hotloading con un solo panel/listener y limpieza de contexto sin navegar la página; no es una llamada Cloud Interpreter real. El fuente C# y payload se compilan/sincronizan en Windows antes de distribuir; ambos hashes se validan. Compilación y protocolo no demuestran acceso a captions con burbuja cerrada en el Chrome del operador.
+
+**Límite técnico y aceptación NO VERIFICADA:** switch ON no garantiza que Chrome conserve la ventana accesible al cerrar la burbuja. Si Chrome elimina ese árbol, esta solución no puede recuperar texto de un objeto inexistente y NO introduce audio como sustituto. Pendiente: extensión nueva cargada en PC-8, texto inglés/español nativo visible/oculto realmente recibido, ausencia de eco, aislamiento de dos llamadas y primer informe automático de cierre de esta versión. No se emite garantía de funcionamiento en vivo sin esa evidencia. La instrucción de completar no autoriza simularla.
 
 ## Anexo A — documento de implementación preexistente conservado
 

@@ -59,6 +59,7 @@
   var pageAllowed = false;
   var youtubeTarget = false;
   var active = false;
+  var nativeStatus = { reasonCode: "native-bridge-connecting", connected: false, captionFresh: false };
   var sessionEnded = false;
   var collapsed = false;
   var unreadCount = 0;
@@ -748,6 +749,15 @@
     }, visible ? "info" : "warn");
   }
 
+  function nativeStatusMessage() {
+    var reason = nativeStatus.reasonCode || nativeStatus.reason || "native-bridge-connecting";
+    if (reason === "native-host-not-registered") return "Falta preparar el puente de Chrome";
+    if (reason === "native-text-not-exposed") return "Chrome no expone texto; abre el recuadro nativo";
+    if (reason === "native-window-without-text" || reason === "native-caption-stale") return "Esperando texto nativo de Chrome";
+    if (reason === "native-heartbeat-timeout" || reason.indexOf("native-host-") === 0 && reason !== "native-host-ready-no-text") return "Puente desconectado; reconectando";
+    return nativeStatus.connected ? "Chrome conectado · esperando texto" : "Conectando con Chrome";
+  }
+
   function render(skipUnreadTracking) {
     if (runtimeDisposed) return;
     if (!canShowOnThisPage()) {
@@ -802,10 +812,10 @@
       empty.hidden = data.length > 0;
       empty.textContent = youtubeTarget
         ? "Esperando subtítulos del video. Activa CC y reproduce el video."
-        : "Esperando la primera intervención…";
+        : nativeStatusMessage();
     }
     if (dot) dot.className = "dot" + (active ? "" : " idle");
-    if (stateLabel) stateLabel.textContent = active ? "EN VIVO" : (sessionEnded ? "HISTORIAL" : "EN ESPERA");
+    if (stateLabel) { stateLabel.textContent = active ? "CHROME · EN VIVO" : (sessionEnded ? "HISTORIAL" : nativeStatusMessage()); stateLabel.title = nativeStatusMessage(); }
     host.style.display = "block";
     updateAriaVisibility();
     reportVisibility("render");
@@ -822,6 +832,7 @@
   }
 
   function addRow(text, language, source, isLive, timestamp) {
+    if (source !== "chrome-live-caption") return;
     var clean = core.normalizeText(text).slice(0, 1500);
     if (!clean) return;
     lastCaptionAt = Date.now();
@@ -874,7 +885,7 @@
   function hydrateHistory(history) {
     if (!Array.isArray(history)) return;
     var previousScroll = root && root.querySelector(".transcript") ? root.querySelector(".transcript").scrollTop : 0;
-    rows = history.slice(-MAX_HISTORY).map(function (item) {
+    rows = history.filter(function (item) { return item && item.source === "chrome-live-caption"; }).slice(-MAX_HISTORY).map(function (item) {
       return {
         text: core.normalizeText(item && item.text).slice(0, 1500),
         language: core.resolveLanguage(item && item.language, item && item.text),
@@ -903,6 +914,7 @@
       return false;
     }
     contextReady = true;
+    if (result.nativeStatus) nativeStatus = result.nativeStatus;
     config.liveCaptionOverlayEnabled = result.enabled !== false;
     config.liveCaptionOverlayScope = result.scope === "all-tabs" ? "all-tabs" : "source-only";
     sourceTabId = result.sourceTabId != null && Number.isFinite(Number(result.sourceTabId))
@@ -1176,11 +1188,12 @@
       }
     } else if (message.type === "SIGNAL_CAPTION_UPDATE") {
       var caption = message.caption || {};
-      if (!caption.text || !canShowOnThisPage()) return;
+      if (!caption.text || caption.source !== "chrome-live-caption" || caption.native !== true || !canShowOnThisPage()) return;
       active = true;
       sessionEnded = false;
       addRow(caption.text, caption.language, caption.source, caption.live, caption.timestamp);
     } else if (message.type === "SIGNAL_CAPTION_NATIVE_STATUS") {
+      nativeStatus = message;
       active = message.captionFresh === false
         ? false
         : (message.active === true || (message.captionFresh == null && message.visible === true));
@@ -1217,17 +1230,6 @@
   }
   chrome.runtime.onMessage.addListener(onOverlayRuntimeMessage);
 
-  listen(document, "signal-interpreter-youtube-caption", function (event) {
-    if (!youtubeTarget || !event || !event.detail || !event.detail.text) return;
-    active = true;
-    addRow(event.detail.text, event.detail.language || "unknown", "chrome-live-caption", true, event.detail.timestamp || Date.now());
-  });
-
-  listen(document, "signal-interpreter-youtube-caption-status", function (event) {
-    if (!youtubeTarget || !event || !event.detail) return;
-    active = event.detail.active === true;
-    render(true);
-  });
 
   if (window) {
     listen(window, "pointermove", handlePointerMove, true);

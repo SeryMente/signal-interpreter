@@ -24,7 +24,7 @@
     liveCaptionOverlayEnabled: true,
     liveCaptionOverlayScope: "source-only",
     liveCaptionInterpreterEnabled: false,
-    liveCaptionBilingualTabEnabled: true,
+    liveCaptionBilingualTabEnabled: false,
     usdMxnRate: null,
     exchangeRateDate: null,
     exchangeRateUpdatedAt: null
@@ -130,7 +130,7 @@
     if ($("captionOverlayEnabled")) $("captionOverlayEnabled").checked = config.liveCaptionOverlayEnabled !== false;
     if ($("captionOverlayScope")) $("captionOverlayScope").value = config.liveCaptionOverlayScope === "all-tabs" ? "all-tabs" : "source-only";
     if ($("captionInterpreterEnabled")) { $("captionInterpreterEnabled").checked = false; $("captionInterpreterEnabled").disabled = true; }
-    if ($("captionBilingualTabEnabled")) $("captionBilingualTabEnabled").checked = config.liveCaptionBilingualTabEnabled !== false;
+    if ($("captionBilingualTabEnabled")) { $("captionBilingualTabEnabled").checked = false; $("captionBilingualTabEnabled").disabled = true; }
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
     $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
@@ -138,7 +138,7 @@
     if (loginUsernameInput && document.activeElement !== loginUsernameInput) {
       loginUsernameInput.value = cloudInterpreterLoginUsername;
     }
-    $("groqStatus").textContent = "Clave local ✓ · " + (config.groqModel || "whisper-large-v3-turbo");
+    $("groqStatus").textContent = "Live Caption nativo · sin captura de audio";
     if ($("telemetryVersion")) $("telemetryVersion").textContent = BUILD_LABEL;
     $("sessionTimer").textContent = duration(state.sessionStartedAt);
     $("onlineTimer").textContent = duration(state.onlineStartedAt);
@@ -232,73 +232,21 @@
     save({ liveCaptionInterpreterEnabled: false });
   });
   if ($("captionBilingualTabEnabled")) $("captionBilingualTabEnabled").addEventListener("change", function () {
-    save({ liveCaptionBilingualTabEnabled: this.checked });
+    save({ liveCaptionBilingualTabEnabled: false });
   });
 
   var youtubeCaptionCaptureButton = $("youtubeCaptionCapture");
   var youtubeCaptionCaptureHelp = $("youtubeCaptionCaptureHelp");
   var youtubeCaptionCapturePending = false;
   function refreshYoutubeCaptionCaptureButton() {
-    if (!youtubeCaptionCaptureButton) return;
-    chrome.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
-      var tab = tabs && tabs[0];
-      var url = String(tab && tab.url || "");
-      var target = !!(tab && tab.id != null && /^https:\/\/www\.youtube\.com\/watch(?:\?|#|$)/i.test(url) &&
-        /(?:\?|&)v=TshOFzKQfG8(?:&|$)/.test(url));
-      var youtubeCaptureSection = $("youtubeCaptionTestTools");
-      if (youtubeCaptureSection) youtubeCaptureSection.hidden = !target;
-      youtubeCaptionCaptureButton.hidden = !target;
-      if (youtubeCaptionCaptureHelp) youtubeCaptionCaptureHelp.hidden = !target;
-      if (!target) return;
-      chrome.runtime.sendMessage({ type: "SIGNAL_YOUTUBE_CAPTION_PREVIEW_STATUS_GET", tabId: tab.id }, function (response) {
-        if (chrome.runtime.lastError) return;
-        youtubeCaptionCaptureButton.dataset.active = response && response.active === true ? "true" : "false";
-        youtubeCaptionCaptureButton.textContent = response && response.active === true
-          ? "Detener transcripción bilingüe del video"
-          : "Iniciar transcripción bilingüe del video";
-        youtubeCaptionCaptureButton.disabled = youtubeCaptionCapturePending;
-      });
-    }).catch(function () {
-      youtubeCaptionCaptureButton.hidden = true;
-      if (youtubeCaptionCaptureHelp) youtubeCaptionCaptureHelp.hidden = true;
-      var youtubeCaptureSection = $("youtubeCaptionTestTools");
-      if (youtubeCaptureSection) youtubeCaptureSection.hidden = true;
-    });
+    if (youtubeCaptionCaptureButton) youtubeCaptionCaptureButton.hidden = true;
+    if (youtubeCaptionCaptureHelp) youtubeCaptionCaptureHelp.hidden = true;
   }
-  if (youtubeCaptionCaptureButton) youtubeCaptionCaptureButton.addEventListener("click", function () {
-    if (youtubeCaptionCapturePending) return;
-    youtubeCaptionCapturePending = true;
-    youtubeCaptionCaptureButton.disabled = true;
-    chrome.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
-      var tab = tabs && tabs[0];
-      var url = String(tab && tab.url || "");
-      if (!tab || tab.id == null || !/^https:\/\/www\.youtube\.com\/watch(?:\?|#|$)/i.test(url) ||
-          !/(?:\?|&)v=TshOFzKQfG8(?:&|$)/.test(url)) {
-        throw new Error("Abre primero el video de prueba autorizado.");
-      }
-      if (youtubeCaptionCaptureButton.dataset.active === "true") {
-        return chrome.runtime.sendMessage({ type: "SIGNAL_YOUTUBE_CAPTION_PREVIEW_STOP", tabId: tab.id, reason: "user-stop" });
-      }
-      return chrome.tabCapture.getMediaStreamId({ targetTabId: tab.id }).then(function (streamId) {
-        return chrome.runtime.sendMessage({
-          type: "SIGNAL_YOUTUBE_CAPTION_PREVIEW_START", tabId: tab.id, streamId: streamId
-        });
-      });
-    }).then(function (response) {
-      if (!response || response.ok !== true) throw new Error(String(response && response.error || "No se pudo iniciar la transcripción."));
-      status(response.active ? "Transcripción bilingüe del video iniciada." : "Transcripción del video detenida.");
-    }).catch(function (error) {
-      status(String(error && error.message || error), true);
-    }).finally(function () {
-      youtubeCaptionCapturePending = false;
-      youtubeCaptionCaptureButton.disabled = false;
-      refreshYoutubeCaptionCaptureButton();
-    });
-  });
+
   refreshYoutubeCaptionCaptureButton();
 
   var openTranscript=$("openTranscript");
-  if(openTranscript)openTranscript.addEventListener("click",function(){openTranscript.disabled=true;status("Preparando captura de audio…");chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab||tab.id==null)throw new Error("No hay pestaña activa.");return chrome.runtime.sendMessage({type:"SIGNAL_CAPTION_PREPARE_DURABLE_CAPTURE"}).then(function(){return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id});}).then(function(streamId){return{tab:tab,streamId:streamId}})}).then(function(x){var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:x.tab.id,audioStreamId:x.streamId,sourceUrl:x.tab.url||"",sourceTitle:x.tab.title||""};return chrome.runtime.sendMessage(payload)}).then(function(response){status(response&&response.ok?"Groq: consola abierta y captura iniciada":"No se pudo iniciar: "+String(response&&response.error||"desconocido"),!(response&&response.ok));}).catch(function(error){status("No se pudo iniciar la captura: "+String(error),true);}).finally(function(){openTranscript.disabled=false;});});
+  if(openTranscript)openTranscript.addEventListener("click",function(){chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab)throw new Error("No hay pestaña activa.");return chrome.runtime.sendMessage({type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:tab.id,sourceUrl:tab.url||"",sourceTitle:tab.title||""});}).catch(function(){status("No se pudo abrir el historial",true);});});
   $("groqModel").addEventListener("change",function(){save({groqModel:this.value});});
   var loginUsernameInput = $("cloudInterpreterUsername");
   if (loginUsernameInput) loginUsernameInput.addEventListener("change", function () {
