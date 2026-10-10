@@ -23,6 +23,16 @@
     } catch (_) {}
   }
 
+  function sendSessionEvent(type, payload, tabId) {
+    try {
+      if (root.SignalCaptionBridge && typeof root.SignalCaptionBridge.onSessionEvent === "function") {
+        root.SignalCaptionBridge.onSessionEvent(type, payload || {}, tabId == null ? targetTabId : tabId);
+        return;
+      }
+    } catch (_) {}
+    sendToTab(type, payload, tabId);
+  }
+
   function markError(error) {
     var now = Date.now();
     if (lastErrorAt > 0 && now >= lastErrorAt && now - lastErrorAt < 10000) return;
@@ -73,15 +83,22 @@
       var text = String(message.text || "").trim();
       if (!text) return;
       lastCaptionAt = Date.now();
-      sendToTab("SIGNAL_CAPTION_UPDATE", {
-        caption: {
-          text: text,
-          language: message.language || "unknown",
-          source: "chrome-live-caption",
-          live: true,
-          native: true
+      var caption = {
+        text: text,
+        language: message.language || "unknown",
+        source: "chrome-live-caption",
+        live: true,
+        native: true
+      };
+      try {
+        if (root.SignalCaptionBridge && typeof root.SignalCaptionBridge.onCaption === "function") {
+          root.SignalCaptionBridge.onCaption(caption, targetTabId);
+        } else {
+          sendToTab("SIGNAL_CAPTION_UPDATE", { caption: caption });
         }
-      });
+      } catch (_) {
+        sendToTab("SIGNAL_CAPTION_UPDATE", { caption: caption });
+      }
       notifyStatus({ active: true, visible: true }, "native-caption");
       return;
     }
@@ -168,7 +185,7 @@
       var previousPort = port;
       port = null;
       resetCallState();
-      sendToTab("SIGNAL_CAPTION_SESSION_RESET", { reason: callChanged ? "new-call" : "target-changed" });
+      sendSessionEvent("SIGNAL_CAPTION_SESSION_RESET", { reason: callChanged ? "new-call" : "target-changed" }, nextTabId);
       notifyStatus({ active: false, visible: false }, "target-changed", true);
       if (previousPort) {
         try { previousPort.disconnect(); } catch (_) {}
@@ -188,7 +205,7 @@
     targetTabId = null;
     targetCallId = null;
     resetCallState();
-    sendToTab("SIGNAL_CAPTION_SESSION_RESET", { reason: "native-stopped" }, lostTabId);
+    if (lostTabId != null) sendSessionEvent("SIGNAL_CAPTION_SESSION_END", { reason: "native-stopped" }, lostTabId);
     sendToTab("SIGNAL_CAPTION_NATIVE_STATUS", {
       active: false, visible: false, captionFresh: false, lastCaptionAgeMs: null, reason: "native-stopped"
     }, lostTabId);

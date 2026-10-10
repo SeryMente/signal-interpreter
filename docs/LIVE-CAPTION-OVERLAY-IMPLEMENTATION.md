@@ -2,8 +2,12 @@
 
 **Repositorio canónico:** https://github.com/SeryMente/signal-interpreter
 **Especificación canónica:** https://github.com/SeryMente/signal-interpreter/blob/main/docs/USER-REQUIREMENT-LIVE-CAPTIONS-OVERLAY-VERBATIM-20261008.md
-**Versión integrada:** 0.10.23 — Overlay compacto y no obstructivo.
+**Versión integrada:** 0.10.24 — Overlay legible, desplazable y configurable.
 **Commit de producción:** `2607ff07107f1e1e4cf82b3ab6e8bb4516f0ba90` (PR #44, integrada en `main` el 2026-10-09).
+
+## Evolución de usabilidad 0.10.24
+
+La tarjeta compacta se sustituye por un panel de historial desplazable, con movimiento por arrastre del encabezado, redimensionado desde la esquina inferior derecha, ajuste por teclado y un control «Auto» que restaura el tamaño y la colocación automática. El posicionamiento automático puntúa ocho ubicaciones contra controles interactivos visibles. El alcance predeterminado es solo la pestaña de origen; la opción «Todas las pestañas web» distribuye la conversación a pestañas HTTP(S) mientras haya contexto de sesión. Las intervenciones se conservan en `chrome.storage.session`, no en almacenamiento local duradero; el historial se mantiene tras terminar una llamada y se limpia al comenzar una nueva o al cambiar de origen. La retención se limita a las 800 intervenciones más recientes y a 1.500 caracteres por intervención para mantenerse dentro del presupuesto de almacenamiento de sesión.
 
 ## Objetivo
 
@@ -39,7 +43,7 @@ El preview no crea segmentos durables, no escribe el timeline/IndexedDB de las s
 - Respeta `EFFECTIF_SCREENSHOT_PREPARE` / `EFFECTIF_SCREENSHOT_RESTORE`.
 - Limpia el contexto al cambiar de llamada/pestaña, al cerrar la llamada o al reemplazar el runtime.
 
-La preferencia `liveCaptionOverlayEnabled` detiene el overlay, el puente y el preview; al reactivarla durante una llamada válida, restablece el puente y el fallback.
+La preferencia `liveCaptionOverlayEnabled` detiene el overlay, el puente y el preview; al reactivarla durante una llamada válida, restablece el puente y el fallback. `liveCaptionOverlayScope` controla si las actualizaciones se distribuyen solo a la pestaña de origen (`source-only`, predeterminado) o a todas las pestañas web (`all-tabs`). El service worker aplica la preferencia y responde al saludo inicial del content script con el contexto actual y el historial de sesión.
 
 ## Distribución del host nativo
 
@@ -68,6 +72,6 @@ No se ha ejecutado una llamada bilingüe real en esta sesión. Por tanto, perman
 
 ## Resultado
 
-La versión 0.10.23 limita el panel a 210 px de alto, muestra como máximo cuatro intervenciones recientes y recorta visualmente cada intervención a dos líneas; el host conserva `pointer-events: none` y el cálculo de posición evita controles visibles. La intención es que texto excepcionalmente largo no cubra el keypad ni controles de llamada.
+La versión 0.10.24 deja revisar el historial reciente mediante desplazamiento vertical, permite mover y redimensionar el panel y configura la visibilidad por pestaña de origen o en todas las pestañas web. La ubicación automática intenta minimizar el solapamiento con controles interactivos visibles y el host conserva `pointer-events: none`, con interacción explícita solo en los controles del propio panel.
 
-La versión 0.10.22 había integrado el flujo primario/fallback en `main`. El flujo primario/fallback, el overlay y el host nativo están incluidos en la versión canónica. Para habilitar la ruta primaria en Windows, hay que ejecutar el script de registro incluido en `extension/native/register-caption-host.ps1` desde la carpeta materializada de la extensión; después, recargar la extensión y comprobar los permisos/captura necesarios para el fallback. La instalación local de EP no se ha modificado desde esta sesión.
+La versión 0.10.22 había integrado el flujo primario/fallback en `main`. El flujo primario/fallback, el overlay y el host nativo están incluidos en la versión canónica. Para habilitar la ruta primaria en Windows, hay que ejecutar el script de registro incluido en `extension/native/register-caption-host.ps1` desde la carpeta materializada de la extensión; después, recargar la extensión y comprobar los permisos/captura necesarios para el fallback. Esta actualización se trabaja exclusivamente en GitHub; no se modifican instalaciones locales mediante RDC.

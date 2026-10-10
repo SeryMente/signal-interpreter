@@ -21,6 +21,8 @@
     billingRule: "pro_rata_by_second_assumed",
     overlayEnabled: true,
     overlayCompact: true,
+    liveCaptionOverlayEnabled: true,
+    liveCaptionOverlayScope: "source-only",
     usdMxnRate: null,
     exchangeRateDate: null,
     exchangeRateUpdatedAt: null
@@ -42,7 +44,7 @@
     config = Object.assign({}, config, patch);
     chrome.storage.local.set({ effectifConfig: config }, function () {
       render();
-      status("ConfiguraciÃ³n guardada");
+      status("Configuración guardada");
     });
   }
   function localDay(value) {
@@ -123,6 +125,8 @@
     $("telemetryMaxEvents").value = String(config.telemetryMaxEvents || 250000);
     $("telemetryHeartbeatSeconds").value = String(config.telemetryHeartbeatSeconds || 30);
     $("overlayEnabled").checked = !!config.overlayEnabled;
+    if ($("captionOverlayEnabled")) $("captionOverlayEnabled").checked = config.liveCaptionOverlayEnabled !== false;
+    if ($("captionOverlayScope")) $("captionOverlayScope").value = config.liveCaptionOverlayScope === "all-tabs" ? "all-tabs" : "source-only";
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
     $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
@@ -130,7 +134,7 @@
     if (loginUsernameInput && document.activeElement !== loginUsernameInput) {
       loginUsernameInput.value = cloudInterpreterLoginUsername;
     }
-    $("groqStatus").textContent = "Clave local âœ“ Â· " + (config.groqModel || "whisper-large-v3-turbo");
+    $("groqStatus").textContent = "Clave local ✓ · " + (config.groqModel || "whisper-large-v3-turbo");
     if ($("telemetryVersion")) $("telemetryVersion").textContent = BUILD_LABEL;
     $("sessionTimer").textContent = duration(state.sessionStartedAt);
     $("onlineTimer").textContent = duration(state.onlineStartedAt);
@@ -167,12 +171,12 @@
     var fx = Number(config.usdMxnRate || 0);
     var earnedUsdText = "US$" + earnedUsd.toFixed(4);
     var earnedMxnText = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
-    if ($("earningSummary")) $("earningSummary").textContent = earnedUsdText + " Â· " + earnedMxnText;
+    if ($("earningSummary")) $("earningSummary").textContent = earnedUsdText + " · " + earnedMxnText;
     $("exchangeRate").textContent = fx > 0 ? "$" + fx.toFixed(4) : "No disponible";
     if ($("earningLabel")) $("earningLabel").textContent = hasOfficial ? "Ingreso oficial hoy" : "Ingreso estimado hoy";
     $("exchangeMeta").textContent = fx > 0
-      ? "Fecha de referencia: " + (config.exchangeRateDate || "Ãºltima disponible")
-      : ((state.exchangeRateError || "Reintentando automÃ¡ticamente").slice(0, 90));
+      ? "Fecha de referencia: " + (config.exchangeRateDate || "última disponible")
+      : ((state.exchangeRateError || "Reintentando automáticamente").slice(0, 90));
     renderOfficial();
   }
   var micToggleButton=$("micToggle");
@@ -221,7 +225,7 @@
     finally{ button.disabled=false; renderMicrophone(); }
   });
   var openTranscript=$("openTranscript");
-  if(openTranscript)openTranscript.addEventListener("click",function(){openTranscript.disabled=true;status("Preparando captura de audioâ€¦");chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab||tab.id==null)throw new Error("No hay pestaÃ±a activa.");return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){return{tab:tab,streamId:streamId}})}).then(function(x){var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:x.tab.id,audioStreamId:x.streamId,sourceUrl:x.tab.url||"",sourceTitle:x.tab.title||""};return chrome.runtime.sendMessage(payload)}).then(function(response){status(response&&response.ok?"Groq: consola abierta y captura iniciada":"No se pudo iniciar: "+String(response&&response.error||"desconocido"),!(response&&response.ok));}).catch(function(error){status("No se pudo iniciar la captura: "+String(error),true);}).finally(function(){openTranscript.disabled=false;});});
+  if(openTranscript)openTranscript.addEventListener("click",function(){openTranscript.disabled=true;status("Preparando captura de audio…");chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab||tab.id==null)throw new Error("No hay pestaña activa.");return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){return{tab:tab,streamId:streamId}})}).then(function(x){var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:x.tab.id,audioStreamId:x.streamId,sourceUrl:x.tab.url||"",sourceTitle:x.tab.title||""};return chrome.runtime.sendMessage(payload)}).then(function(response){status(response&&response.ok?"Groq: consola abierta y captura iniciada":"No se pudo iniciar: "+String(response&&response.error||"desconocido"),!(response&&response.ok));}).catch(function(error){status("No se pudo iniciar la captura: "+String(error),true);}).finally(function(){openTranscript.disabled=false;});});
   $("groqModel").addEventListener("change",function(){save({groqModel:this.value});});
   var loginUsernameInput = $("cloudInterpreterUsername");
   if (loginUsernameInput) loginUsernameInput.addEventListener("change", function () {
@@ -242,6 +246,8 @@
   $("telemetryMaxEvents").addEventListener("change", function () { save({ telemetryMaxEvents: Math.max(1000, Math.min(1000000, Number(this.value) || 250000)) }); });
   $("telemetryHeartbeatSeconds").addEventListener("change", function () { save({ telemetryHeartbeatSeconds: Math.max(10, Math.min(300, Number(this.value) || 30)) }); });
   $("overlayEnabled").addEventListener("change", function () { save({ overlayEnabled: this.checked }); });
+  if ($("captionOverlayEnabled")) $("captionOverlayEnabled").addEventListener("change", function () { save({ liveCaptionOverlayEnabled: this.checked }); });
+  if ($("captionOverlayScope")) $("captionOverlayScope").addEventListener("change", function () { save({ liveCaptionOverlayScope: this.value === "all-tabs" ? "all-tabs" : "source-only" }); });
   $("volume").addEventListener("input", function () {
     config.volume = Number(this.value);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
@@ -252,8 +258,8 @@
     if (!host) return;
     var order = ["statistics", "pre-scheduled", "appointments", "finance", "profile"];
     var labels = {
-      statistics: "Statistics Â· On-Demand",
-      "pre-scheduled": "Statistics Â· Pre-Scheduled",
+      statistics: "Statistics · On-Demand",
+      "pre-scheduled": "Statistics · Pre-Scheduled",
       appointments: "Appointments", finance: "Finance", profile: "Profile"
     };
     var cards = order.filter(function (key) { return mirror[key]; }).map(function (key) {
@@ -263,7 +269,7 @@
         summary.earned ? "Ganado " + summary.earned : "",
         summary.callLength ? "Tiempo " + summary.callLength : "",
         summary.callCount ? "Llamadas " + summary.callCount : ""
-      ].filter(Boolean).join(" Â· ");
+      ].filter(Boolean).join(" · ");
       var rows = (item.tables || []).reduce(function (sum, table) {
         return sum + Math.max(0, (table.rows || []).length - 1);
       }, 0);
@@ -275,7 +281,7 @@
           }).join("") + "</tr>";
         }).join("") + "</table></div>";
       }).join("");
-      var preview = (item.lines || []).slice(0, 8).join(" Â· ");
+      var preview = (item.lines || []).slice(0, 8).join(" · ");
       return '<details><summary><b>' + labels[key] + '</b><span>' +
         new Date(item.capturedAt).toLocaleTimeString() + '</span></summary>' +
         (summaryText ? '<p class="official-summary">' + escapeHtml(summaryText) + '</p>' : '') +
@@ -283,12 +289,12 @@
         tables +
         '<p class="preview">' + escapeHtml(preview || "Sin contenido visible") + '</p></details>';
     });
-    host.innerHTML = cards.length ? cards.join("") : "<small>AÃºn no hay pantallas sincronizadas.</small>";
+    host.innerHTML = cards.length ? cards.join("") : "<small>Aún no hay pantallas sincronizadas.</small>";
     var stats = mirror.statistics || {};
     var summary = stats.summary || {};
     if (summary.earnedUsd == null) summary.earnedUsd = (String(summary.earned || "").match(/(?:US\$|\$)\s*([0-9]+(?:[.,][0-9]+)?)/) || [])[1] || null;
-    var official = [summary.earned ? "Ganado " + summary.earned : "", summary.callCount ? summary.callCount + " llamadas" : "", summary.callLength ? summary.callLength : ""].filter(Boolean).join(" Â· ");
-    if ($("officialSummary")) $("officialSummary").innerHTML = official ? "<strong>" + escapeHtml(official) + "</strong>" : "<small>AÃºn no hay datos oficiales sincronizados.</small>";
+    var official = [summary.earned ? "Ganado " + summary.earned : "", summary.callCount ? summary.callCount + " llamadas" : "", summary.callLength ? summary.callLength : ""].filter(Boolean).join(" · ");
+    if ($("officialSummary")) $("officialSummary").innerHTML = official ? "<strong>" + escapeHtml(official) + "</strong>" : "<small>Aún no hay datos oficiales sincronizados.</small>";
     if ($("officialMeta")) $("officialMeta").textContent = stats.capturedAt ? "Sincronizado " + new Date(stats.capturedAt).toLocaleTimeString() : "Cotejo con las pantallas de la plataforma";
   }
   function escapeHtml(value) {
@@ -298,11 +304,11 @@
   }
   var syncOfficial = $("syncOfficial");
   if (syncOfficial) syncOfficial.addEventListener("click", function () {
-    var button=this; button.disabled=true; status("Sincronizando Statisticsâ€¦");
+    var button=this; button.disabled=true; status("Sincronizando Statistics…");
     chrome.runtime.sendMessage({type:"SYNC_OFFICIAL_PLATFORM_DATA"}, function(response){
       if(response&&response.ok){
         var earned=response.snapshot&&response.snapshot.summary&&response.snapshot.summary.earned;
-        status(earned ? "Sincronizado Â· "+earned : "Sincronizado");
+        status(earned ? "Sincronizado · "+earned : "Sincronizado");
       } else {
         status("No se pudo sincronizar: "+String(response&&response.error||"desconocido"),true);
       }
@@ -312,7 +318,7 @@
   $("refresh").addEventListener("click", function () {
     chrome.tabs.query({ url: "https://app.cloudinterpreter.com/*" }, function (tabs) {
       var pending = tabs.length;
-      if (!pending) { status("No hay pestaÃ±as de Effectif abiertas", true); return; }
+      if (!pending) { status("No hay pestañas de Effectif abiertas", true); return; }
       tabs.forEach(function (tab) {
         chrome.tabs.sendMessage(tab.id, { type: "EFFECTIF_REQUEST_PLATFORM_SNAPSHOT" }, function () {
           pending -= 1;
@@ -325,7 +331,7 @@
     button.addEventListener("click", function () {
       chrome.storage.local.get(["effectifState"], function (stored) {
         if (stored.effectifState && stored.effectifState.callStartedAt) {
-          status("Durante una llamada no se abre Statistics ni se cambia de pestaÃ±a.", true);
+          status("Durante una llamada no se abre Statistics ni se cambia de pestaña.", true);
           return;
         }
         chrome.tabs.query({ url: "https://app.cloudinterpreter.com/profile/*" }, function (tabs) {
@@ -358,7 +364,7 @@
     try {
       var stats = await KhoraTelemetryDB.stats();
       $("telemetryCount").textContent = stats.events.toLocaleString("es-MX") + " eventos";
-      $("telemetryMeta").textContent = stats.snapshots.toLocaleString("es-MX") + " snapshots Â· " + Number(stats.signalSegments||0).toLocaleString("es-MX") + " segmentos Signal Â· " + formatBytes(stats.usageBytes) + " usados Â· desde " + (stats.oldestEventAt ? new Date(stats.oldestEventAt).toLocaleString() : "ahora");
+      $("telemetryMeta").textContent = stats.snapshots.toLocaleString("es-MX") + " snapshots · " + Number(stats.signalSegments||0).toLocaleString("es-MX") + " segmentos Signal · " + formatBytes(stats.usageBytes) + " usados · desde " + (stats.oldestEventAt ? new Date(stats.oldestEventAt).toLocaleString() : "ahora");
     } catch (error) {
       $("telemetryCount").textContent = "Base no disponible";
       $("telemetryMeta").textContent = String(error);
@@ -457,7 +463,7 @@
     var fx = Number(config.usdMxnRate || 0);
     var usdText = "US$" + earnedUsd.toFixed(4);
     var mxnText = fx > 0 ? "MX$" + (earnedUsd * fx).toFixed(4) : "Sin tasa";
-    if ($("earningSummary")) $("earningSummary").textContent = usdText + " Â· " + mxnText;
+    if ($("earningSummary")) $("earningSummary").textContent = usdText + " · " + mxnText;
     if ($("earningLabel")) $("earningLabel").textContent = hasOfficial ? "Ingreso oficial hoy" : "Ingreso estimado hoy";
   }
   var popupStateLoaded = false;

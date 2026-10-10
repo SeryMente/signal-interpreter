@@ -55,3 +55,7 @@ La observabilidad de Signal Interpreter cubre dos planos: telemetría de la prop
 
 La arquitectura canónica está documentada en `docs/OBSERVABILITY-ARCHITECTURE-BROWSER-GITHUB-v2.md`.
 
+
+## Overlay de subtítulos (0.10.24)
+
+El overlay de Live Caption permite revisar el historial reciente con desplazamiento vertical, mover y redimensionar el panel, restaurar su ubicación automática y configurar la visibilidad en la pestaña de origen o en todas las pestañas web. El texto se retiene en el almacenamiento de sesión de Chrome, no en almacenamiento local duradero. Consulta `docs/versions/0.10.24.md` para el alcance y las limitaciones de validación.

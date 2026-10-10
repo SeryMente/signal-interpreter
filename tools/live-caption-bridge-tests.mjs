@@ -130,7 +130,7 @@ const thirdRetry = timers[timers.length - 1];
 assert.equal(thirdRetry.delay, 5000, "la espera sigue aumentando mientras no haya conexión estable");
 
 bridge.stop();
-assert.ok(tabMessages.some((item) => item.message.type === "SIGNAL_CAPTION_SESSION_RESET" && item.message.reason === "native-stopped"));
+assert.ok(tabMessages.some((item) => item.message.type === "SIGNAL_CAPTION_SESSION_END" && item.message.reason === "native-stopped"), "al detener el bridge se conserva el historial de la sesión terminada");
 assert.equal(bridge.isFresh(4500), false);
 
 console.log("LIVE_CAPTION_BRIDGE_TEST=PASS");
