@@ -649,7 +649,7 @@
       }
     });
     performanceSnapshot("call-rating-stars-confirmed", callId);
-    portalStructureSnapshot("call-rating-stars-confirmed", true);
+    portalStructureSnapshot("call-rating-stars-confirmed", true, callId);
     emit("CALL_ROUTE_ENDED", {
       callId: callId,
       platformSeconds: platformSeconds,
@@ -1061,7 +1061,7 @@
         return { rows: rows };
       }).filter(function (table) { return table.rows.length; });
   }
-  function emitPlatformSurfaceSnapshot(reason) {
+  function emitPlatformSurfaceSnapshot(reason, associatedCallId) {
     if (!isTarget() || !config.observationEnabled) return;
     var platformSurface = extractPortalStructure();
     var signature = JSON.stringify(platformSurface);
@@ -1070,25 +1070,26 @@
     lastPlatformSurfaceHash = signature;
     emit("PLATFORM_SURFACE_SNAPSHOT", {
       schema: "signal-interpreter-platform-surface-event/v1",
+      callId: associatedCallId || currentCallId() || null,
       snapshotReason: reason || "heartbeat",
       snapshotHash: stableSurfaceToken(signature),
       platformSurface: platformSurface
     }, "info");
     try { chrome.runtime.sendMessage({ type: "SIGNAL_PLATFORM_SCREENSHOT_REQUEST", reason: "platform-surface-change" }).catch(function () {}); } catch (_) {}
   }
-  function portalStructureSnapshot(reason, force) {
+  function portalStructureSnapshot(reason, force, associatedCallId) {
     if (!isTarget() || !config.observationEnabled) return;
     if (platformSurfaceTimer) {
       clearTimeout(platformSurfaceTimer);
       platformSurfaceTimer = null;
     }
     if (force) {
-      emitPlatformSurfaceSnapshot(reason);
+      emitPlatformSurfaceSnapshot(reason, associatedCallId);
       return;
     }
     platformSurfaceTimer = setTimeout(function () {
       platformSurfaceTimer = null;
-      emitPlatformSurfaceSnapshot(reason);
+      emitPlatformSurfaceSnapshot(reason, associatedCallId);
     }, 500);
   }
   function platformRouteFromPath(pathname) {
