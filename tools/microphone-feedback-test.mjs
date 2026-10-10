@@ -3,7 +3,7 @@ import fs from "node:fs";
 const manifest = JSON.parse(fs.readFileSync("extension/manifest.json", "utf8"));
 const offscreen = fs.readFileSync("extension/offscreen.js", "utf8");
 const background = fs.readFileSync("extension/background.js", "utf8");
-assert.equal(manifest.version, "0.10.25");
+assert.equal(manifest.version, "0.10.26");
 assert.ok(manifest.content_scripts.some((entry) =>
   entry.js && entry.js.includes("hotkey-fallback.js") &&
   entry.matches && entry.matches.includes("https://*/*") && entry.all_frames === true
