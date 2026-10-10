@@ -5,7 +5,8 @@
 > **Repositorio:** https://github.com/SeryMente/signal-interpreter
 > **Última versión documentada:** **0.10.32 — Audio entrante de pestaña exclusivamente, sin captura de micrófono**
 > **Integración previa al ciclo correctivo:** [PR #52](https://github.com/SeryMente/signal-interpreter/pull/52)
-> **Solicitud de integración del ciclo correctivo:** [PR #53](https://github.com/SeryMente/signal-interpreter/pull/53)
+> **Corrección previa de recuperación/exportación:** [PR #53](https://github.com/SeryMente/signal-interpreter/pull/53)
+> **Integración del alcance vigente 0.10.32:** [PR #54](https://github.com/SeryMente/signal-interpreter/pull/54)
 > **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.32 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
 
 > **ALCANCE VIGENTE Y PREVALENTE (aclaración del operador):** calidad de vida para interpretación telefónica, sobre el audio que sale de la pestaña de Cloud Interpreter. **No se captura ni se transcribe el micrófono del operador en este ciclo**, aunque existan preferencias antiguas activadas. Los controles de mute de la llamada permanecen independientes. Las referencias anteriores a captura de micrófono son historia, no autorización vigente. Véase §13.
