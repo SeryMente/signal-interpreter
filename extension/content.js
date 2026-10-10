@@ -1717,8 +1717,8 @@
       var pathname = location.pathname;
       if (pathname !== overlayLastRoute || pathname !== route) {
         var previousPath = String(overlayLastRoute || route || "/")
-          .replace(/^\\/call\\/[^/]+/, "/call/<ID>")
-          .replace(/^\\/profile\\/[^/]+/, "/profile/<ID>");
+          .replace(/^\/call\/[^/]+/, "/call/<ID>")
+          .replace(/^\/profile\/[^/]+/, "/profile/<ID>");
         overlayLastRoute = pathname;
         reportOverlayLifecycle("EARNINGS_OVERLAY_ROUTE_WATCHDOG_DETECTED", {
           reasonCode: "spa-route-change", previousRoute: previousPath,
