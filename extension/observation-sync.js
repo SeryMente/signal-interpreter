@@ -60,7 +60,9 @@ async function getState(){
   var s=await chrome.storage.local.get(["signalObservationSyncState"]);
   return Object.assign({
     ackedSequence:0,pendingCount:0,lastAttemptAt:null,lastSuccessAt:null,lastBatchId:null,
-    lastRelayAcceptedAt:null,lastAutomaticPublishAt:null,lastAutomaticBatchId:null,lastManualPublishAt:null,lastManualBatchId:null,lastPackageBuildAt:null,consecutiveFailures:0,lastError:null
+    lastRelayAcceptedAt:null,lastAutomaticPublishAt:null,lastAutomaticBatchId:null,lastManualPublishAt:null,lastManualBatchId:null,lastPackageBuildAt:null,consecutiveFailures:0,lastError:null,
+    pendingCheckpointTargetSequence:0,pendingCheckpointReason:null,pendingCheckpointAt:null,
+    lastCheckpointFlushAt:null,lastCheckpointSequence:0,lastCheckpointBatches:0
   },s.signalObservationSyncState||{});
 }
 async function setState(state){await chrome.storage.local.set({signalObservationSyncState:state});}
@@ -101,9 +103,15 @@ async function flushInternal(reason){
   lastTriggerAt=now;
   var data=await collect();
   if(!data.events.length){
-    alarmScheduled=false;pendingEvents=0;
-    try{chrome.alarms.clear(RETRY_ALARM);}catch(_){}
-    return{ok:true,skipped:"clean"};
+    var emptyState=data.state;
+    var outstanding=Number(emptyState.pendingCheckpointTargetSequence||0)>Number(emptyState.ackedSequence||0);
+    emptyState.pendingCount=0;
+    pendingEvents=0;
+    alarmScheduled=outstanding;
+    await setState(emptyState);
+    if(outstanding){scheduleRetry(15000);}
+    else{try{chrome.alarms.clear(RETRY_ALARM);}catch(_){}}
+    return{ok:true,skipped:"clean",ackedSequence:Number(emptyState.ackedSequence||0),checkpointPending:outstanding};
   }
   var batchId="batch-"+crypto.randomUUID();
   var payload={
@@ -117,32 +125,111 @@ async function flushInternal(reason){
   try{
     var r=await SignalObservabilityRelay.uploadBatch(payload);
     state.ackedSequence=Math.max(Number(state.ackedSequence)||0,Number(data.summary.lastSequence)||0);
-    alarmScheduled=false;pendingEvents=0;state.pendingCount=0;state.lastSuccessAt=iso();
-    state.lastRelayAcceptedAt=iso();
+    state.lastSuccessAt=iso();state.lastRelayAcceptedAt=state.lastSuccessAt;
     if(reason==="manual"){state.lastManualPublishAt=state.lastRelayAcceptedAt;state.lastManualBatchId=batchId;}
     else{state.lastAutomaticPublishAt=state.lastRelayAcceptedAt;state.lastAutomaticBatchId=batchId;}
     state.lastError=null;state.consecutiveFailures=0;
     if(r&&r.commitSha)state.lastRelayCommitSha=r.commitSha;
+    if(Number(state.pendingCheckpointTargetSequence||0)>0 &&
+       state.ackedSequence>=Number(state.pendingCheckpointTargetSequence||0)){
+      state.lastCheckpointFlushAt=iso();
+      state.lastCheckpointSequence=Number(state.pendingCheckpointTargetSequence);
+      state.pendingCheckpointTargetSequence=0;
+      state.pendingCheckpointReason=null;
+      state.pendingCheckpointAt=null;
+    }
+    var remaining=[];
+    try{
+      remaining=KhoraTelemetryDB.getEventsAfter
+        ? await KhoraTelemetryDB.getEventsAfter(Number(state.ackedSequence)||0,MAX_BATCH+1)
+        : (await KhoraTelemetryDB.getEvents()).filter(function(e){return Number(e.sequence||0)>Number(state.ackedSequence||0);}).slice(0,MAX_BATCH+1);
+    }catch(_){}
+    state.pendingCount=remaining.length;
+    pendingEvents=remaining.length;
+    alarmScheduled=remaining.length>0 || Number(state.pendingCheckpointTargetSequence||0)>Number(state.ackedSequence||0);
     await setState(state);
-    try{chrome.alarms.clear(RETRY_ALARM);}catch(_){}
-    return{ok:true,batchId:batchId,accepted:true,sequence:state.ackedSequence,summary:data.summary,remoteCommit:r&&r.commitSha||null};
+    if(alarmScheduled){scheduleRetry(Number(state.pendingCheckpointTargetSequence||0)>Number(state.ackedSequence||0)?15000:30000);}
+    else{try{chrome.alarms.clear(RETRY_ALARM);}catch(_){}}
+    return{
+      ok:true,batchId:batchId,accepted:true,sequence:state.ackedSequence,
+      remainingPending:state.pendingCount,checkpointPending:Number(state.pendingCheckpointTargetSequence||0)>Number(state.ackedSequence||0),
+      summary:data.summary,remoteCommit:r&&r.commitSha||null
+    };
   }catch(error){
     state.consecutiveFailures=Number(state.consecutiveFailures||0)+1;
     state.lastError=String(error);
     await setState(state);
     var retryMs=Math.min(300000,15000*Math.pow(2,Math.min(4,state.consecutiveFailures-1)));
-    scheduleRetry(retryMs);
+    alarmScheduled=true;scheduleRetry(retryMs);
     return{ok:false,batchId:batchId,error:String(error),retryMs:retryMs,summary:data.summary};
   }
 }
+async function flushThroughInternal(targetSequence,reason,maxBatches){
+  var target=Number(targetSequence);
+  if(!Number.isFinite(target)||target<=0)return{ok:false,error:"invalid-checkpoint-sequence"};
+  var state=await getState();
+  state.pendingCheckpointTargetSequence=Math.max(Number(state.pendingCheckpointTargetSequence||0),target);
+  state.pendingCheckpointReason=String(reason||state.pendingCheckpointReason||"call-ended").slice(0,80);
+  state.pendingCheckpointAt=state.pendingCheckpointAt||iso();
+  await setState(state);
+  var limit=Math.max(1,Math.min(24,Number(maxBatches)||12));
+  var batches=0,lastResult=null;
+  while(batches<limit){
+    state=await getState();
+    var required=Number(state.pendingCheckpointTargetSequence||target);
+    if(Number(state.ackedSequence||0)>=required)break;
+    lastResult=await flushInternal(state.pendingCheckpointReason||reason||"call-ended");
+    batches+=1;
+    if(!lastResult.ok||lastResult.skipped==="clean")break;
+  }
+  state=await getState();
+  var requiredSequence=Number(state.pendingCheckpointTargetSequence||target);
+  var ackedSequence=Number(state.ackedSequence||0);
+  var complete=ackedSequence>=requiredSequence;
+  if(complete){
+    state.lastCheckpointFlushAt=state.lastCheckpointFlushAt||iso();
+    state.lastCheckpointSequence=requiredSequence;
+    state.pendingCheckpointTargetSequence=0;
+    state.pendingCheckpointReason=null;
+    state.pendingCheckpointAt=null;
+    state.pendingCount=Number(state.pendingCount||0);
+    if(state.pendingCount>0){alarmScheduled=true;scheduleRetry(30000);}
+    else{alarmScheduled=false;try{chrome.alarms.clear(RETRY_ALARM);}catch(_){}}
+  }else{
+    alarmScheduled=true;
+    scheduleRetry(Math.max(15000,Number(lastResult&&lastResult.retryMs)||15000));
+  }
+  await setState(state);
+  return{
+    ok:complete,completed:complete,incomplete:!complete,targetSequence:requiredSequence,
+    ackedSequence:ackedSequence,batches:batches,remainingPending:Number(state.pendingCount||0),
+    lastResult:lastResult||null
+  };
+}
+function flushThrough(targetSequence,reason,maxBatches){
+  var run=flushQueue.then(function(){return flushThroughInternal(targetSequence,reason,maxBatches);},function(){return flushThroughInternal(targetSequence,reason,maxBatches);});
+  flushQueue=run.catch(function(){});
+  return run;
+}
 function flush(reason){
-  var run=flushQueue.then(function(){return flushInternal(reason);},function(){return flushInternal(reason);});
+  var run=flushQueue.then(async function(){
+    var state=await getState();
+    var target=Number(state.pendingCheckpointTargetSequence||0);
+    if(target>Number(state.ackedSequence||0))return flushThroughInternal(target,state.pendingCheckpointReason||reason||"call-ended",12);
+    return flushInternal(reason);
+  },async function(){
+    var state=await getState();
+    var target=Number(state.pendingCheckpointTargetSequence||0);
+    if(target>Number(state.ackedSequence||0))return flushThroughInternal(target,state.pendingCheckpointReason||reason||"call-ended",12);
+    return flushInternal(reason);
+  });
   flushQueue=run.catch(function(){});
   return run;
 }
 function noteEvent(event){
   mark();
-  var critical=event&&(event.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(String(event.action||"")));
+  var action=String(event&&event.action||"");
+  var critical=!!(event&&(event.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(action)||action==="CALL_RATING_STARS_CONFIRMED"));
   if(critical){flush("critical").catch(function(){});return;}
   if(pendingEvents>=EVENT_THRESHOLD){flush("event-threshold").catch(function(){});return;}
   if(!timer)timer=setTimeout(function(){timer=null;flush("event-window").catch(function(){});},30000);
@@ -150,5 +237,5 @@ function noteEvent(event){
 function start(){
   try{chrome.alarms.create(PERIODIC_ALARM,{delayInMinutes:1,periodInMinutes:1});}catch(_){}
 }
-global.SignalObservationSync={noteEvent:noteEvent,flush:flush,start:start};
+global.SignalObservationSync={noteEvent:noteEvent,flush:flush,flushThrough:flushThrough,start:start};
 })(typeof self!=="undefined"?self:window);
