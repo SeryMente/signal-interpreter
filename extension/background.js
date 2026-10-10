@@ -24,6 +24,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     transcriptionEnabled: true,
     liveCaptionOverlayEnabled: true,
     liveCaptionInterpreterEnabled: true,
+    liveCaptionBilingualTabEnabled: true,
     instantPreviewEnabled: false,
     audioSafetyMode: true,
     opiRatePerMinute: 0.20,
@@ -249,6 +250,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       if (!text) return current;
       var source = caption.source === "yo" ? "yo" : (caption.source === "chrome-live-caption" ? "chrome-live-caption" : "cliente");
       var language = SignalCaptionCore.resolveLanguage(caption.language, text);
+      if (language === "es") source = "yo";
       var now = Date.now();
       var lane = source === "yo" ? "yo" : "cliente";
       var candidate = null;
@@ -371,6 +373,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
       var enabled = config.liveCaptionOverlayEnabled !== false && hasActiveCall(state);
+      var effectiveTabEnabled = !!tabEnabled || config.liveCaptionBilingualTabEnabled !== false;
       if (!enabled) {
         try {
           await chrome.runtime.sendMessage({
@@ -402,7 +405,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         target: "offscreen",
         type: "SIGNAL_SET_CAPTION_PREVIEW",
         enabled: true,
-        tabEnabled: !!tabEnabled,
+        tabEnabled: effectiveTabEnabled,
         micEnabled: allowInterpreterPreview !== false &&
           config.liveCaptionInterpreterEnabled !== false &&
           state.microphoneMuted !== true &&
@@ -414,8 +417,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       if (response && response.ok) {
         record("SIGNAL_CAPTION_PREVIEW_MODE_CHANGED", {
           callId: state.callId || null,
-          sourceMode: tabEnabled ? "native-stale-groq-fallback" : "native-caption-fresh",
-          tabPreviewEnabled: !!tabEnabled,
+          sourceMode: config.liveCaptionBilingualTabEnabled !== false ? "bilingual-groq-parallel" : (effectiveTabEnabled ? "native-stale-groq-fallback" : "native-caption-fresh"),
+          tabPreviewEnabled: effectiveTabEnabled,
           micPreviewEnabled: allowInterpreterPreview !== false &&
             config.liveCaptionInterpreterEnabled !== false &&
             state.microphoneMuted !== true && state.microphoneMuteStatus === "applied" &&
@@ -2776,7 +2779,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         currentState.microphoneOutputMuted === true ||
         currentConfig.liveCaptionInterpreterEnabled === false
       )) return;
-      if (source !== "yo" && SignalCaptionBridge.isFresh(4500)) return;
+      if (source !== "yo" && currentConfig.liveCaptionBilingualTabEnabled === false && SignalCaptionBridge.isFresh(4500)) return;
     }
     if (!(await SignalGroqTranscriber.ready())) {
       recordCaptionPreviewFailure(source, "missing-api-key");
@@ -2845,11 +2848,13 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var language = SignalCaptionCore.resolveLanguage(result.language, text);
     var tabId = Number(latestState.callSourceTabId);
     if (!Number.isFinite(tabId)) return;
+    if (latestConfig.liveCaptionBilingualTabEnabled === false && source !== "yo" && SignalCaptionBridge.isFresh(4500)) return;
+    var outputSource = source === "yo" ? "yo" : (language === "es" ? "yo" : "cliente");
     try {
       await publishCaptionToOverlay({
         text: text.slice(0, 1500),
         language: language,
-        source: source,
+        source: outputSource,
         live: false,
         native: false,
         sequence: sequence,
@@ -3482,7 +3487,10 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var isEnabled = cachedConfig.liveCaptionOverlayEnabled !== false;
     var wasInterpreterEnabled = previousConfig.liveCaptionInterpreterEnabled !== false;
     var isInterpreterEnabled = cachedConfig.liveCaptionInterpreterEnabled !== false;
-    if (wasEnabled === isEnabled && wasInterpreterEnabled === isInterpreterEnabled) return;
+    var wasBilingualTabEnabled = previousConfig.liveCaptionBilingualTabEnabled !== false;
+    var isBilingualTabEnabled = cachedConfig.liveCaptionBilingualTabEnabled !== false;
+    if (wasEnabled === isEnabled && wasInterpreterEnabled === isInterpreterEnabled &&
+        wasBilingualTabEnabled === isBilingualTabEnabled) return;
     if (!isEnabled) {
       try { SignalCaptionBridge.stop(); } catch (_) {}
       setCaptionPreviewForActiveCall(false, "preference-disabled").catch(function () {});
@@ -3493,7 +3501,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       if (!hasActiveCall(state) || state.callSourceTabId == null) return;
       if (!wasEnabled && isEnabled) SignalCaptionBridge.start(state.callSourceTabId, state.callId);
       setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500),
-        wasInterpreterEnabled === isInterpreterEnabled ? "preference-enabled" : "interpreter-preview-preference-changed")
+        wasInterpreterEnabled !== isInterpreterEnabled ? "interpreter-preview-preference-changed" :
+          (wasBilingualTabEnabled !== isBilingualTabEnabled ? "bilingual-tab-preview-preference-changed" : "preference-enabled"))
         .catch(function () {});
     }).catch(function (error) {
       record("SIGNAL_CAPTION_PREFERENCE_RECOVERY_ERROR", {
