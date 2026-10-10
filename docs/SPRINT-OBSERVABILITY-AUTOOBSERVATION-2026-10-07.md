@@ -1,3 +1,5 @@
+> **Delimitación documental:** este archivo documenta exclusivamente el sprint transversal de observabilidad/autoobservación. No es un informe del esfuerzo de transcripción o Live Caption y no debe usarse para reconstruir ese esfuerzo. El único informe canónico de transcripción, Live Caption y overlay es [DOCUMENTO CANÓNICO ÚNICO — Sprint de transcripción y overlay de subtítulos](TRANSCRIPTION-SPRINT-CANONICAL.md). Cualquier referencia aquí a transcripción describe solo la cobertura de telemetría dentro de la arquitectura de observabilidad.
+
 # Sprint: Observabilidad integral y autoobservación de Signal Interpreter
 
 **Identificador:** SPRINT-OBSERVABILITY-AUTOOBSERVATION-01
