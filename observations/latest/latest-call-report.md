@@ -19,6 +19,20 @@
 - Envío de valoración observado: false
 - Checkpoint final entregado al paquete: true
 
+## Entrega automática
+- Checkpoint recibido: undefined
+- Disparador del lote: no observado
+- Envío automático: undefined
+- Publicación del lote: no observada
+
+## Diagnóstico de subtítulos
+- Máximo de filas observado: 0
+- Texto nativo fresco observado: undefined
+- Respaldo independiente iniciado: undefined
+- Resultados de preview / con texto: 0 / 0
+- Motivos registrados: []
+- Montaje visible o ausencia de errores no prueban reconocimiento de voz.
+
 ## Cobertura y señales
 
 - Eventos correlacionados: 2543
