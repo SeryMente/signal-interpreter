@@ -23,6 +23,7 @@
     overlayCompact: true,
     liveCaptionOverlayEnabled: true,
     liveCaptionOverlayScope: "source-only",
+    liveCaptionInterpreterEnabled: true,
     usdMxnRate: null,
     exchangeRateDate: null,
     exchangeRateUpdatedAt: null
@@ -127,6 +128,7 @@
     $("overlayEnabled").checked = !!config.overlayEnabled;
     if ($("captionOverlayEnabled")) $("captionOverlayEnabled").checked = config.liveCaptionOverlayEnabled !== false;
     if ($("captionOverlayScope")) $("captionOverlayScope").value = config.liveCaptionOverlayScope === "all-tabs" ? "all-tabs" : "source-only";
+    if ($("captionInterpreterEnabled")) $("captionInterpreterEnabled").checked = config.liveCaptionInterpreterEnabled !== false;
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
     $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
@@ -224,6 +226,68 @@
     }catch(error){ status("MIC ERR · permanece silenciado",true); }
     finally{ button.disabled=false; renderMicrophone(); }
   });
+  if ($("captionInterpreterEnabled")) $("captionInterpreterEnabled").addEventListener("change", function () {
+    save({ liveCaptionInterpreterEnabled: this.checked });
+  });
+
+  var youtubeCaptionCaptureButton = $("youtubeCaptionCapture");
+  var youtubeCaptionCaptureHelp = $("youtubeCaptionCaptureHelp");
+  var youtubeCaptionCapturePending = false;
+  function refreshYoutubeCaptionCaptureButton() {
+    if (!youtubeCaptionCaptureButton) return;
+    chrome.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
+      var tab = tabs && tabs[0];
+      var url = String(tab && tab.url || "");
+      var target = !!(tab && tab.id != null && /^https:\/\/www\.youtube\.com\/watch(?:\?|#|$)/i.test(url) &&
+        /(?:\?|&)v=TshOFzKQfG8(?:&|$)/.test(url));
+      youtubeCaptionCaptureButton.hidden = !target;
+      if (youtubeCaptionCaptureHelp) youtubeCaptionCaptureHelp.hidden = !target;
+      if (!target) return;
+      chrome.runtime.sendMessage({ type: "SIGNAL_YOUTUBE_CAPTION_PREVIEW_STATUS_GET", tabId: tab.id }, function (response) {
+        if (chrome.runtime.lastError) return;
+        youtubeCaptionCaptureButton.dataset.active = response && response.active === true ? "true" : "false";
+        youtubeCaptionCaptureButton.textContent = response && response.active === true
+          ? "Detener transcripción bilingüe del video"
+          : "Iniciar transcripción bilingüe del video";
+        youtubeCaptionCaptureButton.disabled = youtubeCaptionCapturePending;
+      });
+    }).catch(function () {
+      youtubeCaptionCaptureButton.hidden = true;
+      if (youtubeCaptionCaptureHelp) youtubeCaptionCaptureHelp.hidden = true;
+    });
+  }
+  if (youtubeCaptionCaptureButton) youtubeCaptionCaptureButton.addEventListener("click", function () {
+    if (youtubeCaptionCapturePending) return;
+    youtubeCaptionCapturePending = true;
+    youtubeCaptionCaptureButton.disabled = true;
+    chrome.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
+      var tab = tabs && tabs[0];
+      var url = String(tab && tab.url || "");
+      if (!tab || tab.id == null || !/^https:\/\/www\.youtube\.com\/watch(?:\?|#|$)/i.test(url) ||
+          !/(?:\?|&)v=TshOFzKQfG8(?:&|$)/.test(url)) {
+        throw new Error("Abre primero el video de prueba autorizado.");
+      }
+      if (youtubeCaptionCaptureButton.dataset.active === "true") {
+        return chrome.runtime.sendMessage({ type: "SIGNAL_YOUTUBE_CAPTION_PREVIEW_STOP", tabId: tab.id, reason: "user-stop" });
+      }
+      return chrome.tabCapture.getMediaStreamId({ targetTabId: tab.id }).then(function (streamId) {
+        return chrome.runtime.sendMessage({
+          type: "SIGNAL_YOUTUBE_CAPTION_PREVIEW_START", tabId: tab.id, streamId: streamId
+        });
+      });
+    }).then(function (response) {
+      if (!response || response.ok !== true) throw new Error(String(response && response.error || "No se pudo iniciar la transcripción."));
+      status(response.active ? "Transcripción bilingüe del video iniciada." : "Transcripción del video detenida.");
+    }).catch(function (error) {
+      status(String(error && error.message || error), true);
+    }).finally(function () {
+      youtubeCaptionCapturePending = false;
+      youtubeCaptionCaptureButton.disabled = false;
+      refreshYoutubeCaptionCaptureButton();
+    });
+  });
+  refreshYoutubeCaptionCaptureButton();
+
   var openTranscript=$("openTranscript");
   if(openTranscript)openTranscript.addEventListener("click",function(){openTranscript.disabled=true;status("Preparando captura de audio…");chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab||tab.id==null)throw new Error("No hay pestaña activa.");return chrome.tabCapture.getMediaStreamId({targetTabId:tab.id}).then(function(streamId){return{tab:tab,streamId:streamId}})}).then(function(x){var payload={type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:x.tab.id,audioStreamId:x.streamId,sourceUrl:x.tab.url||"",sourceTitle:x.tab.title||""};return chrome.runtime.sendMessage(payload)}).then(function(response){status(response&&response.ok?"Groq: consola abierta y captura iniciada":"No se pudo iniciar: "+String(response&&response.error||"desconocido"),!(response&&response.ok));}).catch(function(error){status("No se pudo iniciar la captura: "+String(error),true);}).finally(function(){openTranscript.disabled=false;});});
   $("groqModel").addEventListener("change",function(){save({groqModel:this.value});});
