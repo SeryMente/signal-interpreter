@@ -92,3 +92,9 @@ El overlay conserva su historial desplazable, controles para mover/redimensionar
 El relato único del esfuerzo y sus límites está en [el documento canónico](docs/TRANSCRIPTION-SPRINT-CANONICAL.md#13-alcance-vigente--calidad-de-vida-para-interpretación-telefónica). El preview de llamada puede funcionar sin consola ni sesión durable; no solicita ni captura el micrófono. Prepare el host y la clave local con `extension/PREPARE-CAPTIONS.cmd` bajo su cuenta Windows normal, fuera de una llamada, y recargue la extensión. Si Chrome exige invocación, abrir el popup existente en la pestaña de Cloud Interpreter reintenta la captura.
 
 Los informes de cierre exponen `captionDiagnosis` y `exportEvidence`; la publicación del checkpoint no espera a consultas de ingresos. La evidencia de audio sintético/fixtures no sustituye una llamada real en Cloud Interpreter.
+
+## Hotloading del overlay 0.10.33
+
+La recuperación reinyecta núcleo y overlay en pestañas Cloud existentes y verifica versión/host montado mediante un probe. Reemplazar el runtime desmonta listeners, timers y observadores anteriores; el historial se rehidrata sin duplicar el panel. La recarga coordinada conserva el contexto de llamada y se bloquea si no verifica la pestaña o una vía de recuperación configurada. No recarga la página de llamada ni captura el micrófono.
+
+La carpeta nueva puede prepararse en el escritorio con Chrome abierto, separada de la extensión cargada. Prepararla no significa activarla: el aplicador clásico requiere Chrome cerrado. Los permisos de Chrome y una llamada real siguen siendo compuertas de aceptación, no garantías inferidas de pruebas. El relato y la instrucción literal están en el documento canónico §14.

@@ -19,7 +19,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          foreach ($file in @("extension/native/prepare-caption-runtime.ps1", "extension/native/register-caption-host.ps1", "tools/apply-transcription-fix.ps1")) {
+          foreach ($file in @("extension/native/prepare-caption-runtime.ps1", "extension/native/register-caption-host.ps1", "tools/apply-transcription-fix.ps1", "tools/probe-caption-host.ps1")) {
             $tokens = $null
             $errors = $null
             [Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $file), [ref]$tokens, [ref]$errors) | Out-Null

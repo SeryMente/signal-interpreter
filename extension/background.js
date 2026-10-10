@@ -582,6 +582,15 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       return false;
     }
     if (activeCall) {
+      var reloadTab = await chrome.tabs.get(Number(state.callSourceTabId)).catch(function () { return null; });
+      var blockReason = !reloadTab || !isAuthorizedCloudUrl(reloadTab.url) || !isCloudCallUrl(reloadTab.url) ? "active-call-tab-not-verified" : null;
+      if (!blockReason && !SignalCaptionBridge.isFresh(4500) && !(await SignalGroqTranscriber.ready())) blockReason = "caption-recovery-source-not-ready";
+      if (blockReason) {
+        state.hotLoadUpdate = Object.assign({}, state.hotLoadUpdate, { phase: "blocked-active-call", reasonCode: blockReason, deferredForCallId: state.callId });
+        await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
+        record("HOTLOAD_RELOAD_BLOCKED_ACTIVE_CALL", { callId: state.callId, trigger: trigger, reasonCode: blockReason, policy: "preserve-current-call-runtime" }, "warn", "runtime");
+        return false;
+      }
       var priorLease = state.hotLoadLease || baseState().hotLoadLease;
       var captureConnected = !!(state.groqCapture && state.groqCapture.status === "connected");
       state.hotLoadLease = Object.assign({}, priorLease, {
@@ -885,6 +894,23 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
           });
           await chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
           await chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
+          await chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["live-caption-core.js", "live-caption-overlay.js"], world: "ISOLATED", injectImmediately: true });
+          var captionProbe = null;
+          for (var probeAttempt = 0; probeAttempt < 4; probeAttempt += 1) {
+            captionProbe = await chrome.tabs.sendMessage(tabId, { type: "SIGNAL_CAPTION_OVERLAY_PROBE" }).catch(function () { return null; });
+            if (captionProbe && captionProbe.ready === true) break;
+            if (probeAttempt < 3) await new Promise(function (resolve) { setTimeout(resolve, 150); });
+          }
+          if (!captionProbe || captionProbe.ready !== true || captionProbe.ok !== true || captionProbe.runtimeVersion !== chrome.runtime.getManifest().version ||
+              (isCloudCallUrl(tab.url) && captionProbe.enabled !== false && captionProbe.hostMounted !== true)) {
+            throw new Error("caption-overlay-hotload-probe-failed");
+          }
+          record("HOTLOAD_CAPTION_OVERLAY_REHYDRATED", {
+            callId: hotloadState && hotloadState.callId || null, tabId: tabId,
+            runtimeVersion: captionProbe.runtimeVersion, hostMounted: !!captionProbe.hostMounted,
+            enabled: captionProbe.enabled !== false, contextReady: !!captionProbe.contextReady,
+            rowCount: Number(captionProbe.rowCount || 0), policy: "extension-reinject-only-no-page-navigation"
+          }, "info", "caption");
           if (hotloadStateReady && isCloudCallUrl(tab.url) && hotloadState.microphoneMuted === true && Number(hotloadState.callSourceTabId) === tabId) {
             try {
               var muteSync = await chrome.tabs.sendMessage(tabId, { type: "SIGNAL_MAIN_MICROPHONE_SET", muted: true, source: "hotload-sync" });
@@ -997,7 +1023,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       }
       var streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: callTabId });
       record("HOTLOAD_CAPTURE_STREAM_REACQUIRE_OK", { callId: state.callId, tabId: callTabId }, "info", "runtime");
-      await startGroqCapture(state.hotLoadLease.transcriptionSessionId, streamId);
+      var recoveredCapture = await startGroqCapture(state.hotLoadLease.transcriptionSessionId, streamId);
+      if (!recoveredCapture || recoveredCapture.ok !== true) throw new Error("capture-recovery-not-confirmed");
       record("HOTLOAD_CAPTURE_RECOVERY_COMPLETED", { callId: state.callId, tabId: callTabId, sessionId: state.hotLoadLease.transcriptionSessionId }, "info", "runtime");
     } catch (error) {
       await updateGroqCaptureState({ status: "degraded", tabAudio: false, microphone: false, error: "runtime-boundary: " + String(error) }).catch(function () {});
