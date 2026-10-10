@@ -2629,6 +2629,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       state.microphoneOutputSenderCount=Number(outputResult.senderCount||0);
       state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:recoveryMuted});
       await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+      if (hasActiveCall(state)) setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "microphone-state-error").catch(function () {});
       record("EXTENSION_MICROPHONE_MUTE_ERROR",{
         desired:desired,previousMuted:previousMuted,recoveryMuted:recoveryMuted,
         source:source||"unknown",callId:state.callId||null,
@@ -2654,6 +2655,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     state.microphoneOutputSenderCount=Number(outputResult.senderCount||0);
     state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:desired});
     await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+    if (hasActiveCall(state)) setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "microphone-state-applied").catch(function () {});
     record("EXTENSION_MICROPHONE_MUTE_APPLIED",{desired:desired,source:source||"unknown",callId:state.callId||null,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,recoveredBaseline:!!outputResult.recoveredBaseline,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)},"info","microphone");
     if(cachedConfig.soundEnabled!==false){
       try{
@@ -3476,7 +3478,9 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     cachedConfig = Object.assign({}, DEFAULT_CONFIG, changes.effectifConfig.newValue || {});
     var wasEnabled = previousConfig.liveCaptionOverlayEnabled !== false;
     var isEnabled = cachedConfig.liveCaptionOverlayEnabled !== false;
-    if (wasEnabled === isEnabled) return;
+    var wasInterpreterEnabled = previousConfig.liveCaptionInterpreterEnabled !== false;
+    var isInterpreterEnabled = cachedConfig.liveCaptionInterpreterEnabled !== false;
+    if (wasEnabled === isEnabled && wasInterpreterEnabled === isInterpreterEnabled) return;
     if (!isEnabled) {
       try { SignalCaptionBridge.stop(); } catch (_) {}
       setCaptionPreviewForActiveCall(false, "preference-disabled").catch(function () {});
@@ -3485,8 +3489,10 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     chrome.storage.local.get(["effectifState"]).then(function (stored) {
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       if (!hasActiveCall(state) || state.callSourceTabId == null) return;
-      SignalCaptionBridge.start(state.callSourceTabId, state.callId);
-      setCaptionPreviewForActiveCall(true, "preference-enabled").catch(function () {});
+      if (!wasEnabled && isEnabled) SignalCaptionBridge.start(state.callSourceTabId, state.callId);
+      setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500),
+        wasInterpreterEnabled === isInterpreterEnabled ? "preference-enabled" : "interpreter-preview-preference-changed")
+        .catch(function () {});
     }).catch(function (error) {
       record("SIGNAL_CAPTION_PREFERENCE_RECOVERY_ERROR", {
         errorType: String(error && error.name || "Error").slice(0, 80)
