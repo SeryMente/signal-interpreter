@@ -87,11 +87,11 @@ const stop=event("stop","CALL_TIMER_STOPPED",{
   callId:callId,startedAt:startedAt,endedAt:endedAt,modality:"OPI",status:"completed",
   observedSeconds:364,platformSeconds:360,billableSecondsAssumed:360,ratePerMinute:0.2,
   estimatedRevenue:1.2,countedInEarnings:true,currency:"USD",billingRule:"pro_rata_by_second_assumed",endSource:"rating-route",
-  runtimeVersion:"0.10.28"
+  runtimeVersion:"0.10.29"
 },endedAt);
 const checkpoint=event("checkpoint","CALL_OBSERVABILITY_CHECKPOINT",{
   schema:"signal-interpreter-call-checkpoint/v1",checkpoint:"call-ended",callId:callId,checkpointReason:"call-ended",
-  callState:"closed",finalCall:{callId:callId,startedAt:startedAt,endedAt:endedAt,modality:"OPI",status:"completed",observedSeconds:364,platformSeconds:360,billableSecondsAssumed:360,ratePerMinute:0.2,estimatedRevenue:1.2,countedInEarnings:true,currency:"USD",billingRule:"pro_rata_by_second_assumed",endSource:"rating-route",runtimeVersion:"0.10.28"}
+  callState:"closed",finalCall:{callId:callId,startedAt:startedAt,endedAt:endedAt,modality:"OPI",status:"completed",observedSeconds:364,platformSeconds:360,billableSecondsAssumed:360,ratePerMinute:0.2,estimatedRevenue:1.2,countedInEarnings:true,currency:"USD",billingRule:"pro_rata_by_second_assumed",endSource:"rating-route",runtimeVersion:"0.10.29"}
 },endedAt);
 const warning=event("warning","GROQ_TRANSCRIPTION_TIMEOUT",{callId:callId,reasonCode:"groq-timeout",transcriptText:"SENSITIVE UTTERANCE NOT FOR REPORT"}, "2026-10-10T16:03:00.000Z","warn");
 fs.writeFileSync(path.join(inbox,"end.json"),JSON.stringify(batch("end",endedAt,[warning,stop,checkpoint])));
