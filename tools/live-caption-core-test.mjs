@@ -29,7 +29,7 @@ assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Please call (55
   { type: "phone", text: "(555) 123-4567", start: 12, end: 26 },
   { type: "address", text: "123 Main Street, Austin, TX", start: 30, end: 57 }
 ], "teléfonos y direcciones en inglés se detectan por separado para copiarlos/verificarlos");
-assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Vivo en Avenida Reforma 123, Colonia Juárez. Llámeme al +52 442 123 4567.")).map(x => ({type:x.type,text:x.text})), [
+assert.deepEqual(JSON.parse(JSON.stringify(core.findSmartTokens("Vivo en Avenida Reforma 123, Colonia Juárez. Llámeme al +52 442 123 4567."))).map(x => ({type:x.type,text:x.text})), [
   { type: "address", text: "Avenida Reforma 123, Colonia Juárez" },
   { type: "phone", text: "+52 442 123 4567" }
 ], "direcciones mexicanas y teléfonos internacionales se detectan sin perder puntuación");
