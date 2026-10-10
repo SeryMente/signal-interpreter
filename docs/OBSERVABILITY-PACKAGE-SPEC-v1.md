@@ -19,6 +19,9 @@ Debe contener evidencia operacional y conocimiento incremental de la superficie 
 - \`manifest.json\`: índice del paquete.
 - \`health/github-build.json\`: estado del build remoto que transforma el inbox.
 
+- `call-reports/index.json` y `call-reports/YYYY-MM-DD/`: informes por llamada con referencia opaca, estado de completitud y cobertura.
+- `latest/latest-call-report.json` y `latest/latest-call-report.md`: último informe estructurado y resumen legible para reanudar desarrollo.
+
 ## 3. Manifest
 
 Schema:
