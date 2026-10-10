@@ -1,6 +1,6 @@
 (function(){
 "use strict";
-var tabStream=null,micStream=null,tabRecorder=null,micRecorder=null,previewTabRecorder=null,previewMicRecorder=null,tabTimer=null,micTimer=null,audioContext=null,running=false,chunkSeq=0,previewSeq=0,captureSessionId=null,previewSessionId=null,previewTabId=null,captionPreviewTabEnabled=false,captionPreviewMicEnabled=false,micMuteWatchdog=null,micMuteDesired=false;
+var tabStream=null,micStream=null,tabRecorder=null,micRecorder=null,previewTabRecorder=null,previewMicRecorder=null,tabTimer=null,micTimer=null,audioContext=null,running=false,chunkSeq=0,previewSeq=0,captureSessionId=null,previewSessionId=null,previewTabId=null,captionPreviewTabEnabled=false,captionPreviewMicEnabled=false,micMuteWatchdog=null,micMuteDesired=false,youtubePreviewStream=null,youtubePreviewRecorder=null,youtubePreviewAudioContext=null,youtubePreviewSessionId=null,youtubePreviewTabId=null,youtubePreviewStartedAt=0,youtubePreviewSequence=0;
 function send(message){try{var p=chrome.runtime.sendMessage(Object.assign({target:"offscreen"},message));if(p&&p.catch)p.catch(function(){});}catch(_){} }
 async function playTone(volume, cue){
   if(!audioContext || audioContext.state==="closed") audioContext=new AudioContext();
@@ -34,6 +34,71 @@ async function playTone(volume, cue){
   return true;
 }
 function stopStream(s){try{if(s)s.getTracks().forEach(function(t){t.stop()})}catch(_){} }
+
+async function stopYoutubeCaptionPreview(sessionId,tabId){
+  if(sessionId&&youtubePreviewSessionId&&String(sessionId)!==String(youtubePreviewSessionId))return{ok:false,error:"youtube-session-mismatch"};
+  if(tabId!=null&&youtubePreviewTabId!=null&&Number(tabId)!==Number(youtubePreviewTabId))return{ok:false,error:"youtube-tab-mismatch"};
+  var recorder=youtubePreviewRecorder,stream=youtubePreviewStream,context=youtubePreviewAudioContext;
+  youtubePreviewRecorder=null;youtubePreviewStream=null;youtubePreviewAudioContext=null;
+  youtubePreviewSessionId=null;youtubePreviewTabId=null;youtubePreviewStartedAt=0;youtubePreviewSequence=0;
+  try{if(recorder&&recorder.state!=="inactive")recorder.stop()}catch(_){}
+  stopStream(stream);
+  if(context){try{await context.close()}catch(_){}}
+  send({type:"SIGNAL_YOUTUBE_CAPTION_PREVIEW_OFFSCREEN_STOPPED",tabId:tabId==null?null:Number(tabId),sessionId:sessionId||null});
+  return{ok:true,active:false};
+}
+async function startYoutubeCaptionPreview(streamId,sessionId,tabId){
+  if(running)return{ok:false,error:"active-groq-capture"};
+  if(youtubePreviewRecorder)return{ok:false,error:"youtube-preview-already-running"};
+  if(!streamId||!sessionId||!Number.isFinite(Number(tabId)))return{ok:false,error:"missing-youtube-capture-parameters"};
+  var localSession=String(sessionId),localTabId=Number(tabId),stream=null,context=null,recorder=null;
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({audio:{mandatory:{chromeMediaSource:"tab",chromeMediaSourceId:String(streamId)}}});
+    var tracks=stream&&stream.getAudioTracks?stream.getAudioTracks():[];
+    if(!tracks.length)throw new Error("La captura del video no produjo una pista de audio.");
+    context=new AudioContext();
+    var source=context.createMediaStreamSource(stream);source.connect(context.destination);
+    await context.resume();
+    try{recorder=new MediaRecorder(stream,{mimeType:"audio/webm;codecs=opus"});}
+    catch(_){recorder=new MediaRecorder(stream);}
+    youtubePreviewStream=stream;youtubePreviewAudioContext=context;youtubePreviewRecorder=recorder;
+    youtubePreviewSessionId=localSession;youtubePreviewTabId=localTabId;youtubePreviewStartedAt=Date.now();youtubePreviewSequence=0;
+    recorder.ondataavailable=function(e){
+      if(!e.data||!e.data.size||youtubePreviewSessionId!==localSession||youtubePreviewTabId!==localTabId)return;
+      var startedAt=youtubePreviewStartedAt;youtubePreviewStartedAt=Date.now();
+      var sequence=++youtubePreviewSequence;
+      try{
+        var reader=new FileReader();
+        reader.onloadend=function(){
+          if(youtubePreviewSessionId!==localSession||youtubePreviewTabId!==localTabId)return;
+          try{
+            var dataUrl=String(reader.result||""),base64=dataUrl.split(",")[1]||"";
+            if(base64)send({
+              type:"SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK",youtubePreview:true,
+              sessionId:localSession,tabId:localTabId,source:"cliente",base64:base64,
+              bytes:e.data.size,startedAt:startedAt,endedAt:Date.now(),sequence:sequence
+            });
+          }catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"youtube-caption-preview",error:String(error)});}
+        };
+        reader.readAsDataURL(e.data);
+      }catch(error){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"youtube-caption-preview",error:String(error)});}
+    };
+    recorder.onerror=function(e){send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"error",source:"youtube-caption-preview",error:String(e&&e.error||e)});};
+    recorder.start(1800);
+    send({type:"SIGNAL_YOUTUBE_CAPTION_PREVIEW_OFFSCREEN_STARTED",tabId:localTabId,sessionId:localSession});
+    return{ok:true,active:true,tabId:localTabId,sessionId:localSession,intervalMs:1800};
+  }catch(error){
+    try{if(recorder&&recorder.state!=="inactive")recorder.stop()}catch(_){}
+    stopStream(stream);
+    if(context){try{await context.close()}catch(_){}}
+    if(youtubePreviewSessionId===localSession){
+      youtubePreviewRecorder=null;youtubePreviewStream=null;youtubePreviewAudioContext=null;
+      youtubePreviewSessionId=null;youtubePreviewTabId=null;youtubePreviewStartedAt=0;youtubePreviewSequence=0;
+    }
+    return{ok:false,error:String(error&&error.message||error).slice(0,240)};
+  }
+}
+
 function arm(source,stream){
   if(!stream)return null;
   var startedAt=Date.now(),seq=++chunkSeq,chunks=[],r,currentSessionId=captureSessionId;
@@ -135,6 +200,7 @@ async function applyMicMute(muted){
   return{ok:verified,muted:desired,verified:verified,trackCount:tracks.length,enabled:tracks.every(function(track){return track.enabled;})};
 }
 async function startCapture(streamId,sessionId,muted,captionPreview,tabId){
+  if(youtubePreviewRecorder)await stopYoutubeCaptionPreview(youtubePreviewSessionId,youtubePreviewTabId);
   await stopCapture();
   captureSessionId=String(sessionId||""); previewTabId=Number(tabId||0);
   if(!streamId||!captureSessionId)return{ok:false,error:"Falta la sesión o el identificador de audio de la pestaña."};
@@ -160,6 +226,14 @@ async function startCapture(streamId,sessionId,muted,captionPreview,tabId){
 async function stopCapture(){running=false;stopCaptionPreview();try{if(tabTimer)clearTimeout(tabTimer);if(micTimer)clearTimeout(micTimer);if(micMuteWatchdog)clearInterval(micMuteWatchdog)}catch(_){}tabTimer=null;micTimer=null;micMuteWatchdog=null;try{if(tabRecorder&&tabRecorder.state!=="inactive")tabRecorder.stop()}catch(_){}try{if(micRecorder&&micRecorder.state!=="inactive")micRecorder.stop()}catch(_){}tabRecorder=null;micRecorder=null;stopStream(tabStream);stopStream(micStream);tabStream=null;micStream=null;captureSessionId=null;if(audioContext){try{await audioContext.close()}catch(_){}audioContext=null}send({type:"SIGNAL_GROQ_CAPTURE_STATUS",status:"stopped",timestamp:new Date().toISOString()});return{ok:true}}
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
   if(!message||message.target!=="offscreen")return false;
+  if(message.type==="SIGNAL_START_YOUTUBE_CAPTION_PREVIEW"){
+    startYoutubeCaptionPreview(message.streamId,message.sessionId,Number(message.tabId)).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)});});
+    return true;
+  }
+  if(message.type==="SIGNAL_STOP_YOUTUBE_CAPTION_PREVIEW"){
+    stopYoutubeCaptionPreview(message.sessionId,message.tabId).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)});});
+    return true;
+  }
   if(message.type==="SIGNAL_GET_GROQ_CAPTURE_STATE"){
     sendResponse({ok:true,running:!!running,sessionId:captureSessionId,tabAudio:!!tabStream,microphone:!!micStream,microphoneMuted:!!micMuteDesired});
     return false;
