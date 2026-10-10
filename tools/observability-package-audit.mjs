@@ -13,6 +13,9 @@ export function auditObservabilityPackage(observationsRoot){
   const screenshotIndexFile=path.join(root,"screenshots-index.json");
   const latestObservationFile=path.join(root,"latest","latest.json");
   const latestSummaryFile=path.join(root,"latest","latest-summary.md");
+  const callReportsIndexFile=path.join(root,"call-reports","index.json");
+  const latestCallReportFile=path.join(root,"latest","latest-call-report.json");
+  const latestCallReportMarkdown=path.join(root,"latest","latest-call-report.md");
   assert(fs.existsSync(root),"observations directory missing");
   const manifestExists=fs.existsSync(manifestFile),indexExists=fs.existsSync(indexFile),latestExists=fs.existsSync(latestFile);
   if(!manifestExists&&!indexExists&&!latestExists){
@@ -77,7 +80,48 @@ export function auditObservabilityPackage(observationsRoot){
   assert(deltasMissing===0,"missing referenced platform delta files: "+deltasMissing);
   assert(Number(index.identityCount||0)===checked,"platform identity count/index mismatch");
 
-  return {ok:true,manifest,identityCount:checked,observations:Number(index.observations||0),deltas:Number(index.deltas||0),routeCount:Number(index.routeCount||0)};
+  let callReportCount=0,callReportPartialCount=0,callReportCompleteCount=0;
+  if(fs.existsSync(callReportsIndexFile)){
+    const reports=readJson(callReportsIndexFile);
+    assert(reports.schema==="signal-interpreter-call-report-index/v1","invalid call report index schema");
+    assert(reports.reportsByCallRef&&typeof reports.reportsByCallRef==="object","call report map missing");
+    const entries=Object.entries(reports.reportsByCallRef);
+    callReportCount=entries.length;
+    assert(Number(reports.reportCount||0)===callReportCount,"call report index count mismatch");
+    for(const [callRef,entry] of entries){
+      assert(/^[a-f0-9]{24}$/.test(callRef),"call report reference must be opaque SHA-256 prefix");
+      assert(entry&&typeof entry.reportPath==="string"&&entry.reportPath.startsWith("call-reports/"),"call report path missing or outside report root");
+      assert(!entry.reportPath.includes("..")&&!path.isAbsolute(entry.reportPath),"unsafe call report path");
+      const reportFile=path.join(root,entry.reportPath);
+      assert(fs.existsSync(reportFile),"call report file missing: "+callRef);
+      const report=readJson(reportFile);
+      assert(report.schema==="signal-interpreter-call-report/v1","invalid call report schema: "+callRef);
+      assert(report.callRef===callRef&&report.call&&report.call.callRef===callRef,"call report identity mismatch");
+      assert(report.privacy&&report.privacy.rawAudioIncluded===false&&report.privacy.rawTranscriptIncluded===false,"call report privacy contract invalid");
+      assert(report.privacy.fullCallIdIncluded===false&&report.privacy.credentialsIncluded===false,"call report contains forbidden identity/credential contract");
+      assert(report.endConfirmation&&typeof report.endConfirmation.ratingStarsVisible==="boolean","call report rating evidence missing");
+      assert(report.completeness&&Array.isArray(report.completeness.missingSignals),"call report completeness evidence missing");
+      if(report.status==="complete")callReportCompleteCount+=1;else callReportPartialCount+=1;
+    }
+    assert(callReportCompleteCount===Number(reports.completedCount||0),"call report complete count mismatch");
+    assert(callReportPartialCount===Number(reports.partialCount||0),"call report partial count mismatch");
+    if(callReportCount){
+      assert(reports.latestCallRef&&reports.reportsByCallRef[reports.latestCallRef],"latest call report index pointer invalid");
+      assert(reports.latestReportPath===reports.reportsByCallRef[reports.latestCallRef].reportPath,"latest call report path mismatch");
+      assert(fs.existsSync(latestCallReportFile),"latest call report JSON missing");
+      assert(fs.existsSync(latestCallReportMarkdown),"latest call report Markdown missing");
+      const latestReport=readJson(latestCallReportFile);
+      assert(latestReport.schema==="signal-interpreter-call-report/v1","latest call report schema invalid");
+      assert(latestReport.callRef===reports.latestCallRef,"latest call report pointer mismatch");
+      assert(!fs.readFileSync(latestCallReportMarkdown,"utf8").includes("rawTranscriptIncluded: true"),"latest Markdown violates transcript privacy");
+    }else{
+      assert(reports.latestCallRef===null||reports.latestCallRef===undefined,"empty call report index must not have latest reference");
+      assert(!fs.existsSync(latestCallReportFile),"empty call report index must not have a latest JSON");
+    }
+    if(manifest.calls)assert(Number(manifest.calls.reportCount||0)===callReportCount,"manifest call report count mismatch");
+  }
+
+  return {ok:true,manifest,identityCount:checked,observations:Number(index.observations||0),deltas:Number(index.deltas||0),routeCount:Number(index.routeCount||0),callReportCount:callReportCount,callReportCompleteCount:callReportCompleteCount,callReportPartialCount:callReportPartialCount};
 }
 
 if(import.meta.url==="file://"+process.argv[1].replace(/\\\\/g,"/")){
