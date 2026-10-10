@@ -259,6 +259,40 @@ function reportFeature(action){
 function callReportPayload(event){
   return event&&event.payload&&typeof event.payload==="object"?event.payload:{};
 }
+function callEventDigest(event){
+  const p=callReportPayload(event);
+  return {
+    at:reportDate(event.timestamp,null),sequence:reportNumber(event.sequence),
+    action:reportSafeText(event.action||"UNKNOWN",100),level:reportSafeText(event.level||"info",16),
+    category:reportSafeText(event.category||"RUNTIME",40),component:reportSafeText(event.component||event.source||"unknown",40),
+    phase:reportSafeText(event.phase||"event",24),outcome:reportSafeText(event.outcome||"observed",24),
+    durationMs:reportNumber(event.durationMs),
+    reasonCode:reportSafeText(event.reasonCode||p.reasonCode||p.reason||"",80)||null
+  };
+}
+function callKeySignal(event){
+  const action=String(event&&event.action||"");
+  if(!/ANSWER_FLOW|AUTO_ANSWER|CONNECT_|CALL_ROUTE_ENTERED|CALL_TIMER_STOPPED|EXTENSION_MICROPHONE|MICROPHONE|GROQ_CAPTURE|GROQ_TRANSCRIBER|TRANSCRIPTION|CAPTION_PREVIEW|SIGNAL_CAPTION|PLATFORM_INTEGRITY|CALL_END_EARNINGS|CALL_EARNINGS|EXCHANGE_RATE|HOTLOAD|SCREENSHOT/.test(action))return null;
+  const payload=callReportPayload(event);
+  const signal=callEventDigest(event);
+  const allow=["status","phase","reason","reasonCode","source","trigger","modality","engine","period","ready","authorizedProfile","verified","muted","desired","previousMuted","recoveryMuted","captureVerified","outputVerified","outputMuted","trackCount","senderCount","attempts","latencyMs","durationMs","timeoutMs","routeConfirmation","confirmation","captureStatus","tabAudio","microphone","microphoneMuted","microphoneOutputMuted","effectiveType","rttMs","downlinkMbps"];
+  allow.forEach(key=>{
+    const value=payload[key];
+    if(value===null||value===undefined)return;
+    if(typeof value==="boolean"||typeof value==="number")signal[key]=value;
+    else if(typeof value==="string")signal[key]=reportSafeText(value,80);
+  });
+  if(payload.metrics&&typeof payload.metrics==="object"){
+    const metrics={};
+    Object.keys(payload.metrics).slice(0,20).forEach(key=>{
+      const value=payload.metrics[key];
+      if(typeof value==="number"&&Number.isFinite(value))metrics[reportSafeText(key,60)]=value;
+      else if(typeof value==="boolean")metrics[reportSafeText(key,60)]=value;
+    });
+    if(Object.keys(metrics).length)signal.metrics=metrics;
+  }
+  return signal;
+}
 function makeCallReport(callId,events,generatedAt){
   const related=events.filter(event=>eventCallId(event)===callId)
     .sort((a,b)=>(Date.parse(a.timestamp||"")||0)-(Date.parse(b.timestamp||"")||0));
@@ -305,6 +339,9 @@ function makeCallReport(callId,events,generatedAt){
       });
     }
   });
+  const timelineSource=related.length<=160?related:related.slice(0,20).concat(related.slice(-140));
+  const eventTimeline=timelineSource.map(callEventDigest);
+  const keySignals=related.map(callKeySignal).filter(Boolean).slice(-100);
   const lastPerf=performanceEvents.length?performanceEvents[performanceEvents.length-1].payload:{};
   const peak=performanceEvents.reduce((out,item)=>{
     const p=item.payload.performance||{};
@@ -372,6 +409,8 @@ function makeCallReport(callId,events,generatedAt){
     },
     telemetry:{
       eventLevels:levels,actions:actions,categories:categories,components:components,featureSignals:featureSignals,
+      eventTimeline:eventTimeline,keySignals:keySignals,
+      eventTimelineTruncated:related.length>eventTimeline.length,sourceEventCount:related.length,
       warnings:warnings,errors:errors,failedOrBlockedEvents:failed,errorTimeline:errorTimeline.slice(-60),
       performance:{
         samples:performanceEvents.length,lastAt:performanceEvents.length?reportDate(performanceEvents[performanceEvents.length-1].event.timestamp,null):null,
