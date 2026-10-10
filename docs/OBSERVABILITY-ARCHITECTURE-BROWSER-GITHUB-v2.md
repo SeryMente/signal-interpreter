@@ -244,7 +244,7 @@ La arquitectura se considera completa cuando:
 
 ## 15. Informe durable de cierre de llamada
 
-Cuando Cloud Interpreter navega a `/call/<ID>/rate` y la extensión observa las estrellas, el content script emite `CALL_RATING_STARS_CONFIRMED` con evidencia estructural limitada (método de detección y contadores, no texto crudo ni puntuación). Los eventos del content script incorporan `callId` en `payload`, `session` y `context` para correlación explícita.
+Cuando Cloud Interpreter navega a `/call/<ID>/rate` y la extensión observa las estrellas, el content script emite `CALL_RATING_STARS_CONFIRMED` con evidencia estructural limitada (método de detección y contadores, no texto crudo ni puntuación). Los eventos del content script conservan el vínculo de llamada en `session` y `context`; los marcadores de ciclo de vida llevan `callId` explícito en su `payload`. Esta separación permite correlacionar sin duplicar el identificador en el payload de cada evento.
 
 El cierre de la llamada conserva el registro final, completa la conciliación de ingresos y emite `CALL_OBSERVABILITY_CHECKPOINT` de `call-ended`. La sincronización drena lotes hasta que el ACK remoto cubre la secuencia de checkpoint; si no lo logra, persiste el objetivo de secuencia y programa reintentos. La presencia de estrellas no se confunde con rating seleccionado o enviado.
 
