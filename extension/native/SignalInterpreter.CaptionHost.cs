@@ -65,7 +65,7 @@ internal static class SignalInterpreterCaptionHost
                     {
                         type = "caption",
                         source = "chrome-live-caption",
-                        visible = true,
+                        visible = visible,
                         active = true,
                         text = text
                     });
@@ -232,8 +232,6 @@ internal static class SignalInterpreterCaptionHost
             try
             {
                 AutomationElement.AutomationElementInformation current = window.Current;
-                if (current.IsOffscreen)
-                    continue;
 
                 string name = current.Name ?? "";
                 string className = current.ClassName ?? "";
@@ -244,7 +242,7 @@ internal static class SignalInterpreterCaptionHost
                 if (!looksLikeCaption)
                     continue;
 
-                visible = true;
+                visible = !current.IsOffscreen;
                 string text = ReadCaptionDescendants(window);
                 if (!String.IsNullOrWhiteSpace(text))
                     return text;
@@ -298,8 +296,6 @@ internal static class SignalInterpreterCaptionHost
                 try
                 {
                     AutomationElement.AutomationElementInformation current = node.Current;
-                    if (current.IsOffscreen)
-                        continue;
 
                     string typeName = current.ControlType.ProgrammaticName ?? "";
                     bool isText = String.Equals(typeName, "ControlType.Text", StringComparison.Ordinal);
