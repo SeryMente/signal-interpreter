@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-8782a14b-3381-401e-ace8-79ca832aab1c
-- Creado: 2026-10-10T19:42:04.607Z
-- Trigger: event-threshold
+- Batch: batch-46dce004-4109-4c15-8a85-0b54f95f1efe
+- Creado: 2026-10-10T19:42:18.470Z
+- Trigger: critical
 - Extensión: 0.10.29
-- Eventos: 51
+- Eventos: 22
 - Errores: 0
-- Warnings: 0
-- Secuencia: 3758 → 3808
+- Warnings: 1
+- Secuencia: 3809 → 3830
 - Identidades de plataforma: 8
 - Snapshots de plataforma: 687
 - Deltas de plataforma: 685
@@ -15,27 +15,15 @@
 ## Categorías
 
 {
-  "RUNTIME": 42,
-  "PORTAL": 4,
-  "SESSION": 4,
-  "CAPTION": 1
+  "RUNTIME": 21,
+  "LIVE_CAPTION": 1
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 23,
-  "MEDIA_HEALTH": 13,
-  "PLATFORM_OFFICIAL_SYNC_REQUESTED": 1,
-  "PLATFORM_OFFICIAL_SYNC_COMPLETED": 1,
-  "CALL_START_EARNINGS_SYNC_COMPLETED": 1,
-  "PLATFORM_EARNINGS_RANGE_REQUESTED": 2,
-  "LIVE_CAPTION_OVERLAY_HEALTH": 1,
-  "PERFORMANCE_HEARTBEAT": 1,
-  "PLATFORM_EARNINGS_RANGE_COMPLETED": 2,
-  "CALL_START_MONTH_SYNC_COMPLETED": 2,
-  "PLATFORM_SURFACE_SNAPSHOT": 1,
-  "NETWORK_ACTIVITY_WINDOW": 1,
-  "EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFIED": 1,
-  "HOTLOAD_CALL_LEASE_HEARTBEAT": 1
+  "AUTO_ANSWER_READINESS": 14,
+  "PLATFORM_SCREENSHOT_CHANGED": 1,
+  "MEDIA_HEALTH": 6,
+  "SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR": 1
 }
