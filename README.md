@@ -57,6 +57,12 @@ La arquitectura canónica está documentada en `docs/OBSERVABILITY-ARCHITECTURE-
 
 
 
+## Auto-recuperación y diagnóstico del overlay (0.10.29)
+
+La activación de los dos paneles tiene etapas observables: detección de ruta, reconciliación de contexto, montaje del DOM/Shadow DOM, confirmación de visibilidad y recuperación. El overlay de subtítulos trata una ruta real `/call/<ID>` como evidencia local válida mientras el estado del service worker se sincroniza, y reintenta el saludo cuando el runtime falla. Un watchdog de ruta SPA verifica el montaje durante una llamada. El panel de ingresos cuenta con un watchdog independiente del observador de Auto-Answer/telemetría, por lo que esos ajustes no pueden impedir que detecte la llamada.
+
+Los eventos de diagnóstico incluyen razón de bloqueo, estado del contexto, pestaña de origen conocida, conexión del host, Shadow DOM, visibilidad, tamaño del panel, fallos/reintentos y antigüedad del último caption. El paquete por llamada conserva estos eventos en el grupo `overlayActivation`. Se omiten el texto transcrito, audio, credenciales y rutas con el ID bruto de llamada.
+
 ## Informe automático después de la llamada
 
 Cuando Signal Interpreter detecta la pantalla de estrellas de calificación, registra el evento explícito `CALL_RATING_STARS_CONFIRMED`. Al cerrar la llamada, incluye un checkpoint final con el registro de duración e ingresos y drena el transporte de observabilidad hasta el número de secuencia de cierre, o conserva ese objetivo para reintentar.

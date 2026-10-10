@@ -242,6 +242,7 @@ function reportResourceName(value){
 function reportFeature(action){
   const a=String(action||"").toUpperCase();
   const groups=[
+    ["overlayActivation",/OVERLAY|LIVE_CAPTION_OVERLAY|EARNINGS_OVERLAY/],
     ["answerFlow",/ANSWER|CONNECT|INCOMING|AUTO_ANSWER/],
     ["ratingAndClose",/RATING|CALL_ROUTE_ENDED|CALL_TIMER_STOPPED|CALL_OBSERVABILITY_CHECKPOINT/],
     ["microphoneAndSafety",/MICROPHONE|MIC_GUARD|MUTE|AUDIO_SAFETY/],
@@ -272,10 +273,10 @@ function callEventDigest(event){
 }
 function callKeySignal(event){
   const action=String(event&&event.action||"");
-  if(!/ANSWER_FLOW|AUTO_ANSWER|CONNECT_|CALL_ROUTE_ENTERED|CALL_TIMER_STOPPED|EXTENSION_MICROPHONE|MICROPHONE|GROQ_CAPTURE|GROQ_TRANSCRIBER|TRANSCRIPTION|CAPTION_PREVIEW|SIGNAL_CAPTION|PLATFORM_INTEGRITY|CALL_END_EARNINGS|CALL_EARNINGS|EXCHANGE_RATE|HOTLOAD|SCREENSHOT/.test(action))return null;
+  if(!/ANSWER_FLOW|AUTO_ANSWER|CONNECT_|CALL_ROUTE_ENTERED|CALL_TIMER_STOPPED|EXTENSION_MICROPHONE|MICROPHONE|GROQ_CAPTURE|GROQ_TRANSCRIBER|TRANSCRIPTION|CAPTION_PREVIEW|SIGNAL_CAPTION|LIVE_CAPTION_OVERLAY|EARNINGS_OVERLAY|PLATFORM_INTEGRITY|CALL_END_EARNINGS|CALL_EARNINGS|EXCHANGE_RATE|HOTLOAD|SCREENSHOT/.test(action))return null;
   const payload=callReportPayload(event);
   const signal=callEventDigest(event);
-  const allow=["status","phase","reasonCode","source","trigger","modality","engine","period","ready","authorizedProfile","verified","muted","desired","previousMuted","recoveryMuted","captureVerified","outputVerified","outputMuted","trackCount","senderCount","attempts","latencyMs","durationMs","timeoutMs","routeConfirmation","confirmation","captureStatus","tabAudio","microphone","microphoneMuted","microphoneOutputMuted","effectiveType","rttMs","downlinkMbps"];
+  const allow=["status","phase","reasonCode","source","trigger","modality","engine","period","ready","authorizedProfile","verified","muted","desired","previousMuted","recoveryMuted","captureVerified","outputVerified","outputMuted","trackCount","senderCount","attempts","attempt","retryCount","latencyMs","durationMs","timeoutMs","routeConfirmation","confirmation","captureStatus","tabAudio","microphone","microphoneMuted","microphoneOutputMuted","effectiveType","rttMs","downlinkMbps","visible","hostConnected","shadowRootReady","pageAllowed","contextReady","callActive","sourceTabMatched","sourceTabKnown","routeFallbackApplied","activeCallRoute","routeEvidenceApplied","historyRows","rowCount","contextSyncAttempts","contextSyncFailures","active","sessionEnded","lastCaptionAgeMs","documentReadyState","visibilityState","documentElementPresent","controlsReady","timerActive","hostWidth","hostHeight","mountReason","independentOfObserver","observerActive"];
   allow.forEach(key=>{
     const value=payload[key];
     if(value===null||value===undefined)return;

@@ -345,13 +345,27 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var isSourceTab = sourceTabId != null && currentTabId === sourceTabId;
     var hasHistory = Array.isArray(session.rows) && session.rows.length > 0;
     var youtubeTarget = false;
+    var cloudCallRoute = false;
     try {
       var parsedUrl = new URL(String(senderTab && senderTab.url || ""));
       youtubeTarget = parsedUrl.hostname === "www.youtube.com" && parsedUrl.pathname === "/watch" &&
         parsedUrl.searchParams.get("v") === "TshOFzKQfG8";
+      cloudCallRoute = parsedUrl.hostname.toLowerCase() === "app.cloudinterpreter.com" &&
+        /^\/call\/[^/?#]+\/?$/.test(parsedUrl.pathname);
     } catch (_) {}
+    // La URL activa de la llamada reconcilia el origen aunque el estado durable
+    // del service worker esté unos instantes retrasado respecto de la navegación SPA.
+    var routeEvidenceApplied = !!(cloudCallRoute && currentTabId != null &&
+      (!callActive || stateSource == null || stateSource === currentTabId));
+    if (routeEvidenceApplied) {
+      sourceTabId = currentTabId;
+      isSourceTab = true;
+      callActive = true;
+    }
     var pageAllowed = config.liveCaptionOverlayEnabled !== false && (
-      youtubeTarget || (sourceOnly ? isSourceTab && (callActive || hasHistory) : callActive || hasHistory)
+      youtubeTarget || (sourceOnly
+        ? isSourceTab && (callActive || hasHistory || cloudCallRoute)
+        : callActive || hasHistory || cloudCallRoute)
     );
     return {
       ok: true,
@@ -360,6 +374,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       sourceTabId: sourceTabId,
       isSourceTab: isSourceTab,
       callActive: callActive,
+      activeCallRoute: cloudCallRoute,
+      routeEvidenceApplied: routeEvidenceApplied,
       sessionEnded: !youtubeTarget && session.ended === true,
       pageAllowed: pageAllowed,
       history: pageAllowed && !youtubeTarget ? session.rows.slice(-CAPTION_HISTORY_LIMIT) : []
