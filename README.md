@@ -1,5 +1,8 @@
 # Signal Interpreter
 
+> **Documento canónico único del esfuerzo de transcripción/Live Caption/overlay:** [docs/TRANSCRIPTION-SPRINT-CANONICAL.md](docs/TRANSCRIPTION-SPRINT-CANONICAL.md). Toda la narrativa del sprint, evolución, decisiones, pruebas, límites y registro VERBATIM se centraliza ahí. Los documentos restantes citados a continuación tienen funciones acotadas (requisito fuente, notas por versión o arquitectura general), no son informes alternativos del esfuerzo.
+
+
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
 ## Arquitectura de transcripción
