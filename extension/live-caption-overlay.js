@@ -456,9 +456,15 @@
   }
 
   function termAtPoint(event, textElement) {
-    var selected = "";
-    try { selected = String(window.getSelection ? window.getSelection() : "").trim(); } catch (_) {}
-    if (selected && selected.length <= 180) return selected;
+    var selected = "", selection = null;
+    try {
+      selection = window.getSelection ? window.getSelection() : null;
+      selected = String(selection || "").trim();
+      if (selected && selected.length <= 180 && selection.rangeCount > 0) {
+        var selectedRange = selection.getRangeAt(0);
+        if (textElement.contains(selectedRange.commonAncestorContainer)) return selected;
+      }
+    } catch (_) {}
     var range = null;
     try {
       if (document.caretPositionFromPoint) {
