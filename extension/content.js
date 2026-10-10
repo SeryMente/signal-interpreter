@@ -79,6 +79,7 @@
   var navigationListenersInstalled = false;
   var lastCallEndMeasurement = null;
   var ratingConfirmationTimer = null;
+  var lastRatingConfirmedCallId = null;
   var answerWatchdog = null;
   var existingAnswerLease = window[ANSWER_LEASE_MARKER];
   var answerFlow = existingAnswerLease && existingAnswerLease.flowId && existingAnswerLease.clickAt && (Date.now() - Date.parse(existingAnswerLease.clickAt) < 30000)
@@ -469,12 +470,20 @@
       .replace(/^\/profile\/[^/]+/, "/profile/<ID>");
   }
   function emit(action, payload, level) {
+    var callId = payload && payload.callId || currentCallId();
+    var eventPayload = payload && typeof payload === "object" ? Object.assign({}, payload) : {};
+    if (callId && eventPayload.callId == null) eventPayload.callId = callId;
     var event = {
       timestamp: iso(), action: action, level: level || "info",
       source: "content", host: location.hostname, url: location.origin + routeTemplate(),
       sessionId: sessionId, pageLifecycleId: pageLifecycleId,
-      context: { route: routeTemplate(), visibility: document.visibilityState, focused: document.hasFocus(), online: navigator.onLine, monotonicMs: Math.round(performance.now()) },
-      payload: payload || {}
+      session: { sessionId: sessionId, pageLifecycleId: pageLifecycleId, callId: callId || null },
+      context: {
+        route: routeTemplate(), visibility: document.visibilityState, focused: document.hasFocus(),
+        online: navigator.onLine, monotonicMs: Math.round(performance.now()),
+        callId: callId || null, pageLifecycleId: pageLifecycleId
+      },
+      payload: eventPayload
     };
     try {
       console[event.level === "error" ? "error" : "log"](
@@ -614,18 +623,49 @@
     };
   }
   function emitRatingConfirmed(callId, previousCallId, endMeasurement) {
-    if (!callId || !isRatingRoute() || !ratingStarsVisible()) return false;
+    if (!callId || !isRatingRoute()) return false;
+    var evidence = readRatingStarsEvidence();
+    if (!evidence.starsVisible) return false;
+    if (String(lastRatingConfirmedCallId || "") === String(callId)) return true;
+    lastRatingConfirmedCallId = String(callId);
+    var confirmedAt = iso();
+    var platformSeconds = Number.isFinite(endMeasurement) ? endMeasurement : null;
+    emit("CALL_RATING_STARS_CONFIRMED", {
+      schema: "signal-interpreter-call-rating-confirmation/v1",
+      callId: callId,
+      previousCallId: previousCallId || null,
+      confirmedAt: confirmedAt,
+      platformSeconds: platformSeconds,
+      confirmation: "rating-stars-visible",
+      ratingPromptVisible: true,
+      ratingValueObserved: false,
+      ratingSubmissionObserved: false,
+      route: platformUrlDescriptor(location.href),
+      evidence: evidence,
+      telemetry: {
+        observationEnabled: config.observationEnabled !== false,
+        performanceTelemetryEnabled: config.performanceTelemetryEnabled !== false,
+        interactionTelemetryEnabled: config.interactionTelemetryEnabled === true
+      }
+    });
+    performanceSnapshot("call-rating-stars-confirmed", callId);
+    portalStructureSnapshot("call-rating-stars-confirmed", true);
     emit("CALL_ROUTE_ENDED", {
       callId: callId,
-      platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
+      platformSeconds: platformSeconds,
       reason: "rating-stars-confirmed",
-      endSignal: "rating-stars-confirmed"
+      endSignal: "rating-stars-confirmed",
+      ratingStarsVisible: true,
+      ratingConfirmationAt: confirmedAt
     });
     emit("RATING_ROUTE_ENTERED", {
       callId: callId,
       previousCallId: previousCallId || null,
-      platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
-      confirmation: "rating-stars-visible"
+      platformSeconds: platformSeconds,
+      confirmation: "rating-stars-visible",
+      ratingStarsVisible: true,
+      ratingConfirmationAt: confirmedAt,
+      ratingEvidence: evidence
     });
     return true;
   }
@@ -634,16 +674,22 @@
     var startedAt = Date.now();
     function check() {
       if (!isRatingRoute() || currentCallId()) {
+        var routeLeftEvidence = readRatingStarsEvidence();
         emit("CALL_ROUTE_ENDED", {
           callId: callId,
           platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
           reason: "rating-route-left-before-confirmation",
-          endSignal: "route-fallback-no-rating"
+          endSignal: "route-fallback-no-rating",
+          ratingStarsVisible: false,
+          confirmationElapsedMs: Date.now() - startedAt,
+          ratingEvidence: routeLeftEvidence
         });
         emit("RATING_ROUTE_FAILED", {
           callId: callId,
           previousCallId: previousCallId || null,
-          confirmation: "rating-route-left-before-stars"
+          confirmation: "rating-route-left-before-stars",
+          elapsedMs: Date.now() - startedAt,
+          ratingEvidence: routeLeftEvidence
         }, "warn");
         ratingConfirmationTimer = null;
         return;
@@ -653,16 +699,22 @@
         return;
       }
       if (Date.now() - startedAt >= 3000) {
+        var timeoutEvidence = readRatingStarsEvidence();
         emit("CALL_ROUTE_ENDED", {
           callId: callId,
           platformSeconds: Number.isFinite(endMeasurement) ? endMeasurement : null,
           reason: "rating-stars-timeout",
-          endSignal: "route-fallback-no-rating"
+          endSignal: "route-fallback-no-rating",
+          ratingStarsVisible: false,
+          confirmationElapsedMs: Date.now() - startedAt,
+          ratingEvidence: timeoutEvidence
         });
         emit("RATING_ROUTE_FAILED", {
           callId: callId,
           previousCallId: previousCallId || null,
-          confirmation: "rating-stars-not-observed"
+          confirmation: "rating-stars-not-observed",
+          elapsedMs: Date.now() - startedAt,
+          ratingEvidence: timeoutEvidence
         }, "warn");
         ratingConfirmationTimer = null;
         return;
@@ -1148,13 +1200,14 @@
     slowest.sort(function (a, b) { return b.durationMs - a.durationMs; });
     return { newResources: fresh.length, byType: byType, totalDurationMs: Math.round(totalDuration), transferBytes: transferBytes, slowest: slowest.slice(0, 12) };
   }
-  function performanceSnapshot(reason) {
+  function performanceSnapshot(reason, associatedCallId) {
     if (!config.observationEnabled || !config.performanceTelemetryEnabled) return;
     var navigation = performance.getEntriesByType("navigation")[0];
     var connection = navigator.connection || {};
     var memory = performance.memory || {};
     var payload = {
       reason: reason, route: routeTemplate(), uptimeMs: Math.round(performance.now()),
+      callId: associatedCallId || currentCallId() || null,
       document: { readyState: document.readyState, visibility: document.visibilityState, focused: document.hasFocus(), online: navigator.onLine, title: safe(document.title), nodes: document.getElementsByTagName("*").length },
       viewport: { width: innerWidth, height: innerHeight, devicePixelRatio: devicePixelRatio },
       navigation: navigation ? { type: navigation.type, durationMs: Math.round(navigation.duration), domInteractiveMs: Math.round(navigation.domInteractive), domContentLoadedMs: Math.round(navigation.domContentLoadedEventEnd), loadMs: Math.round(navigation.loadEventEnd), transferBytes: navigation.transferSize || 0 } : null,
@@ -1530,28 +1583,57 @@
   function isRatingRoute() {
     return /^\/call\/[^/?#]+\/rate\/?$/.test(location.pathname);
   }
-  function ratingStarsVisible() {
-    if (!isRatingRoute()) return false;
-    var nodes = Array.from(document.querySelectorAll("button,[role='button'],[aria-label],[title],[class]")).filter(visibleElement).slice(0, 400);
+  function readRatingStarsEvidence() {
+    var routeMatched = isRatingRoute();
+    if (!routeMatched) return {
+      schema: "signal-interpreter-rating-star-evidence/v1",
+      routeMatched: false, starsVisible: false, method: "not-rating-route",
+      candidateCount: 0, namedStarCandidateCount: 0, starLikeCandidateCount: 0,
+      visibleButtonCount: 0, visibleRadioCount: 0
+    };
+    var selector = "button,[role='button'],[role='radio'],[aria-label],[title],[data-testid*='star' i],[data-testid*='rating' i],[class*='star' i],[class*='rating' i]";
+    var nodes = Array.from(document.querySelectorAll(selector)).filter(function (element) {
+      if (!visibleElement(element)) return false;
+      return !(overlayHost && (element === overlayHost || overlayHost.contains(element)));
+    }).slice(0, 800);
     var namedStars = nodes.filter(function (element) {
       var label = normalized(
         (element.getAttribute && element.getAttribute("aria-label") || "") + " " +
         (element.getAttribute && element.getAttribute("title") || "") + " " +
+        (element.getAttribute && element.getAttribute("data-testid") || "") + " " +
         (element.getAttribute && element.getAttribute("class") || "")
       );
       var text = normalized(element.textContent || "");
-      return /(?:^|\\s)(?:[1-5]\\s*stars?|stars?\\s*[1-5])(?:\\s|$)/i.test(label) ||
+      return /(?:^|\s)(?:[1-5]\s*stars?|stars?\s*[1-5])(?:\s|$)/i.test(label) ||
         /rating|star/i.test(label) && /[1-5]|rate/i.test(label + " " + text) ||
         /(?:rate|rating).*(?:1|2|3|4|5)/i.test(text);
     });
-    if (namedStars.length >= 2) return true;
     var starLike = nodes.filter(function (element) {
-      var label = normalized((element.getAttribute && element.getAttribute("aria-label") || "") + " " + (element.getAttribute && element.getAttribute("title") || ""));
-      var cls = String(element.getAttribute && element.getAttribute("class") || "");
-      return /star|rating/i.test(label + " " + cls);
+      var label = normalized(
+        (element.getAttribute && element.getAttribute("aria-label") || "") + " " +
+        (element.getAttribute && element.getAttribute("title") || "") + " " +
+        (element.getAttribute && element.getAttribute("data-testid") || "") + " " +
+        (element.getAttribute && element.getAttribute("class") || "")
+      );
+      return /star|rating/i.test(label);
     });
-    return starLike.length >= 3;
+    var visible = namedStars.length >= 2 || starLike.length >= 3;
+    return {
+      schema: "signal-interpreter-rating-star-evidence/v1",
+      routeMatched: true,
+      starsVisible: visible,
+      method: visible ? (namedStars.length >= 2 ? "accessible-label-or-test-id" : "star-class-or-title-heuristic") : "not-observed",
+      candidateCount: nodes.length,
+      namedStarCandidateCount: namedStars.length,
+      starLikeCandidateCount: starLike.length,
+      visibleButtonCount: Array.from(document.querySelectorAll("button")).filter(visibleElement).length,
+      visibleRadioCount: Array.from(document.querySelectorAll("[role='radio']")).filter(visibleElement).length
+    };
   }
+  function ratingStarsVisible() {
+    return readRatingStarsEvidence().starsVisible === true;
+  }
+
   function requestMainMicrophoneProbe(reason) {
     return new Promise(function(resolve){
       var requestId=crypto.randomUUID(),settled=false,timeout=null;
