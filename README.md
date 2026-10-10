@@ -56,6 +56,8 @@ La observabilidad de Signal Interpreter cubre dos planos: telemetría de la prop
 La arquitectura canónica está documentada en `docs/OBSERVABILITY-ARCHITECTURE-BROWSER-GITHUB-v2.md`.
 
 
-## Overlay de subtítulos (0.10.24)
+## Overlay de subtítulos (0.10.25)
 
-El overlay de Live Caption permite revisar el historial reciente con desplazamiento vertical, mover y redimensionar el panel, restaurar su ubicación automática y configurar la visibilidad en la pestaña de origen o en todas las pestañas web. El texto se retiene en el almacenamiento de sesión de Chrome, no en almacenamiento local duradero. Consulta `docs/versions/0.10.24.md` para el alcance y las limitaciones de validación.
+La versión 0.10.25 incorpora captions bilingües de la voz del LEP desde el micrófono verificado, con fragmentos de 1.8 s y sin forzar la activación del micrófono. Para el video de prueba autorizado, el popup permite iniciar y detener una captura de audio de pestaña independiente; no utiliza el micrófono ni incorpora segmentos a la transcripción oficial. Teléfonos y direcciones detectados se pueden copiar con un clic; Ctrl+clic abre Google Maps para direcciones y una búsqueda en Google para teléfonos; Ctrl+Mayús+clic consulta términos en Linguee. Las búsquedas se abren mediante el service worker y destinos permitidos.
+
+El overlay conserva su historial desplazable, controles para mover/redimensionar, posición automática y alcance source-only/all-tabs. El historial hablado se retiene en chrome.storage.session, no en almacenamiento local duradero. Consulta docs/versions/0.10.25.md para el alcance, los controles y los límites de validación.
