@@ -94,6 +94,9 @@ assert.equal(built.latestCallReport.telemetry.performance.latest.connection.effe
 assert.equal(built.latestCallReport.telemetry.media.samples,1);
 assert.equal(built.latestCallReport.telemetry.errors,0);
 assert.equal(built.latestCallReport.telemetry.warnings,1);
+assert.equal(built.latestCallReport.completeness.missingSignals.length,0,"complete fixture must contain all modeled lifecycle evidence");
+assert.ok(built.latestCallReport.telemetry.eventTimeline.some(e=>e.action==="CALL_RATING_STARS_CONFIRMED"),"ordered diagnostic timeline must expose the star confirmation");
+assert.ok(built.latestCallReport.telemetry.keySignals.some(e=>e.action==="CALL_TIMER_STOPPED"&&e.modality==="OPI"),"whitelisted key signals include call modality and timing close");
 assert.ok(built.latestCallReport.telemetry.errorTimeline.some(e=>e.reasonCode==="groq-timeout"));
 assert.equal(built.manifest.calls.reportCount,1);
 assert.equal(built.health.callReportCheckpointObserved,true);
