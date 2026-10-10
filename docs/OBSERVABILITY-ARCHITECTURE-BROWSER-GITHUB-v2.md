@@ -238,11 +238,32 @@ La arquitectura se considera completa cuando:
 4. GitHub Actions construye el paquete;
 5. ningún servicio local participa;
 5. los batches sobreviven a suspensión/reanudación del service worker;
-6. el paquete contiene evidencia operacional y de plataforma;
-7. los deltas son reproducibles;
-8. las pruebas detectan una regresión de cualquiera de las reglas anteriores.
+7. el paquete contiene evidencia operacional y de plataforma;
+8. los deltas son reproducibles;
+9. las pruebas detectan una regresión de cualquiera de las reglas anteriores.
 
-## 15. Decisión de migración
+## 15. Informe durable de cierre de llamada
+
+Cuando Cloud Interpreter navega a `/call/<ID>/rate` y la extensión observa las estrellas, el content script emite `CALL_RATING_STARS_CONFIRMED` con evidencia estructural limitada (método de detección y contadores, no texto crudo ni puntuación). Los eventos del content script conservan el vínculo de llamada en `session` y `context`; los marcadores de ciclo de vida llevan `callId` explícito en su `payload`. Esta separación permite correlacionar sin duplicar el identificador en el payload de cada evento.
+
+El cierre de la llamada conserva el registro final, completa la conciliación de ingresos y emite `CALL_OBSERVABILITY_CHECKPOINT` de `call-ended`. La sincronización drena lotes hasta que el ACK remoto cubre la secuencia de checkpoint; si no lo logra, persiste el objetivo de secuencia y programa reintentos. La presencia de estrellas no se confunde con rating seleccionado o enviado.
+
+GitHub Actions construye los artefactos:
+
+- `observations/call-reports/YYYY-MM-DD/call-<opaque-ref>.json`
+- `observations/call-reports/index.json`
+- `observations/latest/latest-call-report.json`
+- `observations/latest/latest-call-report.md`
+
+El informe agrupa duración, modalidad, cierre, ingreso estimado y diferencias entre duración observada/de plataforma; distribuciones por acción, categoría, componente y severidad; reason codes de fallos; señales de micrófono, media, transcripción, rendimiento, red, plataforma, facturación y runtime; métricas de rendimiento/medios resumidas; cobertura y señales ausentes. Si llega primero el evento de estrellas, el artefacto permanece `partial`; se actualiza a `complete` solo cuando se recibe el checkpoint y el registro final de llamada.
+
+El artefacto es generado a partir de batches existentes y no requiere endpoint Vercel nuevo ni servicio local. El index/manifest declara la referencia opaca más reciente y el estado; la auditoría comprueba el contrato de privacidad y la consistencia de los punteros.
+
+### Privacidad del informe
+
+No se incluyen audio, transcripciones crudas, valores escritos, cuerpos HTTP, código fuente privado o credenciales. La identidad original de la llamada no se escribe en el nombre ni en el cuerpo del informe: se usa un hash opaco. No se afirma que la valoración se seleccionó o envió solo porque las estrellas fueran visibles.
+
+## 16. Decisión de migración
 
 La infraestructura previa basada en reporter local, watchdog, supervisor, Scheduled Tasks y Native Messaging queda descontinuada y debe permanecer fuera del árbol de producción de Signal Interpreter.
 

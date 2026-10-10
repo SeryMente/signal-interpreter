@@ -22,7 +22,7 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.27");
+assert.equal(manifest.version,"0.10.28");
 assert.ok(background.includes('liveCaptionInterpreterEnabled: true'), "la transcripción permite incluir la voz del LEP");
 assert.ok(background.includes('liveCaptionBilingualTabEnabled: true'), "la transcripción bilingüe de audio de pestaña está activada por defecto");
 assert.ok(background.includes('var outputSource = source === "yo" ? "yo" : "cliente"'), "la atribución del preview procede del canal de audio, no del idioma");

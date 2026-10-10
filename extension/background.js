@@ -1138,22 +1138,68 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   try { SignalPlatformScreenshot.configure({ record: record, relay: SignalObservabilityRelay }); } catch (error) { console.error("[SIGNAL-INTERPRETER] PLATFORM_SCREENSHOT_INIT_ERROR", String(error)); }
   function checkpointCallObservability(reason, callId, stateSnapshot) {
     var checkpoint = reason === "call-answered" ? "call-answered" : "call-ended";
+    var candidates = (stateSnapshot && Array.isArray(stateSnapshot.completedCalls) ? stateSnapshot.completedCalls : [])
+      .concat(stateSnapshot && Array.isArray(stateSnapshot.unfinishedCalls) ? stateSnapshot.unfinishedCalls : []);
+    var finalCallRecord = null;
+    if (checkpoint === "call-ended" && callId) {
+      for (var ci = candidates.length - 1; ci >= 0; ci -= 1) {
+        if (String(candidates[ci] && candidates[ci].callId || "") === String(callId)) {
+          finalCallRecord = candidates[ci];
+          break;
+        }
+      }
+    }
+    var finalCall = finalCallRecord ? {
+      callId: finalCallRecord.callId || callId || null,
+      startedAt: finalCallRecord.startedAt || null,
+      endedAt: finalCallRecord.endedAt || null,
+      modality: finalCallRecord.modality || null,
+      status: finalCallRecord.status || null,
+      sourceTabId: finalCallRecord.sourceTabId == null ? null : Number(finalCallRecord.sourceTabId),
+      transcriptionSessionId: finalCallRecord.transcriptionSessionId || null,
+      runtimeVersion: finalCallRecord.runtimeVersion || chrome.runtime.getManifest().version,
+      observedSeconds: Number.isFinite(Number(finalCallRecord.observedSeconds)) ? Number(finalCallRecord.observedSeconds) : null,
+      platformSeconds: Number.isFinite(Number(finalCallRecord.platformSeconds)) ? Number(finalCallRecord.platformSeconds) : null,
+      billableSecondsAssumed: Number.isFinite(Number(finalCallRecord.billableSecondsAssumed)) ? Number(finalCallRecord.billableSecondsAssumed) : null,
+      ratePerMinute: Number.isFinite(Number(finalCallRecord.ratePerMinute)) ? Number(finalCallRecord.ratePerMinute) : null,
+      estimatedRevenue: Number.isFinite(Number(finalCallRecord.estimatedRevenue)) ? Number(finalCallRecord.estimatedRevenue) : null,
+      countedInEarnings: finalCallRecord.countedInEarnings === true,
+      currency: finalCallRecord.currency || null,
+      billingRule: finalCallRecord.billingRule || null,
+      endSource: finalCallRecord.endSource || null
+    } : null;
     var payload = {
+      schema: "signal-interpreter-call-checkpoint/v1",
       checkpoint: checkpoint,
+      checkpointReason: reason || checkpoint,
       callId: callId || null,
       extensionVersion: chrome.runtime.getManifest().version,
       dailyCallsToday: stateSnapshot && stateSnapshot.dailyCalls ? Number(stateSnapshot.dailyCalls[localDay()] || 0) : null,
       completedToday: stateSnapshot && stateSnapshot.completedCalls ? stateSnapshot.completedCalls.filter(function (call) { return localDay(call.startedAt || call.endedAt) === localDay(); }).length : null,
       unfinishedToday: stateSnapshot && stateSnapshot.unfinishedCalls ? stateSnapshot.unfinishedCalls.filter(function (call) { return localDay(call.startedAt || call.endedAt) === localDay(); }).length : null,
-      callState: checkpoint === "call-answered" ? "active" : "closed"
+      callState: checkpoint === "call-answered" ? "active" : "closed",
+      finalCall: finalCall,
+      callReportExpected: checkpoint === "call-ended",
+      ratingStarsConfirmationExpected: checkpoint === "call-ended" && finalCall && finalCall.endSource === "rating-route"
     };
-    appendEvent({ action: "CALL_OBSERVABILITY_CHECKPOINT", payload: payload, level: "info", source: "background" }, function () {
+    appendEvent({ action: "CALL_OBSERVABILITY_CHECKPOINT", payload: payload, level: "info", source: "background" }, function (checkpointEvent) {
       try {
-        SignalObservationSync.flush(checkpoint).catch(function (error) {
-          record("CALL_OBSERVABILITY_CHECKPOINT_FLUSH_ERROR", { checkpoint: checkpoint, callId: callId || null, error: String(error) }, "warn", "background");
+        var sequence = Number(checkpointEvent && checkpointEvent.sequence) || 0;
+        var flush = sequence > 0 && SignalObservationSync.flushThrough
+          ? SignalObservationSync.flushThrough(sequence, checkpoint)
+          : SignalObservationSync.flush(checkpoint);
+        flush.catch(function (error) {
+          record("CALL_OBSERVABILITY_CHECKPOINT_FLUSH_ERROR", {
+            checkpoint: checkpoint, callId: callId || null, targetSequence: sequence || null,
+            error: String(error)
+          }, "warn", "background");
         });
       } catch (error) {
-        record("CALL_OBSERVABILITY_CHECKPOINT_FLUSH_ERROR", { checkpoint: checkpoint, callId: callId || null, error: String(error) }, "warn", "background");
+        record("CALL_OBSERVABILITY_CHECKPOINT_FLUSH_ERROR", {
+          checkpoint: checkpoint, callId: callId || null,
+          targetSequence: Number(checkpointEvent && checkpointEvent.sequence) || null,
+          error: String(error)
+        }, "warn", "background");
       }
     });
   }
@@ -1781,6 +1827,9 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var call = {
         callId: state.callId, startedAt: state.callStartedAt, endedAt: endedAt,
         modality: modality, status: successfulCompletion ? "completed" : "unfinished",
+        sourceTabId: state.callSourceTabId == null ? null : Number(state.callSourceTabId),
+        transcriptionSessionId: state.hotLoadLease && state.hotLoadLease.transcriptionSessionId || state.transcriptionTabId || null,
+        runtimeVersion: chrome.runtime.getManifest().version,
         observedSeconds: Math.round(observedSeconds * 1000) / 1000,
         platformSeconds: hasPlatformSeconds ? platformSeconds : null,
         billableSecondsAssumed: Math.round(billableSeconds * 1000) / 1000,
@@ -1812,12 +1861,14 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       }), "info", source);
       if (sendResponse) sendResponse({ ok: true, call: call });
     }).then(function (finalState) {
+      if (!closedCallId) return finalState;
       try { SignalCaptionBridge.stop(); } catch (_) {}
       return setCaptionPreviewForActiveCall(false, "call-ended").catch(function () { return null; }).then(function () {
-      checkpointCallObservability("call-ended", closedCallId, finalState);
-      return reconcileOfficialEarningsAfterCall(closedCallId).catch(function(error){
-        record("CALL_END_EARNINGS_RECONCILIATION_ERROR",{callId:closedCallId,error:String(error)},"warn","background");
-      });
+        return reconcileOfficialEarningsAfterCall(closedCallId).catch(function(error) {
+          record("CALL_END_EARNINGS_RECONCILIATION_ERROR", { callId: closedCallId, error: String(error) }, "warn", "background");
+        }).then(function () {
+          checkpointCallObservability("call-ended", closedCallId, finalState);
+        });
       });
     }).then(function () { applyPendingHotloadAfterCall("call-ended").catch(function () {}); });
   }

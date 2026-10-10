@@ -2,8 +2,8 @@
 
 **Repositorio canónico:** https://github.com/SeryMente/signal-interpreter
 **Especificación canónica:** https://github.com/SeryMente/signal-interpreter/blob/main/docs/USER-REQUIREMENT-LIVE-CAPTIONS-OVERLAY-VERBATIM-20261008.md
-**Versión objetivo:** 0.10.27 — Atajos de verificación congruentes y copia fiable.
-**Rama de trabajo:** fix/0.10.27-caption-shortcuts-clipboard.
+**Versión objetivo:** 0.10.28 — Informe persistente de observabilidad al cierre de llamada.
+**Rama de trabajo:** feat/0.10.28-call-end-observability-report.
 **Versión anterior integrada:** 0.10.24 — Overlay legible, desplazable y configurable.
 
 ## Evolución de usabilidad 0.10.24
@@ -33,6 +33,16 @@ La tarjeta compacta se sustituye por un panel de historial desplazable, con movi
 - `Ctrl+Mayús+clic` es el único gesto de búsqueda de términos en Linguee sobre texto ordinario. Esto alinea la conducta con las instrucciones visibles del encabezado.
 - Se declara el permiso `clipboardWrite`, recomendado por Chromium para extensiones que utilizan `document.execCommand('copy')` como fallback cuando `navigator.clipboard.writeText` no está disponible o falla. Chrome puede mostrar la capacidad como permiso de modificación del portapapeles durante la instalación/actualización.
 - La auditoría estática comprueba el permiso, el gesto combinado de Linguee y la ausencia de un manejador que dispare búsquedas con Ctrl+clic solo.
+
+
+## Observabilidad de cierre 0.10.28
+
+- La ruta de calificación emite `CALL_RATING_STARS_CONFIRMED` cuando se observa evidencia de estrellas visibles, con contadores estructurales acotados y sin guardar la puntuación.
+- El evento final conserva vínculo a `callId`, ventana temporal, modalidad, duración observada/plataforma/facturable asumida, fuente de cierre y datos estimados de ingresos.
+- La sincronización drena la secuencia hasta el checkpoint final en batches aceptados o mantiene el objetivo persistido y reintenta.
+- El pipeline produce `observations/latest/latest-call-report.md` y `.json`, además de un índice e historial individual bajo `observations/call-reports/`.
+- El informe combina una línea temporal acotada, señales técnicas permitidas, métricas de rendimiento/media, conteos por dominio y un inventario de evidencias ausentes. Audio, transcripciones crudas, credenciales y el ID bruto no se incluyen en el informe.
+- La integración automatizada se valida con `tools/call-observability-report-test.mjs`; la primera llamada real posterior a instalar esta versión sigue siendo necesaria para validar la detección de estrellas, la telemetría del entorno y la entrega de extremo a extremo.
 
 ## Objetivo
 

@@ -19,6 +19,9 @@ Debe contener evidencia operacional y conocimiento incremental de la superficie 
 - \`manifest.json\`: índice del paquete.
 - \`health/github-build.json\`: estado del build remoto que transforma el inbox.
 
+- `call-reports/index.json` y `call-reports/YYYY-MM-DD/`: informes por llamada con referencia opaca, estado de completitud y cobertura.
+- `latest/latest-call-report.json` y `latest/latest-call-report.md`: último informe estructurado y resumen legible para reanudar desarrollo.
+
 ## 3. Manifest
 
 Schema:
@@ -242,14 +245,44 @@ Un desarrollador debe poder leer:
 
 y reconstruir la evidencia necesaria para orientar un ciclo.
 
-## 12. Evolución
+## 12. Call reports de cierre
+
+Los checkpoints de llamada generan un informe durable sin cambiar el contrato de batch `signal-interpreter-observation-batch/v1`. El informe se compone en GitHub Actions a partir de los eventos previamente saneados; no se publica desde un proceso adicional del equipo local.
+
+Rutas canónicas:
+
+- `call-reports/YYYY-MM-DD/call-<opaque-ref>.json`: informe individual por llamada, sin el ID bruto de Cloud Interpreter en el nombre.
+- `call-reports/index.json`: índice de referencias, rutas, timestamps, completitud y estado de confirmación de estrellas.
+- `latest/latest-call-report.json`: informe JSON más reciente.
+- `latest/latest-call-report.md`: resumen humano del informe más reciente.
+- `manifest.json.calls` y `health/github-build.json`: cantidad de informes, últimos punteros, estado y evidencia de checkpoint.
+
+Schema del informe: `signal-interpreter-call-report/v1`. El índice utiliza `signal-interpreter-call-report-index/v1`.
+
+### Disparadores y completitud
+
+- `CALL_RATING_STARS_CONFIRMED` genera o refresca un informe parcial con evidencia estructural acotada de que las estrellas eran visibles.
+- `CALL_TIMER_STOPPED` y el checkpoint `CALL_OBSERVABILITY_CHECKPOINT` de `call-ended` permiten enriquecer el informe con duración, modalidad, fuente de cierre, conciliación de ingresos, métricas y eventos tardíos.
+- Un informe solo pasa a `complete` si incluye el checkpoint final, el registro final de llamada y un timestamp de fin. En otro caso permanece `partial`, enumerando las señales ausentes.
+- Ver las estrellas no equivale a conocer la puntuación seleccionada ni a demostrar el envío de la valoración. Esos atributos permanecen explícitamente false/no observados si no hay evidencia de ello.
+- El transporte de checkpoint drena varios batches hasta el número de secuencia de cierre. Si hay fallo de red, cuota o límite de batches, persiste el objetivo y reintenta; no marca la captura como entregada antes del ACK.
+
+### Contenido diagnóstico
+
+El informe consolida la hora de inicio/fin, duración observada frente a la medida por plataforma, duración facturable asumida, modalidad e ingresos estimados; conteos por acción/categoría/componente/severidad; errores/advertencias con reason codes; grupos de señales de auto-answer, micrófono, media/captura, transcripción/captions, rendimiento/red, superficie de plataforma, facturación y recuperación del runtime; últimos y máximos de performance; salud agregada de media; y una lista de lagunas de evidencia.
+
+### Privacidad e integridad
+
+El informe no puede contener audio crudo, texto de transcripción, cuerpos de request/response, HTML/CSS/JavaScript fuente completos, credenciales, valor seleccionado de rating ni una afirmación de que el rating se envió. La identidad se representa mediante un hash opaco; los recursos se normalizan y los mensajes de error no se copian en bruto. La auditoría verifica schema, punteros, completitud y las invariantes de privacidad. Los batches siguen siendo la fuente reproducible que permite reconstruir el informe.
+
+## 13. Evolución
 
 Cambios incompatibles deben crear una nueva versión de schema.
 
 Cambios aditivos compatibles pueden permanecer dentro del mismo schema mientras no alteren el significado de campos existentes.
 
 
-## 13. Delta de ciclo
+## 14. Delta de ciclo
 
 El paquete puede consumirse mediante `tools/observability-cycle-delta.mjs`.
 
@@ -265,7 +298,7 @@ El checkpoint de ciclo representa el último estado que ya fue analizado y utili
 
 El estado `uninitialized` es válido cuando todavía no existe un paquete generado por el runtime.
 
-## 14. Transporte y runtime
+## 15. Transporte y runtime
 
 El paquete no depende de un reporter local ni de un proceso residente. Chrome publica los batches en `observations/inbox/` mediante GitHub API. GitHub Actions construye y publica los artefactos derivados.
 
