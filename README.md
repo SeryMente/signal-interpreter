@@ -5,28 +5,19 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
-## Arquitectura de transcripción
+## Arquitectura vigente 0.10.34 — exclusivamente texto nativo
 
-La transcripción durable de Signal Interpreter sigue esta ruta:
+**Live Caption nativo de Chrome → Windows UI Automation → puente Native Messaging → overlay de llamada**
 
-**Solo audio de pestaña → MediaRecorder → Groq Whisper → persistencia por sesión → consola LIVE**
+La extensión no captura audio de pestaña ni micrófono, no transcribe con Groq y no reproduce conversación. Mensajes/configuración antiguos no reactivan esas rutas. Solo se preservan tonos breves preexistentes de los controles de mute; no son audio de llamada.
 
-Además, el overlay de subtítulos de llamada utiliza una ruta híbrida:
+- Carriles **CLIENTE · ENGLISH / LEP · ESPAÑOL** por idioma del texto, no identificación de hablantes. No se inventa traducción si Chrome no produce texto en un idioma.
+- Historial local de sesión, copiar/buscar, posición/tamaño, hotloading y controles de mute/ingresos conservados.
+- El host lee texto oculto únicamente cuando Windows/Chrome aún lo exponen. Si al cerrar la burbuja Chrome destruye su árbol accesible, el panel lo informa; no sustituye la fuente por captura de audio.
+- Observabilidad automática al cierre con retry persistente e informes actualizables por eventos tardíos, sin texto hablado/audio. La descarga manual de diagnóstico contiene únicamente metadatos.
+- No necesita llave Groq. La consola conserva historial/notas anteriores y no es un capturador nuevo.
 
-**Chrome Live Caption → puente nativo mínimo (cuando la burbuja expone texto) → overlay**
-
-y, para completar el idioma que Chrome Live Caption no transcriba, mantiene un preview bilingüe de audio de pestaña en paralelo; si esa opción se desactiva, conserva el fallback cuando el caption nativo queda obsoleto:
-
-**Audio de pestaña → fragmentos de 1.8 s → preview Groq con detección inglés/español → overlay**
-
-El preview es efímero: no se persiste en el timeline durable ni se incorpora al paquete de observabilidad. La preferencia liveCaptionBilingualTabEnabled lo mantiene en paralelo a los captions nativos por defecto. El micrófono del operador está fuera del alcance: ninguna preferencia antigua, estado de mute ni mensaje puede habilitar su captura. Los controles de mute de la llamada se conservan y no equivalen a captura para transcripción.
-
-- **Fuente única:** audio que sale de la pestaña de llamada; puede contener intervenciones de ambos idiomas.
-- **CLIENTE · ENGLISH / LEP · ESPAÑOL:** carriles visuales por idioma solicitados por el operador, no identificación verificada de personas ni captura de micrófono.
-- Solo el audio de pestaña se convierte en WebM y se envía a Groq Speech-to-Text.
-- La extensión usa whisper-large-v3-turbo por defecto y permite seleccionar whisper-large-v3.
-- Las respuestas con segmentos y timestamps se incorporan al timeline y a la persistencia de Signal Interpreter.
-- La API key se guarda en la configuración local de la extensión y se redacta en los diagnósticos exportados.
+La carpeta distribuida contiene **manifest.json en su raíz**, y `PREPARE.cmd` prepara el host para el mismo usuario Windows que Chrome. Preparación, activación y prueba en vivo son compuertas diferentes. La prueba real en PC-8 permanece **NO VERIFICADA** mientras el dispositivo no responda al conector.
 
 ## Funciones Cloud
 
@@ -87,13 +78,13 @@ La versión 0.10.28 corrige la atribución de hablantes: Cloud Interpreter usa e
 
 El overlay conserva su historial desplazable, controles para mover/redimensionar, posición automática y alcance source-only/all-tabs. El historial hablado se retiene en chrome.storage.session, no en almacenamiento local duradero. Consulta docs/versions/0.10.28.md para el alcance, los controles y los límites de validación.
 
-## Corrección de transcripción 0.10.32 — exclusivamente audio entrante
+## Histórico superado: corrección de transcripción 0.10.32 — exclusivamente audio entrante
 
 El relato único del esfuerzo y sus límites está en [el documento canónico](docs/TRANSCRIPTION-SPRINT-CANONICAL.md#13-alcance-vigente--calidad-de-vida-para-interpretación-telefónica). El preview de llamada puede funcionar sin consola ni sesión durable; no solicita ni captura el micrófono. Prepare el host y la clave local con `extension/PREPARE-CAPTIONS.cmd` bajo su cuenta Windows normal, fuera de una llamada, y recargue la extensión. Si Chrome exige invocación, abrir el popup existente en la pestaña de Cloud Interpreter reintenta la captura.
 
 Los informes de cierre exponen `captionDiagnosis` y `exportEvidence`; la publicación del checkpoint no espera a consultas de ingresos. La evidencia de audio sintético/fixtures no sustituye una llamada real en Cloud Interpreter.
 
-## Hotloading del overlay 0.10.33
+## Histórico: hotloading del overlay 0.10.33
 
 La recuperación reinyecta núcleo y overlay en pestañas Cloud existentes y verifica versión/host montado mediante un probe. Reemplazar el runtime desmonta listeners, timers y observadores anteriores; el historial se rehidrata sin duplicar el panel. La recarga coordinada conserva el contexto de llamada y se bloquea si no verifica la pestaña o una vía de recuperación configurada. No recarga la página de llamada ni captura el micrófono.
 

@@ -3,9 +3,9 @@ import json,shutil
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 core=Path('extension/live-caption-core.js').read_text();overlay=Path('extension/live-caption-overlay.js').read_text()
-mock='''window.errors=[];window.events=[];window.invalidRuntime=false;
+mock='''window.forbiddenAudio=0;navigator.mediaDevices.getUserMedia=()=>{window.forbiddenAudio++;throw new Error("Forbidden audio");};window.MediaRecorder=()=>{window.forbiddenAudio++;throw new Error("Forbidden recorder");};window.errors=[];window.events=[];window.invalidRuntime=false;
 function eventBus(){const listeners=new Set();return{listeners,addListener:f=>listeners.add(f),removeListener:f=>listeners.delete(f)}}
-window.chrome={runtime:{getManifest:()=>{if(window.invalidRuntime)throw new Error('Extension context invalidated');return{version:'0.10.33'}},onMessage:eventBus(),sendMessage:(m,cb)=>{if(m.type==='EFFECTIF_EVENT')window.events.push(m.event);if(cb)setTimeout(()=>cb(m.type==='SIGNAL_CAPTION_OVERLAY_HELLO'?{ok:true,enabled:true,scope:'source-only',sourceTabId:7,callActive:true,pageAllowed:true,isSourceTab:true,history:[{text:'Synthetic incoming audio only.',language:'en',source:'cliente',timestamp:Date.now()}]}:{ok:true}),5);return Promise.resolve({ok:true})}},storage:{onChanged:eventBus(),local:{get:(keys,cb)=>setTimeout(()=>cb({effectifConfig:{liveCaptionOverlayEnabled:true}}),20),set:()=>Promise.resolve()}}};
+window.chrome={runtime:{getManifest:()=>{if(window.invalidRuntime)throw new Error('Extension context invalidated');return{version:'0.10.34'}},onMessage:eventBus(),sendMessage:(m,cb)=>{if(m.type==='EFFECTIF_EVENT')window.events.push(m.event);if(cb)setTimeout(()=>cb(m.type==='SIGNAL_CAPTION_OVERLAY_HELLO'?{ok:true,enabled:true,scope:'source-only',sourceTabId:7,callActive:true,pageAllowed:true,isSourceTab:true,history:[{text:'Synthetic incoming audio only.',language:'en',source:'chrome-live-caption',native:true,timestamp:Date.now()}]}:{ok:true}),5);return Promise.resolve({ok:true})}},storage:{onChanged:eventBus(),local:{get:(keys,cb)=>setTimeout(()=>cb({effectifConfig:{liveCaptionOverlayEnabled:true}}),20),set:()=>Promise.resolve()}}};
 window.probe=()=>{let result;for(const f of chrome.runtime.onMessage.listeners)f({type:'SIGNAL_CAPTION_OVERLAY_PROBE'},{},x=>result=x);return result};'''
 with sync_playwright() as p:
  browser=p.chromium.launch(executable_path=shutil.which('chromium'),headless=True,args=['--no-sandbox'])
@@ -16,6 +16,9 @@ with sync_playwright() as p:
   page.evaluate(mock);page.evaluate(core);page.evaluate(overlay)
   page.wait_for_function('window.probe()?.ready===true&&window.probe()?.hostMounted===true&&window.probe()?.rowCount===1')
   assert page.evaluate('document.querySelectorAll("#signal-interpreter-live-caption-overlay").length')==1
+  page.evaluate("for(const f of chrome.runtime.onMessage.listeners)f({type:'SIGNAL_CAPTION_UPDATE',caption:{text:'Rejected synthetic audio transcript',source:'cliente',native:false}},{},()=>{})")
+  assert page.evaluate('window.probe().rowCount')==1
+  assert page.evaluate('window.forbiddenAudio')==0
   page.evaluate(overlay)
   page.wait_for_function('window.probe()?.ready===true&&window.probe()?.hostMounted===true&&window.probe()?.rowCount===1')
   assert page.evaluate('chrome.runtime.onMessage.listeners.size')==1

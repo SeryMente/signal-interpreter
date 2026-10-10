@@ -3,7 +3,7 @@ import fs from "node:fs";
 const manifest = JSON.parse(fs.readFileSync("extension/manifest.json", "utf8"));
 const background = fs.readFileSync("extension/background.js", "utf8");
 const offscreen = fs.readFileSync("extension/offscreen.js", "utf8");
-assert.equal(manifest.version, "0.10.33");
+assert.equal(manifest.version, "0.10.34");
 const scheduler = background.slice(background.indexOf("async function scheduleSafeRuntimeReload"), background.indexOf("async function coordinateUpdateAvailability"));
 assert.ok(scheduler.includes("allowActiveCall"));
 assert.ok(scheduler.includes("HOTLOAD_RELOAD_BLOCKED_ACTIVE_CALL"));
@@ -18,10 +18,8 @@ assert.ok(hotloadScan.includes('chrome.storage.local.get(["effectifState"])'), "
 assert.ok(hotloadScan.includes("hotloadStateReady && isCloudCallUrl(tab.url)"), "mute sync must require successfully loaded persisted state");
 assert.ok(hotloadScan.includes("HOTLOAD_EXISTING_TAB_STATE_READ_ERROR"), "state read errors must be observable");
 
-assert.ok(background.includes("SIGNAL_GET_GROQ_CAPTURE_STATE"));
-assert.ok(background.includes("HOTLOAD_CAPTURE_ACTIVE_WITHOUT_VERIFIED_OFFSCREEN_SESSION"));
-assert.ok(background.includes('String(offscreenCapture.sessionId || "") === expectedSessionId'));
-assert.ok(offscreen.includes('message.type==="SIGNAL_GET_GROQ_CAPTURE_STATE"'));
-assert.ok(offscreen.includes("running:!!running"));
-assert.ok(offscreen.includes("sessionId:captureSessionId"));
+assert.ok(background.includes('captureExpected: false, captureStatus: "native-text-only"'));
+assert.ok(background.includes('SignalCaptionBridge.start(callTabId, state.callId)'));
+assert.ok(offscreen.includes('running:false'));
+assert.equal(/getUserMedia|MediaRecorder|createMediaStreamSource/.test(offscreen),false);
 console.log("HOTLOAD_DURING_ACTIVE_CALL_TEST=PASS");

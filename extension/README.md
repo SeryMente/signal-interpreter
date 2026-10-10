@@ -2,20 +2,19 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
-## Arquitectura de transcripción
+## Arquitectura vigente 0.10.34 — solo texto nativo
 
-La ruta de transcripción ya no utiliza Chrome Live Caption, Windows UI Automation ni un bridge local.
+**Chrome Live Caption → Windows UI Automation → Native Messaging → overlay de la llamada**
 
-El flujo activo es:
+No se captura audio de pestaña ni micrófono, no se usa Groq y no se reproduce la conversación. No se carga el SDK Groq ni la llave local en el service worker. Los controles de mute de la llamada y sus tonos breves permanecen independientes.
 
-**Audio de pestaña + micrófono → MediaRecorder → Groq Whisper → CLIENTE / YO → persistencia por sesión → consola LIVE**
+Los carriles CLIENTE · ENGLISH / LEP · ESPAÑOL representan idioma del texto observado, no identidad del hablante. No se genera traducción ni otro idioma que Chrome no produzca. Historial/copiar/buscar/posición y tamaño se conservan.
 
-- **CLIENTE:** audio de la pestaña activa.
-- **YO:** micrófono físico.
-- Ambos se convierten en audio WebM y se envían a Groq Speech-to-Text.
-- La extensión usa whisper-large-v3-turbo por defecto y permite seleccionar whisper-large-v3.
-- Las respuestas con segmentos y timestamps se incorporan al timeline y a la persistencia de Signal Interpreter.
-- La API key se guarda en la configuración local de la extensión y se redacta en los diagnósticos exportados.
+Si Windows expone texto de la ventana de Live Caption aunque esté oculta, el host lo puede leer. Si Chrome destruye el árbol al cerrar la burbuja, no hay texto accesible; el panel lo indica y no sustituye la fuente por audio.
+
+Observabilidad automática al cierre, con retry persistente y diagnóstico de texto nativo/estado del puente. Informes y descarga manual de diagnóstico excluyen audio y texto hablado.
+
+Documento canónico único: `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`, sección 15, en el repositorio y en el paquete distribuido.
 
 ## Funciones Cloud
 
@@ -23,9 +22,9 @@ Auto-Answer, OPI/VRI, Online/Offline, llamadas perdidas, cronómetros, ingresos,
 
 ## Carga local
 
-En chrome://extensions activa Developer mode y usa Load unpacked sobre la carpeta extension/.
+En el checkout del repositorio se selecciona extension/. En el ZIP distribuido se selecciona su raíz, que contiene manifest.json. No seleccionar la carpeta padre ni native/.
 
-No es necesario ejecutar ningún proceso de bridge local.
+La fuente nativa exige preparar el host para el mismo usuario Windows que Chrome: PREPARE.cmd en el paquete verifica identidad, hashes, registro HKCU y protocolo. No reinicia ni navega Chrome. Preparar no equivale a activar ni verificar una llamada real; la prueba en PC-8 continúa NO VERIFICADA si el dispositivo no responde.
 
 ## Inicio de sesión automático de Cloud Interpreter (0.10.16)
 
@@ -35,12 +34,12 @@ En Más controles → Acceso a Cloud Interpreter, guarda el usuario o correo. Se
 
 ## Pruebas
 
-La prueba de transcripción está en tools/groq-transcriber-tests.mjs y valida endpoint, modelo, parámetros de Groq, segmentos y redacción de credenciales.
+Pruebas vigentes: tools/call-caption-runtime-test.mjs, live-caption-bridge-tests.mjs, live-caption-offscreen-tests.mjs, call-export-runtime-test.mjs, call-observability-report-test.mjs y auditorías. groq-transcriber-tests.mjs conserva la prueba unitaria histórica del módulo, que no se carga ni usa en el runtime vigente.
 
 
 ## Control de Auto-Answer por perfil y disponibilidad
 
-**Versión de extensión: 0.10.15**
+**Versión vigente: 0.10.34; controles de Auto-Answer conservados.**
 
 En cada ciclo de modificación de la extensión, este README debe leerse antes de editar y la versión de `extension/manifest.json` debe incrementarse.
 

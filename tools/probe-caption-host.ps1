@@ -3,7 +3,9 @@ param([Parameter(Mandatory=$true)][string]$ExtensionRoot)
 $ErrorActionPreference='Stop'
 $exe=Join-Path $ExtensionRoot 'native\SignalInterpreter.CaptionHost.exe'
 if(-not(Test-Path -LiteralPath $exe)){throw 'Native executable missing.'}
-if((Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash -ne '7526667D537E65840D3DDB68F25DCC7271C11CD5639B25C834ABEA15E4F56DB6'){throw 'Native executable hash mismatch.'}
+$registration=Get-Content -Raw -LiteralPath (Join-Path $ExtensionRoot 'native\register-caption-host.ps1')
+$expected=[regex]::Match($registration,'ExpectedSha256\s*=\s*"([A-Fa-f0-9]{64})"').Groups[1].Value
+if($expected.Length -ne 64 -or (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash -ne $expected){throw 'Native executable hash mismatch.'}
 $start=New-Object Diagnostics.ProcessStartInfo
 $start.FileName=$exe
 $start.UseShellExecute=$false

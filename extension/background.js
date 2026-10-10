@@ -1,5 +1,4 @@
-try{importScripts("groq-secret.local.js");}catch(_){/* Se genera localmente; no se versiona. */}
-importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","groq-transcriber.js","platform-screenshot.js","auth-bootstrap.js");
+importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js");
 (function () {
   "use strict";
 
@@ -24,7 +23,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     transcriptionEnabled: true,
     liveCaptionOverlayEnabled: true,
     liveCaptionInterpreterEnabled: false,
-    liveCaptionBilingualTabEnabled: true,
+    liveCaptionBilingualTabEnabled: false,
     instantPreviewEnabled: false,
     audioSafetyMode: true,
     opiRatePerMinute: 0.20,
@@ -88,45 +87,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     } catch (_) {}
   }
 
-  async function startYoutubeCaptionPreview(tabId, streamId) {
-    var id = validCaptionTabId(tabId);
-    if (id == null || !streamId) return { ok: false, error: "No se recibió una pestaña o captura válida." };
-    var tab = await chrome.tabs.get(id);
-    if (!isCaptionTestVideoUrl(tab && tab.url)) {
-      return { ok: false, error: "La captura de audio solo está autorizada para el video de prueba de Signal Interpreter." };
-    }
-    var stored = await chrome.storage.local.get(["effectifConfig", "effectifState"]);
-    var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
-    if (config.liveCaptionOverlayEnabled === false) return { ok: false, error: "Activa Subtítulos en vivo en la configuración." };
-    if (hasActiveCall(state)) return { ok: false, error: "Termina la llamada de Cloud Interpreter antes de capturar el video de prueba." };
-    if (!(await SignalGroqTranscriber.ready())) return { ok: false, error: "Falta configurar la llave de Groq en esta máquina." };
-
-    var existing = await readYoutubeCaptionPreviewState();
-    if (existing.active === true) {
-      if (Number(existing.tabId) === id) return { ok: true, active: true, alreadyActive: true };
-      return { ok: false, error: "Ya hay una captura de video activa en otra pestaña." };
-    }
-    await ensureOffscreen();
-    var capture = await chrome.runtime.sendMessage({
-      target: "offscreen", type: "SIGNAL_GET_GROQ_CAPTURE_STATE"
-    }).catch(function () { return null; });
-    if (capture && capture.running === true) {
-      return { ok: false, error: "Ya existe una captura de audio activa. Cierra esa captura antes de iniciar la del video." };
-    }
-    var sessionId = "youtube-preview-" + id + "-" + Date.now();
-    await setYoutubeCaptionPreviewState({ active: true, tabId: id, sessionId: sessionId, startedAt: Date.now() });
-    var result = await chrome.runtime.sendMessage({
-      target: "offscreen", type: "SIGNAL_START_YOUTUBE_CAPTION_PREVIEW",
-      streamId: String(streamId), tabId: id, sessionId: sessionId
-    }).catch(function () { return null; });
-    if (!result || result.ok !== true) {
-      await setYoutubeCaptionPreviewState({ active: false, tabId: null, sessionId: null, startedAt: null });
-      return { ok: false, error: String(result && result.error || "No se pudo iniciar la captura aislada del video.") };
-    }
-    await notifyYoutubeCaptionPreview(id, true, "started");
-    record("SIGNAL_YOUTUBE_CAPTION_PREVIEW_STARTED", { tabId: id, sessionId: sessionId, media: "tab-audio-only" }, "info", "caption");
-    return { ok: true, active: true, tabId: id };
+  async function startYoutubeCaptionPreview() {
+    return { ok: false, reasonCode: "native-text-only", error: "Solo se muestra el texto nativo de Chrome; la captura de audio está deshabilitada." };
   }
 
   async function stopYoutubeCaptionPreview(tabId, reason) {
@@ -183,7 +145,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       current = {
         callId: current.callId == null ? null : String(current.callId),
         sourceTabId: validCaptionTabId(current.sourceTabId),
-        rows: Array.isArray(current.rows) ? current.rows.slice(-CAPTION_HISTORY_LIMIT) : [],
+        rows: Array.isArray(current.rows) ? current.rows.filter(function (row) { return row.source === "chrome-live-caption"; }).slice(-CAPTION_HISTORY_LIMIT) : [],
         ended: current.ended === true,
         updatedAt: Number(current.updatedAt) || 0
       };
@@ -206,6 +168,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         var stored = await chrome.storage.session.get([CAPTION_SESSION_KEY]);
         if (stored && stored[CAPTION_SESSION_KEY]) {
           captionSessionMemory = stored[CAPTION_SESSION_KEY];
+          captionSessionMemory.rows = (captionSessionMemory.rows || []).filter(function (row) { return row.source === "chrome-live-caption"; });
           return captionSessionMemory;
         }
       }
@@ -318,10 +281,13 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   }
 
   async function publishCaptionToOverlay(caption, sourceTabId) {
-    if (!caption || !caption.text) return;
+    if (!caption || !caption.text) return {forwarded:false};
+    if (caption.source !== "chrome-live-caption" || caption.native !== true) {
+      record("SIGNAL_CAPTION_NON_NATIVE_BLOCKED", { reasonCode: "native-text-only", captureScope: "native-text-only" }, "warn", "caption"); return {forwarded:false};
+    }
     var stored = await chrome.storage.local.get(["effectifConfig"]);
     var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-    if (config.liveCaptionOverlayEnabled === false) return;
+    if (config.liveCaptionOverlayEnabled === false) return {forwarded:false};
     var session = await appendCaptionOverlayHistory(caption, sourceTabId);
     await dispatchCaptionOverlayMessage("SIGNAL_CAPTION_UPDATE", {
       caption: Object.assign({}, caption, {
@@ -329,6 +295,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         timestamp: Date.now()
       })
     }, session.sourceTabId);
+    return {forwarded:true};
   }
 
   async function getCaptionOverlayContext(senderTab) {
@@ -378,134 +345,42 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       routeEvidenceApplied: routeEvidenceApplied,
       sessionEnded: !youtubeTarget && session.ended === true,
       pageAllowed: pageAllowed,
-      history: pageAllowed && !youtubeTarget ? session.rows.slice(-CAPTION_HISTORY_LIMIT) : []
+      history: pageAllowed && !youtubeTarget ? session.rows.slice(-CAPTION_HISTORY_LIMIT) : [],
+      nativeStatus: SignalCaptionBridge.getStatus ? SignalCaptionBridge.getStatus() : null,
+      captionMode: "native-text-only"
     };
   }
   var captionControlQueue = Promise.resolve();
-  var captionCaptureBlock = null;
   var captionDurableReservationUntil = 0;
-  function captionMicrophoneAllowed() {
-    return false; // Current scope: browser tab output only, regardless of stale config/mute state.
-  }
+  var captionNativeCleanupDone = false;
+  function captionMicrophoneAllowed() { return false; }
   function setCaptionPreviewForActiveCall(tabEnabled, reason, allowInterpreterPreview) {
     var run = captionControlQueue.then(function () { return setCaptionPreviewForActiveCallInternal(tabEnabled, reason, allowInterpreterPreview); });
     captionControlQueue = run.catch(function () {}); return run;
   }
-  async function setCaptionPreviewForActiveCallInternal(tabEnabled, reason, allowInterpreterPreview) {
-    var trigger = String(reason || "native-status").slice(0, 80);
-    try {
-      var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
-      var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
-      var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-      var enabled = config.liveCaptionOverlayEnabled !== false && hasActiveCall(state);
-      var effectiveTabEnabled = !!tabEnabled || config.liveCaptionBilingualTabEnabled !== false;
-      if (!enabled) {
-        captionCaptureBlock = null;
-        captionDurableReservationUntil = 0;
-        try { await chrome.runtime.sendMessage({ target: "offscreen", type: "SIGNAL_STOP_CALL_CAPTION_PREVIEW" }); } catch (_) {}
-        try {
-          await chrome.runtime.sendMessage({
-            target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: false, reason: trigger
-          });
-        } catch (_) {}
-        if (config.liveCaptionOverlayEnabled === false || !hasActiveCall(state)) {
-          try { SignalCaptionBridge.stop(); } catch (_) {}
-        }
-        return { ok: true, enabled: false, reason: trigger };
-      }
-      await ensureOffscreen();
-      var captureStatus = await chrome.runtime.sendMessage({
-        target: "offscreen", type: "SIGNAL_GET_GROQ_CAPTURE_STATE"
-      }).catch(function () { return null; });
-      if (!captureStatus || captureStatus.running !== true) {
-        if (Date.now() < captionDurableReservationUntil) {
-          return { ok: true, skipped: true, reason: "durable-capture-starting" };
-        }
-        if (!effectiveTabEnabled) {
-          await chrome.runtime.sendMessage({ target: "offscreen", type: "SIGNAL_STOP_CALL_CAPTION_PREVIEW" }).catch(function () {});
-          return { ok: true, enabled: false, reason: "native-caption-fresh" };
-        }
-        var scope = String(state.callId) + ":" + String(state.callSourceTabId);
-        if (captionCaptureBlock && captionCaptureBlock.scope === scope && Date.now() - captionCaptureBlock.at < 30000)
-          return { ok: false, reasonCode: captionCaptureBlock.reasonCode };
-        var failure = null, streamId = null;
-        var reused = captureStatus && captureStatus.callPreviewActive === true &&
-          captureStatus.callPreviewCallId === state.callId && Number(captureStatus.callPreviewTabId) === Number(state.callSourceTabId);
-        if (!state.callSourceTabId) failure = "call-tab-unavailable";
-        else if (!(await SignalGroqTranscriber.ready())) failure = "missing-api-key";
-        else if (!reused) {
-          try { streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: Number(state.callSourceTabId) }); }
-          catch (error) { failure = /invoked|activeTab|permission|gesture/i.test(String(error && error.message || error)) ?
-            "tab-capture-user-activation-required" : "tab-capture-unavailable"; }
-        }
-        var latest = (await chrome.storage.local.get(["effectifState", "effectifConfig"]));
-        var latestState = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), latest.effectifState || {})));
-        if (!hasActiveCall(latestState) || latestState.callId !== state.callId || latestState.callSourceTabId !== state.callSourceTabId ||
-            (latest.effectifConfig || {}).liveCaptionOverlayEnabled === false) return { ok: false, reasonCode: "call-context-changed" };
-        var previewResponse = failure ? null : await chrome.runtime.sendMessage({
-          target: "offscreen", type: "SIGNAL_START_CALL_CAPTION_PREVIEW", streamId: streamId,
-          callId: state.callId, tabId: Number(state.callSourceTabId),
-          micEnabled: captionMicrophoneAllowed(latestState, config, allowInterpreterPreview)
-        });
-        failure = failure || (!(previewResponse && previewResponse.ok) && (previewResponse && previewResponse.reasonCode || "preview-start-failed"));
-        if (failure) {
-          captionCaptureBlock = { scope: scope, at: Date.now(), reasonCode: failure };
-          record("SIGNAL_CAPTION_PREVIEW_UNAVAILABLE", { callId: state.callId, tabId: state.callSourceTabId,
-            reasonCode: failure, trigger: trigger, captureStatus: "not-running", requiresUserActivation: failure === "tab-capture-user-activation-required" }, "warn", "caption");
-          return { ok: false, reasonCode: failure };
-        }
-        captionCaptureBlock = null;
-        record("SIGNAL_CALL_CAPTION_PREVIEW_STARTED", { callId: state.callId, tabId: state.callSourceTabId,
-          trigger: trigger, tabAudio: true, microphone: false, captureScope: "tab-only", reused: !!previewResponse.reused,
-          durable: false, intervalMs: 1800 }, "info", "caption");
-        return previewResponse;
-      }
-      await chrome.runtime.sendMessage({ target: "offscreen", type: "SIGNAL_STOP_CALL_CAPTION_PREVIEW" }).catch(function () {});
-      if (!state.callSourceTabId) {
-        record("SIGNAL_CAPTION_PREVIEW_UNAVAILABLE", {
-          callId: state.callId || null, reasonCode: "call-tab-unavailable", trigger: trigger
-        }, "warn", "caption");
-        await chrome.runtime.sendMessage({
-          target: "offscreen", type: "SIGNAL_SET_CAPTION_PREVIEW", enabled: false, reason: "call-tab-unavailable"
-        }).catch(function () {});
-        return { ok: false, error: "No hay pestaña de llamada para Live Caption." };
-      }
-      var response = await chrome.runtime.sendMessage({
-        target: "offscreen",
-        type: "SIGNAL_SET_CAPTION_PREVIEW",
-        enabled: true,
-        tabEnabled: effectiveTabEnabled,
-        micEnabled: false,
-        reason: trigger
-      });
-      if (response && response.ok) {
-        record("SIGNAL_CAPTION_PREVIEW_MODE_CHANGED", {
-          callId: state.callId || null,
-          sourceMode: config.liveCaptionBilingualTabEnabled !== false ? "bilingual-groq-parallel" : (effectiveTabEnabled ? "native-stale-groq-fallback" : "native-caption-fresh"),
-          tabPreviewEnabled: effectiveTabEnabled,
-          micPreviewEnabled: false, captureScope: "tab-only",
-          trigger: trigger
-        }, "info", "caption");
-      } else {
-        record("SIGNAL_CAPTION_PREVIEW_UNAVAILABLE", {
-          callId: state.callId || null,
-          reasonCode: "audio-capture-not-running",
-          trigger: trigger
-        }, "warn", "caption");
-      }
-      return response || { ok: false };
-    } catch (error) {
-      record("SIGNAL_CAPTION_PREVIEW_CONTROL_ERROR", {
-        trigger: trigger,
-        errorType: String(error && error.name || "Error").slice(0, 80)
-      }, "warn", "caption");
-      return { ok: false, error: String(error && error.name || "unknown") };
+  async function setCaptionPreviewForActiveCallInternal(tabEnabled, reason) {
+    // Native text is the only caption source. Never acquire tab audio, decode audio or invoke Groq.
+    var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    var enabled = (stored.effectifConfig || {}).liveCaptionOverlayEnabled !== false && hasActiveCall(state);
+    if (!captionNativeCleanupDone) {
+      if (chrome.offscreen && typeof chrome.offscreen.hasDocument === "function" && await chrome.offscreen.hasDocument()) await chrome.offscreen.closeDocument();
+      captionNativeCleanupDone = true;
+      record("SIGNAL_CAPTION_NATIVE_ONLY_AUDIO_ISOLATED", { callId: state.callId || null, tabId: state.callSourceTabId || null,
+        captureScope: "native-text-only", tabAudio: false, microphone: false, audioReplay: false, trigger: String(reason || "startup").slice(0,80) }, "info", "caption");
     }
+    if (!enabled) { SignalCaptionBridge.stop(); return { ok: true, enabled: false, captionMode: "native-text-only" }; }
+    var context = SignalCaptionBridge.getContext();
+    if (context.callId !== state.callId || Number(context.tabId) !== Number(state.callSourceTabId)) SignalCaptionBridge.start(state.callSourceTabId, state.callId);
+    return { ok: true, enabled: true, captionMode: "native-text-only", audioCaptured: false, audioReplayed: false };
   }
 
   try {
     SignalCaptionBridge.onCaption = function (caption, sourceTabId) {
-      publishCaptionToOverlay(caption, sourceTabId).catch(function (error) {
+      publishCaptionToOverlay(caption, sourceTabId).then(function (result) {
+        if (!result || !result.forwarded) return;
+        record("SIGNAL_CAPTION_NATIVE_TEXT_FORWARDED", {callId:SignalCaptionBridge.getContext().callId,tabId:sourceTabId,captureScope:"native-text-only",characterCount:String(caption.text || "").length}, "info", "caption");
+      }).catch(function (error) {
         record("SIGNAL_CAPTION_OVERLAY_PUBLISH_ERROR", { errorType: String(error && error.name || "Error").slice(0, 80) }, "warn", "caption");
       });
     };
@@ -584,7 +459,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     if (activeCall) {
       var reloadTab = await chrome.tabs.get(Number(state.callSourceTabId)).catch(function () { return null; });
       var blockReason = !reloadTab || !isAuthorizedCloudUrl(reloadTab.url) || !isCloudCallUrl(reloadTab.url) ? "active-call-tab-not-verified" : null;
-      if (!blockReason && !SignalCaptionBridge.isFresh(4500) && !(await SignalGroqTranscriber.ready())) blockReason = "caption-recovery-source-not-ready";
+      if (!blockReason && !SignalCaptionBridge.isFresh(4500)) blockReason = "caption-recovery-source-not-ready";
       if (blockReason) {
         state.hotLoadUpdate = Object.assign({}, state.hotLoadUpdate, { phase: "blocked-active-call", reasonCode: blockReason, deferredForCallId: state.callId });
         await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
@@ -989,50 +864,11 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       try { SignalCaptionBridge.stop(); } catch (_) {}
       setCaptionPreviewForActiveCall(false, "runtime-boundary-disabled").catch(function () {});
     }
-    var expectedCapture = !!(state.hotLoadLease && state.hotLoadLease.captureExpected && state.hotLoadLease.transcriptionSessionId);
-    if (!expectedCapture || !Number.isFinite(callTabId)) return;
-    try {
-      await ensureOffscreen();
-      var offscreenCapture = await chrome.runtime.sendMessage({
-        target: "offscreen", type: "SIGNAL_GET_GROQ_CAPTURE_STATE"
-      }).catch(function () { return null; });
-      var expectedSessionId = String(state.hotLoadLease.transcriptionSessionId || "");
-      if (offscreenCapture && offscreenCapture.ok === true && offscreenCapture.running === true &&
-          String(offscreenCapture.sessionId || "") === expectedSessionId &&
-          offscreenCapture.tabAudio === true && offscreenCapture.microphone === false) {
-        record("HOTLOAD_CAPTURE_REUSE_EXISTING", {
-          callId: state.callId, tabId: callTabId, sessionId: expectedSessionId,
-          status: "offscreen-session-verified"
-        }, "info", "runtime");
-        return;
-      }
-      if (offscreenCapture && offscreenCapture.running === true) {
-        record("HOTLOAD_CAPTURE_SESSION_MISMATCH", {
-          callId: state.callId, tabId: callTabId, expectedSessionId: expectedSessionId || null,
-          actualSessionId: offscreenCapture.sessionId || null, policy: "reacquire-expected-session"
-        }, "warn", "runtime");
-      }
-      var captured = await chrome.tabCapture.getCapturedTabs();
-      var existing = captured.find(function (entry) { return Number(entry.tabId) === callTabId && entry.status === "active"; });
-      if (existing) {
-        record("HOTLOAD_CAPTURE_ACTIVE_WITHOUT_VERIFIED_OFFSCREEN_SESSION", {
-          callId: state.callId, tabId: callTabId, status: existing.status,
-          expectedSessionId: expectedSessionId || null,
-          policy: "do-not-assume-transcription-survived-runtime-boundary"
-        }, "warn", "runtime");
-      }
-      var streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: callTabId });
-      record("HOTLOAD_CAPTURE_STREAM_REACQUIRE_OK", { callId: state.callId, tabId: callTabId }, "info", "runtime");
-      var recoveredCapture = await startGroqCapture(state.hotLoadLease.transcriptionSessionId, streamId);
-      if (!recoveredCapture || recoveredCapture.ok !== true) throw new Error("capture-recovery-not-confirmed");
-      record("HOTLOAD_CAPTURE_RECOVERY_COMPLETED", { callId: state.callId, tabId: callTabId, sessionId: state.hotLoadLease.transcriptionSessionId }, "info", "runtime");
-    } catch (error) {
-      await updateGroqCaptureState({ status: "degraded", tabAudio: false, microphone: false, error: "runtime-boundary: " + String(error) }).catch(function () {});
-      record("HOTLOAD_CAPTURE_RECOVERY_ERROR", {
-        callId: state.callId, tabId: callTabId, sessionId: state.hotLoadLease.transcriptionSessionId,
-        error: String(error), policy: "never-create-second-call-or-navigate"
-      }, "error", "runtime");
-    }
+    state.hotLoadLease = Object.assign({}, state.hotLoadLease || {}, { captureExpected: false, captureStatus: "native-text-only" });
+    state.groqCapture = Object.assign({}, state.groqCapture || {}, { status: "disabled", tabAudio: false, microphone: false, captureScope: "native-text-only" });
+    state.transcriptionActive = false;
+    state.transcriptionStatus = {phase:"idle",connected:false,engine:"chrome-live-caption"};
+    await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
   }
 
   function uid() { return crypto.randomUUID(); }
@@ -1424,8 +1260,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     if(!offscreenCreation){
       offscreenCreation=chrome.offscreen.createDocument({
         url:"offscreen.html",
-        reasons:["AUDIO_PLAYBACK","USER_MEDIA"],
-        justification:"Capturar audio de la pestaña y del micrófono en segundo plano para enviarlo a Groq Whisper y producir transcripción."
+        reasons:["AUDIO_PLAYBACK"],
+        justification:"Reproducir exclusivamente los tonos breves de control de mute; nunca audio de la conversación."
       }).finally(function(){offscreenCreation=null});
     }
     await offscreenCreation;
@@ -2652,59 +2488,9 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     if(state.hotLoadLease&&state.hotLoadLease.phase==="active-call") state.hotLoadLease=Object.assign({},state.hotLoadLease,{captureExpected:state.groqCapture.status!=="idle"&&state.groqCapture.status!=="stopped",captureStatus:state.groqCapture.status,transcriptionSessionId:signalActiveSessionId||state.hotLoadLease.transcriptionSessionId||null,lastHeartbeatAt:iso()});
     await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
   }
-  async function startGroqCapture(sessionId,audioStreamId,sendResponse){
-    try{
-      var data=await loadSignalSessions(),session=data.sessions.find(function(s){return s.id===sessionId||s.id===data.activeSessionId});var stored=await chrome.storage.local.get(["effectifConfig","effectifState"]),config=Object.assign({},DEFAULT_CONFIG,stored.effectifConfig||{}),state=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
-      if(!session)throw new Error("Sesión no encontrada");if(!(await SignalGroqTranscriber.ready()))throw new Error("Configura la Groq API Key una sola vez en este equipo.");if(!audioStreamId)throw new Error("No se recibió el audio de la pestaña.");
-      if(hasActiveCall(state)){
-        state.hotLoadLease=Object.assign({},state.hotLoadLease||baseState().hotLoadLease,{schema:HOTLOAD_SCHEMA,phase:"active-call",leaseId:state.hotLoadLease&&state.hotLoadLease.leaseId||uid(),callId:state.callId,callStartedAt:state.callStartedAt,callSourceTabId:state.callSourceTabId,modality:state.callModality,transcriptionSessionId:session.id,captureExpected:true,captureStatus:"starting",runtimeVersion:chrome.runtime.getManifest().version,acquiredAt:state.hotLoadLease&&state.hotLoadLease.acquiredAt||iso(),lastHeartbeatAt:iso(),closedAt:null});
-        await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
-        record("HOTLOAD_CAPTURE_LEASE_PREPARED",{callId:state.callId,tabId:state.callSourceTabId||null,sessionId:session.id,runtimeVersion:chrome.runtime.getManifest().version}, "info","runtime");
-      }
-      await ensureOffscreen();var response=await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_START_GROQ_CAPTURE",streamId:audioStreamId,sessionId:session.id,muted:!!state.microphoneMuted,captionPreview:cachedConfig.liveCaptionOverlayEnabled !== false && hasActiveCall(state),tabId:state.callSourceTabId||session.tabId||session.sourceTabId||0});if(!response||!response.ok)throw new Error(response&&response.error||"No se pudo iniciar la captura de audio.");
-      signalActiveSessionId=session.id;
-
-      try {
-        if (cachedConfig.liveCaptionOverlayEnabled !== false && hasActiveCall(state)) {
-          SignalCaptionBridge.start(state.callSourceTabId, state.callId);
-          setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "capture-start", false).catch(function () {});
-        }
-      } catch (_) {}
-      state.microphoneMuteStatus="pending";
-      await updateGroqCaptureState({status:"connected",tabAudio:true,microphone:false,captureScope:"tab-only",microphoneMuted:!!state.microphoneMuted,startedAt:iso(),lastChunkAt:null,error:null});
-      if(hasActiveCall(state)){
-        var callMuteResult=await setMainClientMicrophoneMuted(state.callSourceTabId,!!state.microphoneMuted,"capture-start");
-        if(callMuteResult&&callMuteResult.verified===true&&!!callMuteResult.muted===!!state.microphoneMuted){
-          state.microphoneOutputMuted=!!state.microphoneMuted;
-          state.microphoneOutputStatus="applied";
-          state.microphoneOutputTrackCount=Number(callMuteResult.trackCount||0);
-          state.microphoneOutputSenderCount=Number(callMuteResult.senderCount||0);
-          state.microphoneMuteStatus="applied";
-          await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
-        }else{
-          state.microphoneMuted=true;
-          state.microphoneMuteStatus="error";
-          state.microphoneOutputMuted=true;
-          state.microphoneOutputStatus="error";
-          state.microphoneOutputTrackCount=Number(callMuteResult&&callMuteResult.trackCount||0);
-          state.microphoneOutputSenderCount=Number(callMuteResult&&callMuteResult.senderCount||0);
-          await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
-          record("SIGNAL_GROQ_CAPTURE_MIC_OUTPUT_VERIFY_ERROR",{
-            sessionId:session.id,callId:state.callId||null,
-            error:callMuteResult&&callMuteResult.error||"verification-failed",
-            policy:"fail-closed"
-          },"error","microphone");
-        }
-      }else{
-        state.microphoneMuteStatus="applied";
-        await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
-      }
-      if(hasActiveCall(state) && cachedConfig.liveCaptionOverlayEnabled !== false) {
-        setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "microphone-state-applied").catch(function () {});
-      }
-      recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_STARTED",{sessionId:session.id,sourceTabId:session.sourceTabId,captureScope:"tab-only",microphone:false,model:config.groqModel||GROQ_MODEL});broadcastSignalEvent({type:"signal.groq.status",sessionId:session.id,status:"connected",tabAudio:true,microphone:false,captureScope:"tab-only",timestamp:iso()});
-      if(sendResponse)sendResponse({ok:true,session:signalSessionCopy(session,true)});return{ok:true};
-    }catch(error){await updateGroqCaptureState({status:"error",error:String(error)}).catch(function(){});recordSignalDiagnostic("SIGNAL_GROQ_CAPTURE_ERROR",{sessionId:sessionId,error:String(error)},"error");if(sendResponse)sendResponse({ok:false,error:String(error)});return{ok:false,error:String(error)}}
+  async function startGroqCapture(sessionId,audioStreamId,sendResponse) {
+    var result = { ok: false, reasonCode: "native-text-only", error: "Esta versión usa solo Live Caption de Chrome. No captura ni reproduce audio de la llamada." };
+    if (sendResponse) sendResponse(result); return result;
   }
   async function setMainClientMicrophoneMuted(tabId, muted, source) {
     var targetTabId=Number(tabId);
@@ -2913,142 +2699,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     }).catch(function () {});
   }
 
-  async function processGroqCaptionPreviewChunk(message) {
-    if (!message || !message.base64) return;
-    if (message.source !== "cliente") {
-      recordCaptionPreviewFailure("yo", "audio-source-outside-tab-only-scope"); return;
-    }
-    var source = message.source === "yo" ? "yo" : "cliente";
-    var youtubePreview = message.youtubePreview === true;
-    var callPreview = message.callPreview === true;
-    var encoded = String(message.base64 || "");
-    if (encoded.length > 900000) {
-      recordCaptionPreviewFailure(source, "chunk-too-large");
-      return;
-    }
-    var data = null, id = null, session = null;
-    if (!youtubePreview && !callPreview) {
-      data = await loadSignalSessions();
-      id = message.sessionId || data.activeSessionId;
-      session = data.sessions.find(function (item) { return item.id === id; });
-      if (!session) return;
-    }
-    var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
-    var currentState = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
-    var currentConfig = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-    if (currentConfig.liveCaptionOverlayEnabled === false) return;
-    var youtubeState = null, youtubeTab = null;
-    if (youtubePreview) {
-      if (source !== "cliente" || hasActiveCall(currentState)) return;
-      youtubeState = await readYoutubeCaptionPreviewState();
-      if (youtubeState.active !== true || String(youtubeState.sessionId) !== String(message.sessionId) ||
-          Number(youtubeState.tabId) !== Number(message.tabId)) return;
-      youtubeTab = await chrome.tabs.get(Number(message.tabId)).catch(function () { return null; });
-      if (!youtubeTab || !isCaptionTestVideoUrl(youtubeTab.url)) return;
-    } else {
-      if (!hasActiveCall(currentState)) return;
-      if (callPreview && (message.callId !== currentState.callId || message.sessionId !== "caption:" + currentState.callId)) return;
-      if (callPreview) id = message.sessionId;
-      if (String(currentState.callSourceTabId) !== String(message.tabId || currentState.callSourceTabId)) return;
-      var leasedSessionId = currentState.hotLoadLease && currentState.hotLoadLease.transcriptionSessionId;
-      if (!callPreview && leasedSessionId && String(leasedSessionId) !== String(id)) return;
-      if (source === "yo" && (
-        currentState.microphoneMuted === true ||
-        currentState.microphoneMuteStatus !== "applied" ||
-        currentState.microphoneOutputStatus === "error" ||
-        currentState.microphoneOutputMuted === true ||
-        currentConfig.liveCaptionInterpreterEnabled === false
-      )) return;
-      if (source !== "yo" && currentConfig.liveCaptionBilingualTabEnabled === false && SignalCaptionBridge.isFresh(4500)) return;
-    }
-    if (!(await SignalGroqTranscriber.ready())) {
-      recordCaptionPreviewFailure(source, "missing-api-key");
-      return;
-    }
-
-    var raw = atob(encoded);
-    var bytes = new Uint8Array(raw.length);
-    for (var bi = 0; bi < raw.length; bi += 1) bytes[bi] = raw.charCodeAt(bi);
-    var blob = new Blob([bytes], { type: "audio/webm" });
-    var sequence = Number(message.sequence || 0);
-    var result = await SignalGroqTranscriber.transcribe(blob, {
-      model: currentConfig.groqModel || GROQ_MODEL,
-      language: "",
-      filename: "signal-caption-preview-" + source + "-" + (sequence || Date.now()) + ".webm",
-      prompt: "Transcripción breve para interpretación médica. Detecta automáticamente inglés o español. Conserva nombres propios y términos clínicos.",
-      timeoutMs: 12000
-    });
-    if (!result.ok) {
-      recordCaptionPreviewFailure(source,
-        result.httpStatus ? "groq-http-error" : (String(result.error || "").indexOf("Tiempo agotado") >= 0 ? "groq-timeout" : "groq-request-failed"),
-        result.httpStatus);
-      return;
-    }
-    var text = String(result.text || "").trim();
-    if (!youtubePreview) record("SIGNAL_CAPTION_PREVIEW_RESULT", {
-      callId: currentState.callId, tabId: currentState.callSourceTabId, source: source,
-      sequence: sequence, latencyMs: result.latencyMs || null, bytes: blob.size,
-      hasText: !!text, ephemeral: true
-    }, "info", "caption");
-    if (!text) return;
-
-    if (youtubePreview) {
-      var latestYoutubeState = await readYoutubeCaptionPreviewState();
-      var latestYoutubeTab = await chrome.tabs.get(Number(message.tabId)).catch(function () { return null; });
-      var latestLocal = await chrome.storage.local.get(["effectifConfig", "effectifState"]);
-      var latestYoutubeCallState = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), latestLocal.effectifState || {})));
-      var latestYoutubeConfig = Object.assign({}, DEFAULT_CONFIG, latestLocal.effectifConfig || {});
-      if (latestYoutubeState.active !== true || String(latestYoutubeState.sessionId) !== String(message.sessionId) ||
-          Number(latestYoutubeState.tabId) !== Number(message.tabId) ||
-          !latestYoutubeTab || !isCaptionTestVideoUrl(latestYoutubeTab.url) ||
-          hasActiveCall(latestYoutubeCallState) || latestYoutubeConfig.liveCaptionOverlayEnabled === false) return;
-      var youtubeLanguage = SignalCaptionCore.resolveLanguage(result.language, text);
-      try {
-        await publishCaptionToOverlay({
-          text: text.slice(0, 1500),
-          language: youtubeLanguage,
-          source: youtubeLanguage === "es" ? "yo" : "cliente",
-          live: false,
-          native: false,
-          sequence: sequence,
-          startedAt: Number(message.startedAt || 0)
-        }, Number(message.tabId));
-      } catch (_) { recordCaptionPreviewFailure(source, "youtube-overlay-message-failed"); }
-      return;
-    }
-
-    // En modo bilingüe, aceptar ambos idiomas aunque Chrome mantenga captions nativos frescos.
-    // La deduplicación de textos compatibles evita la repetición; el idioma separa los carriles.
-
-    // Descartar resultados tardíos tras cambiar o terminar la llamada, la sesión o la preferencia.
-    var latestStored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
-    var latestState = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), latestStored.effectifState || {})));
-    var latestConfig = Object.assign({}, DEFAULT_CONFIG, latestStored.effectifConfig || {});
-    if (!hasActiveCall(latestState) || latestState.callId !== currentState.callId ||
-        String(latestState.callSourceTabId) !== String(currentState.callSourceTabId) ||
-        latestConfig.liveCaptionOverlayEnabled === false) return;
-    var latestLeaseSession = latestState.hotLoadLease && latestState.hotLoadLease.transcriptionSessionId;
-    if (!callPreview && latestLeaseSession && String(latestLeaseSession) !== String(id)) return;
-    if (source === "yo" && !captionMicrophoneAllowed(latestState, latestConfig, true)) return;
-
-    var language = SignalCaptionCore.resolveLanguage(result.language, text);
-    var tabId = Number(latestState.callSourceTabId);
-    if (!Number.isFinite(tabId)) return;
-    if (latestConfig.liveCaptionBilingualTabEnabled === false && source !== "yo" && SignalCaptionBridge.isFresh(4500)) return;
-    var outputSource = source === "yo" ? "yo" : "cliente";
-    try {
-      await publishCaptionToOverlay({
-        text: text.slice(0, 1500),
-        language: language,
-        source: outputSource,
-        live: false,
-        native: false,
-        sequence: sequence,
-        startedAt: Number(message.startedAt || 0)
-      }, tabId);
-    } catch (_) {
-      recordCaptionPreviewFailure(source, "overlay-message-failed");
-    }
+  async function processGroqCaptionPreviewChunk() {
+    record("SIGNAL_CAPTION_NON_NATIVE_BLOCKED", { reasonCode: "native-text-only", captureScope: "native-text-only" }, "warn", "caption");
   }
 
   function handleGroqCaptionPreviewChunk(message) {
@@ -3071,29 +2723,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       return { ok: false, errorType: String(error && error.name || "Error").slice(0, 80) };
     });
   }
-  function handleGroqAudioChunk(message){
-    if (!message || message.source !== "cliente") {
-      recordSignalDiagnostic("SIGNAL_AUDIO_SOURCE_REJECTED",{reasonCode:"audio-source-outside-tab-only-scope",captureScope:"tab-only"},"warn"); return;
-    }
-    signalGroqQueue=signalGroqQueue.then(async function(){
-      var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId,session=data.sessions.find(function(s){return s.id===id});if(!session)return;
-      if(message.source==="yo"){
-        var micState=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),(await chrome.storage.local.get(["effectifState"])).effectifState||{})));
-        if(micState.microphoneMuted===true || micState.microphoneMuteStatus!=="applied" || micState.microphoneOutputStatus==="error"){
-          recordSignalDiagnostic("EXTENSION_MICROPHONE_AUDIO_CHUNK_SUPPRESSED_MUTED",{sessionId:id,sequence:Number(message.sequence||0),bytes:Number(message.bytes||0)}, "info","microphone");
-          return;
-        }
-      }
-      var seq=Number(message.sequence||0),key=id+"|"+String(message.source||"")+"|"+seq;if(signalGroqSeen.has(key))return;signalGroqSeen.set(key,Date.now());if(signalGroqSeen.size>500)signalGroqSeen.delete(signalGroqSeen.keys().next().value);
-      if(!(await SignalGroqTranscriber.ready())){recordSignalDiagnostic("SIGNAL_GROQ_TRANSCRIPTION_ERROR",{sessionId:id,reason:"missing-api-key",source:message.source},"error");return;}
-      var raw=atob(String(message.base64||"")),bytes=new Uint8Array(raw.length);for(var bi=0;bi<raw.length;bi++)bytes[bi]=raw.charCodeAt(bi);var blob=new Blob([bytes],{type:"audio/webm"}),speaker=message.source==="yo"?"YO":"CLIENTE",audioSource=message.source==="yo"?"microphone":"tab";
-      var result=await SignalGroqTranscriber.transcribe(blob,{model:config.groqModel||GROQ_MODEL,language:"es",filename:"signal-"+audioSource+"-"+(seq||Date.now())+".webm",prompt:"Interpretación médica en español; conserva nombres propios y términos clínicos.",timeoutMs:30000});
-      updateGroqUsage({ok:result.ok,speaker:speaker,audioSeconds:Math.max(0,(Number(message.endedAt||Date.now())-Number(message.startedAt||Date.now()))/1000),bytesSent:blob.size,latencyMs:result.latencyMs||0,characters:String(result.text||"").length,httpStatus:result.httpStatus||null,error:result.error});
-      if(!result.ok){recordSignalDiagnostic("SIGNAL_GROQ_TRANSCRIPTION_ERROR",{sessionId:id,speaker:speaker,error:result.error,source:audioSource,sequence:seq},"error");return;}
-      var parts=result.segments&&result.segments.length?result.segments:[{start:0,end:0,text:result.text}],emitted=0;
-      for(var i=0;i<parts.length;i++){var text=String(parts[i].text||"").trim();if(!text)continue;var ts=Number(message.startedAt||Date.now())+Math.max(0,Number(parts[i].start||0))*1000;var seg={id:"groq-"+uid(),sessionId:id,text:text.slice(0,12000),timestamp:new Date(ts).toISOString(),reason:"groq-transcription",source:"groq",speaker:speaker,speakerId:speaker,audioSource:audioSource,model:result.model,chunkSequence:seq};var persisted=await persistSignalSegment(id,seg);if(persisted.ok){emitted++;broadcastSignalEvent({type:"signal.transcript.segment",sessionId:id,segment:seg,timestamp:seg.timestamp});}}
-      await updateGroqCaptureState({status:"connected",lastChunkAt:iso(),error:null});await mutateState(async function(state){state.transcriptionMetrics=Object.assign({},state.transcriptionMetrics||{}, {segments:Number(state.transcriptionMetrics&&state.transcriptionMetrics.segments||0)+emitted,groqSegments:Number(state.transcriptionMetrics&&state.transcriptionMetrics.groqSegments||0)+emitted,localSegments:0,queueDepth:0,averageLatencyMs:result.latencyMs||0});state.groqTranscript=Object.assign({},state.groqTranscript||{}, {active:true,segments:Number(state.groqTranscript&&state.groqTranscript.segments||0)+emitted,lastTimestamp:emitted?iso():state.groqTranscript.lastTimestamp,model:result.model||GROQ_MODEL});});
-    }).catch(function(error){recordSignalDiagnostic("SIGNAL_GROQ_CHUNK_ERROR",{error:String(error)},"error");});
+  function handleGroqAudioChunk() {
+    recordSignalDiagnostic("SIGNAL_AUDIO_SOURCE_REJECTED", { reasonCode: "native-text-only", captureScope: "native-text-only" }, "warn");
   }
   async function activateSignalSession(sessionId,audioStreamId){
     var data=await loadSignalSessions(),session=data.sessions.find(function(s){return s.id===sessionId});if(!session)return{ok:false,error:"Sesión no encontrada"};
@@ -3234,7 +2865,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     if(message.type==="SIGNAL_OBSERVATION_SYNC_NOW"){try{SignalObservationSync.flush("manual").then(function(r){sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})})}catch(e){sendResponse({ok:false,error:String(e)})}return true;}
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_AUDIO_CHUNK") { handleGroqAudioChunk(message); return false; }
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK") { handleGroqCaptionPreviewChunk(message); return false; }
-    if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_CAPTURE_STATUS") { updateGroqCaptureState({status:String(message.status||"idle"),tabAudio:!!message.tabAudio,microphone:!!message.microphone,microphoneMuted:!!message.microphoneMuted,error:message.error||null,lastChunkAt:message.status==="connected"?null:undefined}).catch(function(){}); broadcastSignalEvent({type:"signal.groq.status",sessionId:signalActiveSessionId,status:message.status||"idle",tabAudio:!!message.tabAudio,microphone:!!message.microphone,error:message.error||null,timestamp:message.timestamp||iso()}); return false; }
+    if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_CAPTURE_STATUS") { record("SIGNAL_CAPTION_NON_NATIVE_BLOCKED", {reasonCode:"native-text-only",captureScope:"native-text-only"}, "warn", "caption"); return false; }
     if (message.type === "OPEN_SIGNAL_LIVE_WINDOW") { recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_REQUESTED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",hasSuppliedStream:!!message.audioStreamId}); openSignalLiveWindow(message.audioStreamId||null,message.tabId||null,message.sourceUrl||"",message.sourceTitle||"").then(function(response){if(response&&response.ok)recordSignalDiagnostic("SIGNAL_CONSOLE_OPENED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",windowId:response.windowId,reused:!!response.reused,sessionId:response.session&&response.session.id||null,audioOk:!!(response.audio&&response.audio.ok)});else recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_ERROR",{tabId:message.tabId||null,error:response&&response.error||"unknown"},"error");sendResponse(response)}).catch(function(error){recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_EXCEPTION",{tabId:message.tabId||null,error:String(error)},"error");sendResponse({ok:false,error:String(error)});});return true; }
     if (message.type === "ACTIVATE_SIGNAL_SESSION") { activateSignalSession(message.sessionId,null).then(sendResponse);return true; }
     if (message.type === "UPDATE_SIGNAL_SESSION") { updateSignalSession(message,sendResponse);return true; }
@@ -3428,15 +3059,11 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     if(message.type==="CLEAR_SIGNAL_INTERPRETER_TRANSCRIPT"){loadSignalSessions().then(async function(data){var id=message.sessionId||data.activeSessionId,s=data.sessions.find(function(x){return x.id===id});if(!s)throw new Error("Sesión no encontrada");await KhoraTelemetryDB.clearSignalSession(id);s.segments=[];s.segmentCount=0;return saveSignalSessions(data.sessions,id).then(function(){broadcastSignalEvent({type:"signal.transcript.clear",sessionId:id,timestamp:iso()});return{ok:true,session:signalSessionCopy(s,true)}})}).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)})});return true;}
     if(message.type==="SIGNAL_GROQ_CAPTURE_START"){startGroqCapture(message.sessionId||signalActiveSessionId,message.audioStreamId).then(sendResponse);return true;}
     if(message.type==="SIGNAL_GROQ_CAPTURE_STOP"){stopGroqCapture("live-ui").then(sendResponse);return true;}
-    if(message.type==="EFFECTIF_START_TRANSCRIPTION"){sendResponse({ok:true,engine:"groq-whisper",global:true});return false;}
+    if(message.type==="EFFECTIF_START_TRANSCRIPTION"){sendResponse({ok:false,engine:"chrome-live-caption",reasonCode:"native-text-only"});return false;}
     if(message.type==="EFFECTIF_STOP_TRANSCRIPTION"){stopGroqCapture("effectif-control").then(sendResponse);return true;}
     if (message.type === "EFFECTIF_WORKER_PROBE" || message.type === "EFFECTIF_TEST_TRANSCRIPTION") {
-      SignalGroqTranscriber.ready().then(function (configured) {
-        sendResponse({ ok: true, engine: "groq-whisper", configured: !!configured, model: GROQ_MODEL });
-      }).catch(function () {
-        sendResponse({ ok: true, engine: "groq-whisper", configured: false, model: GROQ_MODEL });
-      });
-      return true;
+      var nativeState=SignalCaptionBridge.getStatus();
+      sendResponse({ok:true,engine:"chrome-live-caption",configured:!!nativeState.connected,captionFresh:!!nativeState.captionFresh,reasonCode:nativeState.reason,captureScope:"native-text-only"});return false;
     }
     if (message.type === "EFFECTIF_OPEN_SIDE_PANEL") {
       sendResponse({ ok: false, error: "Módulo reservado: no disponible en esta versión" }); return false;
@@ -3463,7 +3090,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
 
   async function markObservabilityBuildCheckpoint(reason, previousVersion) {
     try {
-      var files=["manifest.json","background.js","content.js","offscreen.js","groq-transcriber.js","ui/popup.js","ui/popup.html","ui/popup.css","ui/time-format.js"];
+      var files=["manifest.json","background.js","content.js","offscreen.js","ui/popup.js","ui/popup.html","ui/popup.css","ui/time-format.js"];
       var texts=await Promise.all(files.map(function(file){return fetch(chrome.runtime.getURL(file),{cache:"no-store"}).then(function(response){if(!response.ok)throw new Error("No se pudo leer "+file);return response.text();});}));
       var bytes=new TextEncoder().encode(texts.join("\n/* SIGNAL OBSERVABILITY BUILD BOUNDARY */\n"));
       var digest=await crypto.subtle.digest("SHA-256",bytes);
@@ -3541,7 +3168,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     }).then(function(){
       try{SignalObservationSync.start()}catch(_){};
       SignalObservationSync.flush("startup").catch(function(error){ record("OBSERVATION_SYNC_STARTUP_ERROR",{error:String(error)},"warn","background"); });
-      return recoverAfterRuntimeBoundary("runtime-start").catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");}).then(function(){ return hotloadExistingCloudTabs("runtime-start"); }).then(function(){ return hotloadExistingWebTabs("runtime-start"); }).catch(function(error){record("HOTLOAD_EXISTING_TABS_RUNTIME_ERROR",{error:String(error)},"warn","runtime");});
+      return setCaptionPreviewForActiveCall(false,"native-only-startup").then(function(){return recoverAfterRuntimeBoundary("runtime-start");}).catch(function(error){record("HOTLOAD_RUNTIME_RECOVERY_ERROR",{error:String(error)}, "warn","runtime");}).then(function(){ return hotloadExistingCloudTabs("runtime-start"); }).then(function(){ return hotloadExistingWebTabs("runtime-start"); }).catch(function(error){record("HOTLOAD_EXISTING_TABS_RUNTIME_ERROR",{error:String(error)},"warn","runtime");});
     });
   }).catch(function(error){console.error("[SIGNAL-INTERPRETER] INIT_ERROR",error);});
   checkMicrophoneCommandShortcut("runtime-start");

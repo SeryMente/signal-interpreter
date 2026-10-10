@@ -12,6 +12,7 @@ const statusEvents = [];
 const errors = [];
 const timers = [];
 const ports = [];
+const intervals = [];
 let lastError = null;
 
 function makePort() {
@@ -59,6 +60,8 @@ const sandbox = {
     return timer;
   },
   clearTimeout(timer) { if (timer) timer.cleared = true; },
+  setInterval(fn,delay) { const t={fn,delay,cleared:false};intervals.push(t);return t; },
+  clearInterval(t) {t.cleared=true;},
   self: {}
 };
 sandbox.globalThis = sandbox;
@@ -88,7 +91,7 @@ assert.equal(tabMessages.filter((item) => item.message.type === "SIGNAL_CAPTION_
 now += 5000;
 ports[0].emit({ type: "heartbeat", active: true, visible: true });
 assert.equal(bridge.isFresh(4500), false);
-assert.equal(statusEvents.at(-1).active, false, "un heartbeat debe reactivar el fallback cuando el texto nativo deja de actualizarse");
+assert.equal(statusEvents.at(-1).active, false, "un heartbeat declara obsolescencia sin sustituir texto por audio");
 assert.equal(statusEvents.at(-1).visible, true, "la burbuja puede seguir visible aunque el texto esté obsoleto");
 
 ports[0].emit({ type: "caption", text: "Necesito verificar la cita con usted.", language: "Español" });
@@ -129,8 +132,23 @@ chrome.runtime.lastError = null;
 const thirdRetry = timers[timers.length - 1];
 assert.equal(thirdRetry.delay, 5000, "la espera sigue aumentando mientras no haya conexión estable");
 
+thirdRetry.fn();
+for(let n=0;n<6;n++) { const owner=ports.at(-1); owner.emitDisconnect(); const retry=timers.at(-1); assert.equal(retry.delay,10000); retry.fn(); }
+const healthy=ports.at(-1); healthy.emit({type:"ready"});
+assert.equal(bridge.getStatus().reason,"native-connected");
+const countBeforeLate=tabMessages.filter(x=>x.message.type==="SIGNAL_CAPTION_UPDATE").length;
+ports[0].emit({type:"caption",text:"Old call must not leak"});
+assert.equal(tabMessages.filter(x=>x.message.type==="SIGNAL_CAPTION_UPDATE").length,countBeforeLate);
+now += 16000;
+intervals.find(t=>!t.cleared).fn();
+assert.equal(bridge.getStatus().reason,"native-heartbeat-timeout");
+assert.ok(timers.at(-1).delay<=10000);
+const beforeStale=tabMessages.filter(x=>x.message.type==="SIGNAL_CAPTION_UPDATE").length;
+healthy.emit({type:"caption",text:"Timed-out port rejected"});
+assert.equal(tabMessages.filter(x=>x.message.type==="SIGNAL_CAPTION_UPDATE").length,beforeStale);
 bridge.stop();
 assert.ok(tabMessages.some((item) => item.message.type === "SIGNAL_CAPTION_SESSION_END" && item.message.reason === "native-stopped"), "al detener el bridge se conserva el historial de la sesión terminada");
 assert.equal(bridge.isFresh(4500), false);
+assert.ok(intervals.every(t=>t.cleared));
 
 console.log("LIVE_CAPTION_BRIDGE_TEST=PASS");

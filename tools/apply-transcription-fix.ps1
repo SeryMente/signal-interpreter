@@ -2,7 +2,7 @@
 param([string]$TargetPath)
 $ErrorActionPreference = 'Stop'
 $package = $PSScriptRoot
-$source = Join-Path $package 'extension'
+$source = if (Test-Path -LiteralPath (Join-Path $package 'manifest.json')) { $package } else { Join-Path $package 'extension' }
 $payloadManifest = Join-Path $package 'payload-sha256.json'
 $extensionId = 'ldpbjhobnfgmhdoehehdmnbhhjckebmj'
 function Get-ExtensionIdentity([string]$path) {
@@ -48,7 +48,7 @@ if (-not $TargetPath) {
 $TargetPath = [IO.Path]::GetFullPath($TargetPath)
 if ((Get-ExtensionIdentity $TargetPath) -ne $extensionId) { throw 'Existing installation identity mismatch; no files changed.' }
 $targetManifest = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $TargetPath 'manifest.json') | ConvertFrom-Json
-if ([version]$targetManifest.version -gt [version]'0.10.33') { throw 'A newer extension is already installed; downgrade refused, no files changed.' }
+if ([version]$targetManifest.version -gt [version]'0.10.34') { throw 'A newer extension is already installed; downgrade refused, no files changed.' }
 if ($TargetPath -eq [IO.Path]::GetFullPath($source)) { throw 'The unpacked package is not the existing installation; no files changed.' }
 $entries = @(Get-Content -Raw -Encoding UTF8 -LiteralPath $payloadManifest | ConvertFrom-Json)
 foreach ($entry in $entries) {
@@ -73,7 +73,7 @@ try {
     if ((Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash -ne $entry.sha256) { throw 'Copied file verification failed.' }
   }
   & (Join-Path $TargetPath 'native\prepare-caption-runtime.ps1')
-  Write-Output 'INSTALLED_FILES=VERIFIED version=0.10.33'
+  Write-Output 'INSTALLED_FILES=VERIFIED version=0.10.34'
   Write-Output "BACKUP=$backup"
   Write-Output 'Open Chrome again. If tab capture needs invocation, open the existing Signal Interpreter popup on the Cloud Interpreter tab.'
   Write-Output 'Real bilingual call acceptance remains pending; this installer does not certify a call.'

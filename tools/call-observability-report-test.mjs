@@ -145,5 +145,14 @@ fs.writeFileSync(path.join(inbox,"ordinary.json"),JSON.stringify(batch("ordinary
 const afterOrdinary=buildObservabilityPackage(root);
 assert.equal(afterOrdinary.callReports.reportCount,1,"ordinary telemetry must not create duplicate call reports");
 assert.equal(afterOrdinary.latestCallReport.callRef,built.latestCallReport.callRef);
+const native=event("native-forward","SIGNAL_CAPTION_NATIVE_TEXT_FORWARDED",{captureScope:"native-text-only",characterCount:35,text:"NEVER EXPORT NATIVE SPOKEN TEXT"},endedAt);
+const nativeStatus=event("native-missing","SIGNAL_CAPTION_NATIVE_STATUS",{captionFresh:false,reasonCode:"native-text-not-exposed"},endedAt);
+fs.writeFileSync(path.join(inbox,"native.json"),JSON.stringify(batch("native",endedAt,[native,nativeStatus])));
+const withNative=buildObservabilityPackage(root);
+assert.equal(withNative.latestCallReport.captionDiagnosis.captureScope,"native-text-only");
+assert.equal(withNative.latestCallReport.captionDiagnosis.nativeTextForwarded,1);
+assert.ok(withNative.latestCallReport.captionDiagnosis.reasonCodes.includes("native-text-not-exposed"));
+assert.equal(withNative.latestCallReport.exportEvidence.automatic,true);
+assert.equal(JSON.stringify(withNative.latestCallReport).includes("NEVER EXPORT"),false);
 fs.rmSync(root,{recursive:true,force:true});
 console.log("CALL_OBSERVABILITY_REPORT_TEST=PASS");
