@@ -10,7 +10,7 @@ const background = read("extension/background.js");
 const content = read("extension/content.js");
 const workflow = read(".github/workflows/observability-audit.yml");
 
-assert.equal(manifest.version, "0.10.29", "la versión debe ser la que contiene la corrección");
+assert.equal(manifest.version, "0.10.31", "la versión debe ser la que contiene la corrección");
 assert.ok(manifest.content_scripts.some((entry) =>
   entry.matches?.includes("https://app.cloudinterpreter.com/*") &&
   entry.run_at === "document_start" &&

@@ -93,6 +93,10 @@ jobs:
         run: node tools/earnings-overlay-tests.mjs
       - name: Groq transcriber unit test
         run: node tools/groq-transcriber-tests.mjs
+      - name: Independent call preview runtime regression
+        run: node tools/call-caption-runtime-test.mjs
+      - name: Automatic call export and privacy runtime regression
+        run: node tools/call-export-runtime-test.mjs
       - name: Live Caption core unit test
         run: node tools/live-caption-core-test.mjs
       - name: Live Caption Native Messaging bridge transition test

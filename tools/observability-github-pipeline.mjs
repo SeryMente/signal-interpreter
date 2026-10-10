@@ -216,6 +216,7 @@ function isTerminalCallEvent(event){
   const action=String(event&&event.action||"");
   const p=event&&event.payload&&typeof event.payload==="object"?event.payload:{};
   return action==="CALL_RATING_STARS_CONFIRMED"||action==="CALL_TIMER_STOPPED"||
+    action==="CALL_OBSERVABILITY_EXPORT_COMPLETED"||action==="CALL_OBSERVABILITY_EXPORT_PENDING"||
     (action==="CALL_OBSERVABILITY_CHECKPOINT"&&p.checkpoint==="call-ended");
 }
 function reportDate(value,fallback){
@@ -273,10 +274,10 @@ function callEventDigest(event){
 }
 function callKeySignal(event){
   const action=String(event&&event.action||"");
-  if(!/ANSWER_FLOW|AUTO_ANSWER|CONNECT_|CALL_ROUTE_ENTERED|CALL_TIMER_STOPPED|EXTENSION_MICROPHONE|MICROPHONE|GROQ_CAPTURE|GROQ_TRANSCRIBER|TRANSCRIPTION|CAPTION_PREVIEW|SIGNAL_CAPTION|LIVE_CAPTION_OVERLAY|EARNINGS_OVERLAY|PLATFORM_INTEGRITY|CALL_END_EARNINGS|CALL_EARNINGS|EXCHANGE_RATE|HOTLOAD|SCREENSHOT/.test(action))return null;
+  if(!/CALL_OBSERVABILITY_EXPORT|ANSWER_FLOW|AUTO_ANSWER|CONNECT_|CALL_ROUTE_ENTERED|CALL_TIMER_STOPPED|EXTENSION_MICROPHONE|MICROPHONE|GROQ_CAPTURE|GROQ_TRANSCRIBER|TRANSCRIPTION|CAPTION_PREVIEW|SIGNAL_CAPTION|LIVE_CAPTION_OVERLAY|EARNINGS_OVERLAY|PLATFORM_INTEGRITY|CALL_END_EARNINGS|CALL_EARNINGS|EXCHANGE_RATE|HOTLOAD|SCREENSHOT/.test(action))return null;
   const payload=callReportPayload(event);
   const signal=callEventDigest(event);
-  const allow=["status","phase","reasonCode","source","trigger","modality","engine","period","ready","authorizedProfile","verified","muted","desired","previousMuted","recoveryMuted","captureVerified","outputVerified","outputMuted","trackCount","senderCount","attempts","attempt","retryCount","latencyMs","durationMs","timeoutMs","routeConfirmation","confirmation","captureStatus","tabAudio","microphone","microphoneMuted","microphoneOutputMuted","effectiveType","rttMs","downlinkMbps","visible","hostConnected","shadowRootReady","pageAllowed","contextReady","callActive","sourceTabMatched","sourceTabKnown","routeFallbackApplied","activeCallRoute","routeEvidenceApplied","historyRows","rowCount","contextSyncAttempts","contextSyncFailures","active","sessionEnded","lastCaptionAgeMs","documentReadyState","visibilityState","documentElementPresent","controlsReady","timerActive","hostWidth","hostHeight","mountReason","independentOfObserver","observerActive"];
+  const allow=["status","phase","reasonCode","source","trigger","modality","engine","period","ready","authorizedProfile","verified","muted","desired","previousMuted","recoveryMuted","captureVerified","outputVerified","outputMuted","trackCount","senderCount","attempts","attempt","retryCount","latencyMs","durationMs","timeoutMs","routeConfirmation","confirmation","captureStatus","tabAudio","microphone","microphoneMuted","microphoneOutputMuted","effectiveType","rttMs","downlinkMbps","visible","hostConnected","shadowRootReady","pageAllowed","contextReady","callActive","sourceTabMatched","sourceTabKnown","routeFallbackApplied","activeCallRoute","routeEvidenceApplied","historyRows","rowCount","contextSyncAttempts","contextSyncFailures","active","sessionEnded","lastCaptionAgeMs","documentReadyState","visibilityState","documentElementPresent","controlsReady","timerActive","hostWidth","hostHeight","mountReason","independentOfObserver","observerActive","requiresUserActivation","captionFresh","automatic","targetSequence","ackedSequence","batches","intervalMs","durable","reused"];
   allow.forEach(key=>{
     const value=payload[key];
     if(value===null||value===undefined)return;
@@ -310,8 +311,8 @@ function makeCallReport(callId,events,generatedAt){
   const starPayload=callReportPayload(starEvent);
   const starEvidence=starPayload.evidence&&typeof starPayload.evidence==="object"?starPayload.evidence:{};
   const callRef=sha256("signal-interpreter-call:"+callId).slice(0,24);
-  const startAt=reportDate(finalCall.startedAt||timerStart&&timerStart.timestamp,null);
-  const endAt=reportDate(finalCall.endedAt||timerStop&&timerStop.timestamp||checkpoint&&checkpoint.timestamp,null);
+  const startAt=reportDate(finalCall.startedAt,null)||reportDate(timerStart&&timerStart.timestamp,null);
+  const endAt=reportDate(finalCall.endedAt,null)||reportDate(timerStop&&timerStop.timestamp,null)||reportDate(checkpoint&&checkpoint.timestamp,null);
   const actions={},categories={},components={},levels={},featureSignals={};
   let warnings=0,errors=0,failed=0,sequenceMin=null,sequenceMax=null;
   const performanceEvents=[],mediaEvents=[],networkCount={total:0},errorTimeline=[];
@@ -363,7 +364,8 @@ function makeCallReport(callId,events,generatedAt){
   const complete=!!checkpoint&&!!finalCall.callId&&!!endAt;
   const missing=[];
   if(!timerStart&&!startAt)missing.push("call-start-not-observed");
-  if(!timerStop&&!endAt)missing.push("call-end-timestamp-not-observed");
+  if(!endAt)missing.push("call-end-timestamp-not-observed");
+  if(checkpoint && !finalCall.callId)missing.push("final-call-record-not-observed");
   if(!stars)missing.push("rating-stars-confirmation-not-observed");
   if(!checkpoint)missing.push("final-observability-checkpoint-not-observed");
   if(!performanceEvents.length)missing.push("performance-samples-not-observed");
@@ -373,6 +375,22 @@ function makeCallReport(callId,events,generatedAt){
     schema:"signal-interpreter-call-report/v1",generatedAt:generatedAt,updatedAt:generatedAt,
     callRef:callRef,status:complete?"complete":"partial",
     completeness:{complete:complete,missingSignals:missing},
+    captionDiagnosis:{
+      maximumVisibleRows:related.reduce((max,event)=>Math.max(max,reportNumber(callReportPayload(event).rowCount)||0),0),
+      nativeFreshObserved:related.some(event=>event.action==="SIGNAL_CAPTION_NATIVE_STATUS"&&callReportPayload(event).captionFresh===true),
+      nativeBridgeFailures:related.filter(event=>event.action==="SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR").length,
+      independentPreviewStarted:related.some(event=>event.action==="SIGNAL_CALL_CAPTION_PREVIEW_STARTED"),
+      previewResults:related.filter(event=>event.action==="SIGNAL_CAPTION_PREVIEW_RESULT").length,
+      previewTextResults:related.filter(event=>event.action==="SIGNAL_CAPTION_PREVIEW_RESULT"&&callReportPayload(event).hasText===true).length,
+      reasonCodes:Array.from(new Set(related.filter(event=>/CAPTION/.test(event.action||""))
+        .map(event=>callReportPayload(event).reasonCode).filter(Boolean))).map(value=>reportSafeText(value,100)).slice(0,30)
+    },
+    exportEvidence:{ finalCheckpointDelivered:!!checkpoint,
+      trigger:checkpoint&&checkpoint.batchTrigger||null,
+      automatic:!!checkpoint && !!checkpoint.batchTrigger && checkpoint.batchTrigger!=="manual",
+      batchId:checkpoint&&checkpoint.batchId||null,
+      uploadedAt:checkpoint&&checkpoint.batchCreatedAt||null,
+      extensionReportedCompletion:related.some(event=>event.action==="CALL_OBSERVABILITY_EXPORT_COMPLETED") },
     time:{firstObservedAt:related.length?reportDate(related[0].timestamp,null):null,lastObservedAt:related.length?reportDate(related[related.length-1].timestamp,null):null},
     call:{
       callRef:callRef,status:reportSafeText(finalCall.status||(complete?"closed":"unknown"),40),
@@ -474,6 +492,20 @@ function callReportMarkdown(report){
     "- Valor seleccionado observado: "+String(end.ratingValueObserved),
     "- Envío de valoración observado: "+String(end.ratingSubmissionObserved),
     "- Checkpoint final entregado al paquete: "+String(end.finalCheckpointObserved),"",
+    "## Entrega automática",
+    "- Checkpoint recibido: "+String(report.exportEvidence&&report.exportEvidence.finalCheckpointDelivered),
+    "- Disparador del lote: "+String(report.exportEvidence&&report.exportEvidence.trigger||"no observado"),
+    "- Envío automático: "+String(report.exportEvidence&&report.exportEvidence.automatic),
+    "- Publicación del lote: "+String(report.exportEvidence&&report.exportEvidence.uploadedAt||"no observada"),
+    "",
+    "## Diagnóstico de subtítulos",
+    "- Máximo de filas observado: "+String(report.captionDiagnosis&&report.captionDiagnosis.maximumVisibleRows||0),
+    "- Texto nativo fresco observado: "+String(report.captionDiagnosis&&report.captionDiagnosis.nativeFreshObserved),
+    "- Respaldo independiente iniciado: "+String(report.captionDiagnosis&&report.captionDiagnosis.independentPreviewStarted),
+    "- Resultados de preview / con texto: "+String(report.captionDiagnosis&&report.captionDiagnosis.previewResults||0)+" / "+String(report.captionDiagnosis&&report.captionDiagnosis.previewTextResults||0),
+    "- Motivos registrados: "+JSON.stringify(report.captionDiagnosis&&report.captionDiagnosis.reasonCodes||[]),
+    "- Montaje visible o ausencia de errores no prueban reconocimiento de voz.",
+    "",
     "## Cobertura y señales","",
     "- Eventos correlacionados: "+String(report.correlation&&report.correlation.eventCount||0),
     "- Warnings / errores / eventos fallidos-bloqueados: "+String(telemetry.warnings||0)+" / "+String(telemetry.errors||0)+" / "+String(telemetry.failedOrBlockedEvents||0),
@@ -504,7 +536,7 @@ function updateCallReports(obs,candidateCallIds,generatedAt){
       batch.events.forEach(event=>{
         const callId=eventCallId(event);
         const related=relatedByCallId.get(String(callId||""));
-        if(related)related.push(Object.assign({batchId:batch.batchId},event));
+        if(related)related.push(Object.assign({batchId:batch.batchId,batchTrigger:batch.trigger,batchCreatedAt:batch.createdAt},event));
       });
     }
     for(const callId of ids){
