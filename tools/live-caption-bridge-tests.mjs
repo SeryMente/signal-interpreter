@@ -66,7 +66,7 @@ const sandbox = {
 };
 sandbox.globalThis = sandbox;
 sandbox.self = sandbox;
-vm.createContext(sandbox);
+sandbox.runExtensionScript=spec=>sandbox.chrome.scripting.executeScript(spec); sandbox.SignalCaptionLab=sandbox.SignalCaptionLab||{active:()=>false}; vm.createContext(sandbox);
 vm.runInContext(source, sandbox);
 
 const bridge = sandbox.SignalCaptionBridge;

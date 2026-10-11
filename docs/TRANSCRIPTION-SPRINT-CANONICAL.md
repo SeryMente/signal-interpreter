@@ -3,7 +3,7 @@
 > **Autoridad documental:** este es el único informe canónico del esfuerzo/sprint de transcripción, Live Caption y overlay de subtítulos de Signal Interpreter. Las notas antiguas de implementación, los requisitos verbatim y las notas de versión son fuentes históricas o técnicas subordinadas; no son informes alternativos del esfuerzo.
 > **Ruta canónica:** `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`
 > **Repositorio:** https://github.com/SeryMente/signal-interpreter
-> **Última versión documentada:** **0.10.34 — Solo texto nativo de Chrome; cero captura/reproducción de conversación**
+> **Última versión documentada:** **0.10.35 — Raíz cargable en Windows, laboratorio nativo aislado y calidad de vida**
 > **Integración previa al ciclo correctivo:** [PR #52](https://github.com/SeryMente/signal-interpreter/pull/52)
 > **Corrección previa de recuperación/exportación:** [PR #53](https://github.com/SeryMente/signal-interpreter/pull/53)
 > **Integración histórica del alcance 0.10.32:** [PR #54](https://github.com/SeryMente/signal-interpreter/pull/54)
@@ -11,7 +11,7 @@
 > **Corrección nativa exclusiva 0.10.34:** [PR #56](https://github.com/SeryMente/signal-interpreter/pull/56)
 > **Estado de validación real:** no se afirma aquí que una llamada bilingüe real posterior a instalar 0.10.34 haya sido verificada. Las pruebas automatizadas/CI no sustituyen esa validación.
 
-> **ALCANCE VIGENTE Y PREVALENTE (§15):** la extensión es una mejora visual para interpretación telefónica (OPI): copia exclusivamente texto accesible de Live Caption nativo de Chrome. No captura audio de pestaña ni micrófono, no llama a Groq y no reproduce conversación. Las rutas de captura descritas en §§6–14 y el anexo son HISTORIA SUPERADA, no autorización vigente. Los controles de mute existentes permanecen independientes.
+> **ALCANCE VIGENTE Y PREVALENTE (§§15–16):** la extensión es una mejora visual para interpretación telefónica (OPI): copia exclusivamente texto accesible de Live Caption nativo de Chrome. No captura audio de pestaña ni micrófono, no llama a Groq y no reproduce conversación. Las rutas de captura descritas en §§6–14 y el anexo son HISTORIA SUPERADA, no autorización vigente. Los controles de mute existentes permanecen independientes.
 
 ## 1. Regla inequívoca de documentación
 
@@ -376,6 +376,75 @@ Pruebas funcionales con APIs de audio envenenadas: cero invocaciones incluso con
 Chromium real local comprueba hidratación solo nativa, rechazo de fila no nativa, hotloading con un solo panel/listener y limpieza de contexto sin navegar la página; no es una llamada Cloud Interpreter real. El fuente C# y payload se compilan/sincronizan en Windows antes de distribuir; ambos hashes se validan. Compilación y protocolo no demuestran acceso a captions con burbuja cerrada en el Chrome del operador.
 
 **Límite técnico y aceptación NO VERIFICADA:** switch ON no garantiza que Chrome conserve la ventana accesible al cerrar la burbuja. Si Chrome elimina ese árbol, esta solución no puede recuperar texto de un objeto inexistente y NO introduce audio como sustituto. Pendiente: extensión nueva cargada en PC-8, texto inglés/español nativo visible/oculto realmente recibido, ausencia de eco, aislamiento de dos llamadas y primer informe automático de cierre de esta versión. No se emite garantía de funcionamiento en vivo sin esa evidencia. La instrucción de completar no autoriza simularla.
+
+## 16. Distribución portable y calidad de vida 0.10.35
+
+### 16.1. Instrucciones del operador — VERBATIM
+
+> Añadele una manera de probar el servicio, para c uando tenga que probar un resultado, como este que me entregas, pero que no vaya a tomar llamadas .
+>
+> La pregiunta es ,e sposible replicar las condiciones importantes de replicar de la situacion de llamada en CloudInterpreter en un ejemplo, para que el ejemplo si funcione como se necesita?
+>
+> Te doy una grabacion de llamada de Interpretacion? Y que se reproduzca en el navegador? O como le podemos  hacer?
+
+> Bien. Mientras que sea facil de implementar, y ubicuo a cualquier coomputadora,  y facil de instalar, lo que pasa es que me mueve entre tres ubicacioens todo el tiempo como nomada digital.
+
+> El repo almacena el paquete. Entiendes? Descargo el Repo y puedo usar un archivo de instalacion en la carpeta raiz de la carpeta qeu resulta de la descompresion. Ademas ,la carpeta raiz, es la extension como tal, la cual puede ser ubicada desde chrome como directorio raiz de la extension descomprimida. Es posible que sea asi como digo? Que el zip que descomprimo de githubn, al descomprimirlo de por resultado la carpeta raiz desde donde carga chrome la extension co nel manifiesto etc. ? MacOS o linux no son parte del alcance.
+
+> Bueno, ejecuta, y resuelve de extremo a extremo. Pero por favor, no ocasioens regresioens.
+>
+> Sagbes, ademas, hay un competidor que esta tratando de hacer lo mismo que yo, y que tiene una UI muy pulida y muy bien desarrollada. Al parecer le metio dinero a la UI y a la experiencia estetica.
+>
+> Yo quiero competir con el. SIN BLOATING, y sin añadir nada que no necesite y que uya este planeado.
+>
+> Necesito que pulas todas las asperezas y los bordes de la ui, me explico?
+>
+> EDIT: Otra cosa, mis informes me dicen que el competidor es un maestro en algo que se le denomina: Calidad de vida para el usuario de herramientas dfe software. Y que el cliente esta muy feliz por ese lado.
+
+La competencia se considera una motivación de calidad de vida declarada por el operador, no evidencia de prestaciones verificadas de un producto no identificado. No se añade roadmap, dependencia visual, tema, capturador, servicio o tablero paralelo.
+
+### 16.2. Una distribución, una raíz
+
+El ZIP fuente del repositorio es el paquete. Dentro de la carpeta extraída están `manifest.json`, `INSTALAR.cmd`, `INSTALAR.ps1`, `PROBAR.cmd`, `PROBAR.ps1` y `payload-sha256.json`; esa MISMA carpeta es la que se carga en Chrome. El runtime permanece organizado bajo `extension/`; no hay segundo manifiesto allí. Recursos de background, popup, offscreen, reinyección y content scripts resuelven desde la raíz real. La clave mantiene el identificador `ldpbjhobnfgmhdoehehdmnbhhjckebmj` y no se amplían permisos de captura.
+
+`.gitattributes` excluye observaciones, diagnósticos históricos y workflows de los archivos fuente instalables mediante export-ignore, sin eliminarlos del repositorio. No se comete otro ZIP ni una copia del runtime. Las huellas de los 50 archivos de distribución se validan antes de registrar el host; se evita la envoltura de arrays que falló en Windows PowerShell 5.1.
+
+### 16.3. Instalación Windows, sin runtime de desarrollo
+
+1. Descargar y extraer el ZIP del repositorio a una carpeta estable y escribible. No moverla después de cargarla.
+2. Fuera de una llamada/prueba, abrir `INSTALAR.cmd`: valida identidad/huellas; materializa el host incluido; registra bajo HKCU del mismo usuario de Chrome; verifica protocolo; genera una muestra de voz con SAPI si existe. No requiere Node, Python, compilador, clave Groq, elevación ni descargas adicionales. Los paquetes de voz/modelos de Chrome dependen del equipo y no se dan por disponibles.
+3. En Chrome, cargar como extensión descomprimida la carpeta que contiene el manifiesto raíz. Esta aprobación de Chrome es manual; el instalador no la simula ni fuerza instalación mediante flags. No mantener activa simultáneamente otra copia de Signal Interpreter.
+4. Activar Live Caption y abrir **Probar** en la cabecera del popup. `PROBAR.cmd` ofrece el mismo laboratorio cuando identifica inequívocamente el perfil que cargó ESTA carpeta; si no puede, indica usar el popup y no abre otra cuenta.
+
+El instalador no mata Chrome ni puentes ajenos, no reinicia llamadas, no instala servicios/tareas/watchdogs ni usa rutas de usuario fijas. Si un puente está en uso, se detiene antes de cambiar registro. Conserva respaldo y restaura manifiesto/valor previo si falla registro/protocolo. `INSTALACION-RESULTADO.json` separa preparación verificada de carga de extensión y llamada real NO VERIFICADAS. Cambiar de computadora requiere registrar el puente y cargar la carpeta en cada usuario Windows; no se promete sincronización de Chrome ni configuración financiera entre equipos.
+
+### 16.4. Laboratorio sin llamadas y sin subtítulos fabricados
+
+La página propia `extension/ui/lab.html` usa un reproductor HTML normal con muestra generada localmente o archivo autorizado elegido por el usuario. No abre micrófono, tabCapture, MediaRecorder ni Groq. Ese audio de prueba es deliberado y solo suena al reproducirlo; el flujo de producción continúa sin reproducir conversación.
+
+Recorrido: **audio local en Chrome → Live Caption nativo → MISMO host Windows/puente → MISMO core y overlay**. No hay transcripción simulada ni adaptador YouTube. Pausar otros audios ayuda a evitar atribución accidental de captions globales. No se necesita entregar una grabación real; si se usa una, debe estar autorizada y sin información sensible innecesaria.
+
+El laboratorio requiere su propia página de extensión como emisor autenticado, bloquea arranque ante cualquier pestaña Cloud Interpreter o llamada activa, y pone una compuerta local antes del clic real de respuesta automática sin cambiar la preferencia del usuario. Si se abre la plataforma durante una prueba, detiene puente/audio y conserva el bloqueo hasta **Finalizar** explícitamente. Recuperación tras suspensión mantiene la misma guardia. No genera ingresos, eventos/exports de producción ni historial de llamadas; su layout tiene clave independiente y las filas solo viven en memoria.
+
+**Finalizar y exportar** o fin del audio generan un informe de metadatos y solicitan descarga automáticamente. El último informe también queda guardado para **Descargar último informe**. Cerrar abruptamente la pestaña puede impedir una descarga inmediata: el worker conserva el informe recuperable al reabrir; no se anuncia una descarga completada sin comprobarla. El informe distingue captions nativos observados, filas/host, conexión, motivos y ausencia de evidencia; excluye audio/texto hablado. Cero filas/captions nunca producen resultado aprobado. El cierre automático de llamadas reales y su retry existentes se conservan por separado.
+
+### 16.5. Pulido acotado y prevención de regresiones
+
+- Probar accesible desde la primera pantalla del popup, sin buscar controles enterrados.
+- Tipografía, espaciado, foco de teclado y botones legibles; contraste sobrio y semántica de riesgo/estado conservada. Sin animaciones, gráficos o adornos ajenos al trabajo.
+- Panel de captions con acciones mayores, guía corta con atajos completos en tooltip; texto/tiempos legibles, sin alterar fusión, idioma, búsqueda/copia ni algoritmos de posición.
+- El laboratorio ancla el mismo renderer en una región reservada para no tapar instrucciones; movimiento/redimensionado continúan en la llamada real, no en la región de prueba.
+- Panel de ingresos: controles y cifras más legibles, botones amplios y estado compacto conservado; cálculos/periodos/monedas y generación de gráficas intactos.
+- Contraer conserva controles visibles; Auto restaura layout. Historial/notas conservados; los controles no desaparecen a ancho estrecho y el origen no se recorta silenciosamente.
+- Mensajes distinguen instalación, conexión, texto y renderizado; indican recuperación concreta sin anunciar éxito por apariencia.
+
+### 16.6. Niveles de prueba y límites de aceptación
+
+Evidencia local comprobada: 28/28 suites aprobadas; Chrome for Testing cargó raíz/popup, abrió/cerró el laboratorio, descargó el informe sin captions simulados y bloqueó el arranque con plataforma abierta. El caso de recuperación con plataforma se comprueba por regresión adicional del mismo módulo. Las suites locales incluyen 26 regresiones existentes y dos nuevas: raíz/payload e aislamiento/privacidad/ciclo del laboratorio. El workflow Windows prueba ZIP fuente, instalación, identidad, hashes y protocolo del host; la compilación/framing existentes permanecen. El fixture Chrome real carga el manifiesto raíz, abre el laboratorio y comprueba ciclo/descarga/aislamiento. En Linux no dispone del host Windows: la ausencia de texto se declara, jamás se convierte en captions de prueba.
+
+La revisión visual cubre popup, laboratorio, historial y panel contraído/expandido en desktop y 390px. No certifica UI Automation ni una llamada real. El laboratorio replica el recorrido compartido de captions, pero no la autenticación, WebRTC, cambios de ruta, terminación ni particularidades de Cloud Interpreter; esas compuertas requieren su plataforma real. Que el switch esté encendido no obliga a Chrome a conservar el árbol accesible con la burbuja cerrada. Sin texto accesible se informa el bloqueo; no se agrega fallback de audio.
+
+**Aceptación operativa todavía NO VERIFICADA:** primera reproducción nativa en el Windows del operador, visible/oculta, y primera llamada posterior con ausencia de eco, continuidad y observabilidad automática. No se garantiza ausencia absoluta de fallos ni se declara lista en vivo por pasar un fixture. La evidencia final de integración debe cotejar el head final de la propuesta y su versión raíz.
 
 ## Anexo A — documento de implementación preexistente conservado
 

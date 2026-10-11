@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 const read=(p)=>fs.readFileSync(p,"utf8");
 const exists=(p)=>fs.existsSync(p);
-const manifest=JSON.parse(read("extension/manifest.json"));
+const manifest=JSON.parse(read("manifest.json"));
 const background=read("extension/background.js");
 const offscreen=read("extension/offscreen.js");
 const micGuard=read("extension/mic-guard-main.js");
@@ -31,7 +31,7 @@ const githubPipelineTest=read("tools/observability-github-pipeline-test.mjs");
 const platformLearning=read("tools/observability/platform-learning.mjs");
 const platformLearningTest=read("tools/observability/platform-learning-test.mjs");
 
-assert.equal(manifest.version,"0.10.34");
+assert.equal(manifest.version,"0.10.35");
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
@@ -43,7 +43,7 @@ assert.ok(manifest.commands["toggle-extension-microphone"].description.includes(
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 assert.match(manifest.content_security_policy.extension_pages,/https:\/\/signal-interpreter-observability-re\.vercel\.app/);
 
-assert.ok(background.includes('importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js")'));
+assert.ok(background.includes('importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js")'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync"'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync-retry"'));
 assert.ok(background.includes('SignalObservationSync.flush("startup"'));
@@ -159,9 +159,9 @@ assert.ok(background.includes("EXTENSION_MICROPHONE_MUTE_QUEUE_ERROR"));
 assert.ok(content.includes("MIC ERR"));
 assert.ok(content.includes("state.groqCapture.microphoneMuted"));
 assert.ok(offscreen.includes("SIGNAL_SET_MICROPHONE_MUTED"));
-assert.ok(manifest.content_scripts.some(function(e){return e.world==="MAIN"&&e.js.includes("mic-guard-main.js")&&e.run_at==="document_start";}));
-assert.ok(manifest.content_scripts.some(function(e){return e.js.includes("global-mouse-gesture.js")&&e.run_at==="document_start";}));
-assert.ok(manifest.content_scripts.some(function(e){return e.js.includes("hotkey-fallback.js")&&e.all_frames===true;}));
+assert.ok(manifest.content_scripts.some(function(e){return e.world==="MAIN"&&e.js.includes("extension/mic-guard-main.js")&&e.run_at==="document_start";}));
+assert.ok(manifest.content_scripts.some(function(e){return e.js.includes("extension/global-mouse-gesture.js")&&e.run_at==="document_start";}));
+assert.ok(manifest.content_scripts.some(function(e){return e.js.includes("extension/hotkey-fallback.js")&&e.all_frames===true;}));
 assert.ok(offscreen.includes('String(message.cue||"")'));
 assert.ok(manifest.host_permissions.includes("http://*/*"));
 assert.ok(manifest.host_permissions.includes("https://*/*"));

@@ -6,7 +6,7 @@ import crypto from "node:crypto";
 const root=process.cwd();
 const read=(p)=>fs.readFileSync(path.join(root,p),"utf8");
 const exists=(p)=>fs.existsSync(path.join(root,p));
-const manifest=JSON.parse(read("extension/manifest.json"));
+const manifest=JSON.parse(read("manifest.json"));
 const background=read("extension/background.js");
 const offscreen=read("extension/offscreen.js");
 const groq=read("extension/groq-transcriber.js");
@@ -22,7 +22,7 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.34");
+assert.equal(manifest.version,"0.10.35");
 assert.ok(background.includes('liveCaptionInterpreterEnabled: false'), "el micrófono está fuera del alcance actual");
 assert.equal(background.includes('if (language === "es") source = "yo"'), false, "el historial del service worker no debe convertir idioma en identidad del hablante");
 assert.ok(overlay.includes('core.roleForSource(item.source, language)'), "el render respeta la fuente del hablante");
@@ -43,7 +43,7 @@ assert.ok(popup.includes("youtubeCaptionCapture"), "el popup permite iniciar y d
 assert.ok(manifest.key && manifest.key.length > 300);
 assert.ok(manifest.key);
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
-assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://app.cloudinterpreter.com/*")&&Array.isArray(e.js)&&e.js.includes("live-caption-core.js")&&e.js.includes("live-caption-overlay.js")&&e.js.includes("content.js")));
+assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://app.cloudinterpreter.com/*")&&Array.isArray(e.js)&&e.js.includes("extension/live-caption-core.js")&&e.js.includes("extension/live-caption-overlay.js")&&e.js.includes("extension/content.js")));
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 
 assert.ok(background.includes('importScripts("live-caption-core.js","live-caption-bridge.js"'));
@@ -172,7 +172,7 @@ assert.equal(/getUserMedia\(\{\s*audio:\s*true/.test(offscreen),false,"offscreen
 
 assert.equal(manifest.permissions.includes("tabCapture"),false);
 assert.equal(manifest.host_permissions.includes("https://api.groq.com/*"),false);
-assert.equal(manifest.content_scripts.some(e=>e.js?.includes("youtube-caption-adapter.js")),false);
+assert.equal(manifest.content_scripts.some(e=>e.js?.includes("extension/youtube-caption-adapter.js")),false);
 for(const code of [background,offscreen,popup]){
  assert.equal(/getUserMedia|MediaRecorder|createMediaStreamSource|tabCapture\.getMediaStreamId/.test(code),false,"no conversational media acquisition or replay");
 }

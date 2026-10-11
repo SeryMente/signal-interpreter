@@ -12,9 +12,9 @@
       <header class="appbar">
         <div>
           <span class="eyebrow">SIGNAL INTERPRETER</span>
-          <h1>Control</h1>
+          <h1>Tu sesión, bajo control.</h1>
         </div>
-        <span id="telemetryVersion" class="version">v—</span>
+        <div class="header-actions"><span id="telemetryVersion" class="version">v—</span><button id="openLab" class="button secondary" type="button" title="Prueba local, sin llamadas">Probar</button></div>
       </header>
 
       <section class="mic-card" aria-labelledby="mic-title">
@@ -31,7 +31,7 @@
         </div>
         <div class="safety-hints">
           <div><kbd>Ctrl+Shift+.</kbd><span id="micShortcutStatus">Atajo de mute · comprobando asignación…</span></div>
-          <div><span class="mouse-hint">L + R</span><span>Mantén botón izquierdo + derecho ~240 ms para <strong>FORCE MUTE</strong>.</span></div>
+          <div><span class="mouse-hint">L + R</span><span>Izquierdo + derecho ~240 ms: <strong>silenciar</strong>.</span></div>
         </div>
       </section>
 
@@ -53,10 +53,10 @@
 
       <section class="sub-card caption-preferences" aria-labelledby="caption-preferences-title">
         <div class="sub-head">
-          <div><strong id="caption-preferences-title">Subtítulos en vivo</strong><small>Historial legible, desplazable y ajustable</small></div>
+          <div><strong id="caption-preferences-title">Subtítulos en vivo</strong><small>Texto nativo · sin capturar audio</small></div>
           <label class="caption-enable"><input id="captionOverlayEnabled" type="checkbox" checked><span>Visible</span></label>
         </div>
-        <small class="caption-help">Fuente única: Live Caption de Chrome. No captura micrófono ni audio de pestaña, no usa Groq y no reproduce la conversación. Si Chrome deja de exponer texto al cerrar su recuadro, el panel lo indicará sin sustituir la fuente.</small>
+        <small class="caption-help">Live Caption de Chrome es la única fuente. Si Chrome deja de exponer texto, el panel te lo indicará.</small>
         <label class="select-row" for="captionOverlayScope">
           <span>Visibilidad del overlay</span>
           <select id="captionOverlayScope">
@@ -64,15 +64,7 @@
             <option value="all-tabs">Todas las pestañas web</option>
           </select>
         </label>
-        <small class="caption-help">Arrastra el encabezado para moverlo y la esquina inferior derecha para cambiar el tamaño. Usa la rueda o la barra de desplazamiento para revisar la conversación. «Auto» restaura el acomodo inteligente.</small>
-      </section>
-
-      <section class="sub-card caption-preferences" aria-labelledby="youtube-caption-test-title" id="youtubeCaptionTestTools" hidden>
-        <div class="sub-head">
-          <div><strong id="youtube-caption-test-title">Video de prueba</strong><small>Prueba histórica de audio deshabilitada</small></div>
-        </div>
-        <button id="youtubeCaptionCapture" class="button secondary" type="button" hidden>Iniciar transcripción del video</button>
-        <small id="youtubeCaptionCaptureHelp" class="caption-help" hidden>Solo aparece en el video de prueba designado. Captura únicamente el audio de esa pestaña, no activa el micrófono y no agrega segmentos a la transcripción oficial. Requiere la llave local de Groq.</small>
+        <small class="caption-help">Desde el panel: mover, ajustar, copiar y buscar. «Auto» restaura su posición.</small>
       </section>
 
       <section class="today-card">
@@ -99,7 +91,7 @@
       </section>
 
       <div class="action-grid">
-        <button id="openTranscript" class="button secondary">Abrir consola</button>
+        <button id="openTranscript" class="button secondary">Historial y notas</button>
         <button id="endCall" class="button danger" disabled>Finalizar llamada</button>
       </div>
 

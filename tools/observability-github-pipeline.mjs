@@ -505,7 +505,7 @@ function callReportMarkdown(report){
     "- Máximo de filas observado: "+String(report.captionDiagnosis&&report.captionDiagnosis.maximumVisibleRows||0),
     "- Fragmentos nativos encaminados: "+String(report.captionDiagnosis&&report.captionDiagnosis.nativeTextForwarded||0),
     "- Texto nativo fresco observado: "+String(report.captionDiagnosis&&report.captionDiagnosis.nativeFreshObserved),
-    "- Preview de audio histórico (no permitido en 0.10.34): "+String(report.captionDiagnosis&&report.captionDiagnosis.independentPreviewStarted),
+    "- Preview de audio histórico (no permitido en 0.10.35): "+String(report.captionDiagnosis&&report.captionDiagnosis.independentPreviewStarted),
     "- Resultados de preview / con texto: "+String(report.captionDiagnosis&&report.captionDiagnosis.previewResults||0)+" / "+String(report.captionDiagnosis&&report.captionDiagnosis.previewTextResults||0),
     "- Motivos registrados: "+JSON.stringify(report.captionDiagnosis&&report.captionDiagnosis.reasonCodes||[]),
     "- Montaje visible o ausencia de errores no prueban reconocimiento de voz.",

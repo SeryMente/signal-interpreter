@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-const manifest = JSON.parse(fs.readFileSync("extension/manifest.json", "utf8"));
+const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
 const offscreen = fs.readFileSync("extension/offscreen.js", "utf8");
 const background = fs.readFileSync("extension/background.js", "utf8");
-assert.equal(manifest.version, "0.10.34");
+assert.equal(manifest.version, "0.10.35");
 assert.ok(manifest.content_scripts.some((entry) =>
-  entry.js && entry.js.includes("hotkey-fallback.js") &&
+  entry.js && entry.js.includes("extension/hotkey-fallback.js") &&
   entry.matches && entry.matches.includes("https://*/*") && entry.all_frames === true
 ));
 assert.ok(offscreen.includes('playTone(Math.max(0,Math.min(1,Number(message.volume)||0)),String(message.cue||""))'),

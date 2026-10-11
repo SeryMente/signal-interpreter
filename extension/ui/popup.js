@@ -244,6 +244,7 @@
   }
 
   refreshYoutubeCaptionCaptureButton();
+  if($("openLab"))$("openLab").onclick=function(){chrome.tabs.create({url:chrome.runtime.getURL("extension/ui/lab.html")});};
 
   var openTranscript=$("openTranscript");
   if(openTranscript)openTranscript.addEventListener("click",function(){chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab)throw new Error("No hay pestaña activa.");return chrome.runtime.sendMessage({type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:tab.id,sourceUrl:tab.url||"",sourceTitle:tab.title||""});}).catch(function(){status("No se pudo abrir el historial",true);});});

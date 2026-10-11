@@ -1,6 +1,7 @@
 (function () {
   "use strict";
 
+  var isLabPage = location.protocol === "chrome-extension:" && /\/extension\/ui\/lab\.html$/.test(location.pathname);
   var core = globalThis.SignalCaptionCore;
   if (!core || !globalThis.chrome || !chrome.runtime || !chrome.storage) {
     try {
@@ -24,7 +25,7 @@
   if (previousOverlayRuntime && typeof previousOverlayRuntime.dispose === "function") previousOverlayRuntime.dispose("runtime-reinjected");
   var runtimeDisposed = false, runtimeStorageReady = false, runtimeEventBindings = [];
   var runtimeVersion = String(chrome.runtime.getManifest().version || "unknown");
-  var runtimeApi = { version: runtimeVersion, dispose: disposeOverlay };
+  var runtimeApi = { version: runtimeVersion, dispose: disposeOverlay, snapshot: function(){ return {ready:runtimeStorageReady,hostMounted:!!(host && host.isConnected && root),rowCount:rows.length,active:active,contextReady:contextReady}; } };
   globalThis.__SIGNAL_CAPTION_OVERLAY_RUNTIME__ = runtimeApi;
   function listen(target, type, listener, options) {
     target.addEventListener(type, listener, options);
@@ -114,6 +115,7 @@
   }
 
   function reportLifecycle(action, payload, level, dedupeKey) {
+    if (isLabPage) return;
     if (runtimeDisposed) return;
     var routePath = safeRoutePath(location.pathname);
     var details = Object.assign({
@@ -251,11 +253,12 @@
       '.collapsed .transcript,.collapsed .unread,.collapsed .resize{display:none!important}' +
       '.collapsed .header{border-bottom:0;border-radius:13px}' +
       '@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}' +
+      '.card{border-radius:12px;background:rgba(20,23,28,.98);border-color:#53667b;box-shadow:0 4px 16px rgba(0,0,0,.2);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}.header{padding:8px;gap:8px;flex-shrink:0;background:#1d2632}.move{flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-height:44px}.title{font-size:14px;line-height:1.4;letter-spacing:0}.subtitle{font-size:14px;line-height:1.4;color:#bac8d6}.state{font-size:14px;line-height:1.4;letter-spacing:0;max-width:100%;overflow-wrap:anywhere}.stateLabel{min-width:0}.toolbar{gap:4px}.tool{min-width:44px;min-height:44px;font-size:14px}.transcript{padding:12px 12px 48px;gap:8px}.row{padding:8px 0}.role,.lang,.time{font-size:14px;letter-spacing:0}.lang,.time{color:#b3c1cf}.text{font-size:16px;line-height:1.55}.empty{font-size:14px;color:#bac8d6}.action-toast{font-size:14px}.unread{min-height:44px;font-size:14px;bottom:8px;border-radius:8px}.resize{width:44px;height:44px;min-width:44px;min-height:44px;background:transparent}.collapsed{min-height:0}.collapsed .subtitle,.collapsed .state{display:none}.collapsed .header{min-height:44px;padding:0 8px;border-radius:11px}' +
       '</style>' +
       '<section class="card" role="region" aria-label="Subtítulos en vivo de Signal Interpreter">' +
         '<header class="header">' +
           '<button class="move" type="button" aria-label="Mover panel: arrastra este encabezado o usa las flechas del teclado">' +
-            '<span class="brand"><span class="title">Signal Interpreter</span><span class="subtitle">Clic: copiar teléfono/dirección · Ctrl+clic: verificar · Ctrl+Mayús+clic: Linguee</span></span>' +
+            '<span class="brand"><span class="title">Signal Interpreter</span><span class="subtitle" title="Clic: copiar teléfono/dirección · Ctrl+clic: verificar · Ctrl+Mayús+clic: Linguee">Copiar · Verificar · Linguee</span></span>' +
             '<span class="state"><i class="dot idle"></i><span class="stateLabel">EN ESPERA</span></span>' +
           '</button>' +
           '<div class="toolbar"><button class="tool auto" type="button" title="Restablecer posición y tamaño automáticos">Auto</button><button class="tool collapse" type="button" aria-expanded="true" title="Contraer o expandir el historial">−</button></div>' +
@@ -266,7 +269,7 @@
         '<div class="action-toast" role="status" aria-live="polite" hidden></div>' +
       '</section>';
 
-    document.documentElement.appendChild(host);
+    (isLabPage ? document.getElementById("caption-stage") || document.documentElement : document.documentElement).appendChild(host);
     bindControls();
     bindCaptionTextActions();
     applyLayout();
@@ -315,6 +318,7 @@
     if (!host || !root || !canShowOnThisPage() || layout.manual || collapsed) return;
     var card = root.querySelector(".card");
     if (!card) return;
+    if (isLabPage) return;
     var viewportWidth = Math.max(320, innerWidth || document.documentElement.clientWidth || 320);
     var viewportHeight = Math.max(200, innerHeight || document.documentElement.clientHeight || 200);
     var margin = 12;
@@ -346,6 +350,7 @@
 
   function applyLayout() {
     if (!host || !root) return;
+    if (isLabPage) {host.style.position="relative";host.style.left="0";host.style.top="0";host.style.width="100%";host.style.height=collapsed?"46px":"400px";return;}
     var viewportWidth = Math.max(320, innerWidth || document.documentElement.clientWidth || 320);
     var viewportHeight = Math.max(200, innerHeight || document.documentElement.clientHeight || 200);
     layout.width = clamp(layout.width, 300, Math.max(300, viewportWidth - 12));
@@ -366,7 +371,7 @@
     if (saveLayoutTimer) clearTimeout(saveLayoutTimer);
     saveLayoutTimer = setTimeout(function () {
       saveLayoutTimer = null;
-      try { chrome.storage.local.set({ signalCaptionOverlayLayout: layout }); } catch (_) {}
+      try { chrome.storage.local.set({ [isLabPage ? "signalLabOverlayLayout" : "signalCaptionOverlayLayout"]: layout }); } catch (_) {}
     }, 180);
   }
 
@@ -382,7 +387,7 @@
   }
 
   function startDrag(event) {
-    if (!host || event.button !== 0 || collapsed) return;
+    if (isLabPage || !host || event.button !== 0 || collapsed) return;
     var rect = host.getBoundingClientRect();
     dragging = {
       pointerId: event.pointerId,
@@ -395,7 +400,7 @@
   }
 
   function startResize(event) {
-    if (!host || event.button !== 0 || collapsed) return;
+    if (isLabPage || !host || event.button !== 0 || collapsed) return;
     var rect = host.getBoundingClientRect();
     resizing = {
       pointerId: event.pointerId,
@@ -442,7 +447,8 @@
     var collapseButton = root.querySelector(".collapse");
     var resize = root.querySelector(".resize");
     var unread = root.querySelector(".unread");
-    if (move) {
+    if (isLabPage) {if (move){move.disabled=true;move.style.cursor="default";move.setAttribute("aria-label","Panel de prueba anclado");}if(resize)resize.hidden=true;}
+    if (move && !isLabPage) {
       listen(move, "pointerdown", startDrag);
       listen(move, "keydown", function (event) {
         var delta = event.shiftKey ? 64 : 16;
@@ -511,7 +517,7 @@
     }
     if (collapsed) {
       host.style.height = "46px";
-      host.style.width = Math.max(300, Math.min(layout.width, innerWidth - 12)) + "px";
+      host.style.width = isLabPage ? "100%" : Math.max(300, Math.min(layout.width, innerWidth - 12)) + "px";
     } else {
       applyLayout();
     }
@@ -1036,6 +1042,7 @@
 
   function applyConfig(next) {
     config = Object.assign({}, config, next || {});
+    if (isLabPage) {config.liveCaptionOverlayEnabled=true;config.liveCaptionOverlayScope="source-only";}
     youtubeTarget = isYoutubeTargetPage();
     if (config.liveCaptionOverlayEnabled === false) {
       active = false;
@@ -1063,11 +1070,12 @@
     });
   }
 
-  chrome.storage.local.get(["effectifConfig", "signalCaptionOverlayLayout"], function (stored) {
+  chrome.storage.local.get(["effectifConfig", isLabPage ? "signalLabOverlayLayout" : "signalCaptionOverlayLayout"], function (stored) {
     if (runtimeDisposed) return;
     runtimeStorageReady = true;
     config = Object.assign({}, config, stored.effectifConfig || {});
-    var saved = stored.signalCaptionOverlayLayout;
+    if (isLabPage) {config.liveCaptionOverlayEnabled=true;config.liveCaptionOverlayScope="source-only";}
+    var saved = isLabPage ? stored.signalLabOverlayLayout : stored.signalCaptionOverlayLayout;
     if (saved && typeof saved === "object") {
       layout = {
         left: Number.isFinite(Number(saved.left)) ? Number(saved.left) : null,
@@ -1157,7 +1165,7 @@
       syncContext(true);
       applyConfig(changes.effectifConfig.newValue || {});
     }
-    if (changes.signalCaptionOverlayLayout && changes.signalCaptionOverlayLayout.newValue) {
+    if (!isLabPage && changes.signalCaptionOverlayLayout && changes.signalCaptionOverlayLayout.newValue) {
       var saved = changes.signalCaptionOverlayLayout.newValue;
       layout = {
         left: Number.isFinite(Number(saved.left)) ? Number(saved.left) : null,
@@ -1181,6 +1189,7 @@
       return false;
     }
     if (!message) return;
+    if (!!message.labOnly !== isLabPage && /^SIGNAL_CAPTION_/.test(message.type)) return false;
     if (message.type === "SIGNAL_YOUTUBE_CAPTION_PREVIEW_STATUS") {
       if (youtubeTarget) {
         active = message.active === true;
