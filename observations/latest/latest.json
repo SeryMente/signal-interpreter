@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-447b915d-664a-4611-989f-820899a3afea",
-  "createdAt": "2026-10-11T20:43:18.863Z",
+  "batchId": "batch-205a0288-4b32-4cab-b109-459c1027c19a",
+  "createdAt": "2026-10-11T20:43:48.566Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.35",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "9f435dee-f4e2-44c1-840e-ea97f516cd86",
-      "sequence": 2070,
-      "timestamp": "2026-10-11T20:43:00.495Z",
-      "ingestedAt": "2026-10-11T20:43:00.543Z",
+      "id": "576b2c4a-d143-4198-8cf7-f0c7ae508e13",
+      "sequence": 2072,
+      "timestamp": "2026-10-11T20:43:23.520Z",
+      "ingestedAt": "2026-10-11T20:43:23.558Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -20,7 +20,7 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "d35e1b08-806c-4c45-b725-dee15c961186",
+      "traceId": "c3507cca-4d08-4d98-9de8-dfa3f437e000",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -58,17 +58,17 @@
         "callId": null,
         "route": "/watch",
         "extensionVersion": "0.10.35",
-        "previousRoute": "/watch",
+        "previousRoute": "/results",
         "currentRoute": "/watch",
         "activeCallRoute": false
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "602ab8e5-554c-4c9e-8ed4-f0287749a2e4",
-      "sequence": 2071,
-      "timestamp": "2026-10-11T20:43:18.635Z",
-      "ingestedAt": "2026-10-11T20:43:18.674Z",
+      "id": "bff535df-36a6-4702-b165-41e2b30a7446",
+      "sequence": 2073,
+      "timestamp": "2026-10-11T20:43:31.112Z",
+      "ingestedAt": "2026-10-11T20:43:31.159Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -76,14 +76,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "532f62e4-3df1-4ac2-970f-c88f2edb4b9c",
+      "traceId": "1c7321ce-b14b-4e13-b9ab-b346facd8ccb",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 1600163364,
+      "tabId": 1600162187,
       "session": {
         "callId": null
       },
@@ -98,14 +98,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/results",
+        "route": "/es/",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 1600163364,
+        "sourceTabId": 1600162187,
         "sourceWindowId": 1600162101,
-        "observedTabStatus": "complete",
+        "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://www.youtube.com/results"
+        "observedTabUrl": "https://y2mate.gs/es/"
       },
       "privacy": {
         "rawTextStored": false,
@@ -114,31 +114,161 @@
       },
       "payload": {
         "callId": null,
-        "route": "/results",
+        "route": "/es/",
         "extensionVersion": "0.10.35",
-        "previousRoute": "/watch",
-        "currentRoute": "/results",
-        "activeCallRoute": false
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "6724381b-3bef-487f-8ac3-a4e512b76945",
+      "sequence": 2074,
+      "timestamp": "2026-10-11T20:43:31.354Z",
+      "ingestedAt": "2026-10-11T20:43:31.398Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "d8b7a750-3d95-4bce-b4f0-8492c23c11d7",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://y2mate.gs/es/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/",
+        "extensionVersion": "0.10.35",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "6c9dd863-119a-48d7-b0a8-4fe7d7528c29",
+      "sequence": 2075,
+      "timestamp": "2026-10-11T20:43:31.354Z",
+      "ingestedAt": "2026-10-11T20:43:31.617Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "96f9e9fc-3dfc-4b46-9d9e-2f0465e0a212",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://y2mate.gs/es/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/",
+        "extensionVersion": "0.10.35",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 4,
     "errors": 0,
-    "warnings": 0,
+    "warnings": 1,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 0,
+    "contextEvents": 1,
     "invariantSignals": 0,
-    "firstSequence": 2070,
-    "lastSequence": 2071,
-    "firstTimestamp": "2026-10-11T20:43:00.495Z",
-    "lastTimestamp": "2026-10-11T20:43:18.635Z",
+    "firstSequence": 2072,
+    "lastSequence": 2075,
+    "firstTimestamp": "2026-10-11T20:43:23.520Z",
+    "lastTimestamp": "2026-10-11T20:43:31.354Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1,
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1,
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 4
     }
   }
 }
