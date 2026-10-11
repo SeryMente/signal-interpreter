@@ -34,34 +34,47 @@ jobs:
       - name: Verify source archive root and prepare native installation
         shell: pwsh
         run: |
-          $ErrorActionPreference = "Stop"
-          $zip = Join-Path $env:RUNNER_TEMP "signal-root.zip"
-          git archive --format=zip --output=$zip HEAD
-          if ($LASTEXITCODE -ne 0) { throw "Source archive failed" }
-          $stage = Join-Path $env:RUNNER_TEMP "signal-root-install"
-          Expand-Archive -LiteralPath $zip -DestinationPath $stage
-          if (-not (Test-Path -LiteralPath (Join-Path $stage "manifest.json"))) { throw "Archive root manifest missing" }
-          if (Test-Path -LiteralPath (Join-Path $stage "observations")) { throw "Observations must not enter source installation archive" }
-          & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage "INSTALAR.ps1") -SkipSample
-          if ($LASTEXITCODE -ne 0) { throw "Windows PowerShell 5.1 installer failed" }
-          if (-not (Test-Path -LiteralPath (Join-Path $stage "INSTALACION-RESULTADO.json"))) { throw "Installation result missing" }
-          $result = Get-Content -Raw (Join-Path $stage "INSTALACION-RESULTADO.json") | ConvertFrom-Json
-          if ($result.NativeProtocol -ne "PASS" -or $result.Hashes -ne "PASS") { throw "Native installation not verified" }
-          if ($result.Sample -ne "BUNDLED_VERIFIED" -or [Math]::Abs([double]$result.SampleDurationSeconds-281.6) -gt 0.001) { throw "Bundled sample not verified" }
-          $sampleMeta = Get-Content -Raw -Encoding UTF8 (Join-Path $stage "extension/ui/sample.json") | ConvertFrom-Json
-          $samplePath = Join-Path $stage "extension/ui/sample.ogg"
-          if ((Get-FileHash -LiteralPath $samplePath -Algorithm SHA256).Hash -ne $sampleMeta.sha256) { throw "Decoded sample hash mismatch" }
-          & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage "tools/materialize-lab-sample.ps1") -Root $stage
-          if ($LASTEXITCODE -ne 0) { throw "Repeated sample preparation failed" }
-          $beforeHash = (Get-FileHash -LiteralPath $samplePath -Algorithm SHA256).Hash
-          [IO.File]::AppendAllText((Join-Path $stage "extension/ui/sample.ogg.b64"), "invalid-payload")
-          $savedPreference = $ErrorActionPreference
-          $ErrorActionPreference = "Continue"
-          try { & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage "tools/materialize-lab-sample.ps1") -Root $stage 2>$null; $failureCode = $LASTEXITCODE } finally { $ErrorActionPreference = $savedPreference }
-          if ($failureCode -eq 0) { throw "Corrupt bundled sample accepted" }
-          if ((Get-FileHash -LiteralPath $samplePath -Algorithm SHA256).Hash -ne $beforeHash) { throw "Negative test altered verified audio" }
-          Write-Output "BUNDLED_SAMPLE_WINDOWS_51_REPEAT_AND_CORRUPTION=PASS"
-          Write-Output "SOURCE_ZIP_ROOT_WINDOWS_INSTALL=PASS"
+          try {
+            $ErrorActionPreference = "Stop"
+            $zip = Join-Path $env:RUNNER_TEMP "signal-root.zip"
+            git archive --format=zip --output=$zip HEAD
+            if ($LASTEXITCODE -ne 0) { throw "Source archive failed" }
+            $stage = Join-Path $env:RUNNER_TEMP "signal-root-install"
+            Expand-Archive -LiteralPath $zip -DestinationPath $stage
+            if (-not (Test-Path -LiteralPath (Join-Path $stage "manifest.json"))) { throw "Archive root manifest missing" }
+            if (Test-Path -LiteralPath (Join-Path $stage "observations")) { throw "Observations must not enter source installation archive" }
+            $savedPreference = $ErrorActionPreference
+            $ErrorActionPreference = "Continue"
+            try { $installOutput = & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage "INSTALAR.ps1") -SkipSample 2>&1; $installExit = $LASTEXITCODE } finally { $ErrorActionPreference = $savedPreference }
+            $installOutput | ForEach-Object { Write-Output ([string]$_) }
+            if ($installExit -ne 0) {
+              $detail = (($installOutput | ForEach-Object { [string]$_ }) -join " | ").Replace("%","%25").Replace("`r","%0D").Replace("`n","%0A")
+              Write-Output "::error title=Windows PowerShell 5.1 installer::$detail"
+              throw "Windows PowerShell 5.1 installer failed"
+            }
+            if (-not (Test-Path -LiteralPath (Join-Path $stage "INSTALACION-RESULTADO.json"))) { throw "Installation result missing" }
+            $result = Get-Content -Raw (Join-Path $stage "INSTALACION-RESULTADO.json") | ConvertFrom-Json
+            if ($result.NativeProtocol -ne "PASS" -or $result.Hashes -ne "PASS") { throw "Native installation not verified" }
+            if ($result.Sample -ne "BUNDLED_VERIFIED" -or [Math]::Abs([double]$result.SampleDurationSeconds-281.6) -gt 0.001) { throw "Bundled sample not verified" }
+            $sampleMeta = Get-Content -Raw -Encoding UTF8 (Join-Path $stage "extension/ui/sample.json") | ConvertFrom-Json
+            $samplePath = Join-Path $stage "extension/ui/sample.ogg"
+            if ((Get-FileHash -LiteralPath $samplePath -Algorithm SHA256).Hash -ne $sampleMeta.sha256) { throw "Decoded sample hash mismatch" }
+            & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage "tools/materialize-lab-sample.ps1") -Root $stage
+            if ($LASTEXITCODE -ne 0) { throw "Repeated sample preparation failed" }
+            $beforeHash = (Get-FileHash -LiteralPath $samplePath -Algorithm SHA256).Hash
+            [IO.File]::AppendAllText((Join-Path $stage "extension/ui/sample.ogg.b64"), "invalid-payload")
+            $savedPreference = $ErrorActionPreference
+            $ErrorActionPreference = "Continue"
+            try { & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage "tools/materialize-lab-sample.ps1") -Root $stage 2>$null; $failureCode = $LASTEXITCODE } finally { $ErrorActionPreference = $savedPreference }
+            if ($failureCode -eq 0) { throw "Corrupt bundled sample accepted" }
+            if ((Get-FileHash -LiteralPath $samplePath -Algorithm SHA256).Hash -ne $beforeHash) { throw "Negative test altered verified audio" }
+            Write-Output "BUNDLED_SAMPLE_WINDOWS_51_REPEAT_AND_CORRUPTION=PASS"
+            Write-Output "SOURCE_ZIP_ROOT_WINDOWS_INSTALL=PASS"
+          } catch {
+            $detail = ([string]$_.Exception.Message).Replace("%","%25").Replace("`r","%0D").Replace("`n","%0A")
+            Write-Output "::error title=Source ZIP Windows verification::$detail"
+            throw
+          }
       - name: Compile the checked-in UI Automation host source
         shell: pwsh
         run: |
