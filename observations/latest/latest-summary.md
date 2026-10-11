@@ -1,31 +1,27 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-afbb3774-fc4c-4b6b-be67-f9a0ce8128da
-- Creado: 2026-10-11T20:27:50.720Z
-- Trigger: startup
+- Batch: batch-9ddff98d-332d-4361-8931-1d7f675d5eeb
+- Creado: 2026-10-11T20:28:48.686Z
+- Trigger: alarm
 - Extensión: 0.10.35
 - Eventos: 7
 - Errores: 0
 - Warnings: 0
-- Secuencia: 1829 → 1835
+- Secuencia: 1925 → 1931
 - Identidades de plataforma: 14
-- Snapshots de plataforma: 885
-- Deltas de plataforma: 883
+- Snapshots de plataforma: 886
+- Deltas de plataforma: 884
 
 ## Categorías
 
 {
-  "RUNTIME": 6,
-  "LIVE_CAPTION": 1
+  "CAPTION": 6,
+  "RUNTIME": 1
 }
 
 ## Acciones
 
 {
-  "EXTENSION_RUNTIME_STARTED": 1,
-  "EXTENSION_MICROPHONE_SHORTCUT_AVAILABLE": 2,
-  "EXTENSION_VERSION_BOUNDARY": 1,
-  "HOTLOAD_EXISTING_TABS_SCAN_COMPLETED": 1,
-  "HOTLOAD_EXISTING_TABS_SCAN_DEDUPED": 1,
-  "SIGNAL_CAPTION_NATIVE_ONLY_AUDIO_ISOLATED": 1
+  "LIVE_CAPTION_OVERLAY_PAGEHIDE": 6,
+  "TELEMETRY_MAINTENANCE": 1
 }
