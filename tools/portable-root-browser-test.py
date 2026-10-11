@@ -1,8 +1,14 @@
 """Developer-only Chrome for Testing fixture. No real platform/native Windows acceptance. Requires Python Playwright; end users do not need it."""
 from pathlib import Path
-import tempfile,json,shutil,re,wave,struct,math
+import tempfile,json,shutil,re,wave,struct,math,base64,hashlib,time
 from playwright.sync_api import sync_playwright,expect
-root=Path.cwd();artifacts=Path(tempfile.mkdtemp(prefix='signal-browser-proof-'));profile=str(artifacts/'profile');errors=[]
+def wait_condition(page, expression, timeout=10):
+ deadline=time.monotonic()+timeout
+ while time.monotonic()<deadline:
+  if page.evaluate(expression):return
+  page.wait_for_timeout(100)
+ raise AssertionError("Condition not observed: "+expression)
+root=Path.cwd();sample_bytes=base64.b64decode((root/"extension/ui/sample.ogg.b64").read_text());sample_meta=json.loads((root/"extension/ui/sample.json").read_text());assert hashlib.sha256(sample_bytes).hexdigest().upper()==sample_meta["sha256"];(root/"extension/ui/sample.ogg").write_bytes(sample_bytes);artifacts=Path(tempfile.mkdtemp(prefix='signal-browser-proof-'));profile=str(artifacts/'profile');errors=[]
 audio=artifacts/'lab-tone-fixture.wav'
 with wave.open(str(audio),'wb') as f:
  f.setnchannels(1);f.setsampwidth(2);f.setframerate(16000);f.writeframes(b''.join(struct.pack('<h',int(1200*math.sin(i*2*math.pi*440/16000))) for i in range(32000)))
@@ -23,6 +29,9 @@ with sync_playwright() as p:
    if other.url.startswith('https://app.cloudinterpreter.com/'):other.close()
   inventory=worker.evaluate('chrome.tabs.query({})');print('FIXTURE_TABS',[(t['id'],t.get('url')) for t in inventory],flush=True)
   worker.evaluate('async()=>{const tabs=await chrome.tabs.query({url:["https://app.cloudinterpreter.com/*"]});await Promise.all(tabs.map(t=>chrome.tabs.remove(t.id)));}')
+  lab.evaluate('document.getElementById("player").load()')
+  wait_condition(lab,'Number.isFinite(document.getElementById("player").duration)')
+  assert abs(lab.evaluate('document.getElementById("player").duration')-281.6)<0.1
   lab.click('#start');expect(lab.locator("#phase")).to_have_text("En prueba",timeout=10000)
   lab.wait_for_timeout(500)
   assert lab.locator('#end').get_attribute('disabled') is None;lab.screenshot(path=str(artifacts/'lab.png'),full_page=True)
@@ -41,6 +50,19 @@ with sync_playwright() as p:
    lab.evaluate('document.getElementById("player").play()')
   expect(lab.locator("#phase")).to_have_text("Finalizada",timeout=10000)
   automatic.value.save_as(str(artifacts/'lab-auto-report.json'));auto=json.loads(Path(str(artifacts/'lab-auto-report.json')).read_text());assert auto['endReason']=='media-ended';assert auto['audioSource']=='local-file';assert auto['nativeCaptionEvents']==0
+  # Verify the bundled speech default loads, really plays, and automatically exports at its end.
+  lab.locator('#file').set_input_files([])
+  lab.evaluate('document.getElementById("player").src="sample.ogg"')
+  lab.click('#start');expect(lab.locator("#phase")).to_have_text("En prueba",timeout=10000)
+  lab.evaluate('document.getElementById("player").play()')
+  wait_condition(lab,'document.getElementById("player").currentTime>0.5 && !document.getElementById("player").paused')
+  with lab.expect_download() as speech_end:
+   lab.evaluate('document.getElementById("player").currentTime=document.getElementById("player").duration-0.4')
+  expect(lab.locator("#phase")).to_have_text("Finalizada",timeout=10000)
+  speech_end.value.save_as(str(artifacts/'lab-bundled-report.json'))
+  speech=json.loads((artifacts/'lab-bundled-report.json').read_text())
+  assert speech['audioSource']=='bundled-sample';assert speech['endReason']=='media-ended'
+  assert speech['result']=='native-text-not-confirmed';assert speech['nativeCaptionEvents']==0
   # A platform tab blocks start before any native bridge or session can become active.
   platform=ctx.new_page();platform.goto('https://app.cloudinterpreter.com/profile/offline-fixture');lab.click('#start');expect(lab.locator("#status")).to_contain_text("Cierra las pestañas",timeout=10000);assert lab.locator('#end').get_attribute('disabled') is not None;platform.close()
   assert not errors,errors

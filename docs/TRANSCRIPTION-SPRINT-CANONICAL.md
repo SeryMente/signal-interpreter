@@ -3,7 +3,7 @@
 > **Autoridad documental:** este es el único informe canónico del esfuerzo/sprint de transcripción, Live Caption y overlay de subtítulos de Signal Interpreter. Las notas antiguas de implementación, los requisitos verbatim y las notas de versión son fuentes históricas o técnicas subordinadas; no son informes alternativos del esfuerzo.
 > **Ruta canónica:** `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`
 > **Repositorio:** https://github.com/SeryMente/signal-interpreter
-> **Última versión documentada:** **0.10.35 — Raíz cargable en Windows, laboratorio nativo aislado y calidad de vida**
+> **Última versión documentada:** **0.10.36 — Muestra bilingüe real integrada en el laboratorio portable**
 > **Integración previa al ciclo correctivo:** [PR #52](https://github.com/SeryMente/signal-interpreter/pull/52)
 > **Corrección previa de recuperación/exportación:** [PR #53](https://github.com/SeryMente/signal-interpreter/pull/53)
 > **Integración histórica del alcance 0.10.32:** [PR #54](https://github.com/SeryMente/signal-interpreter/pull/54)
@@ -445,6 +445,18 @@ Evidencia local comprobada: 28/28 suites aprobadas; Chrome for Testing cargó ra
 La revisión visual cubre popup, laboratorio, historial y panel contraído/expandido en desktop y 390px. No certifica UI Automation ni una llamada real. El laboratorio replica el recorrido compartido de captions, pero no la autenticación, WebRTC, cambios de ruta, terminación ni particularidades de Cloud Interpreter; esas compuertas requieren su plataforma real. Que el switch esté encendido no obliga a Chrome a conservar el árbol accesible con la burbuja cerrada. Sin texto accesible se informa el bloqueo; no se agrega fallback de audio.
 
 **Aceptación operativa todavía NO VERIFICADA:** primera reproducción nativa en el Windows del operador, visible/oculta, y primera llamada posterior con ausencia de eco, continuidad y observabilidad automática. No se garantiza ausencia absoluta de fallos ni se declara lista en vivo por pasar un fixture. La evidencia final de integración debe cotejar el head final de la propuesta y su versión raíz.
+
+## 17. Muestra bilingüe integrada · 0.10.36
+
+El operador pidió integrar en el repositorio y la extensión actual —no entregar un archivo para cargar manualmente— el audio aportado de [Consecutive Interpreting Practice Eng-Spa Abdominal Wall Hernia](https://www.youtube.com/watch?v=kpeNjBGh8Cs).
+
+Se revisó el archivo completo mediante transcripción automática, se refinó el tramo seleccionado y se comprobó acústicamente el idioma de doce intervenciones. Corte único **962.0–1243.6 s (16:02–20:43.6), duración 281.6 s**: tres intervenciones de médico/cliente en inglés, tres del paciente LEP en español y seis interpretaciones en ambas direcciones. Son papeles dramatizados inferidos por contenido; no se afirma identificación de tres voces físicas diferentes. El bloque combina turnos cortos/largos, fecha/hora (jueves 8:45), seguro, pagos y recuperación. No se añadieron voces, texto, repeticiones ni silencios; se conservaron las pausas y se cortó entre frases.
+
+El paquete fuente incluye `extension/ui/sample.ogg.b64` y su procedencia/huella en `sample.json`. `tools/materialize-lab-sample.ps1` decodifica offline con .NET, verifica SHA-256 antes de escribir, preserva un archivo existente distinto y es idempotente para uno idéntico. El instalador verifica ambos y el helper mediante el manifiesto de payload, materializa la muestra y ya no usa SAPI. El parámetro histórico `SkipSample` no omite esta muestra: se conserva solo para compatibilidad de invocación. El reproductor apunta por defecto a `sample.ogg`; el informe separa `bundled-sample` de `local-file`.
+
+La transcodificación es Ogg/Opus mono de voz, 20 kbit/s; Chrome admite este contenedor/códec sin instalación adicional. El archivo original y las transcripciones de análisis no se duplican en el repositorio. La inclusión se hizo por solicitud expresa del operador con atribución de origen; no se atribuye titularidad ni una licencia no verificada.
+
+Compuertas: integridad base64/archivo, versión raíz, origen del informe, ausencia de captura de audio para el overlay, materialización Windows PowerShell 5.1, repetición y rechazo de payload alterado; fixture Chrome carga y reproduce la muestra predeterminada y verifica exportación al final sin inventar captions. **No constituye aceptación del lector Windows ni de una llamada real. El fallo reportado de ventana nativa sin texto en el panel no se declara resuelto por integrar la muestra.**
 
 ## Anexo A — documento de implementación preexistente conservado
 
