@@ -35,6 +35,7 @@ with sync_playwright() as p:
   saved=worker.evaluate('chrome.storage.local.get(["signalLabLock","effectifConfig"])');assert saved['signalLabLock'] is False
   # Verify automatic export at media end using ordinary local tone playback; no native speech fabricated.
   lab.locator('#file').set_input_files(str(audio));lab.click('#start');expect(lab.locator("#phase")).to_have_text("En prueba",timeout=10000)
+  expect(lab.locator("#signal-interpreter-live-caption-overlay")).to_be_visible(timeout=10000)
   lab.set_viewport_size({"width":390,"height":900});assert lab.evaluate('document.documentElement.scrollWidth <= innerWidth');lab.screenshot(path=str(artifacts/'lab-narrow.png'),full_page=True)
   with lab.expect_download() as automatic:
    lab.evaluate('document.getElementById("player").play()')

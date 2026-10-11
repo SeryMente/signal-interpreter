@@ -407,7 +407,7 @@ La competencia se considera una motivación de calidad de vida declarada por el 
 
 El ZIP fuente del repositorio es el paquete. Dentro de la carpeta extraída están `manifest.json`, `INSTALAR.cmd`, `INSTALAR.ps1`, `PROBAR.cmd`, `PROBAR.ps1` y `payload-sha256.json`; esa MISMA carpeta es la que se carga en Chrome. El runtime permanece organizado bajo `extension/`; no hay segundo manifiesto allí. Recursos de background, popup, offscreen, reinyección y content scripts resuelven desde la raíz real. La clave mantiene el identificador `ldpbjhobnfgmhdoehehdmnbhhjckebmj` y no se amplían permisos de captura.
 
-`.gitattributes` excluye observaciones, diagnósticos históricos y workflows de los archivos fuente instalables mediante export-ignore, sin eliminarlos del repositorio. El ZIP real generado por GitHub fue descargado e inspeccionado: manifiesto raíz presente y observaciones excluidas. La validación remota de huellas detectó normalización de CRLF en los dos cmd; la serialización preserva los bytes de texto originales, sin debilitar la compuerta. No se comete otro ZIP ni una copia del runtime. Las huellas de los 50 archivos de distribución se validan antes de registrar el host; se evita la envoltura de arrays que falló en Windows PowerShell 5.1.
+`.gitattributes` excluye observaciones, diagnósticos históricos y workflows de los archivos fuente instalables mediante export-ignore, sin eliminarlos del repositorio. El ZIP real generado por GitHub fue descargado e inspeccionado: manifiesto raíz presente y observaciones excluidas. La validación remota de huellas detectó normalización de CRLF en los dos cmd; la serialización preserva los bytes de texto originales, sin debilitar la compuerta. Una segunda causa quedó reproducida: git archive con core.autocrlf=true alteró 41 payloads en Windows; * -text conserva los bytes, con cero diferencias en el mismo fixture. El control Windows ejecuta el instalador mediante Windows PowerShell 5.1, no únicamente el parser de PowerShell moderno. La instrumentación temporal de diagnóstico fue retirada tras obtener la causa; las compuertas permanecen. No se comete otro ZIP ni una copia del runtime. Las huellas de los 50 archivos de distribución se validan antes de registrar el host; se evita la envoltura de arrays que falló en Windows PowerShell 5.1.
 
 ### 16.3. Instalación Windows, sin runtime de desarrollo
 
@@ -445,20 +445,6 @@ Evidencia local comprobada: 28/28 suites aprobadas; Chrome for Testing cargó ra
 La revisión visual cubre popup, laboratorio, historial y panel contraído/expandido en desktop y 390px. No certifica UI Automation ni una llamada real. El laboratorio replica el recorrido compartido de captions, pero no la autenticación, WebRTC, cambios de ruta, terminación ni particularidades de Cloud Interpreter; esas compuertas requieren su plataforma real. Que el switch esté encendido no obliga a Chrome a conservar el árbol accesible con la burbuja cerrada. Sin texto accesible se informa el bloqueo; no se agrega fallback de audio.
 
 **Aceptación operativa todavía NO VERIFICADA:** primera reproducción nativa en el Windows del operador, visible/oculta, y primera llamada posterior con ausencia de eco, continuidad y observabilidad automática. No se garantiza ausencia absoluta de fallos ni se declara lista en vivo por pasar un fixture. La evidencia final de integración debe cotejar el head final de la propuesta y su versión raíz.
-
-### 16.7. Windows preparation diagnostic (CI only)
-
-Windows PowerShell 5.1 installation FAILED; main not integrated.
-
-```text
-Archivo no verificado: extension/PREPARE-CAPTIONS.cmd
-At [package]\INSTALAR.ps1:25 char:120
-+ ... 56).Hash -ne $entry.sha256){throw "Archivo no verificado: $relative"}
-+                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : OperationStopped: (Archivo no veri...RE-CAPTIONS.cmd:String) [], RuntimeException
-    + FullyQualifiedErrorId : Archivo no verificado: extension/PREPARE-CAPTIONS.cmd
- 
-```
 
 ## Anexo A — documento de implementación preexistente conservado
 
