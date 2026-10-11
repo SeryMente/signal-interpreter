@@ -1,42 +1,28 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-d111b1a8-11be-4b63-a654-8970326fc65a
-- Creado: 2026-10-10T22:41:09.036Z
-- Trigger: call-answered
-- Extensión: 0.10.33
-- Eventos: 25
-- Errores: 0
-- Warnings: 1
-- Secuencia: 6937 → 6961
+- Batch: batch-ff871fce-5273-421d-a803-a1783543d2b6
+- Creado: 2026-10-11T01:52:32.680Z
+- Trigger: critical
+- Extensión: 0.10.34
+- Eventos: 7
+- Errores: 1
+- Warnings: 0
+- Secuencia: 47 → 53
 - Identidades de plataforma: 8
-- Snapshots de plataforma: 834
-- Deltas de plataforma: 832
+- Snapshots de plataforma: 835
+- Deltas de plataforma: 833
 
 ## Categorías
 
 {
-  "RUNTIME": 17,
-  "CAPTION": 4,
-  "LIVE_CAPTION": 2,
-  "SESSION": 2
+  "RUNTIME": 7
 }
 
 ## Acciones
 
 {
-  "MEDIA_HEALTH": 1,
-  "AUTO_ANSWER_READINESS": 10,
-  "SCREEN_MAP": 2,
-  "LIVE_CAPTION_OVERLAY_LOCAL_ROUTE_FALLBACK": 1,
-  "LIVE_CAPTION_OVERLAY_HOST_MOUNTED": 1,
-  "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-  "HOTLOAD_CAPTION_OVERLAY_REHYDRATED": 1,
-  "HOTLOAD_EXISTING_TAB_REHYDRATED": 1,
-  "HOTLOAD_EXISTING_TABS_SCAN_COMPLETED": 1,
-  "HOTLOAD_EXISTING_WEB_TABS_SCAN_DEDUPED": 1,
-  "SIGNAL_CAPTION_NATIVE_START_REQUESTED": 1,
-  "SIGNAL_CAPTION_NATIVE_STATUS": 1,
-  "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1,
-  "CALL_OBSERVABILITY_CHECKPOINT": 1,
-  "CALL_ANSWERED_OVERLAY_REFRESH_REQUESTED": 1
+  "PAGE_VISIBILITY_CHANGED": 2,
+  "AUTO_ANSWER_READINESS": 3,
+  "PAGE_LIFECYCLE": 1,
+  "PLATFORM_SCREENSHOT_CAPTURE_ERROR": 1
 }

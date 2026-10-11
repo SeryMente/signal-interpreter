@@ -27,8 +27,9 @@
 
 ## Diagnóstico de subtítulos
 - Máximo de filas observado: 0
+- Fragmentos nativos encaminados: 0
 - Texto nativo fresco observado: false
-- Respaldo independiente iniciado: false
+- Preview de audio histórico (no permitido en 0.10.34): false
 - Resultados de preview / con texto: 0 / 0
 - Motivos registrados: ["call-route-not-authorized","spa-call-route-observed","target-changed","native-disconnect","native-host-not-registered","missing-api-key"]
 - Montaje visible o ausencia de errores no prueban reconocimiento de voz.
