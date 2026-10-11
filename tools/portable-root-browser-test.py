@@ -33,6 +33,13 @@ with sync_playwright() as p:
   with lab.expect_download() as pending:lab.click('#report')
   download=pending.value;target=str(artifacts/'lab-report.json');download.save_as(target);report=json.loads(Path(target).read_text());assert report['environment']=='lab';assert report['result']=='native-text-not-confirmed';assert report['nativeCaptionEvents']==0;assert report['spokenTextIncluded'] is False;assert report['productionExport'] is False
   saved=worker.evaluate('chrome.storage.local.get(["signalLabLock","effectifConfig"])');assert saved['signalLabLock'] is False
+  # Verify automatic export at media end using ordinary local tone playback; no native speech fabricated.
+  lab.locator('#file').set_input_files(str(audio));lab.click('#start');expect(lab.locator("#phase")).to_have_text("En prueba",timeout=10000)
+  lab.set_viewport_size({"width":390,"height":900});assert lab.evaluate('document.documentElement.scrollWidth <= innerWidth');lab.screenshot(path=str(artifacts/'lab-narrow.png'),full_page=True)
+  with lab.expect_download() as automatic:
+   lab.evaluate('document.getElementById("player").play()')
+  expect(lab.locator("#phase")).to_have_text("Finalizada",timeout=10000)
+  automatic.value.save_as(str(artifacts/'lab-auto-report.json'));auto=json.loads(Path(str(artifacts/'lab-auto-report.json')).read_text());assert auto['endReason']=='media-ended';assert auto['audioSource']=='local-file';assert auto['nativeCaptionEvents']==0
   # A platform tab blocks start before any native bridge or session can become active.
   platform=ctx.new_page();platform.goto('https://app.cloudinterpreter.com/profile/offline-fixture');lab.click('#start');expect(lab.locator("#status")).to_contain_text("Cierra las pestañas",timeout=10000);assert lab.locator('#end').get_attribute('disabled') is not None;platform.close()
   assert not errors,errors
