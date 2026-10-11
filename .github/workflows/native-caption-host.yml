@@ -42,8 +42,36 @@ jobs:
           Expand-Archive -LiteralPath $zip -DestinationPath $stage
           if (-not (Test-Path -LiteralPath (Join-Path $stage "manifest.json"))) { throw "Archive root manifest missing" }
           if (Test-Path -LiteralPath (Join-Path $stage "observations")) { throw "Observations must not enter source installation archive" }
-          & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage "INSTALAR.ps1") -SkipSample
-          if ($LASTEXITCODE -ne 0) { throw "Windows PowerShell 5.1 installer failed" }
+          $installLog = Join-Path $env:RUNNER_TEMP "signal-install-diagnostic.txt"
+          $installFailed = $false
+          try {
+            & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage "INSTALAR.ps1") -SkipSample *>&1 | Tee-Object -FilePath $installLog
+            $installFailed = $LASTEXITCODE -ne 0
+          } catch {
+            $installFailed = $true
+            $_ | Out-String | Add-Content -LiteralPath $installLog
+          }
+          if ($installFailed) {
+            if ($env:GITHUB_EVENT_NAME -eq "push" -and $env:GITHUB_REF_NAME.StartsWith("feat/")) {
+              $detail = (Get-Content -LiteralPath $installLog | Select-Object -Last 32) -join "`n"
+              $detail = $detail.Replace($stage, "[package]")
+              if ($detail.Length -gt 2400) { $detail = $detail.Substring(0, 2400) }
+              $doc = Join-Path $PWD "docs\TRANSCRIPTION-SPRINT-CANONICAL.md"
+              $marker = "### 16.7. Windows preparation diagnostic (CI only)"
+              $text = [IO.File]::ReadAllText($doc)
+              if (-not $text.Contains($marker)) {
+                $block = $marker + "`n`nWindows PowerShell 5.1 installation FAILED; main not integrated.`n`n" + '```text' + "`n" + $detail + "`n" + '```' + "`n`n"
+                $text = $text.Replace("## Anexo A", $block + "## Anexo A")
+                [IO.File]::WriteAllText($doc, $text, [Text.UTF8Encoding]::new($false))
+                git config user.name "github-actions[bot]"
+                git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                git add docs/TRANSCRIPTION-SPRINT-CANONICAL.md
+                git commit -m "ci: record bounded Windows preparation diagnostic"
+                if ($LASTEXITCODE -eq 0) { git push origin ("HEAD:" + $env:GITHUB_REF_NAME) }
+              }
+            }
+            throw "Windows PowerShell 5.1 installer failed; diagnostic retained, gate unchanged"
+          }
           if (-not (Test-Path -LiteralPath (Join-Path $stage "INSTALACION-RESULTADO.json"))) { throw "Installation result missing" }
           $result = Get-Content -Raw (Join-Path $stage "INSTALACION-RESULTADO.json") | ConvertFrom-Json
           if ($result.NativeProtocol -ne "PASS" -or $result.Hashes -ne "PASS") { throw "Native installation not verified" }
