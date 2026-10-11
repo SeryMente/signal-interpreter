@@ -19,7 +19,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          foreach ($file in @("extension/native/prepare-caption-runtime.ps1", "extension/native/register-caption-host.ps1", "tools/apply-transcription-fix.ps1", "tools/probe-caption-host.ps1", "tools/prepare-caption-device.ps1", "INSTALAR.ps1", "PROBAR.ps1")) {
+          foreach ($file in @("extension/native/prepare-caption-runtime.ps1", "extension/native/register-caption-host.ps1", "tools/apply-transcription-fix.ps1", "tools/probe-caption-host.ps1", "tools/prepare-caption-device.ps1", "INSTALAR.ps1", "PROBAR.ps1", "tools/materialize-lab-sample.ps1")) {
             $tokens = $null
             $errors = $null
             [Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $file), [ref]$tokens, [ref]$errors) | Out-Null
@@ -47,6 +47,20 @@ jobs:
           if (-not (Test-Path -LiteralPath (Join-Path $stage "INSTALACION-RESULTADO.json"))) { throw "Installation result missing" }
           $result = Get-Content -Raw (Join-Path $stage "INSTALACION-RESULTADO.json") | ConvertFrom-Json
           if ($result.NativeProtocol -ne "PASS" -or $result.Hashes -ne "PASS") { throw "Native installation not verified" }
+          if ($result.Sample -ne "BUNDLED_VERIFIED" -or [Math]::Abs([double]$result.SampleDurationSeconds-281.6) -gt 0.001) { throw "Bundled sample not verified" }
+          $sampleMeta = Get-Content -Raw -Encoding UTF8 (Join-Path $stage "extension/ui/sample.json") | ConvertFrom-Json
+          $samplePath = Join-Path $stage "extension/ui/sample.ogg"
+          if ((Get-FileHash -LiteralPath $samplePath -Algorithm SHA256).Hash -ne $sampleMeta.sha256) { throw "Decoded sample hash mismatch" }
+          & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage "tools/materialize-lab-sample.ps1") -Root $stage
+          if ($LASTEXITCODE -ne 0) { throw "Repeated sample preparation failed" }
+          $beforeHash = (Get-FileHash -LiteralPath $samplePath -Algorithm SHA256).Hash
+          [IO.File]::AppendAllText((Join-Path $stage "extension/ui/sample.ogg.b64"), "invalid-payload")
+          $savedPreference = $ErrorActionPreference
+          $ErrorActionPreference = "Continue"
+          try { & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage "tools/materialize-lab-sample.ps1") -Root $stage 2>$null; $failureCode = $LASTEXITCODE } finally { $ErrorActionPreference = $savedPreference }
+          if ($failureCode -eq 0) { throw "Corrupt bundled sample accepted" }
+          if ((Get-FileHash -LiteralPath $samplePath -Algorithm SHA256).Hash -ne $beforeHash) { throw "Negative test altered verified audio" }
+          Write-Output "BUNDLED_SAMPLE_WINDOWS_51_REPEAT_AND_CORRUPTION=PASS"
           Write-Output "SOURCE_ZIP_ROOT_WINDOWS_INSTALL=PASS"
       - name: Compile the checked-in UI Automation host source
         shell: pwsh

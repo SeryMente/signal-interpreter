@@ -1,10 +1,10 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param([switch]$SkipSample)
 $ErrorActionPreference='Stop'
 $root=$PSScriptRoot
 $native=Join-Path $root 'extension\native'
 $manifest=Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $root 'manifest.json') | ConvertFrom-Json
-if($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.35'){throw 'Paquete inesperado; no se modificó el registro.'}
+if($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.36'){throw 'Paquete inesperado; no se modificó el registro.'}
 $sha=[Security.Cryptography.SHA256]::Create()
 try{$digest=$sha.ComputeHash([Convert]::FromBase64String([string]$manifest.key))}finally{$sha.Dispose()}
 $id=-join($digest[0..15] | ForEach-Object{[char](97+($_ -shr 4));[char](97+($_ -band 15))})
@@ -24,6 +24,8 @@ foreach($entry in $entries){
  }
  if(-not(Test-Path -LiteralPath $file) -or (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ne $entry.sha256){throw "Archivo no verificado: $relative"}
 }
+# SkipSample is retained for older callers; the bundled sample is always verified, never synthesized.
+$sampleInfo=& (Join-Path $root 'tools\materialize-lab-sample.ps1') -Root $root
 if(Get-Process -Name 'SignalInterpreter.CaptionHost' -ErrorAction SilentlyContinue){throw 'Hay un puente en uso. Finaliza la llamada/prueba antes de instalar; no se cerró ningún proceso.'}
 $browser=Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object {$_.CommandLine -and $_.CommandLine -notmatch '--type='} | Select-Object -First 1
 if($browser){$owner=Invoke-CimMethod -InputObject $browser -MethodName GetOwnerSid;if($owner.ReturnValue -ne 0 -or $owner.Sid -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value){throw 'El usuario de Chrome es distinto; no se cambió el registro.'}}
@@ -40,20 +42,8 @@ try{
  if($registered){New-Item -Path $registry -Force|Out-Null;New-ItemProperty -Path $registry -Name '(default)' -PropertyType String -Value $registered -Force|Out-Null}else{Remove-Item -LiteralPath $registry -Recurse -Force -ErrorAction SilentlyContinue}
  throw
 }
-$sample=Join-Path $root 'extension\ui\sample.wav'
-$sampleState=if(Test-Path -LiteralPath $sample){'PRESENTE'}else{'NO_GENERADA'}
-if(-not $SkipSample -and -not(Test-Path -LiteralPath $sample)){
- $voice=$null;$stream=$null
- try{
-  $voice=New-Object -ComObject SAPI.SpVoice;$stream=New-Object -ComObject SAPI.SpFileStream
-  $stream.Open($sample,3,$false);$voice.AudioOutputStream=$stream;$voice.Rate=-1
-  $voice.Speak('Good morning. Please confirm your appointment for Tuesday at ten thirty. The address is one hundred twenty four Oak Street. Please repeat the phone number slowly.')|Out-Null
-  $spanish=$voice.GetVoices('Language=40A')
-  if($spanish.Count -gt 0){$voice.Voice=$spanish.Item(0);$voice.Speak('Buenos dias. Necesito confirmar mi cita del martes. Mi direccion es ciento veinticuatro, calle Roble. Puede repetir el numero de telefono, por favor.')|Out-Null}
-  $stream.Close();$sampleState='GENERADA_LOCALMENTE'
- }catch{Write-Warning 'No se pudo generar voz local. En el laboratorio puedes elegir un archivo autorizado.';if($stream){try{$stream.Close()}catch{}};if(Test-Path -LiteralPath $sample){Remove-Item -LiteralPath $sample -Force};$sampleState='ARCHIVO_LOCAL_REQUERIDO'}
-}
-$result=[ordered]@{Version=$manifest.version;Root=$root;Identity=$id;Hashes='PASS';NativeProtocol=$probe.Protocol;Sample=$sampleState;ChromeLoaded='NO_VERIFICADO';RealCall='NO_VERIFICADA';ChromeRestarted=$false}
+$sampleState='BUNDLED_VERIFIED'
+$result=[ordered]@{Version=$manifest.version;Root=$root;Identity=$id;Hashes='PASS';NativeProtocol=$probe.Protocol;Sample=$sampleState;SampleSha256=$sampleInfo.Sha256;SampleDurationSeconds=$sampleInfo.DurationSeconds;ChromeLoaded='NO_VERIFICADO';RealCall='NO_VERIFICADA';ChromeRestarted=$false}
 [IO.File]::WriteAllText((Join-Path $root 'INSTALACION-RESULTADO.json'),($result|ConvertTo-Json),[Text.UTF8Encoding]::new($false))
 Write-Output "INSTALACION_PREPARADA=VERIFICADA | $root"
 Write-Output 'Carga esta MISMA carpeta desde Chrome como extension descomprimida. Luego usa Probar sin llamadas en el popup o PROBAR.cmd. Preparacion no equivale a captions en vivo.'

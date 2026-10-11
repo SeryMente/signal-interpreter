@@ -19,7 +19,7 @@ Muestra de voz generada localmente al instalar, o archivo local autorizado; no s
 
 En cada computadora registra/carga la carpeta para su usuario Windows. Sin rutas fijas, servicios ni runtime de desarrollo; las preferencias locales no se sincronizan automáticamente entre equipos. Canon completo y límites: [TRANSCRIPTION-SPRINT-CANONICAL.md](docs/TRANSCRIPTION-SPRINT-CANONICAL.md), §16.
 
-## Arquitectura vigente 0.10.35 — exclusivamente texto nativo
+## Arquitectura vigente 0.10.36 — exclusivamente texto nativo
 
 **Live Caption nativo de Chrome → Windows UI Automation → puente Native Messaging → overlay de llamada**
 
@@ -105,3 +105,7 @@ La recuperación reinyecta núcleo y overlay en pestañas Cloud existentes y ver
 La carpeta nueva puede prepararse en el escritorio con Chrome abierto, separada de la extensión cargada. Prepararla no significa activarla: el aplicador clásico requiere Chrome cerrado. Los permisos de Chrome y una llamada real siguen siendo compuertas de aceptación, no garantías inferidas de pruebas. El relato y la instrucción literal están en el documento canónico §14.
 
 Para preparar solo el host de una carpeta staged, `tools/prepare-caption-device.ps1` requiere StageRoot y una cuenta normal **no administrativa** idéntica al dueño de Chrome. Conserva todas las compuertas, verifica payload/registro y genera DEVICE-PREPARATION-RESULT.json con metadatos, nunca voz/texto. No cambia la carpeta activa ni recarga Chrome; Prepared=true tampoco prueba activación de la extensión o reconocimiento en vivo.
+
+## Muestra incluida en el laboratorio · 0.10.36
+
+`INSTALAR.cmd` prepara y verifica automáticamente el audio incluido; ya no genera voz sintética ni depende de voces SAPI. `Probar` reproduce por defecto el segmento continuo **16:02–20:43.6 (281.6 s)** de la práctica de hernia aportada por el operador: médico/cliente, paciente LEP e interpretaciones inglés/español. No hace falta descargar YouTube, elegir un archivo ni instalar codecs o runtimes. La atribución y huella están en `extension/ui/sample.json`; el audio portátil está en `sample.ogg.b64` y se materializa como `sample.ogg` con PowerShell/.NET. El informe identifica `bundled-sample`, separado de `local-file`. La recepción nativa real sigue pendiente: reproducción de audio no equivale a subtítulos visibles.
