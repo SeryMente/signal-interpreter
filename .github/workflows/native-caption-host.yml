@@ -48,6 +48,21 @@ jobs:
           $result = Get-Content -Raw (Join-Path $stage "INSTALACION-RESULTADO.json") | ConvertFrom-Json
           if ($result.NativeProtocol -ne "PASS" -or $result.Hashes -ne "PASS") { throw "Native installation not verified" }
           Write-Output "SOURCE_ZIP_ROOT_WINDOWS_INSTALL=PASS"
+          # Repeat preparation on the same path: generated manifest must remain valid.
+          & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage "INSTALAR.ps1") -SkipSample
+          if ($LASTEXITCODE -ne 0) { throw "Idempotent preparation failed" }
+          # A damaged package must fail before touching the registered host.
+          $registry = "HKCU:\Software\Google\Chrome\NativeMessagingHosts\com.signalinterpreter.captionhost"
+          $before = (Get-Item -LiteralPath $registry).GetValue("")
+          Add-Content -LiteralPath (Join-Path $stage "extension\ui\lab.css") -Value "tampered fixture"
+          & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage "INSTALAR.ps1") -SkipSample
+          if ($LASTEXITCODE -eq 0) { throw "Damaged package cannot announce success" }
+          $failed = Get-Content -Raw (Join-Path $stage "INSTALACION-RESULTADO.json") | ConvertFrom-Json
+          if ($failed.Ready -ne $false -or $failed.Code -ne "PACKAGE") { throw "Actionable failure result missing" }
+          if ((Get-Item -LiteralPath $registry).GetValue("") -ne $before) { throw "Damaged package modified registration" }
+          $global:LASTEXITCODE = 0 # Expected rejection was asserted above; do not leak its code to the job wrapper.
+          Write-Output "INSTALLER_IDEMPOTENCE_AND_DAMAGED_PACKAGE_GUARD=PASS"
+
       - name: Compile the checked-in UI Automation host source
         shell: pwsh
         run: |

@@ -3,7 +3,7 @@
 > **Autoridad documental:** este es el único informe canónico del esfuerzo/sprint de transcripción, Live Caption y overlay de subtítulos de Signal Interpreter. Las notas antiguas de implementación, los requisitos verbatim y las notas de versión son fuentes históricas o técnicas subordinadas; no son informes alternativos del esfuerzo.
 > **Ruta canónica:** `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`
 > **Repositorio:** https://github.com/SeryMente/signal-interpreter
-> **Última versión documentada:** **0.10.35 — Raíz cargable en Windows, laboratorio nativo aislado y calidad de vida**
+> **Última versión documentada:** **0.10.36 — Instalación y laboratorio con calidad de vida esencial primero**
 > **Integración previa al ciclo correctivo:** [PR #52](https://github.com/SeryMente/signal-interpreter/pull/52)
 > **Corrección previa de recuperación/exportación:** [PR #53](https://github.com/SeryMente/signal-interpreter/pull/53)
 > **Integración histórica del alcance 0.10.32:** [PR #54](https://github.com/SeryMente/signal-interpreter/pull/54)
@@ -445,6 +445,34 @@ Evidencia local comprobada: 28/28 suites aprobadas; Chrome for Testing cargó ra
 La revisión visual cubre popup, laboratorio, historial y panel contraído/expandido en desktop y 390px. No certifica UI Automation ni una llamada real. El laboratorio replica el recorrido compartido de captions, pero no la autenticación, WebRTC, cambios de ruta, terminación ni particularidades de Cloud Interpreter; esas compuertas requieren su plataforma real. Que el switch esté encendido no obliga a Chrome a conservar el árbol accesible con la burbuja cerrada. Sin texto accesible se informa el bloqueo; no se agrega fallback de audio.
 
 **Aceptación operativa todavía NO VERIFICADA:** primera reproducción nativa en el Windows del operador, visible/oculta, y primera llamada posterior con ausencia de eco, continuidad y observabilidad automática. No se garantiza ausencia absoluta de fallos ni se declara lista en vivo por pasar un fixture. La evidencia final de integración debe cotejar el head final de la propuesta y su versión raíz.
+
+## 17. Calidad de vida esencial primero — 0.10.36
+
+### 17.1. Instrucción del operador — VERBATIM
+
+> Metele mucha calidad de viuda al ibsntalador al laboratorio. Como si compitieras con alguien en ese rubrio que estuviese desarrollando algo similar.
+>
+> nada mas que no sea esa calidad de vida que termina avergonzqandogte, por que como lo esencial no fiucniona, l acalidad de vida se ve de mal gusto.
+
+### 17.2. Preparar no equivale a funcionar
+
+El instalador muestra cuatro pasos: integridad/identidad, registro y protocolo nativo, muestra local, y resultado/siguiente acción. Mantiene registro del mismo usuario, ausencia de reinicio/cierre de procesos, respaldo/restauración y huellas exactas. Windows PowerShell 5.1 lee los scripts con BOM UTF-8; no se normalizan los archivos al publicarlos. El menú del cmd permite copiar la carpeta exacta o solicitar PROBAR cuando ya está cargada, sin seleccionar otra cuenta ni sustituir la aprobación manual de Chrome. No usa instalación forzada ni privilegios de administrador.
+
+Los errores se clasifican por fase y dan una recuperación concreta; Ready=false nunca se convierte en éxito. Hashes, protocolo, muestra, carga de Chrome y aceptación real se mantienen separados. Si una restauración falla, no se anuncia restaurada. La muestra usa una voz inglesa realmente instalada; incorpora español si existe, incluyendo variantes por idioma primario. Ausencia de voz produce alternativa de archivo local, no una muestra ficticia. No se añaden dependencias descargables, servicios ni pantallas decorativas.
+
+### 17.3. Una prueba, evidencia separada
+
+El laboratorio comprueba disponibilidad de audio antes de habilitar inicio. Una acción inicia la sesión aislada y solicita reproducción; si autoplay se rechaza, ofrece el control de reproducción sin fingir que sonó. Muestra por separado paquete, registro de preparación, puente, fragmentos recibidos, filas y panel expandido. Da recuperación específica ante host ausente/acceso rechazado, falta de texto, audio inválido y panel contraído. Abrir ajustes de accesibilidad de Chrome es una acción explícita del usuario, no cambia el switch automáticamente. El único ajuste de política de la extensión es permitir conexión a su propio origen para leer el resultado local del instalador; no se amplían permisos ni orígenes externos.
+
+Un resultado positivo local requiere reproducción observada y avance, texto nativo real encaminado y filas en panel expandido. Conexión o montaje no bastan; informes de versiones anteriores se identifican como anteriores. El resultado sigue siendo «recorrido observado», no certificación de llamada, continuidad o correspondencia exacta con el audio. Chrome Live Caption es global: el informe marca captionAudioOriginVerified=false y la página pide pausar otros audios y comparar personalmente.
+
+El fin del audio o Finalizar guardan y solicitan descarga del informe; la recuperación permanece accesible si falla la descarga. Informe de metadatos con cronología acotada de estados nativos, sin texto/audio, nombre/ruta del archivo ni identidad de usuario. Mantiene aislamiento de producción, bloqueo ante plataforma/llamada y liberación explícita cuando procede. El renderer real se conserva; solo se añade lectura de visibilidad, no otra implementación de captions.
+
+### 17.4. Compuertas contra maquillaje
+
+Regresiones negativas: audio/reproducción ausentes, panel oculto, filas sin recepción nativa, paquete alterado que no modifica el registro, repetición del instalador, informes anteriores y recuperación de aislamiento. Windows debe ejecutar preparación/repetición/rechazo de paquete dañado en PowerShell 5.1; Chrome real local debe comprobar audio local, inicio/fin, descarga automática y bloqueo de plataforma. La inspección visual de estados listos, faltantes, activos y resultados no sustituye esas pruebas.
+
+Continúan sin verificar en el equipo del operador: primera recepción nativa de esta versión y aceptación en Cloud Interpreter, incluido recuadro cerrado cuando Chrome no expone su árbol accesible. No hay promesa de ausencia absoluta de regresiones ni fallback de captura de audio. No se añaden funciones de competencia no identificada.
 
 ## Anexo A — documento de implementación preexistente conservado
 

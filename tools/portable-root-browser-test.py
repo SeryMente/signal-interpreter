@@ -5,7 +5,7 @@ from playwright.sync_api import sync_playwright,expect
 root=Path.cwd();artifacts=Path(tempfile.mkdtemp(prefix='signal-browser-proof-'));profile=str(artifacts/'profile');errors=[]
 audio=artifacts/'lab-tone-fixture.wav'
 with wave.open(str(audio),'wb') as f:
- f.setnchannels(1);f.setsampwidth(2);f.setframerate(16000);f.writeframes(b''.join(struct.pack('<h',int(1200*math.sin(i*2*math.pi*440/16000))) for i in range(32000)))
+ f.setnchannels(1);f.setsampwidth(2);f.setframerate(16000);f.writeframes(b''.join(struct.pack('<h',int(1200*math.sin(i*2*math.pi*440/16000))) for i in range(128000)))
 with sync_playwright() as p:
  ctx=p.chromium.launch_persistent_context(profile,executable_path=shutil.which('chromium'),headless=True,ignore_default_args=['--disable-extensions'],args=['--no-sandbox','--disable-extensions-except='+str(root),'--load-extension='+str(root),'--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost'],accept_downloads=True,viewport={'width':1200,'height':900})
  try:
@@ -23,6 +23,9 @@ with sync_playwright() as p:
    if other.url.startswith('https://app.cloudinterpreter.com/'):other.close()
   inventory=worker.evaluate('chrome.tabs.query({})');print('FIXTURE_TABS',[(t['id'],t.get('url')) for t in inventory],flush=True)
   worker.evaluate('async()=>{const tabs=await chrome.tabs.query({url:["https://app.cloudinterpreter.com/*"]});await Promise.all(tabs.map(t=>chrome.tabs.remove(t.id)));}')
+  assert lab.locator('#start').get_attribute('disabled') is not None
+  assert lab.locator('#audioState').inner_text()=='No disponible'
+  lab.locator('#file').set_input_files(str(audio));expect(lab.locator('#audioState')).to_contain_text('Disponible',timeout=10000)
   lab.click('#start');expect(lab.locator("#phase")).to_have_text("En prueba",timeout=10000)
   lab.wait_for_timeout(500)
   assert lab.locator('#end').get_attribute('disabled') is None;lab.screenshot(path=str(artifacts/'lab.png'),full_page=True)
@@ -31,16 +34,16 @@ with sync_playwright() as p:
   expect(lab.locator("#phase")).to_have_text("Finalizada",timeout=10000)
   assert lab.locator('#report').is_visible()
   with lab.expect_download() as pending:lab.click('#report')
-  download=pending.value;target=str(artifacts/'lab-report.json');download.save_as(target);report=json.loads(Path(target).read_text());assert report['environment']=='lab';assert report['result']=='native-text-not-confirmed';assert report['nativeCaptionEvents']==0;assert report['spokenTextIncluded'] is False;assert report['productionExport'] is False
+  download=pending.value;target=str(artifacts/'lab-report.json');download.save_as(target);report=json.loads(Path(target).read_text());assert report['environment']=='lab';assert report['result']=='native-text-not-confirmed';assert report['nativeCaptionEvents']==0;assert report['spokenTextIncluded'] is False;assert report['productionExport'] is False;assert report['continuityVerified'] is False;assert report['captionAudioOriginVerified'] is False
   saved=worker.evaluate('chrome.storage.local.get(["signalLabLock","effectifConfig"])');assert saved['signalLabLock'] is False
   # Verify automatic export at media end using ordinary local tone playback; no native speech fabricated.
-  lab.locator('#file').set_input_files(str(audio));lab.click('#start');expect(lab.locator("#phase")).to_have_text("En prueba",timeout=10000)
+  lab.locator('#file').set_input_files(str(audio));expect(lab.locator('#audioState')).to_contain_text('Disponible',timeout=10000);lab.click('#start');expect(lab.locator("#phase")).to_have_text("En prueba",timeout=10000)
   expect(lab.locator("#signal-interpreter-live-caption-overlay")).to_be_visible(timeout=10000)
   lab.set_viewport_size({"width":390,"height":900});assert lab.evaluate('document.documentElement.scrollWidth <= innerWidth');lab.screenshot(path=str(artifacts/'lab-narrow.png'),full_page=True)
   with lab.expect_download() as automatic:
-   lab.evaluate('document.getElementById("player").play()')
+   expect(lab.locator('#phase')).to_have_text('Finalizada',timeout=15000)
   expect(lab.locator("#phase")).to_have_text("Finalizada",timeout=10000)
-  automatic.value.save_as(str(artifacts/'lab-auto-report.json'));auto=json.loads(Path(str(artifacts/'lab-auto-report.json')).read_text());assert auto['endReason']=='media-ended';assert auto['audioSource']=='local-file';assert auto['nativeCaptionEvents']==0
+  automatic.value.save_as(str(artifacts/'lab-auto-report.json'));auto=json.loads(Path(str(artifacts/'lab-auto-report.json')).read_text());assert auto['endReason']=='media-ended';assert auto['audioSource']=='local-file';assert auto['nativeCaptionEvents']==0;assert auto['audioPlayedObserved'] is True;assert auto['playbackSeconds']>0
   # A platform tab blocks start before any native bridge or session can become active.
   platform=ctx.new_page();platform.goto('https://app.cloudinterpreter.com/profile/offline-fixture');lab.click('#start');expect(lab.locator("#status")).to_contain_text("Cierra las pestañas",timeout=10000);assert lab.locator('#end').get_attribute('disabled') is not None;platform.close()
   assert not errors,errors

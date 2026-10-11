@@ -1,10 +1,11 @@
-[CmdletBinding()]
-param()
+﻿[CmdletBinding()]
+param([switch]$Interactive)
 $ErrorActionPreference='Stop'
+try {
 $root=[IO.Path]::GetFullPath($PSScriptRoot).TrimEnd('\')
 $id='ldpbjhobnfgmhdoehehdmnbhhjckebmj'
 $manifest=Get-Content -Raw -LiteralPath (Join-Path $root 'manifest.json') | ConvertFrom-Json
-if($manifest.version -ne '0.10.35'){throw 'Manifiesto esperado no encontrado en esta carpeta.'}
+if($manifest.version -ne '0.10.36'){throw 'Manifiesto esperado no encontrado en esta carpeta.'}
 $profiles=@()
 $userData=Join-Path $env:LOCALAPPDATA 'Google\Chrome\User Data'
 if(Test-Path -LiteralPath $userData){foreach($dir in Get-ChildItem -LiteralPath $userData -Directory){foreach($name in @('Secure Preferences','Preferences')){$file=Join-Path $dir.FullName $name;if(-not(Test-Path -LiteralPath $file)){continue};try{$prefs=Get-Content -Raw -LiteralPath $file|ConvertFrom-Json;$entry=$prefs.extensions.settings.PSObject.Properties[$id];if($entry -and $entry.Value.path -and [IO.Path]::GetFullPath([string]$entry.Value.path).TrimEnd('\') -eq $root){$profiles+=$dir.Name;break}}catch{}}}}
@@ -17,3 +18,12 @@ if(-not $chrome){throw 'Chrome no encontrado; usa Probar sin llamadas en la exte
 $url="chrome-extension://$id/extension/ui/lab.html"
 Start-Process -FilePath $chrome -ArgumentList @('--profile-directory="'+$profiles[0]+'"',$url)
 Write-Output 'LABORATORIO_ABIERTO=SOLICITADO; la pagina verifica aislamiento y texto nativo. No se afirma una prueba aprobada.'
+
+}catch{
+ if(-not $Interactive){throw}
+ Write-Host 'PRUEBA NO ABIERTA' -ForegroundColor Yellow
+ Write-Host ([string]$_.Exception.Message)
+ Write-Host 'Carga esta carpeta raiz en Chrome y usa Probar en el popup. No se selecciono otra cuenta ni se reinicio Chrome.'
+ Read-Host 'Enter para cerrar'|Out-Null
+ exit 1
+}

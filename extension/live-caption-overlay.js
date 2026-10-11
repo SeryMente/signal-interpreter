@@ -25,7 +25,7 @@
   if (previousOverlayRuntime && typeof previousOverlayRuntime.dispose === "function") previousOverlayRuntime.dispose("runtime-reinjected");
   var runtimeDisposed = false, runtimeStorageReady = false, runtimeEventBindings = [];
   var runtimeVersion = String(chrome.runtime.getManifest().version || "unknown");
-  var runtimeApi = { version: runtimeVersion, dispose: disposeOverlay, snapshot: function(){ return {ready:runtimeStorageReady,hostMounted:!!(host && host.isConnected && root),rowCount:rows.length,active:active,contextReady:contextReady}; } };
+  var runtimeApi = { version: runtimeVersion, dispose: disposeOverlay, snapshot: function(){ return {ready:runtimeStorageReady,hostMounted:!!(host && host.isConnected && root),rowCount:rows.length,active:active,contextReady:contextReady,transcriptVisible:!!(host && root && host.isConnected && host.style.display!=="none" && !collapsed && canShowOnThisPage()),nativeStatus:nativeStatus}; } };
   globalThis.__SIGNAL_CAPTION_OVERLAY_RUNTIME__ = runtimeApi;
   function listen(target, type, listener, options) {
     target.addEventListener(type, listener, options);
