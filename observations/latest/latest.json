@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-45ac5986-e5ac-49eb-8676-0ac0ff9a38cc",
-  "createdAt": "2026-10-11T20:53:12.715Z",
-  "trigger": "event-window",
+  "batchId": "batch-3677b97b-0ed9-4f4c-a6b6-2a74a0397dd2",
+  "createdAt": "2026-10-11T20:53:48.572Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.35",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "8222018f-d6bc-4bdf-9d80-7149fe36b557",
-      "sequence": 2182,
-      "timestamp": "2026-10-11T20:52:42.495Z",
-      "ingestedAt": "2026-10-11T20:52:42.530Z",
+      "id": "75a976c3-27b2-428b-a093-e0ba41254a77",
+      "sequence": 2193,
+      "timestamp": "2026-10-11T20:53:22.252Z",
+      "ingestedAt": "2026-10-11T20:53:22.299Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -18,9 +18,732 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "cd82f320-3d43-41c9-af05-06fdde3dd3d6",
+      "traceId": "622b71e6-3641-43ee-9bd8-dfc289a8a745",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://y2mate.gs/es/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/",
+        "extensionVersion": "0.10.35",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "3b359824-a235-4ea1-abec-9f5cdc25c152",
+      "sequence": 2194,
+      "timestamp": "2026-10-11T20:53:22.338Z",
+      "ingestedAt": "2026-10-11T20:53:22.484Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "8675526e-989c-422e-8711-872589165a78",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://y2mate.gs/es/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/",
+        "extensionVersion": "0.10.35",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "493409e7-87d5-4130-8ebf-d200fe7cf146",
+      "sequence": 2195,
+      "timestamp": "2026-10-11T20:53:22.338Z",
+      "ingestedAt": "2026-10-11T20:53:22.673Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "33cb4e9c-d380-4475-b7c8-7b0402e9d94b",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://y2mate.gs/es/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/",
+        "extensionVersion": "0.10.35",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "10efac26-c3ee-48c8-9bed-4741254901f9",
+      "sequence": 2196,
+      "timestamp": "2026-10-11T20:53:24.236Z",
+      "ingestedAt": "2026-10-11T20:53:24.285Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "398b59af-e703-41df-bca1-621f07649577",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://www.google.com/search"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/",
+        "extensionVersion": "0.10.35",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "6acb6fe0-42e7-42aa-8e84-446cab5677cd",
+      "sequence": 2197,
+      "timestamp": "2026-10-11T20:53:25.156Z",
+      "ingestedAt": "2026-10-11T20:53:25.191Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "f76fa975-0082-4f41-98b3-a9633d022456",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/search",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://www.google.com/search"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/search",
+        "extensionVersion": "0.10.35",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "8bc6ab20-bd84-4ba4-9126-522bdf77153b",
+      "sequence": 2198,
+      "timestamp": "2026-10-11T20:53:25.156Z",
+      "ingestedAt": "2026-10-11T20:53:25.435Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "a78c7947-e8a3-4341-92b4-41a18c75d728",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/search",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://www.google.com/search"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/search",
+        "extensionVersion": "0.10.35",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "4f8842d1-5188-4260-a676-e1a7c1676af6",
+      "sequence": 2199,
+      "timestamp": "2026-10-11T20:53:28.592Z",
+      "ingestedAt": "2026-10-11T20:53:28.636Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "bacde3b5-89e8-4ce8-a94b-b03ceadfe95e",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/search",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://y2mate.gs/es/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/search",
+        "extensionVersion": "0.10.35",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "e62ae50c-a1f4-421c-b994-776ff418334e",
+      "sequence": 2200,
+      "timestamp": "2026-10-11T20:53:29.553Z",
+      "ingestedAt": "2026-10-11T20:53:29.594Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "32c4b7cd-d51b-4987-adf5-12da52a52da4",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://y2mate.gs/es/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/",
+        "extensionVersion": "0.10.35",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "3a49b7d4-cde9-4e41-affe-5813d3175323",
+      "sequence": 2201,
+      "timestamp": "2026-10-11T20:53:29.634Z",
+      "ingestedAt": "2026-10-11T20:53:29.792Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "1000f0d4-59e9-4287-a1ab-c5e9b7ee79f2",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://y2mate.gs/es/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/",
+        "extensionVersion": "0.10.35",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "fac178ca-42d1-4491-a258-babf3662a639",
+      "sequence": 2202,
+      "timestamp": "2026-10-11T20:53:29.634Z",
+      "ingestedAt": "2026-10-11T20:53:29.992Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "35e8bb2f-9cd2-47fa-9f0b-1e7b1157e55c",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://y2mate.gs/es/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/",
+        "extensionVersion": "0.10.35",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "3517a5e3-e204-4f44-b7f8-022612f62f98",
+      "sequence": 2203,
+      "timestamp": "2026-10-11T20:53:31.523Z",
+      "ingestedAt": "2026-10-11T20:53:31.579Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "697fbaf5-8175-4da0-a373-87a359cf8532",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://www.google.com/search"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/",
+        "extensionVersion": "0.10.35",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "df9c0a98-f732-4bae-bcce-b9d898f2cf0b",
+      "sequence": 2204,
+      "timestamp": "2026-10-11T20:53:32.159Z",
+      "ingestedAt": "2026-10-11T20:53:32.206Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "558a22e9-9488-4b55-b84c-c51e5bc1b6ff",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600162187,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/search",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600162187,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "chrome://whats-new/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/search",
+        "extensionVersion": "0.10.35",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "e25913ef-2cf7-417c-94ea-80acdb0d85a4",
+      "sequence": 2205,
+      "timestamp": "2026-10-11T20:53:42.494Z",
+      "ingestedAt": "2026-10-11T20:53:42.535Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "856b1317-9575-415b-9c8e-1425a1d217a9",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -40,14 +763,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/results",
+        "route": "/watch",
         "visibility": "visible",
         "online": true,
         "sourceTabId": 1600163364,
         "sourceWindowId": 1600162101,
-        "observedTabStatus": "complete",
+        "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://www.youtube.com/results"
+        "observedTabUrl": "https://www.youtube.com/watch"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,19 +779,81 @@
       },
       "payload": {
         "callId": null,
-        "route": "/results",
+        "route": "/watch",
         "extensionVersion": "0.10.35",
-        "previousRoute": "/watch",
-        "currentRoute": "/results",
-        "activeCallRoute": false
+        "hostRemoved": true
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "6864db6a-7fce-4a48-82ca-0a7a63de8c46",
-      "sequence": 2183,
-      "timestamp": "2026-10-11T20:52:47.575Z",
-      "ingestedAt": "2026-10-11T20:52:47.614Z",
+      "id": "89d63788-4923-4e4c-acd3-ec9d2cc610a6",
+      "sequence": 2206,
+      "timestamp": "2026-10-11T20:53:44.189Z",
+      "ingestedAt": "2026-10-11T20:53:44.229Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.35",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "5868958b-b3a7-42ef-b01c-247a79f5b462",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600163364,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.35",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/watch",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 1600163364,
+        "sourceWindowId": 1600162101,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://www.youtube.com/watch"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/watch",
+        "extensionVersion": "0.10.35",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b5eb6bf2-d13c-4f5c-b284-453b389f0fb6",
+      "sequence": 2207,
+      "timestamp": "2026-10-11T20:53:44.189Z",
+      "ingestedAt": "2026-10-11T20:53:44.457Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -76,9 +861,9 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "fb9e14c6-2149-40b9-ba39-f8ebd4b7cbd6",
+      "traceId": "f7da8ed6-65e1-442d-9412-4ed7fd7e6bf7",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -116,17 +901,24 @@
         "callId": null,
         "route": "/watch",
         "extensionVersion": "0.10.35",
-        "previousRoute": "/results",
-        "currentRoute": "/watch",
-        "activeCallRoute": false
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "e02a0498-6175-4c18-9a43-739d063ed1ec",
-      "sequence": 2184,
-      "timestamp": "2026-10-11T20:52:54.183Z",
-      "ingestedAt": "2026-10-11T20:52:54.217Z",
+      "id": "84a44155-f752-488d-a380-498c592c47fe",
+      "sequence": 2208,
+      "timestamp": "2026-10-11T20:53:45.065Z",
+      "ingestedAt": "2026-10-11T20:53:45.105Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -136,12 +928,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "af8c7f98-e5fe-4fa3-a217-01bad92c0149",
+      "traceId": "14b6fadd-5923-4bc4-a02d-8bbaf0804580",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 1600162187,
+      "tabId": 1600163364,
       "session": {
         "callId": null
       },
@@ -156,14 +948,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/es/",
+        "route": "/watch",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 1600162187,
+        "sourceTabId": 1600163364,
         "sourceWindowId": 1600162101,
         "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://y2mate.gs/es/"
+        "observedTabUrl": "https://www.youtube.com/watch"
       },
       "privacy": {
         "rawTextStored": false,
@@ -172,17 +964,17 @@
       },
       "payload": {
         "callId": null,
-        "route": "/es/",
+        "route": "/watch",
         "extensionVersion": "0.10.35",
         "hostRemoved": true
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "94d52c1b-c5ed-4162-927a-c5ddd93ae20e",
-      "sequence": 2185,
-      "timestamp": "2026-10-11T20:52:54.379Z",
-      "ingestedAt": "2026-10-11T20:52:54.415Z",
+      "id": "3b7b8e2f-9906-47bb-918c-a1d0c557be01",
+      "sequence": 2209,
+      "timestamp": "2026-10-11T20:53:46.831Z",
+      "ingestedAt": "2026-10-11T20:53:46.882Z",
       "level": "warn",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -192,12 +984,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
       "outcome": "degraded",
-      "traceId": "a5e24f91-a778-450f-ba18-40395a0f6d9b",
+      "traceId": "5f8baf5f-ee5b-4634-ab46-843a0602f7c3",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 1600162187,
+      "tabId": 1600163364,
       "session": {
         "callId": null
       },
@@ -212,14 +1004,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/es/",
+        "route": "/watch",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 1600162187,
+        "sourceTabId": 1600163364,
         "sourceWindowId": 1600162101,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://y2mate.gs/es/"
+        "observedTabUrl": "https://www.youtube.com/watch"
       },
       "privacy": {
         "rawTextStored": false,
@@ -228,7 +1020,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/es/",
+        "route": "/watch",
         "extensionVersion": "0.10.35",
         "visible": false,
         "reason": "page-not-allowed",
@@ -243,10 +1035,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "e3dea87f-d126-45d2-9a0d-33ddb3c7c244",
-      "sequence": 2186,
-      "timestamp": "2026-10-11T20:52:54.379Z",
-      "ingestedAt": "2026-10-11T20:52:54.595Z",
+      "id": "bdf93587-3cb2-46d9-8c72-6d13a57d512e",
+      "sequence": 2210,
+      "timestamp": "2026-10-11T20:53:46.831Z",
+      "ingestedAt": "2026-10-11T20:53:47.135Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -256,12 +1048,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "4646d081-ec00-4a8b-bf39-2cde1b787a78",
+      "traceId": "39169592-c831-4cc9-a85e-7c40b8e2cc86",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 1600162187,
+      "tabId": 1600163364,
       "session": {
         "callId": null
       },
@@ -276,14 +1068,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/es/",
+        "route": "/watch",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 1600162187,
+        "sourceTabId": 1600163364,
         "sourceWindowId": 1600162101,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://y2mate.gs/es/"
+        "observedTabUrl": "https://www.youtube.com/watch"
       },
       "privacy": {
         "rawTextStored": false,
@@ -292,7 +1084,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/es/",
+        "route": "/watch",
         "extensionVersion": "0.10.35",
         "enabled": true,
         "scope": "source-only",
@@ -308,139 +1100,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "a8a064f5-69a5-432f-a577-1d41c3227d69",
-      "sequence": 2187,
-      "timestamp": "2026-10-11T20:53:00.721Z",
-      "ingestedAt": "2026-10-11T20:53:00.762Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.35",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "66533c5e-e753-472c-b3e8-621790a4acf6",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1600163474,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.35",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/afu.php",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 1600163474,
-        "sourceWindowId": 1600162101,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://kocmg.com/afu.php"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/afu.php",
-        "extensionVersion": "0.10.35",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "6b65418c-520b-4b30-87f0-c8cdd3efb69e",
-      "sequence": 2188,
-      "timestamp": "2026-10-11T20:53:00.722Z",
-      "ingestedAt": "2026-10-11T20:53:00.945Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.35",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "aba21358-6e4b-4c44-bcee-65b10a3a31bd",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1600163474,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.35",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/afu.php",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 1600163474,
-        "sourceWindowId": 1600162101,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://kocmg.com/afu.php"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/afu.php",
-        "extensionVersion": "0.10.35",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": false,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "fdb52e9f-b02e-4c49-b164-6f401e5b31fc",
-      "sequence": 2189,
-      "timestamp": "2026-10-11T20:53:01.278Z",
-      "ingestedAt": "2026-10-11T20:53:01.321Z",
+      "id": "3e27d0d9-2dcc-49dd-8794-527806660edc",
+      "sequence": 2211,
+      "timestamp": "2026-10-11T20:53:48.320Z",
+      "ingestedAt": "2026-10-11T20:53:48.365Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -450,12 +1113,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "65d97470-505a-4926-964b-ba571e4d94f9",
+      "traceId": "548685c8-103a-4164-b08d-50a242b3c81a",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 1600163474,
+      "tabId": 1600163364,
       "session": {
         "callId": null
       },
@@ -470,14 +1133,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/afu.php",
+        "route": "/watch",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 1600163474,
+        "sourceTabId": 1600163364,
         "sourceWindowId": 1600162101,
         "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://routeengine.xyz/landers/download/1/4.php"
+        "observedTabUrl": "https://www.youtube.com/watch"
       },
       "privacy": {
         "rawTextStored": false,
@@ -486,217 +1149,31 @@
       },
       "payload": {
         "callId": null,
-        "route": "/afu.php",
-        "extensionVersion": "0.10.35",
-        "hostRemoved": true
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "0c5c6d16-44d8-4008-a83f-678c16ef08f1",
-      "sequence": 2190,
-      "timestamp": "2026-10-11T20:53:01.514Z",
-      "ingestedAt": "2026-10-11T20:53:01.550Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.35",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "3d67eff2-1923-4c13-9f9e-a2bf353b3f78",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1600163474,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.35",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/landers/download/1/4.php",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 1600163474,
-        "sourceWindowId": 1600162101,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://routeengine.xyz/landers/download/1/4.php"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/landers/download/1/4.php",
-        "extensionVersion": "0.10.35",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "4de65913-3038-4a98-af72-7631a0bf25d0",
-      "sequence": 2191,
-      "timestamp": "2026-10-11T20:53:01.514Z",
-      "ingestedAt": "2026-10-11T20:53:01.755Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.35",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "f58fc8b7-fba6-4e34-a2a8-1dbb0cda0e8c",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1600163474,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.35",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/landers/download/1/4.php",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 1600163474,
-        "sourceWindowId": 1600162101,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://routeengine.xyz/landers/download/1/4.php"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/landers/download/1/4.php",
-        "extensionVersion": "0.10.35",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": false,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "2603e80b-0428-4551-b683-a654ac93ed36",
-      "sequence": 2192,
-      "timestamp": "2026-10-11T20:53:12.160Z",
-      "ingestedAt": "2026-10-11T20:53:12.213Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.35",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "2a2d683f-5420-4ea2-a967-26912b97efb1",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1600163474,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.35",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/landers/download/1/4.php",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 1600163474,
-        "sourceWindowId": 1600162101,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://routeengine.xyz/landers/download/1/4.php"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/landers/download/1/4.php",
+        "route": "/watch",
         "extensionVersion": "0.10.35",
         "hostRemoved": true
       }
     }
   ],
   "summary": {
-    "eventsTotal": 11,
+    "eventsTotal": 19,
     "errors": 0,
-    "warnings": 3,
+    "warnings": 5,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 3,
+    "contextEvents": 5,
     "invariantSignals": 0,
-    "firstSequence": 2182,
-    "lastSequence": 2192,
-    "firstTimestamp": "2026-10-11T20:52:42.495Z",
-    "lastTimestamp": "2026-10-11T20:53:12.160Z",
+    "firstSequence": 2193,
+    "lastSequence": 2211,
+    "firstTimestamp": "2026-10-11T20:53:22.252Z",
+    "lastTimestamp": "2026-10-11T20:53:48.320Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2,
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 3,
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 3,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 3
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 9,
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 5,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 5
     },
     "categories": {
-      "CAPTION": 11
+      "CAPTION": 19
     }
   }
 }
