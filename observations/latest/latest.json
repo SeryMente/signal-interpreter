@@ -1,72 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-fdaf6776-fe27-44ca-b06e-413caf69fd9a",
-  "createdAt": "2026-10-11T18:37:55.860Z",
-  "trigger": "event-window",
+  "batchId": "batch-05829593-106c-4975-9e82-cc5b20710bb4",
+  "createdAt": "2026-10-11T18:39:44.446Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.35",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "a2711a1e-c912-40a6-a629-b0eff29ebbf0",
-      "sequence": 186,
-      "timestamp": "2026-10-11T18:37:25.638Z",
-      "ingestedAt": "2026-10-11T18:37:25.708Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.35",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "60a989bb-a047-4386-8c1c-96d7c878daf0",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1717488339,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.35",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/auth/signin",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 1717488339,
-        "sourceWindowId": 1717487113,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://accounts.google.com/v3/signin/accountchooser"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/auth/signin",
-        "extensionVersion": "0.10.35",
-        "hostRemoved": true
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "1f3d5647-9ace-4a53-920e-9dbcb86e44aa",
-      "sequence": 187,
-      "timestamp": "2026-10-11T18:37:26.005Z",
-      "ingestedAt": "2026-10-11T18:37:26.026Z",
+      "id": "918ef623-8217-4d13-8898-b579fafe2d8d",
+      "sequence": 193,
+      "timestamp": "2026-10-11T18:39:14.153Z",
+      "ingestedAt": "2026-10-11T18:39:14.172Z",
       "level": "warn",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -76,12 +20,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
       "outcome": "degraded",
-      "traceId": "1e177e7a-1a1f-4d3d-bc0f-f23ba624ecf2",
+      "traceId": "0541bc92-a803-4729-b7f6-38fe55401be3",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 1717488339,
+      "tabId": 1717488342,
       "session": {
         "callId": null
       },
@@ -96,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/v3/signin/accountchooser",
-        "visibility": "visible",
+        "route": "/settings/installations",
+        "visibility": "hidden",
         "online": true,
-        "sourceTabId": 1717488339,
+        "sourceTabId": 1717488342,
         "sourceWindowId": 1717487113,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://accounts.google.com/v3/signin/accountchooser"
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://github.com/settings/installations"
       },
       "privacy": {
         "rawTextStored": false,
@@ -112,7 +56,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/v3/signin/accountchooser",
+        "route": "/settings/installations",
         "extensionVersion": "0.10.35",
         "visible": false,
         "reason": "page-not-allowed",
@@ -127,10 +71,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "912b0bfc-e1d2-4a9c-970a-c9f888c47c84",
-      "sequence": 188,
-      "timestamp": "2026-10-11T18:37:26.006Z",
-      "ingestedAt": "2026-10-11T18:37:26.256Z",
+      "id": "9319ead5-fe17-4406-b4b7-ce73ca157c4d",
+      "sequence": 194,
+      "timestamp": "2026-10-11T18:39:14.154Z",
+      "ingestedAt": "2026-10-11T18:39:14.377Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -140,12 +84,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "12014a26-a558-405c-a30b-85d9af970d96",
+      "traceId": "278caa49-9d22-4a53-b7d6-49f03bc2918c",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 1717488339,
+      "tabId": 1717488342,
       "session": {
         "callId": null
       },
@@ -160,14 +104,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/v3/signin/accountchooser",
-        "visibility": "visible",
+        "route": "/settings/installations",
+        "visibility": "hidden",
         "online": true,
-        "sourceTabId": 1717488339,
+        "sourceTabId": 1717488342,
         "sourceWindowId": 1717487113,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://accounts.google.com/v3/signin/accountchooser"
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://github.com/settings/installations"
       },
       "privacy": {
         "rawTextStored": false,
@@ -176,7 +120,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/v3/signin/accountchooser",
+        "route": "/settings/installations",
         "extensionVersion": "0.10.35",
         "enabled": true,
         "scope": "source-only",
@@ -192,10 +136,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "cfa82d57-368c-4822-9088-5e0802185806",
-      "sequence": 189,
-      "timestamp": "2026-10-11T18:37:28.655Z",
-      "ingestedAt": "2026-10-11T18:37:28.701Z",
+      "id": "a5f8e7cc-84b8-4613-b400-9f28ce5846a9",
+      "sequence": 195,
+      "timestamp": "2026-10-11T18:39:16.170Z",
+      "ingestedAt": "2026-10-11T18:39:16.206Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -205,12 +149,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "4723ad6f-bb2d-4b3d-b2f9-cb833072617a",
+      "traceId": "495dc33b-d549-437b-93d2-12ba92cb639f",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 1717488339,
+      "tabId": 1717488342,
       "session": {
         "callId": null
       },
@@ -225,14 +169,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/v3/signin/accountchooser",
+        "route": "/settings/installations",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 1717488339,
+        "sourceTabId": 1717488342,
         "sourceWindowId": 1717487113,
         "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://khora-web.vercel.app/"
+        "observedTabUrl": "https://github.com/settings/installations"
       },
       "privacy": {
         "rawTextStored": false,
@@ -241,17 +185,17 @@
       },
       "payload": {
         "callId": null,
-        "route": "/v3/signin/accountchooser",
+        "route": "/settings/installations",
         "extensionVersion": "0.10.35",
         "hostRemoved": true
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "9387d709-0558-48b2-8c4e-45267de3e53c",
-      "sequence": 190,
-      "timestamp": "2026-10-11T18:37:28.883Z",
-      "ingestedAt": "2026-10-11T18:37:28.910Z",
+      "id": "95d40afb-a94b-41fc-aebf-e44a2713bfa5",
+      "sequence": 196,
+      "timestamp": "2026-10-11T18:39:16.487Z",
+      "ingestedAt": "2026-10-11T18:39:16.508Z",
       "level": "warn",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -261,12 +205,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
       "outcome": "degraded",
-      "traceId": "44b9b905-90be-4b6e-a1da-0403b85c9287",
+      "traceId": "8c17c5f3-c562-42a3-8278-7ace197bc652",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 1717488339,
+      "tabId": 1717488342,
       "session": {
         "callId": null
       },
@@ -281,14 +225,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/",
-        "visibility": "visible",
+        "route": "/settings/installations/[PHONE]",
+        "visibility": "hidden",
         "online": true,
-        "sourceTabId": 1717488339,
+        "sourceTabId": 1717488342,
         "sourceWindowId": 1717487113,
         "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://khora-web.vercel.app/"
+        "observedTabActive": false,
+        "observedTabUrl": "https://github.com/settings/installations/[PHONE]"
       },
       "privacy": {
         "rawTextStored": false,
@@ -297,7 +241,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/",
+        "route": "/settings/installations/[PHONE]",
         "extensionVersion": "0.10.35",
         "visible": false,
         "reason": "page-not-allowed",
@@ -312,10 +256,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "6a5aba3c-a070-4485-bceb-ac95870642d6",
-      "sequence": 191,
-      "timestamp": "2026-10-11T18:37:28.883Z",
-      "ingestedAt": "2026-10-11T18:37:29.092Z",
+      "id": "7131c6f4-7ceb-47ad-90d0-e203a306f7dc",
+      "sequence": 197,
+      "timestamp": "2026-10-11T18:39:16.487Z",
+      "ingestedAt": "2026-10-11T18:39:16.724Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -325,12 +269,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "5fbd777b-2c67-440a-895b-8a76ac26cac4",
+      "traceId": "a8b525b6-5915-4ce7-b71a-b8ef9995b537",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 1717488339,
+      "tabId": 1717488342,
       "session": {
         "callId": null
       },
@@ -345,14 +289,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/",
-        "visibility": "visible",
+        "route": "/settings/installations/[PHONE]",
+        "visibility": "hidden",
         "online": true,
-        "sourceTabId": 1717488339,
+        "sourceTabId": 1717488342,
         "sourceWindowId": 1717487113,
         "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://khora-web.vercel.app/"
+        "observedTabActive": false,
+        "observedTabUrl": "https://github.com/settings/installations/[PHONE]"
       },
       "privacy": {
         "rawTextStored": false,
@@ -361,7 +305,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/",
+        "route": "/settings/installations/[PHONE]",
         "extensionVersion": "0.10.35",
         "enabled": true,
         "scope": "source-only",
@@ -373,87 +317,28 @@
         "historyRows": 0,
         "contextSyncAttempts": 1,
         "contextSyncFailures": 0
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "42372dfd-ba8a-4551-aa9d-828bba1349fa",
-      "sequence": 192,
-      "timestamp": "2026-10-11T18:37:31.873Z",
-      "ingestedAt": "2026-10-11T18:37:31.894Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.35",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
-      "outcome": "observed",
-      "traceId": "010a2790-64d1-48fc-a43a-54f3b2f04f55",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1717488339,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.35",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/sistema/seguridad",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 1717488339,
-        "sourceWindowId": 1717487113,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://khora-web.vercel.app/sistema/seguridad"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/sistema/seguridad",
-        "extensionVersion": "0.10.35",
-        "previousRoute": "/",
-        "currentRoute": "/sistema/seguridad",
-        "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 7,
+    "eventsTotal": 5,
     "errors": 0,
     "warnings": 2,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 2,
     "invariantSignals": 0,
-    "firstSequence": 186,
-    "lastSequence": 192,
-    "firstTimestamp": "2026-10-11T18:37:25.638Z",
-    "lastTimestamp": "2026-10-11T18:37:31.873Z",
+    "firstSequence": 193,
+    "lastSequence": 197,
+    "firstTimestamp": "2026-10-11T18:39:14.153Z",
+    "lastTimestamp": "2026-10-11T18:39:16.487Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 2,
       "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 2,
       "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 2,
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
     },
     "categories": {
-      "CAPTION": 7
+      "CAPTION": 5
     }
   }
 }
