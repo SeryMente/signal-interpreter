@@ -446,6 +446,20 @@ La revisión visual cubre popup, laboratorio, historial y panel contraído/expan
 
 **Aceptación operativa todavía NO VERIFICADA:** primera reproducción nativa en el Windows del operador, visible/oculta, y primera llamada posterior con ausencia de eco, continuidad y observabilidad automática. No se garantiza ausencia absoluta de fallos ni se declara lista en vivo por pasar un fixture. La evidencia final de integración debe cotejar el head final de la propuesta y su versión raíz.
 
+### 16.7. Windows preparation diagnostic (CI only)
+
+Windows PowerShell 5.1 installation FAILED; main not integrated.
+
+```text
+Archivo no verificado: extension/PREPARE-CAPTIONS.cmd
+At [package]\INSTALAR.ps1:25 char:120
++ ... 56).Hash -ne $entry.sha256){throw "Archivo no verificado: $relative"}
++                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Archivo no veri...RE-CAPTIONS.cmd:String) [], RuntimeException
+    + FullyQualifiedErrorId : Archivo no verificado: extension/PREPARE-CAPTIONS.cmd
+ 
+```
+
 ## Anexo A — documento de implementación preexistente conservado
 
 El documento anterior `docs/LIVE-CAPTION-OVERLAY-IMPLEMENTATION.md` se incorporó como anexo histórico en esta versión canónica. Su contenido refleja decisiones y estado de versiones previas; por ello no debe usarse como segunda fuente de estado actual. Esta sección es el lugar de preservación de ese registro histórico.
