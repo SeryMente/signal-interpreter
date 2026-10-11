@@ -1,7 +1,9 @@
-importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js");
+importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js");
 (function () {
   "use strict";
 
+  function extensionResource(path) { if(path === "manifest.json") return path; var m=chrome.runtime.getManifest(); return m.background && String(m.background.service_worker).indexOf("extension/")===0 ? "extension/"+path : path; }
+  function runExtensionScript(spec) { if(spec.files) spec=Object.assign({},spec,{files:spec.files.map(extensionResource)}); return chrome.scripting.executeScript(spec); }
   var GROQ_MODEL = "whisper-large-v3-turbo";
   var AUTHORIZED_ORIGIN = "https://app.cloudinterpreter.com";
   var AUTHORIZED_PROFILE_PATH = "/profile/cmu2wuz1v0uwr07adbzb9djfz";
@@ -298,7 +300,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     return {forwarded:true};
   }
 
-  async function getCaptionOverlayContext(senderTab) {
+  async function getCaptionOverlayContext(senderTab, senderUrl) {
+    if (SignalCaptionLab.isLabUrl(senderUrl || senderTab && senderTab.url)) return SignalCaptionLab.context();
     var stored = await chrome.storage.local.get(["effectifConfig", "effectifState"]);
     var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
     var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
@@ -359,6 +362,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     captionControlQueue = run.catch(function () {}); return run;
   }
   async function setCaptionPreviewForActiveCallInternal(tabEnabled, reason) {
+    if (SignalCaptionLab.active()) return {ok:true,enabled:true,captionMode:"native-text-only",environment:"lab"};
     // Native text is the only caption source. Never acquire tab audio, decode audio or invoke Groq.
     var stored = await chrome.storage.local.get(["effectifState", "effectifConfig"]);
     var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
@@ -377,6 +381,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
 
   try {
     SignalCaptionBridge.onCaption = function (caption, sourceTabId) {
+      if (SignalCaptionLab.active()) { SignalCaptionLab.caption(caption); return; }
       publishCaptionToOverlay(caption, sourceTabId).then(function (result) {
         if (!result || !result.forwarded) return;
         record("SIGNAL_CAPTION_NATIVE_TEXT_FORWARDED", {callId:SignalCaptionBridge.getContext().callId,tabId:sourceTabId,captureScope:"native-text-only",characterCount:String(caption.text || "").length}, "info", "caption");
@@ -385,6 +390,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       });
     };
     SignalCaptionBridge.onSessionEvent = function (type, payload, sourceTabId) {
+      if (SignalCaptionLab.active()) return;
       if (type === "SIGNAL_CAPTION_SESSION_RESET") {
         resetCaptionOverlaySession(sourceTabId, payload && payload.reason || "session-reset");
       } else if (type === "SIGNAL_CAPTION_SESSION_END") {
@@ -394,6 +400,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       }
     };
     SignalCaptionBridge.onStatus = function (status) {
+      if (SignalCaptionLab.active()) { SignalCaptionLab.status(status); return; }
       record("SIGNAL_CAPTION_NATIVE_STATUS", { callId: status && status.callId || null,
         tabId: status && status.tabId || null, active: !!(status && status.active),
         visible: !!(status && status.visible), captionFresh: !!(status && status.captionFresh),
@@ -406,6 +413,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         .catch(function () {});
     };
     SignalCaptionBridge.onError = function (reasonCode, context) {
+      if (SignalCaptionLab.active()) { SignalCaptionLab.error(reasonCode); return; }
       record("SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR", {
         callId: context && context.callId || null, tabId: context && context.tabId || null,
         reasonCode: reasonCode, errorType: "NativeMessagingError"
@@ -542,7 +550,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     var targetTabId=Number(tabId);
     if(!Number.isFinite(targetTabId))return{ok:false,verified:false,muted:!!muted,trackCount:0,senderCount:0,error:"No hay una pestaña de llamada controlable."};
     try{
-      await chrome.scripting.executeScript({
+      await runExtensionScript({
         target:{tabId:targetTabId,frameIds:[0]},
         world:"MAIN",
         files:["mic-guard-main.js"],
@@ -552,7 +560,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       return{ok:false,verified:false,muted:!!muted,trackCount:0,senderCount:0,error:"No se pudo inicializar el guard del micrófono: "+String(error)};
     }
     try{
-      var executions=await chrome.scripting.executeScript({
+      var executions=await runExtensionScript({
         target:{tabId:targetTabId,frameIds:[0]},
         world:"MAIN",
         func:async function(input){
@@ -701,7 +709,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var tabId = Number(tab && tab.id);
       if (!Number.isFinite(tabId)) continue;
       try {
-        await chrome.scripting.executeScript({
+        await runExtensionScript({
           target: { tabId: tabId, allFrames: true },
           world: "ISOLATED",
           files: ["global-mouse-gesture.js"],
@@ -760,16 +768,16 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
           try {
             await chrome.tabs.sendMessage(tabId, { type: "EFFECTIF_HOTLOAD_REPLACE", reason: trigger || "runtime-start" });
           } catch (_) {}
-          await chrome.scripting.executeScript({
+          await runExtensionScript({
             target: { tabId: tabId },
             world: "ISOLATED",
             func: function () {
               try { window.__SIGNAL_INTERPRETER_CLOUD_RUNTIME__ = null; } catch (_) {}
             }
           });
-          await chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
-          await chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
-          await chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["live-caption-core.js", "live-caption-overlay.js"], world: "ISOLATED", injectImmediately: true });
+          await runExtensionScript({ target: { tabId: tabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
+          await runExtensionScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
+          await runExtensionScript({ target: { tabId: tabId }, files: ["live-caption-core.js", "live-caption-overlay.js"], world: "ISOLATED", injectImmediately: true });
           var captionProbe = null;
           for (var probeAttempt = 0; probeAttempt < 4; probeAttempt += 1) {
             captionProbe = await chrome.tabs.sendMessage(tabId, { type: "SIGNAL_CAPTION_OVERLAY_PROBE" }).catch(function () { return null; });
@@ -843,8 +851,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         var tab = await chrome.tabs.get(callTabId);
         if (tab && isAuthorizedCloudUrl(tab.url) && isCloudCallUrl(tab.url)) {
           validCallTab = true;
-          await chrome.scripting.executeScript({ target: { tabId: callTabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
-          await chrome.scripting.executeScript({ target: { tabId: callTabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
+          await runExtensionScript({ target: { tabId: callTabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
+          await runExtensionScript({ target: { tabId: callTabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
           record("HOTLOAD_CONTENT_RUNTIME_REHYDRATED", { callId: state.callId, tabId: callTabId }, "info", "runtime");
         }
       } catch (error) {
@@ -1251,7 +1259,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     }
   }
   async function ensureOffscreen() {
-    var target=chrome.runtime.getURL("offscreen.html");
+    var target=chrome.runtime.getURL(extensionResource("offscreen.html"));
     if(chrome.runtime.getContexts){
       var contexts=await chrome.runtime.getContexts({contextTypes:["OFFSCREEN_DOCUMENT"],documentUrls:[target]});
       if(contexts.length)return;
@@ -1259,7 +1267,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     }else{try{if(await chrome.offscreen.hasDocument())return}catch(_){}}
     if(!offscreenCreation){
       offscreenCreation=chrome.offscreen.createDocument({
-        url:"offscreen.html",
+        url:extensionResource("offscreen.html"),
         reasons:["AUDIO_PLAYBACK"],
         justification:"Reproducir exclusivamente los tonos breves de control de mute; nunca audio de la conversación."
       }).finally(function(){offscreenCreation=null});
@@ -1279,7 +1287,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   }
   async function probeCloudTabTelemetry(tab) {
     try {
-      var execution = await chrome.scripting.executeScript({
+      var execution = await runExtensionScript({
         target: { tabId: tab.id, frameIds: [0] },
         world: "ISOLATED",
         func: function () {
@@ -1971,7 +1979,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     return result.earned?result:null;
   }
   async function readOfficialStatsInPage(tabId) {
-    var results=await chrome.scripting.executeScript({
+    var results=await runExtensionScript({
       target:{tabId:tabId},
       world:"MAIN",
       func:readVisibleOfficialSummaryFromPage
@@ -1981,7 +1989,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     return {ok:true,method:"page-dom",summary:result};
   }
   async function readOfficialStatsViaTrpc(tabId, startIso, endIso) {
-    var results=await chrome.scripting.executeScript({
+    var results=await runExtensionScript({
       target:{tabId:tabId},
       world:"MAIN",
       func:async function(profileId,statsUrl,startIso,endIso) {
@@ -2734,7 +2742,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   function updateSignalSession(message,sendResponse){loadSignalSessions().then(function(data){var s=data.sessions.find(function(x){return x.id===message.sessionId});if(!s)throw new Error("Sesión no encontrada");var p=message.patch||{};if(["CLIENTE","YO"].indexOf(p.activeSpeaker)>=0)s.activeSpeaker=p.activeSpeaker;if(p.view==="timeline"||p.view==="triptych")s.view=p.view;if(p.fontSize!=null)s.fontSize=Math.max(14,Math.min(34,Number(p.fontSize)||20));if(typeof p.autoScroll==="boolean")s.autoScroll=p.autoScroll;if(typeof p.compactDensity==="boolean")s.compactDensity=p.compactDensity;return saveSignalSessions(data.sessions,data.activeSessionId).then(function(){return{ok:true,session:signalSessionCopy(s)}})}).then(function(r){broadcastSignalEvent({type:"signal.session.updated",sessionId:message.sessionId,session:r.session,timestamp:iso()});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})});}
   async function deleteSignalSession(message,sendResponse){try{var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId,idx=data.sessions.findIndex(function(x){return x.id===id}),session=idx>=0?data.sessions[idx]:null;if(!session)throw new Error("Sesión no encontrada");if(data.activeSessionId===id)await stopGroqCapture("session-delete");await KhoraTelemetryDB.clearSignalSession(id);data.sessions.splice(idx,1);var nextId=data.sessions.length?data.sessions[Math.max(0,Math.min(idx-1,data.sessions.length-1))].id:null;await saveSignalSessions(data.sessions,nextId);recordSignalDiagnostic("SIGNAL_SESSION_DELETED",{deletedSessionId:id,remainingSessions:data.sessions.length,activeSessionId:nextId});broadcastSignalEvent({type:"signal.session.deleted",sessionId:id,activeSessionId:nextId,session:nextId?signalSessionCopy(data.sessions.find(function(x){return x.id===nextId}),true):null,timestamp:iso()});sendResponse({ok:true,deletedSessionId:id,activeSessionId:nextId});}catch(error){recordSignalDiagnostic("SIGNAL_SESSION_DELETE_ERROR",{sessionId:message.sessionId||signalActiveSessionId,error:String(error)},"error");sendResponse({ok:false,error:String(error)})}}
   function addSignalSessionSegment(message,sendResponse){loadSignalSessions().then(function(data){var id=message.sessionId||data.activeSessionId,s=data.sessions.find(function(x){return x.id===id});if(!s)throw new Error("Sesión no encontrada");var text=String(message.text||"").trim();if(!text)throw new Error("Texto vacío");var seg={id:"manual-"+uid(),text:text.slice(0,12000),timestamp:iso(),reason:"manual",source:"manual",speaker:message.speaker==="YO"?"YO":"CLIENTE"};return persistSignalSegment(id,seg).then(function(x){if(!x.ok)throw new Error(x.dbError||x.cacheError||"No se pudo persistir");return{ok:true,session:x.session,segment:seg}})}).then(function(r){broadcastSignalEvent({type:"signal.transcript.segment",sessionId:r.session.id,manual:true,segment:r.segment,timestamp:r.segment.timestamp});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})});}
-  async function openSignalLiveWindow(audioStreamId,tabId,sourceUrl,sourceTitle){var targetUrl=chrome.runtime.getURL("ui/live.html");try{var session=await ensureSignalSession({tabId:tabId,sourceUrl:sourceUrl,title:sourceTitle}),windows=await chrome.windows.getAll({populate:true,windowTypes:["popup"]}),existing=windows.find(function(w){return Array.isArray(w.tabs)&&w.tabs.some(function(t){return String(t.url||"").split("#")[0].split("?")[0]===targetUrl})}),windowId=null;if(existing&&existing.id!=null){windowId=existing.id;await chrome.windows.update(windowId,{focused:true,state:"normal"})}else{var stored=await chrome.storage.local.get(["signalLiveBounds"]),b=stored.signalLiveBounds||{},d={url:targetUrl,type:"popup",focused:true,width:Number.isFinite(b.width)?b.width:760,height:Number.isFinite(b.height)?b.height:760};if(Number.isFinite(b.left))d.left=b.left;if(Number.isFinite(b.top))d.top=b.top;var created=await chrome.windows.create(d);windowId=created&&created.id||null}var activation=await activateSignalSession(session.id,audioStreamId||null);return{ok:!!windowId,windowId:windowId,reused:!!existing,session:activation.session||signalSessionCopy(session,true),audio:null,capture:activation};}catch(error){return{ok:false,error:String(error)}}}
+  async function openSignalLiveWindow(audioStreamId,tabId,sourceUrl,sourceTitle){var targetUrl=chrome.runtime.getURL(extensionResource("ui/live.html"));try{var session=await ensureSignalSession({tabId:tabId,sourceUrl:sourceUrl,title:sourceTitle}),windows=await chrome.windows.getAll({populate:true,windowTypes:["popup"]}),existing=windows.find(function(w){return Array.isArray(w.tabs)&&w.tabs.some(function(t){return String(t.url||"").split("#")[0].split("?")[0]===targetUrl})}),windowId=null;if(existing&&existing.id!=null){windowId=existing.id;await chrome.windows.update(windowId,{focused:true,state:"normal"})}else{var stored=await chrome.storage.local.get(["signalLiveBounds"]),b=stored.signalLiveBounds||{},d={url:targetUrl,type:"popup",focused:true,width:Number.isFinite(b.width)?b.width:760,height:Number.isFinite(b.height)?b.height:760};if(Number.isFinite(b.left))d.left=b.left;if(Number.isFinite(b.top))d.top=b.top;var created=await chrome.windows.create(d);windowId=created&&created.id||null}var activation=await activateSignalSession(session.id,audioStreamId||null);return{ok:!!windowId,windowId:windowId,reused:!!existing,session:activation.session||signalSessionCopy(session,true),audio:null,capture:activation};}catch(error){return{ok:false,error:String(error)}}}
   signalGroqQueue=Promise.resolve();
   chrome.tabs.onActivated.addListener(function (activeInfo) {
     refreshActionIndicator(activeInfo.tabId).catch(function () {});
@@ -2790,6 +2798,11 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   });
 
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+    if (message && /^SIGNAL_LAB_/.test(message.type)) {
+      if (!SignalCaptionLab.isSender(sender)) { sendResponse({ok:false,reasonCode:"lab-sender-denied"}); return false; }
+      SignalCaptionLab.handle(message).then(sendResponse).catch(function(){sendResponse({ok:false,reasonCode:"lab-operation-failed"});}); return true;
+    }
+    if (message && message.type === "EFFECTIF_EVENT" && SignalCaptionLab.isSender(sender)) { sendResponse({ok:true,environment:"lab",published:false}); return false; }
     if (!message) return false;
     if (message.type === "SIGNAL_CAPTION_OPEN_LOOKUP") {
       openCaptionLookup(message.kind, message.query).then(sendResponse).catch(function (error) {
@@ -2857,7 +2870,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       return false;
     }
     if (message.type === "SIGNAL_CAPTION_OVERLAY_HELLO") {
-      getCaptionOverlayContext(sender && sender.tab).then(sendResponse).catch(function () {
+      getCaptionOverlayContext(sender && sender.tab, sender && sender.url).then(sendResponse).catch(function () {
         sendResponse({ ok: false, enabled: false, scope: "source-only", pageAllowed: false, history: [] });
       });
       return true;
@@ -3091,7 +3104,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   async function markObservabilityBuildCheckpoint(reason, previousVersion) {
     try {
       var files=["manifest.json","background.js","content.js","offscreen.js","ui/popup.js","ui/popup.html","ui/popup.css","ui/time-format.js"];
-      var texts=await Promise.all(files.map(function(file){return fetch(chrome.runtime.getURL(file),{cache:"no-store"}).then(function(response){if(!response.ok)throw new Error("No se pudo leer "+file);return response.text();});}));
+      var texts=await Promise.all(files.map(function(file){return fetch(chrome.runtime.getURL(extensionResource(file)),{cache:"no-store"}).then(function(response){if(!response.ok)throw new Error("No se pudo leer "+file);return response.text();});}));
       var bytes=new TextEncoder().encode(texts.join("\n/* SIGNAL OBSERVABILITY BUILD BOUNDARY */\n"));
       var digest=await crypto.subtle.digest("SHA-256",bytes);
       var fingerprint=Array.from(new Uint8Array(digest)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");
@@ -3162,6 +3175,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     });
   });
   chrome.runtime.onSuspend.addListener(function(){log("info","EXTENSION_RUNTIME_SUSPENDING",{pendingNetworkRequests:networkRequests?networkRequests.size:0});});
+  SignalCaptionLab.restore().catch(function(){});
   initialize().then(function(){
     return refreshAllActionIndicators().catch(function(error){
       record("ACTION_INDICATOR_STARTUP_REFRESH_ERROR",{error:String(error)},"warn","action");
@@ -3270,7 +3284,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     if (now - previous < 3000) return;
     autoAnswerBootstrapAt.set(tabId, now);
     record("AUTO_ANSWER_BOOTSTRAP_REQUESTED", { tabId: tabId, trigger: trigger || "unknown" }, "info", "background");
-    chrome.scripting.executeScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED" }).then(function () {
+    runExtensionScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED" }).then(function () {
       record("AUTO_ANSWER_BOOTSTRAP_INJECTED", { tabId: tabId, trigger: trigger || "unknown" }, "info", "background");
     }).catch(function (error) {
       record("AUTO_ANSWER_BOOTSTRAP_INJECTION_ERROR", { tabId: tabId, trigger: trigger || "unknown", error: String(error) }, "warn", "background");

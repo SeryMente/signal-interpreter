@@ -9,7 +9,7 @@ function harness(){
  const sb={Date,Number,String,Object,Promise,normalizeHotloadState:x=>x,normalizeStateShape:x=>x,baseState:()=>({}),hasActiveCall:s=>!!s.callId,record:(action,payload)=>events.push({action,payload}),
   chrome:{storage:{local:{get:async()=>structuredClone(local)}},offscreen:{hasDocument:async()=>true,closeDocument:async()=>{closed++;}},tabCapture:{getMediaStreamId:poison}},
   SignalGroqTranscriber:{ready:poison,transcribe:poison},SignalCaptionBridge:{getContext:()=>context,start(tabId,callId){context={tabId,callId};starts++;},stop(){context={};stops++;}}};
- vm.createContext(sb);vm.runInContext(background.slice(background.indexOf("  var captionControlQueue"),background.indexOf("\n  try {\n    SignalCaptionBridge.onCaption")),sb);
+ sb.runExtensionScript=spec=>sb.chrome.scripting.executeScript(spec); sb.SignalCaptionLab=sb.SignalCaptionLab||{active:()=>false}; vm.createContext(sb);vm.runInContext(background.slice(background.indexOf("  var captionControlQueue"),background.indexOf("\n  try {\n    SignalCaptionBridge.onCaption")),sb);
  return {sb,local,events,counts:()=>({closed,starts,stops,forbidden})};
 }
 const h=harness();await Promise.all([h.sb.setCaptionPreviewForActiveCall(true,"call-start"),h.sb.setCaptionPreviewForActiveCall(true,"native-recovery")]);

@@ -3,19 +3,19 @@ import fs from "node:fs";
 import vm from "node:vm";
 
 const read = (file) => fs.readFileSync(file, "utf8");
-const manifest = JSON.parse(read("extension/manifest.json"));
+const manifest = JSON.parse(read("manifest.json"));
 const coreSource = read("extension/live-caption-core.js");
 const liveOverlay = read("extension/live-caption-overlay.js");
 const background = read("extension/background.js");
 const content = read("extension/content.js");
 const workflow = read(".github/workflows/observability-audit.yml");
 
-assert.equal(manifest.version, "0.10.34", "la versión debe ser la que contiene la corrección");
+assert.equal(manifest.version, "0.10.35", "la versión debe ser la que contiene la corrección");
 assert.ok(manifest.content_scripts.some((entry) =>
   entry.matches?.includes("https://app.cloudinterpreter.com/*") &&
   entry.run_at === "document_start" &&
-  entry.js?.indexOf("live-caption-core.js") >= 0 &&
-  entry.js?.indexOf("live-caption-overlay.js") > entry.js.indexOf("live-caption-core.js")
+  entry.js?.indexOf("extension/live-caption-core.js") >= 0 &&
+  entry.js?.indexOf("extension/live-caption-overlay.js") > entry.js.indexOf("extension/live-caption-core.js")
 ), "el núcleo debe cargarse antes del overlay en la ruta de Cloud Interpreter");
 
 const sandbox = { globalThis: {} };

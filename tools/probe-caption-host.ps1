@@ -1,9 +1,10 @@
 [CmdletBinding()]
 param([Parameter(Mandatory=$true)][string]$ExtensionRoot)
 $ErrorActionPreference='Stop'
-$exe=Join-Path $ExtensionRoot 'native\SignalInterpreter.CaptionHost.exe'
+$runtime=if(Test-Path -LiteralPath (Join-Path $ExtensionRoot 'extension\native')){Join-Path $ExtensionRoot 'extension'}else{$ExtensionRoot}
+$exe=Join-Path $runtime 'native\SignalInterpreter.CaptionHost.exe'
 if(-not(Test-Path -LiteralPath $exe)){throw 'Native executable missing.'}
-$registration=Get-Content -Raw -LiteralPath (Join-Path $ExtensionRoot 'native\register-caption-host.ps1')
+$registration=Get-Content -Raw -LiteralPath (Join-Path $runtime 'native\register-caption-host.ps1')
 $expected=[regex]::Match($registration,'ExpectedSha256\s*=\s*"([A-Fa-f0-9]{64})"').Groups[1].Value
 if($expected.Length -ne 64 -or (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash -ne $expected){throw 'Native executable hash mismatch.'}
 $start=New-Object Diagnostics.ProcessStartInfo

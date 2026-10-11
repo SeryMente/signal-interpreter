@@ -4,18 +4,18 @@ import path from "node:path";
 
 const root = process.cwd();
 const read = (name) => fs.readFileSync(path.join(root, name), "utf8");
-const manifest = JSON.parse(read("extension/manifest.json"));
+const manifest = JSON.parse(read("manifest.json"));
 const background = read("extension/background.js");
 const bootstrap = read("extension/auth-bootstrap.js");
 const assist = read("extension/auth-signin-assist.js");
 const popupHtml = read("extension/ui/popup.html");
 const popupJs = read("extension/ui/popup.js");
 
-assert.equal(manifest.version, "0.10.34");
+assert.equal(manifest.version, "0.10.35");
 assert.ok(background.includes('"auth-bootstrap.js"'));
 assert.ok(manifest.content_scripts.some((entry) =>
   entry.matches && entry.matches.includes("https://app.cloudinterpreter.com/auth/signin*") &&
-  entry.js && entry.js.includes("auth-signin-assist.js")
+  entry.js && entry.js.includes("extension/auth-signin-assist.js")
 ));
 assert.ok(bootstrap.includes('chrome.runtime.onInstalled.addListener'));
 assert.ok(bootstrap.includes('chrome.runtime.onStartup.addListener'));

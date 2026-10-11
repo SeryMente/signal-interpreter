@@ -17,6 +17,8 @@ jobs:
           node-version: 22
       - name: JavaScript syntax
         run: |
+          node --check extension/caption-lab.js
+          node --check extension/ui/lab.js
           node --check extension/background.js
           node --check extension/auth-bootstrap.js
           node --check extension/auth-signin-assist.js
@@ -109,3 +111,8 @@ jobs:
         run: node tools/live-caption-static-audit.mjs
       - name: Observability static audit
         run: node tools/observability-static-audit.mjs
+
+      - name: Portable root and caption laboratory regression
+        run: |
+          node tools/portable-root-test.mjs
+          node tools/caption-lab-test.mjs

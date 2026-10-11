@@ -102,6 +102,8 @@
     });
   }
   async function runBootstrap(reason) {
+    var labGuard=await chrome.storage.local.get(["signalLabLock"]);
+    if (labGuard.signalLabLock === true) return {ok:false,reasonCode:"lab-isolation-active"};
     var probeTab = null;
     await storeState("checking", reason);
 
