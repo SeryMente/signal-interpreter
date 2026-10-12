@@ -1,12 +1,94 @@
 # DOCUMENTO CANÓNICO ÚNICO — Sprint de transcripción y overlay de subtítulos
 
-## Objeto operativo replicable · actualización del marco 1.2
+<!-- BEGIN_CANONICAL_CORE -->
+
+## Control e identidad
+
+Identidad, sello, ancla, ruta y naturaleza de persistencia; código integrado y candidata se distinguen.
+
+**Materialización interna única:** encabezado de «Objeto operativo replicable · actualización del marco 1.5 · evidencia previa».
+
+## LEER PRIMERO
+
+Adquirir fuente superior pertinente y metacanon, cotejar rol/permiso/requisito/evidencia antes de actuar; no importar ejemplos ni autorizar por firma.
+
+**Materialización interna única:** «LEER PRIMERO · gobierno y rol», «Separación estricta de roles y acceso remoto» y «Compuerta obligatoria de evidencia previa al avance».
+
+## Referencia metodológica
+
+Versión/sello/revisión adquiridos visibles; delta, cobertura y frescura con límites.
+
+**Materialización interna única:** «Referencia metodológica y frescura» y «Matriz de herencia de gobierno — §§22–27».
+
+## Propósito y alcance
+
+Nativo exclusivo Windows/Chrome y criterios del operador; audio/Groq históricos vetados.
+
+**Materialización interna única:** «Propósito, alcance y continuidad».
+
+## Roles y colaboración
+
+Samantha constructor único escritor de código; Claudia asistente, única operadora remota bajo permisos propios.
+
+**Materialización interna única:** «Separación estricta de roles y acceso remoto» y «Colaboración, formato por ciclo y pronóstico calibrado».
+
+## Autoridad
+
+Dictado→interpretación→evidencia→decisión→cambio→aceptación; merge y aceptación no se deducen de preparación.
+
+**Materialización interna única:** «Autoridad y decisiones trazables» y «Compuerta obligatoria de evidencia previa al avance».
+
+## Perfil de entorno
+
+Constructor en sandbox Linux/GitHub; evidencia Windows de Claudia reportada con procedencia. Cuentas/rutas/IDs privados no importados; ausencia de llamada actual no verificada bloquea mutación.
+
+**Materialización interna única:** «Separación estricta de roles y acceso remoto», estado y entrega a Claudia.
+
+## Estado vivo
+
+Única materialización de estado; prompts repiten su literal para reinstanciar, no crean otra fuente.
+
+**Materialización interna única:** «🔄 Estado vivo», «⚗️ En prueba / recién fallido» y «Recordatorios latentes».
+
+## Aceptación y viabilidad
+
+Implementado/demostrado/aceptado separados; JSON sitúa fallo antes de captions recibidos, no prueba causa.
+
+**Materialización interna única:** «Mínimo producto viable y frontera respaldada» y compuerta de evidencia.
+
+## Formato de ciclo
+
+Diez campos, Metacanon adquirido obligatorio, ruta crítica y dos horizontes con supuestos; sin base declarar dependencia.
+
+**Materialización interna única:** «Colaboración, formato por ciclo y pronóstico calibrado».
+
+## Crónica y fuentes
+
+Historia y originales privados preservados; fuentes e integridad; reportado/histórico/sintético/medido separados.
+
+**Materialización interna única:** «Crónica del delta actual y evidencia», «Especificaciones originales del ciclo y privacidad» e inventario.
+
+## Reinstanciación
+
+Dos prompts íntegros con mismo estado literal y exclusividad remota; sin agentes nuevos.
+
+**Materialización interna única:** «Prompt completo · Samantha, constructor» y «Prompt completo · Claudia, asistente».
+
+## Persistencia y revisión
+
+Releer/compare/fusionar/escritura condicionada/readback; revisión de estructura y semántica; traslado de carpeta pendiente de autorización.
+
+**Materialización interna única:** «Doble revisión y persistencia», «Carpeta canónica y custodia — delta 1.1 aplicable» y entrega.
+
+<!-- END_CANONICAL_CORE -->
+
+## Objeto operativo replicable · actualización del marco 1.5 · evidencia previa
 
 **Identidad:** Signal Interpreter; reutilización de este documento canónico existente, sin segunda fuente de estado.
-**Sello documental:** `SI-OBJ-v1.2` · código: `0.10.36`.
-**Ancla real:** solicitud directa de revisar el metacanon y mantener este objeto al día, más lectura autenticada de la versión 1.2 en este ciclo.
-**Persistencia:** actualización documental del objeto existente solicitada por el operador en este ciclo; destino: este mismo archivo en `main`. El sello solo acredita escritura cuando la operación y su lectura de vuelta estén confirmadas. No se crea otro objeto ni se autoriza merge de código, despliegue, acceso remoto o traslado de carpetas.
-**Fuente base recuperada:** `96f87b423c0e6a48ba1ba41811668ac36a0de26e` · blob `57e8fc0f018dc6ab0ac47100e4b23c486e9c8c1a` · SHA-256 `a09a81607806f229b36d7cd5bfd207a7dc05a0995e3481bc9f03720a3ccaca71`.
+**Sello documental:** `SI-OBJ-v1.5-evidencia-01` · código: `0.10.36`.
+**Ancla real:** recepción del fallo del laboratorio, directiva de evidencia previa y prohibición expresa de Remote Desktop Commander al constructor, remitidas por Claudia desde el hilo asistente; sin atribuir hora no disponible.
+**Persistencia:** mantener este único archivo en main mediante escritura condicionada al blob leído y lectura de vuelta. Código diagnóstico en solicitud borrador #59; no está integrado, instalado ni validado en Windows. Los mensajes completos/capturas y datos privados permanecen fuera del repositorio público.
+**Fuente base recuperada para esta actualización:** `5fae2c8dd46909e161043145201bfdc9aef33325` · blob `fa95625a81bfe69a343be7925a7e7280305e9e06` · SHA-256 `a0ee7f81e75c59819fba366668e5f107ff00907f2bbe470cedf6bc1124fef589`. Historia y originales de esa base se preservan íntegramente.
 
 ### LEER PRIMERO · gobierno y rol
 
@@ -16,12 +98,27 @@ Samantha conserva el rol de **constructor**, que ya ejecutó código y pruebas e
 
 ### Referencia metodológica y frescura
 
-- Metacanon adquirido: [METACANON-OBJETOS-CANONICOS.md](https://github.com/SeryMente/metodologia/blob/f63f5cbaa843311046beb916d5944aef54c39180/METACANON-OBJETOS-CANONICOS.md), versión **1.2**, sello **METACANON-OBJETOS-v1.2**, rama `docs/metacanon-objetos-20261011`, commit `f63f5cbaa843311046beb916d5944aef54c39180`, blob `65087aa5d25b7941f5c9b568ad0ac24f6324999b`, SHA-256 `71330197b1c2c368e83580120c04ab2bf97a0c15ff60666b085df1ff8ef7e437`. Coincide con la huella de `REVISION-METACANON-1.2.json` leída por conexión autenticada.
-- Delta: 1.0 → 1.1 (carpetas canónicas, custodia conjunta, privacidad actual) → 1.2 (excepción de hilo único exclusivamente para el mantenimiento metodológico). La excepción no cambia el régimen de Signal Interpreter: Samantha constructor; Claudia asistente si se instancia, sin crear agentes/hilos ahora.
-- Integración central: [solicitud #15](https://github.com/SeryMente/metodologia/pull/15) abierta/borrador, sin fusionar, head observado inicialmente `429675bf1bce08c3b14ecd62601668aff3f7107e`; revisión de rama posterior `f63f5cbaa843311046beb916d5944aef54c39180`; main central sigue `6e0a416025594916016a34ae32e2b7e8af591320`. No presentar este metacanon como integrado en main.
-- Visibilidad revalidada mediante la conexión GitHub: Metodología **privado**; Signal Interpreter **público**. El fallo de fetch anónimo de Metodología no significa conexión autenticada vencida ni frescura sin cambios. No copiar normas privadas, originales privados, cuentas o identificadores remotos al repositorio público. Cambio concurrente leído antes de guardar: el encabezado metodológico permite custodia privada en carpeta autorizada; no concede permiso para secretos en Git ni habilita esa custodia en Signal Interpreter público.
-- Fuentes superiores pertinentes ya adquiridas en el checkpoint anterior: ANCLA, gobierno/separación de niveles del Sistema de Instrucciones v1.6.21, Metodología v0.14.14, continuidad/bootstrap y gobernanza/reinstanciación remota. Se conserva la referencia de main `6e0a416…`; no se afirma una lectura global nueva ni se adoptan cambios laterales de otra rama por semejanza.
-- Cada ciclo: comprobar revisión/blob de metacanon y objeto, leer el delta cuando cambie, clasificar efecto y ejecutar dentro del permiso. Fuente inaccesible = frescura **NO VERIFICADA**. Antes de guardar: releer, comparar, fusionar sin pisar; después, lectura de vuelta. No importar contexto ni permisos de los ejemplos.
+- **Metacanon adquirido: 1.5 · METACANON-OBJETOS-v1.5**. Fuente leída por conexión autenticada en rama `docs/metacanon-objetos-20261011`, commit `bfb63751f060596e344d5768e31085100bb20751`, blob `32c7a65ff2e83b3b76752ba2160427bd6e851a8f`, SHA-256 `1db7a16892310c505ec3002e9439e35c11a13b2e5e36dee2829efeda201e042c`. [Archivo adquirido](https://github.com/SeryMente/metodologia/blob/bfb63751f060596e344d5768e31085100bb20751/METACANON-OBJETOS-CANONICOS.md). La reautenticación inicial fallida se resolvió; no se afirmó frescura mientras la conexión era inaccesible.
+- [Solicitud metodológica #15](https://github.com/SeryMente/metodologia/pull/15) comprobada abierta/borrador y no fusionada, head consultado previamente `4262e7f9fec3d098b10ce1748cff442acdbdf4c0`; archivo posterior leído en `bfb63751f060596e344d5768e31085100bb20751`; base main `6e0a416025594916016a34ae32e2b7e8af591320`. Un avance de commit que conserva el blob del archivo no es cambio de la norma; no presuponer integración central.
+- Delta adquirido: 1.2 → 1.3 (versión visible, matriz de herencia, necesidad remota estricta) → 1.4 (prioridad/pronóstico) → 1.5 (acceso remoto exclusivo de asistencia, adquisición aplicada verificable y núcleo común de trece bloques). Es incorporación documental de esta instancia; no demuestra recepción/obediencia de otros hilos.
+- Metodología se comprobó privado y Signal Interpreter público en el ciclo previo; los datos nuevos son reglas/evidencia técnica no sensibles. No transportar al repo público normas privadas íntegras, datos de cuentas/equipos, capturas ni conversación clínica. Revalidar visibilidad antes de escritura sensible; incluso en repositorio privado, secretos nunca a Git.
+- Fuentes superiores pertinentes ya adquiridas: ANCLA, Sistema de Instrucciones v1.6.21, Metodología v0.14.14, continuidad/bootstrap; no declarar relectura global completa ni importar contexto de otro frente.
+- Cada ciclo comprobar metacanon y objeto; cambio de blob requiere lectura/delta. Fuente inaccesible = **frescura NO VERIFICADA**. Releer/compare/fusiona antes de guardar y comprobar lectura después. Modelo no reconstruye originales inaccesibles ni convierte propuesta en permiso.
+
+### Matriz de herencia de gobierno — §§22–27
+
+| Norma central | Ubicación efectiva del hijo | Efecto / evidencia | Estado y límites |
+|---|---|---|---|
+| §§1–3 · objeto único, propósito/roles, originales | Gobierno, propósito, autoridad, crónica, originales y dos prompts | Historia preservada; constructor/asistente explícitos | Adoptada documentalmente; originales privados referenciados, no publicados |
+| §20 · carpeta y custodia | Carpeta canónica y custodia | Ruta existente preservada, desfase declarado | Migración pendiente de autorización; no crear segundo objeto |
+| §21 · excepción metodológica | Gobierno y prompts | Signal conserva Samantha/Claudia | No aplicable la excepción de hilo único |
+| §22 · versión visible | Referencia, formato por ciclo, ambos prompts | Campo «Metacanon adquirido» obligatorio | Adoptada documentalmente; observación de otros hilos no certificada |
+| §23 · propagación comprobable | Esta matriz, frescura, persistencia | Delta/estado por norma y readback obligatorio | No declarar actualizados frentes/copies no leídos |
+| §24 · necesidad remota estricta | Separación de acceso y prompts | Constructor sin llamadas remotas; Claudia sujeta a necesidad/vínculo | Restricción de proyecto más estricta por instrucción directa |
+| §25 · prioridad y pronóstico | Colaboración, viabilidad, formato y prompts | Salida de Samantha → síntesis + prompt de Claudia; ruta crítica real | Adoptada documentalmente; no equivalente a aceptación Windows |
+| §26 · adquisición/aplicación | Núcleo LEER PRIMERO, matriz, compuerta y prompts | Fuente/revisión → regla → requisito → evidencia/bloqueo → resultado antes de acción | Adoptada; no firma sin aplicación ni permisos inventados |
+| §27 · molde común | Núcleo marcado de trece bloques, referencias inequívocas a materializaciones internas | Mapeo sin borrar historia, criterio/estado/prompts preservados | Adoptada documentalmente; cotejo estructural y semántico, no solo títulos |
+| Directiva de evidencia previa | Compuerta siguiente | Reproducción local ANTES del cambio, casos negativos y límites | Windows real pendiente; no garantías por fixture |
 
 ### Carpeta canónica y custodia — delta 1.1 aplicable
 
@@ -34,9 +131,9 @@ La carpeta temporal de checkpoint agrupa la copia del objeto, parche, inventario
 ### Propósito, alcance y continuidad
 
 - **De dónde viene:** mejorar la calidad de vida de la interpretación telefónica ya apoyada en Live Caption nativo; la especificación original y sus ratificaciones están en §§15–17 y en los dictados identificados abajo.
-- **Dónde está:** extensión `0.10.36` integrada; laboratorio con muestra real recortada y preparación portable Windows demostradas en entornos controlados. Instalación y aceptación del operador pendientes.
+- **Dónde está:** extensión `0.10.36` integrada; fallo de laboratorio real reportado. Candidata diagnóstica #59 separada; preparación controlada no acredita instalación ni recepción del operador.
 - **A dónde va:** texto nativo llegando realmente al panel de trabajo sin eco/interferencia; prueba sin llamadas con informe útil y automático; conservación de funciones existentes.
-- **Qué cambió:** adquisición documental del marco; roles, decisiones trazables, inventario, frontera de viabilidad y reinstanciación. No hay cambio de arquitectura, seguridad, captura, servicios o código por adquirirlo.
+- **Qué cambió:** metacanon 1.4, compuerta de evidencia previa y separación remota estricta. Corrección diagnóstica revisable derivada de defectos probados localmente, no del método por sí solo; sin cambio de arquitectura/captura/lector ni aceptación real.
 
 Incluido: Windows + Chrome; fuente única Live Caption → Windows UI Automation → Native Messaging → overlay; historial/carriles por idioma/copiar/buscar/hotloading y funciones existentes; observabilidad sin voz/texto crudos; raíz del ZIP cargable; instalador offline y laboratorio aislado; audio de prueba solicitado. MacOS/Linux son entornos de desarrollo/prueba local, NO plataformas de producto admitidas.
 
@@ -57,40 +154,59 @@ La muestra contiene tres **papeles** de una dramatización (cliente/médico, pac
 
 Las decisiones antiguas que permitían audio/Groq están **sustituidas** por §15; solo se conservan como crónica. Ningún prompt histórico de Jules, ejemplo o propuesta metodológica se convierte en autorización presente.
 
-### Perfil actual y acceso remoto
+### Separación estricta de roles y acceso remoto
 
-Corrección de identidad: una etiqueta introducida por la transcripción anterior no es identidad comprobada de computadora y no se usa como selector. La plataforma expone Remote Desktop Commander; cuenta/dispositivos se comprobaron en el ciclo remoto anterior, no se renueva su estado por memoria. El vínculo entre sesión y equipo actual sigue **NO CONFIRMADO**. Existe además una exclusión expresa de un selector histórico; la solicitud general de cierre no la revoca. Los datos concretos se conservan únicamente en el checkpoint privado. Descubrimiento Online no acredita permiso ni correspondencia física.
+**Regla vigente y prevalente del operador:** Samantha, constructor, tiene **PROHIBIDO usar Remote Desktop Commander**, incluidos descubrimiento de cuenta/dispositivos, ping, lectura, diagnóstico, comandos y mutaciones. No operar directa ni indirectamente ni crear otra sesión/agente para evadirla. Herramienta presente no acredita revocación técnica; la prohibición es operativa. Toda referencia histórica que permitiera uso al constructor queda subordinada/sustituida por esta regla.
 
-No se reinició ni revocó una sesión. No se inspeccionaron archivos remotos para adivinar un destino. La siguiente operación remota depende de cuenta + device ID + vínculo del equipo actual + conectividad/ping + necesidad + autorización. Un conector ausente no significa que la sesión no exista.
+Claudia, asistente, es la única operadora del conector. Necesidad Windows → Samantha formula requisito/evidencia exactos → Claudia verifica necesidad, autorización aplicable, cuenta, vínculo del equipo actual, identificador y conectividad → acción mínima suficiente. La regla NO concede por sí sola acceso a Claudia ni hereda permisos. Constructor no necesita recibir cuentas/identificadores para construir; no publicarlos.
 
-Solo si se necesita una sesión nueva, verificar antes Node y npx en la computadora autorizada, documentación oficial y carácter temporal del entorno; conservar el invocador literal, sin ejecutarlo en el sandbox del modelo:
+Original de la restricción remitido por Claudia, con procedencia de mensaje directo del operador, preservado literalmente:
+
+```text
+EL constructor no puede usar RDC, solo tu lo puedes usar. Regla estricta okay? QUe el constructor solo maneje la conexion a github y lo que necesite , pero nada de rdc.
+```
+
+Conexiones/descubrimientos antiguos no prueban estado actual ni equipo físico. Una etiqueta previa de transcripción fue retirada como identidad no verificada; no sirve como selector. No explorar archivos para identificar equipo ni reiniciar una sesión válida.
+
+El invocador central se conserva como herencia documental exclusivamente para una eventual necesidad de Claudia, tras comprobar Node/npx y documentación oficial. Contenerlo no ordena ejecutarlo y **nunca autoriza a Samantha a usarlo**:
 
 ```text
 npx @wonderwhy-er/desktop-commander@latest remote --no-persist-session
 ```
 
-En PowerShell puede resolverse el launcher oficial `npx.cmd` con los mismos argumentos. Esta política futura no autoriza matar/recrear una sesión válida ni limpiar autenticaciones previas.
+### Compuerta obligatoria de evidencia previa al avance
+
+Antes de cambiar código, reinstalar, pedir otra prueba o declarar avance: registrar hecho observado + fuente/entorno + qué demuestra/qué no + hipótesis separada + evidencia causal pertinente que justifica la acción. Una sonda mínima no destructiva puede obtener lo faltante bajo permiso; no inventar causa. Si solo hay defecto probado localmente, la corrección y validación local permanecen separadas de Windows real.
+
+Antes de ofrecer algo funcional/listo: exigir recorrido terminal real **Live Caption Windows → lector → Native Messaging → recepción → DOM con filas visibles**, con versión/carpeta identificadas. Instalado/preparado/compilado/audio/fixture no equivalen a recepción nativa. La llamada real es compuerta posterior independiente; no probar CloudInterpreter mientras falle laboratorio. No pedir reproducciones genéricas ni reinstalaciones sin hipótesis/evidencia.
+
+Nueva evidencia del operador preservada en el hilo asistente: laboratorio con recuadro nativo visible, panel vacío y diagnóstico que pide abrirlo. Es lectura de imágenes reportada por Claudia, no inspección propia del constructor; importar sus IDs de adjunto al sandbox falló `file_not_found`. No afirmar que las capturas prueben exposición por Windows UI Automation, versión/carpeta cargada, registro del host, causa raíz o fallo de CloudInterpreter. El JSON ya fue leído por Claudia y recibido por Samantha: conexión nativa y panel montado, cero eventos y filas. **No pedirlo de nuevo ni repetir reproducción**. Esto no demuestra exposición UI Automation ni causa: justifica sonda mínima acotada de selección/propiedad/contexto, sin llamada/audio nuevo.
 
 ### 🔄 Estado vivo
 
 ```text
-Acción documental: metacanon 1.2 adquirido; actualización de este único objeto existente solicitada en el ciclo actual. Método en rama no fusionada; no cambio de código, arquitectura ni permisos remotos. La escritura documental requiere confirmación y lectura de vuelta.
-Código vigente comprobado: Signal Interpreter 0.10.36; integración #58, commit eadb5932b542c7d8e89c7c9d741700268397d086. Muestra bilingüe integrada de 281.6 segundos, audio predeterminado y materialización offline verificada.
-Instalación en el equipo actual: NO VERIFICADA. Vínculo entre el equipo declarado por el operador y la conexión remota: NO CONFIRMADO; no seleccionar un dispositivo por nombre, historial o mera presencia Online.
-Siguiente paso atómico: obtener únicamente el vínculo autorizado del equipo actual; comprobar cuenta + device ID + conectividad y contexto operativo antes de acceder.
-Pendientes en secuencia: vincular equipo; preparar/sustituir extensión y puente con respaldo fuera del escritorio y sin afectar una llamada; verificar carpeta, identidad, 53 hashes, muestra y protocolo; permitir la recarga de Chrome solicitada por el operador; ejecutar PRUEBA y cotejar texto nativo recibido con filas visibles; comprobar llamada real y observabilidad automática.
-Bloqueo selectivo: instalación remota y aceptación Windows real; no bloquea documentación ni pruebas locales autorizadas. No reiniciar la sesión válida ni usar un dispositivo histórico expresamente excluido como selector.
+Acción en curso: cerrar entrega diagnóstica congelada #59 y localizar el fallo Windows bajo evidencia previa. Commit 0f7f9516b0e1bfbb76aa982c7ee1b87c7f9855b0, borrador NO fusionado; no aceptación ni instalación hecha por Samantha.
+Producto integrado: 0.10.36, #58. Candidata conserva 0.10.36 como borrador diagnóstico, revisión native-path-evidence/v2; no nueva release. Lector C#, binario, clave, instalador y muestra intactos.
+Evidencia Windows recibida de Claudia: JSON v1 del laboratorio 0.10.36, nativeConnectedObserved=true, hostMountedObserved=true, nativeCaptionEvents=0, maximumOverlayRows=0 y native-text-not-exposed. Primera etapa NO DEMOSTRADA: antes de recibir captions; selección/proveedor/propiedad del lector siguen sin causa probada. No pedir JSON de nuevo.
+Evidencia de preparación reportada por Claudia: Chrome Preferences y host apuntan a la misma carpeta; stage 53/53 y respaldo privado fuera del Escritorio 127/127; puente ausente, Chrome abierto. ActiveCallState NOT_VERIFIED: BLOQUEA sustitución, no bloquea sonda observacional acotada.
+Sonda real completada por Claudia: Win32 TitleMatches=0; UIA ChromeRoots=1, ClassMatches=1, TitleMatches=0, JointMatches=0, ReadErrors=0; RawRootJointMatches=0, sin truncado/audio nuevo. Estado ACTUAL sin candidata; no prueba causa histórica. CallAbsence/LabAbsence siguen NOT_VERIFIED.
+Siguiente paso atómico: Claudia espera como máximo 5 min a ChromeRunning=false y puente=false, sin cierre forzado; si no sucede, aborta sustitución intacta y conserva checkpoint. No nuevas sondas/audio sin hipótesis y necesidad nuevas. Revisión funcional continúa sin declarar recepción corregida.
+Pendientes en secuencia: resultado de ventana segura y sustitución diagnóstica de Claudia; clasificar selección/lectura/contexto del fallo histórico con evidencia pertinente; corrección causal según evidencia; pruebas/compuertas y autorización de integración; actualización diagnóstica por Claudia cuando ventana segura, preservar manifiesto local y raíz; recarga normal de extensión; prueba dirigida del recorrido Windows; llamada real solo después del laboratorio validado.
+Restricción prevalente: Samantha tiene PROHIBIDO Remote Desktop Commander en toda operación, directa o indirecta. Claudia es única operadora bajo sus propios permisos/vínculo; no nuevos agentes ni sesiones para eludir roles.
+Cierre funcional no estimable: faltan resultados de sonda y compuerta humana de seguridad. Entrega diagnóstica y huellas cerradas; observar/preparar/compilar no demuestra captions Windows.
 ```
 
 ### ⚗️ En prueba / recién fallido
 
 ```text
-El operador reportó que Live Caption nativo mostraba texto pero el panel del laboratorio no lo recibía; fallo de aceptación pendiente, no corregido por incluir audio.
-La búsqueda restrictiva del host Windows es hipótesis de diagnóstico, no causa demostrada en el equipo actual.
+Laboratorio Windows recuperado por Claudia: conectado y panel montado, cero captions recibidos y cero filas; causa del lector/contexto NO VERIFICADA.
+ActiveCallState NOT_VERIFIED bloquea sustitución; sonda Windows observada sin candidata actual, no causa histórica. No llamada real ni reproducción genérica.
 ```
 
 ### Recordatorios latentes
 
+- La instrucción de actualizar en la MISMA carpeta se ejecuta solo por Claudia tras su compuerta real; backup privado fuera del Escritorio, manifiesto nativo personalizado conservado y rollback verificable. Puente ausente no acredita ausencia de llamada.
+- JSON real recibido: no volver a pedirlo ni tratar el fallo como solo render. Candidata diagnóstica congelada, no solución del lector.
 - Recepción nativa real del laboratorio y de la llamada continúa pendiente; no darla por aprobada por panel visible, conexión, compilación, audio reproducido o prueba sintética.
 - Confirmar equipo actual y ventana de instalación segura; no suponer carpeta de Chrome, runtime local, usuario normal o autorización por datos históricos.
 - Preservar exportación automática de llamadas reales, aislamiento y privacidad. La cuota histórica Vercel no se presenta como vigente sin nueva consulta y no bloquea la instalación/local.
@@ -114,6 +230,10 @@ Requisito derivado del marco: hacer comprensible en la interfaz aprobada qué es
 
 ### Crónica del delta actual y evidencia
 
+**Último evento prevalente:** reporte de laboratorio remitido por Claudia y dos directivas: evidencia previa y exclusión total de acceso remoto al constructor. La crónica anterior conserva sus límites y no reactiva permisos.
+
+**Trabajo de este ciclo:** fuentes intactas 0.10.36 reprodujeron el falso positivo de filas en memoria y diagnóstico genérico; luego 8 suites afectadas, sintaxis/payload y dos pruebas Chromium local aprobaron. Una prueba Chromium usó eventos Native Messaging deliberadamente sintéticos para distinguir DOM renderizado oculto (rechazado) de visible. No UI Automation Windows. Fuente/binary del lector no cambiaron. Candidata [#59](https://github.com/SeryMente/signal-interpreter/pull/59), rama `fix/native-caption-evidence-gate-20261011`, commit `0f7f9516b0e1bfbb76aa982c7ee1b87c7f9855b0`, siete archivos cotejados byte por byte; es borrador NO integrado ni instalado. El intento que incluía un cambio de workflow devolvió 403; retirado cambio innecesario, la regresión se ejecuta desde el test ya previsto en workflow y el guardado posterior se verificó, sin ampliar permisos. Pruebas remotas consultadas sobre la candidata: `audit` y `compile-and-protocol-smoke-test` concluyeron `success`. Son GitHub/Linux/Windows CI, no recepción de captions en el equipo del operador. Código de siete archivos leído de vuelta y ZIP fijado al commit cotejado 53/53. No se atribuye la causa específica del 403 a un bit de permiso no inspeccionado.
+
 1. Hilo y adjuntos previos recuperados; fuente canónica del sprint corregida frente a documentos históricos.
 2. Alcance de audio/Groq corregido y reemplazado por texto nativo exclusivo; versiones anteriores quedan históricas.
 3. Se integraron raíz portable/laboratorio 0.10.35 y luego muestra 0.10.36 en #58, merge `eadb5932b542c7d8e89c7c9d741700268397d086`.
@@ -123,55 +243,82 @@ Requisito derivado del marco: hacer comprensible en la interfaz aprobada qué es
 7. Checkpoint anterior: adquisición 1.0 y preparación temporal de adaptación, literales, inventario y dos prompts; no publicación del objeto.
 8. Ciclo actual: lectura autenticada de metacanon 1.2 y revisión de su hash; privacidad actual comprobada; 127 archivos inventariados re-leídos sin delta de bytes; actualización de este mismo objeto por solicitud del operador. No hay cambio de código ni acceso remoto. Carpeta futura queda pendiente de autorización explícita, no migrada.
 
-### Formato por ciclo, estimación y continuidad
+### Colaboración, formato por ciclo y pronóstico calibrado
 
-Salida breve obligatoria: (1) proyecto/rol/sello; (2) estado respecto al propósito; (3) delta metodológico y de proyecto; (4) avance/evidencia actual, histórica y sintética separadas; (5) pendientes/bloqueos; (6) viabilidad; (7) próximo hito/cierre y tiempo/ciclos con supuestos; (8) acción del agente y mínima intervención material; (9) checkpoint o prompt útil; (10) persistencia/frescura. Campos desconocidos se declaran. El folio global de ciclos, si se exige por otra norma aplicable, no está suministrado y no se inventa como numeración transversal.
+Samantha escribe código y entrega checkpoint/evidencia; Claudia revisa y mantiene continuidad sin escritura concurrente. Cuando el operador entrega una salida del constructor a Claudia, tiene prioridad sobre auxiliares: pausar en punto seguro, leer íntegramente, contrastar fuente, distinguir reporte/comprobación propia, resumir novedad/efecto/pendiente y entregar siempre prompt completo para Samantha. Si no hay novedad, decirlo. No cancelar mutación indivisible a ciegas ni simular recepción/ejecución de prompts. Después continuar solo auxiliares útiles sin colisión.
 
-Este checkpoint documental se produce en el ciclo actual. La instalación y la aceptación real no tienen tiempo estimable mientras falten vínculo de equipo, usuario/estado de Chrome y evidencia del fallo nativo; no usar porcentajes ni “un último paso” ficticio. Una vez resueltos, recalcular ruta crítica antes de prometer cierre.
+Toda salida, incluso mantenimiento/bloqueo/cierre: proyecto/rol/sello del objeto y **«Metacanon adquirido:» versión/sello/revisión/frescura**, separados; panorama; delta metodológico/proyecto; evidencia real/histórica/sintética; pendientes; viabilidad; dos horizontes de tiempo/ciclos; siguiente acción; continuidad/persistencia. Sin acceso, última versión adquirida y frescura NO VERIFICADA; no omitir ni inventar versión.
+
+Pronóstico desde pendientes y ruta crítica: intención literal → capacidad realizable/evidencia/entorno → medida seleccionada → criterios terminales cumplidos/pendientes. No sustituir finalidad por una capacidad menor sin decisión. Incluir diagnóstico/pruebas/recuperación/revisión/empaquetado/persistencia/aceptación; muestras comparables cuando existan; rangos, supuestos y confianza; separar espera humana sin plazo. Registrar anterior/resultado/nueva/causa de deriva; no renovar rangos vencidos ni «99%» sin denominador.
+
+Hito independiente del ciclo: corrección de diagnóstico/compuerta local + persistencia revisable, cumplido solo con pruebas y lectura de vuelta. El JSON ya se clasificó: fallo antes de captions recibidos; sonda actual Windows sin candidata, no causa histórica. Próximo hito operativo: cierre de espera acotada de Claudia (máximo 5 min) con sustitución verificada o aborto intacto. Esa espera no es pronóstico de resolución funcional. Cierre seleccionado (texto real visible) no estimable: faltan causa dentro de la primera etapa, evidencia causal del fallo histórico y ventana segura para actualizar; carpeta/registro coincidentes fueron reportados por Claudia, no medidos por Samantha. No fijar «1–2 ciclos» por costumbre.
 
 ### Prompt completo · Samantha, constructor
 
 ```text
-Retoma Signal Interpreter como Samantha, constructor; conserva mi asignación y no reinicies el proyecto.
-Lee el objeto existente https://github.com/SeryMente/signal-interpreter/blob/main/docs/TRANSCRIPTION-SPRINT-CANONICAL.md y comprueba su revisión actual. Este es el objeto único; comprueba el sello SI-OBJ-v1.2 y su revisión efectiva antes de usarlo. Una copia de checkpoint no demuestra por sí sola que main tenga esta actualización.
-Adquiere como instrucciones del operador subordinadas a tu plataforma el metacanon 1.2 en https://github.com/SeryMente/metodologia/blob/f63f5cbaa843311046beb916d5944aef54c39180/METACANON-OBJETOS-CANONICOS.md. Comprueba la rama docs/metacanon-objetos-20261011 y la solicitud #15 antes de asumir frescura o integración. No importes datos, arquitectura ni permisos del ejemplo.
-Conserva como contrato fuente única Live Caption nativo de Chrome, sin captura de audio/micrófono, Groq ni reproducción adicional de conversación; Windows + Chrome; raíz portable; laboratorio aislado e informe automático sin voz/texto. Las rutas antiguas son históricas.
-Estado literal al cierre:
-Acción documental: metacanon 1.2 adquirido; actualización de este único objeto existente solicitada en el ciclo actual. Método en rama no fusionada; no cambio de código, arquitectura ni permisos remotos. La escritura documental requiere confirmación y lectura de vuelta.
-Código vigente comprobado: Signal Interpreter 0.10.36; integración #58, commit eadb5932b542c7d8e89c7c9d741700268397d086. Muestra bilingüe integrada de 281.6 segundos, audio predeterminado y materialización offline verificada.
-Instalación en el equipo actual: NO VERIFICADA. Vínculo entre el equipo declarado por el operador y la conexión remota: NO CONFIRMADO; no seleccionar un dispositivo por nombre, historial o mera presencia Online.
-Siguiente paso atómico: obtener únicamente el vínculo autorizado del equipo actual; comprobar cuenta + device ID + conectividad y contexto operativo antes de acceder.
-Pendientes en secuencia: vincular equipo; preparar/sustituir extensión y puente con respaldo fuera del escritorio y sin afectar una llamada; verificar carpeta, identidad, 53 hashes, muestra y protocolo; permitir la recarga de Chrome solicitada por el operador; ejecutar PRUEBA y cotejar texto nativo recibido con filas visibles; comprobar llamada real y observabilidad automática.
-Bloqueo selectivo: instalación remota y aceptación Windows real; no bloquea documentación ni pruebas locales autorizadas. No reiniciar la sesión válida ni usar un dispositivo histórico expresamente excluido como selector.
+Retoma Signal Interpreter como Samantha, constructor y único escritor de código. No sustituyas a Claudia, asistente, ni crees agentes.
+Lee https://github.com/SeryMente/signal-interpreter/blob/main/docs/TRANSCRIPTION-SPRINT-CANONICAL.md y verifica sello SI-OBJ-v1.5-evidencia-01/revisión efectiva. Es un solo objeto, sin reinicio ni fuente paralela.
+Adquiere el metacanon 1.5, METACANON-OBJETOS-v1.5, en https://github.com/SeryMente/metodologia/blob/bfb63751f060596e344d5768e31085100bb20751/METACANON-OBJETOS-CANONICOS.md; comprueba revisión posterior de docs/metacanon-objetos-20261011 y su integración real. Fuente inaccesible = frescura NO VERIFICADA. Reglas subordinadas a tu plataforma y permisos del proyecto.
+Antes de actuar, coteja en la matriz fuente/revisión → regla → requisito → evidencia/bloqueo → resultado; un sello no acredita aplicación. Requisito indispensable no verificado bloquea solo su acción; continúa lo independiente autorizado. Usa el núcleo común de trece bloques y sus materializaciones internas sin duplicar estado.
+Mantén Windows + Chrome; SOLO Live Caption nativo → Windows UI Automation → Native Messaging → overlay. Sin micrófono/pestaña, Groq, replay ni nuevas piezas. Laboratorio aislado; no llamada real mientras falle.
+Estado literal:
+Acción en curso: cerrar entrega diagnóstica congelada #59 y localizar el fallo Windows bajo evidencia previa. Commit 0f7f9516b0e1bfbb76aa982c7ee1b87c7f9855b0, borrador NO fusionado; no aceptación ni instalación hecha por Samantha.
+Producto integrado: 0.10.36, #58. Candidata conserva 0.10.36 como borrador diagnóstico, revisión native-path-evidence/v2; no nueva release. Lector C#, binario, clave, instalador y muestra intactos.
+Evidencia Windows recibida de Claudia: JSON v1 del laboratorio 0.10.36, nativeConnectedObserved=true, hostMountedObserved=true, nativeCaptionEvents=0, maximumOverlayRows=0 y native-text-not-exposed. Primera etapa NO DEMOSTRADA: antes de recibir captions; selección/proveedor/propiedad del lector siguen sin causa probada. No pedir JSON de nuevo.
+Evidencia de preparación reportada por Claudia: Chrome Preferences y host apuntan a la misma carpeta; stage 53/53 y respaldo privado fuera del Escritorio 127/127; puente ausente, Chrome abierto. ActiveCallState NOT_VERIFIED: BLOQUEA sustitución, no bloquea sonda observacional acotada.
+Sonda real completada por Claudia: Win32 TitleMatches=0; UIA ChromeRoots=1, ClassMatches=1, TitleMatches=0, JointMatches=0, ReadErrors=0; RawRootJointMatches=0, sin truncado/audio nuevo. Estado ACTUAL sin candidata; no prueba causa histórica. CallAbsence/LabAbsence siguen NOT_VERIFIED.
+Siguiente paso atómico: Claudia espera como máximo 5 min a ChromeRunning=false y puente=false, sin cierre forzado; si no sucede, aborta sustitución intacta y conserva checkpoint. No nuevas sondas/audio sin hipótesis y necesidad nuevas. Revisión funcional continúa sin declarar recepción corregida.
+Pendientes en secuencia: resultado de ventana segura y sustitución diagnóstica de Claudia; clasificar selección/lectura/contexto del fallo histórico con evidencia pertinente; corrección causal según evidencia; pruebas/compuertas y autorización de integración; actualización diagnóstica por Claudia cuando ventana segura, preservar manifiesto local y raíz; recarga normal de extensión; prueba dirigida del recorrido Windows; llamada real solo después del laboratorio validado.
+Restricción prevalente: Samantha tiene PROHIBIDO Remote Desktop Commander en toda operación, directa o indirecta. Claudia es única operadora bajo sus propios permisos/vínculo; no nuevos agentes ni sesiones para eludir roles.
+Cierre funcional no estimable: faltan resultados de sonda y compuerta humana de seguridad. Entrega diagnóstica y huellas cerradas; observar/preparar/compilar no demuestra captions Windows.
 En prueba / recién fallido:
-El operador reportó que Live Caption nativo mostraba texto pero el panel del laboratorio no lo recibía; fallo de aceptación pendiente, no corregido por incluir audio.
-La búsqueda restrictiva del host Windows es hipótesis de diagnóstico, no causa demostrada en el equipo actual.
-Continúa el trabajo autorizado desde ese checkpoint. No uses un dispositivo histórico expresamente excluido como selector, no reinicies una sesión válida y no explores archivos para averiguar el equipo. Identifica cuenta, sesión viva, vínculo y dispositivo autorizado antes de instalar. Preserva la llamada y las copias anteriores con reversibilidad; recarga de Chrome y recepción nativa no se simulan.
-Este marco no concede merge, publicación, gastos, consultas ajenas ni cambios de arquitectura o seguridad. No publiques dictados privados; conserva originales y hashes. Relee/compare/fusiona el objeto existente antes de escribir y verifica el efecto persistido.
-Cada ciclo informa estado, delta, evidencia real/histórica/sintética, pendientes, viabilidad, estimación fundada o dependencia que la impide, siguiente acción y persistencia. No declares el fallo nativo corregido solo por reproducir la muestra.
+Laboratorio Windows recuperado por Claudia: conectado y panel montado, cero captions recibidos y cero filas; causa del lector/contexto NO VERIFICADA.
+ActiveCallState NOT_VERIFIED bloquea sustitución; sonda Windows observada sin candidata actual, no causa histórica. No llamada real ni reproducción genérica.
+PROHIBIDO usar Remote Desktop Commander, incluso cuenta/dispositivos/ping/lectura/diagnóstico o mediante otra sesión. Solicita a Claudia solo evidencia Windows imprescindible con motivo y resultado esperado, sin pedirle eludir permisos.
+Antes de cada avance: hecho/fuente/entorno/límite, hipótesis y evidencia causal. No prometer funcionamiento por fixture, preparación, compilación o audio. El borrador #59 corrige evidencia/diagnóstico, no demuestra causa Windows. Reutiliza pruebas vigentes y cambia lector solo por evidencia pertinente.
+Cada salida: Metacanon adquirido con versión/sello/revisión/frescura y sello del objeto; estado, delta, evidencia diferenciada, pendientes, viabilidad, pronóstico desde ruta crítica o dependencia exacta, siguiente acción y persistencia. No merge, instalación, gasto, seguridad/arquitectura ni migración por adquisición del marco. Relee/fusiona/guarda condicionado y verifica lectura; originales privados fuera de Git público.
 ```
 
 ### Prompt completo · Claudia, asistente
 
 ```text
-Retoma Signal Interpreter como Claudia, asistente. No sustituyas al constructor Samantha ni ejecutes trabajo de otro proyecto. No crees un agente adicional.
-Lee https://github.com/SeryMente/signal-interpreter/blob/main/docs/TRANSCRIPTION-SPRINT-CANONICAL.md y verifica su revisión; comprueba el sello SI-OBJ-v1.2 y su revisión efectiva. El checkpoint privado es respaldo, no fuente paralela.
-Adquiere el método en https://github.com/SeryMente/metodologia/blob/f63f5cbaa843311046beb916d5944aef54c39180/METACANON-OBJETOS-CANONICOS.md y comprueba revisión posterior/integración de la rama docs/metacanon-objetos-20261011. Conserva las reglas superiores de tu plataforma y autorizaciones de Signal Interpreter; no copies dispositivos, clientes, permisos, pendientes o arquitectura del ejemplo.
-Estado literal al cierre:
-Acción documental: metacanon 1.2 adquirido; actualización de este único objeto existente solicitada en el ciclo actual. Método en rama no fusionada; no cambio de código, arquitectura ni permisos remotos. La escritura documental requiere confirmación y lectura de vuelta.
-Código vigente comprobado: Signal Interpreter 0.10.36; integración #58, commit eadb5932b542c7d8e89c7c9d741700268397d086. Muestra bilingüe integrada de 281.6 segundos, audio predeterminado y materialización offline verificada.
-Instalación en el equipo actual: NO VERIFICADA. Vínculo entre el equipo declarado por el operador y la conexión remota: NO CONFIRMADO; no seleccionar un dispositivo por nombre, historial o mera presencia Online.
-Siguiente paso atómico: obtener únicamente el vínculo autorizado del equipo actual; comprobar cuenta + device ID + conectividad y contexto operativo antes de acceder.
-Pendientes en secuencia: vincular equipo; preparar/sustituir extensión y puente con respaldo fuera del escritorio y sin afectar una llamada; verificar carpeta, identidad, 53 hashes, muestra y protocolo; permitir la recarga de Chrome solicitada por el operador; ejecutar PRUEBA y cotejar texto nativo recibido con filas visibles; comprobar llamada real y observabilidad automática.
-Bloqueo selectivo: instalación remota y aceptación Windows real; no bloquea documentación ni pruebas locales autorizadas. No reiniciar la sesión válida ni usar un dispositivo histórico expresamente excluido como selector.
+Retoma Signal Interpreter como Claudia, asistente. Samantha conserva construcción/escritura de código; no crees otro agente ni reinicies.
+Lee https://github.com/SeryMente/signal-interpreter/blob/main/docs/TRANSCRIPTION-SPRINT-CANONICAL.md y verifica sello SI-OBJ-v1.5-evidencia-01/revisión efectiva. Es un solo objeto, sin reinicio ni fuente paralela.
+Adquiere el metacanon 1.5, METACANON-OBJETOS-v1.5, en https://github.com/SeryMente/metodologia/blob/bfb63751f060596e344d5768e31085100bb20751/METACANON-OBJETOS-CANONICOS.md; comprueba revisión posterior de docs/metacanon-objetos-20261011 y su integración real. Fuente inaccesible = frescura NO VERIFICADA. Reglas subordinadas a tu plataforma y permisos del proyecto.
+Antes de actuar, coteja en la matriz fuente/revisión → regla → requisito → evidencia/bloqueo → resultado; un sello no acredita aplicación. Requisito indispensable no verificado bloquea solo su acción; continúa lo independiente autorizado. Usa el núcleo común de trece bloques y sus materializaciones internas sin duplicar estado.
+Mantén Windows + Chrome; SOLO Live Caption nativo → Windows UI Automation → Native Messaging → overlay. Sin micrófono/pestaña, Groq, replay ni nuevas piezas. Laboratorio aislado; no llamada real mientras falle.
+Estado literal:
+Acción en curso: cerrar entrega diagnóstica congelada #59 y localizar el fallo Windows bajo evidencia previa. Commit 0f7f9516b0e1bfbb76aa982c7ee1b87c7f9855b0, borrador NO fusionado; no aceptación ni instalación hecha por Samantha.
+Producto integrado: 0.10.36, #58. Candidata conserva 0.10.36 como borrador diagnóstico, revisión native-path-evidence/v2; no nueva release. Lector C#, binario, clave, instalador y muestra intactos.
+Evidencia Windows recibida de Claudia: JSON v1 del laboratorio 0.10.36, nativeConnectedObserved=true, hostMountedObserved=true, nativeCaptionEvents=0, maximumOverlayRows=0 y native-text-not-exposed. Primera etapa NO DEMOSTRADA: antes de recibir captions; selección/proveedor/propiedad del lector siguen sin causa probada. No pedir JSON de nuevo.
+Evidencia de preparación reportada por Claudia: Chrome Preferences y host apuntan a la misma carpeta; stage 53/53 y respaldo privado fuera del Escritorio 127/127; puente ausente, Chrome abierto. ActiveCallState NOT_VERIFIED: BLOQUEA sustitución, no bloquea sonda observacional acotada.
+Sonda real completada por Claudia: Win32 TitleMatches=0; UIA ChromeRoots=1, ClassMatches=1, TitleMatches=0, JointMatches=0, ReadErrors=0; RawRootJointMatches=0, sin truncado/audio nuevo. Estado ACTUAL sin candidata; no prueba causa histórica. CallAbsence/LabAbsence siguen NOT_VERIFIED.
+Siguiente paso atómico: Claudia espera como máximo 5 min a ChromeRunning=false y puente=false, sin cierre forzado; si no sucede, aborta sustitución intacta y conserva checkpoint. No nuevas sondas/audio sin hipótesis y necesidad nuevas. Revisión funcional continúa sin declarar recepción corregida.
+Pendientes en secuencia: resultado de ventana segura y sustitución diagnóstica de Claudia; clasificar selección/lectura/contexto del fallo histórico con evidencia pertinente; corrección causal según evidencia; pruebas/compuertas y autorización de integración; actualización diagnóstica por Claudia cuando ventana segura, preservar manifiesto local y raíz; recarga normal de extensión; prueba dirigida del recorrido Windows; llamada real solo después del laboratorio validado.
+Restricción prevalente: Samantha tiene PROHIBIDO Remote Desktop Commander en toda operación, directa o indirecta. Claudia es única operadora bajo sus propios permisos/vínculo; no nuevos agentes ni sesiones para eludir roles.
+Cierre funcional no estimable: faltan resultados de sonda y compuerta humana de seguridad. Entrega diagnóstica y huellas cerradas; observar/preparar/compilar no demuestra captions Windows.
 En prueba / recién fallido:
-El operador reportó que Live Caption nativo mostraba texto pero el panel del laboratorio no lo recibía; fallo de aceptación pendiente, no corregido por incluir audio.
-La búsqueda restrictiva del host Windows es hipótesis de diagnóstico, no causa demostrada en el equipo actual.
-Revisa la evidencia del constructor y mantén un solo objeto canónico. Enlaza dictado original, interpretación separada, decisión, cambio y aceptación. Un prompt del modelo o una prueba sintética no amplía alcance aprobado ni demuestra utilidad en Windows.
-Tu siguiente entrega al constructor debe acelerar el cierre correcto de instalación y prueba nativa, sin nuevos capturadores, servicios, pantallas ni consultas ajenas. Pide únicamente el dato material de vínculo de equipo cuando sea imprescindible; no recapitulación general. No uses un dispositivo histórico expresamente excluido como selector ni reinicies una sesión válida.
-No hay autorización nueva de merge, publicación, gasto o seguridad por este marco. Originales privados se conservan fuera del repo público con identificador/hash. Antes de consolidar, vuelve a leer/compare/fusiona; después verifica lectura/diff y sincroniza ambos prompts.
-Mantén salida breve: rol/revisión, propósito y estado, delta, avance y evidencia diferenciada, pendientes/bloqueos, viabilidad, tiempo/ciclos con supuestos o dependencia concreta, siguiente acción y persistencia. No declare aceptación del producto por plan, montaje, archivo o CI.
+Laboratorio Windows recuperado por Claudia: conectado y panel montado, cero captions recibidos y cero filas; causa del lector/contexto NO VERIFICADA.
+ActiveCallState NOT_VERIFIED bloquea sustitución; sonda Windows observada sin candidata actual, no causa histórica. No llamada real ni reproducción genérica.
+Eres la única operadora de Remote Desktop Commander; el constructor tiene prohibición total. Esto no te concede acceso nuevo: justifica necesidad estricta, alternativas insuficientes, autorización/cuenta/vínculo/identificador/conectividad y alcance antes de cualquier llamada. No transmitir identidades privadas al constructor ni publicarlas; no explorar para averiguar identidad ni reiniciar sesiones válidas.
+Ante salida de Samantha: pausar auxiliares en primer punto seguro, leer íntegramente, contrastar evidencia y resumir qué cambió/por qué importa/qué queda demostrado y pendiente/efecto en viabilidad/tiempo-ciclos; entregar siempre prompt completo para el constructor ajustado al delta. No decir que el prompt fue ejecutado por haberlo emitido.
+Prioridad actual: analizar el JSON YA RECIBIDO y obtener únicamente la sonda Windows imprescindible; no pedir el informe de nuevo ni otra reproducción genérica o llamada. Sustitución diagnóstica solo con ventana segura y salvaguardas siguientes. Separar causa real de hipótesis; si el JSON no basta, formular junto al constructor una sonda mínima con hipótesis/resultados esperados. Antes de decir funcional/listo, recorrido real Windows con versión/carpeta identificadas y DOM visible; llamada posterior independiente.
+Toda salida muestra Metacanon adquirido versión/sello/revisión/frescura, separado del sello del objeto, más estado, delta, evidencia real/histórica/sintética, pendientes, viabilidad y estimación por ruta crítica o dependencia exacta. No porcentajes sin denominador ni garantías de terceros. Consolidar documentación secuencial con lectura/diff/readback; preservar originales privados y permisos. Carpeta nueva sigue pendiente de autorización.
 ```
+
+### Entrega final a Claudia y actualización de la MISMA carpeta
+
+**Delta de la sonda reportado por Claudia:** el archivo original con hash A0F63EE… devolvió SAFE_STOP/Windows-required; ella comprobó `$env:OS=null`, `.NET OSVersion.Platform=Win32NT` y PowerShell 5.1. No era prueba de Linux. Claudia eligió fijar OS solo en el hijo y repetir la MISMA sonda, sin variable persistente/producto/flags. La revisión futura v1.1 usa `.NET PlatformID.Win32NT` en vez de env:OS; SHA-256 `3902E076731AA7651A6F07675E81D65840597449F6F31339C7137996C196B25C`, ASCII/parser y rechazo en Linux verificados. No sustituir silenciosamente una sonda que Claudia ya ejecuta ni decir UIA aprobada antes del resultado. Esto no cambia la candidata de producto 0f7f9516… congelada.
+
+Entrega técnica congelada: [candidata #59](https://github.com/SeryMente/signal-interpreter/pull/59), rama `fix/native-caption-evidence-gate-20261011`, commit `0f7f9516b0e1bfbb76aa982c7ee1b87c7f9855b0`, manifest 0.10.36, revisión `native-path-evidence/v2`, no merge. Artefacto [ZIP fijado al commit](https://codeload.github.com/SeryMente/signal-interpreter/zip/0f7f9516b0e1bfbb76aa982c7ee1b87c7f9855b0) verificado; no repetir descarga del stage que Claudia ya cotejó. Hash ZIP `97558C26B897F5D762EF92B2200CB4293BFB672DC6D4545FFE35310AA0F9036C`; índice payload `2F0C9382D0091CF9AB6422AA9FF4B0690587FAF67593FF139B46A9900CB0D3CD`; instalador `88022F106249FD87A8DF41BFC3BC235E612716370FA1D8323D67637AE52E7CAC`; binario nativo `313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE`; fuente nativa `1891B4D51F38F366116DD2B3E31C6352C3FD065580D56544B1C0E7321316890D`; muestra `DB8CAE8CE1599ABA06CB3D8AB7E456CB01B396FAA8E1ACA26880D1ACC3B7332C`. Identidad pública de extensión `ldpbjhobnfgmhdoehehdmnbhhjckebmj` sin cambio.
+
+Delta: cuatro JS (bridge, overlay, caption-lab, ui/lab), índice payload y dos pruebas; siete archivos exactos. No lector/binario/registro/clave/instalador/muestra/workflow. Sonda privada `Probe-CaptionSelection.ps1`, SHA-256 `A0F63EE1774922E69F67C96FD8D5A43A5F73A6AA365D133A3444C0802A07384A`: fuente ASCII, parser PowerShell y SAFE_STOP fuera de Windows verificados. Compara condición exacta de lector en Win32/UIA y recuentos Name/TextPattern; solo Chrome del usuario actual y candidatas, sin texto/títulos/cuenta/ruta/identificadores exportados. Job propio timeout 20s. La sonda original se ejecutó en Windows por Claudia con estado procesal OS corregido tras verificar Win32NT; resultado sin candidata, no causa histórica. `MutationAllowed=false` siempre: la sonda NO prueba ausencia de llamada/prueba.
+
+**Compuerta antes de mutar:** demostrar estado actual sin llamada ni prueba mediante evidencia legítima de Claudia/operador; no deducirlo del puente ausente, JSON histórico o copia de Preferences. Si operador está fuera de llamada y cierra Chrome normalmente, Claudia verifica Chrome y puente ausentes; mantener terminal remota. Si no puede probar ausencia, **solo inspección y checkpoint**, sin cerrar Chrome a la fuerza ni actualizar por incertidumbre.
+
+**Procedimiento soportado:** revalidar stage/respaldo ya preparados y ventana segura; sustituir en la MISMA raíz, nunca cargar nueva carpeta/perfil; preservar desde respaldo el manifiesto nativo personalizado verificado (origen exacto de extensión y path absoluto a exe de esa misma raíz) antes de `INSTALAR.cmd` existente. El instalador reconoce un registro que ya apunta a esa ruta y valida el manifiesto personalizado: copiar la plantilla sobre él rompería esa compuerta. 53/53 se cotejan en stage intacto; el manifiesto instalado se valida por invariantes, no hash de la plantilla. El binario no cambia. Verificar salida/resultado de instalador (Version/Identity/Hashes/NativeProtocol/Sample), sin tomarla como recepción de captions. Recarga normal de extensión existente/laboratorio solamente sin llamada, no editar Preferences ni forzar cierre.
+
+**Rollback:** conservar respaldo fuera del Escritorio; ante fallo parar y restaurar carpeta original/manifiesto/registro previos, verificar invariantes y efecto. Ningún constructor toca máquina remota. Actualización es diagnóstica, no aceptación. La sonda fue entregada directamente al hilo de Claudia con necesidad/resultados esperados; emitir mensaje no prueba ejecución. Rutas/cuentas/IDs/resultados privados de máquina permanecen con Claudia.
 
 ### Especificaciones originales del ciclo y privacidad
 
@@ -368,6 +515,20 @@ Fuente verificable para la relectura de este ciclo: commit `96f87b423c0e6a48ba1b
 
 La codificación del host y de la muestra cuenta con restauradores y hashes de bytes decodificados; la muestra Opus es un derivado con pérdida del MP3, no restauración exacta del MP3 original. Los originales privados y su procedencia se retienen en la sesión; referencias no accesibles desde otra plataforma deben declararse como hueco, no lectura fingida.
 
+### Delta verificable de archivos de la candidata congelada
+
+Snapshot de GitHub `0f7f9516b0e1bfbb76aa982c7ee1b87c7f9855b0`, archivos cotejados byte por byte tras guardado; el inventario anterior es histórico, no se usa como hash actual de estos cambios.
+
+| Archivo | Bytes UTF-8 | SHA-256 |
+|---|---:|---|
+| `extension/live-caption-bridge.js` | 11043 | `bbcca7df95ec8405643f4ecb9013a9cfed86cb34695ebca146a7880c99e3f10a` |
+| `extension/live-caption-overlay.js` | 63760 | `9ddcaf953582a88dc9b67f8991c486d8bf43dabaa3a4827b585e8102d9f01ef9` |
+| `extension/caption-lab.js` | 8595 | `a06229de31947938a1102745e105b8fcc9cffc6ce874fbe60a62f239c78fc354` |
+| `extension/ui/lab.js` | 4973 | `fffbfe983bf3dca0a0bf55015c4ac8784cc10915d38daf1c654ef2b0e49425ef` |
+| `tools/caption-lab-test.mjs` | 5099 | `3266835f3b44289d338e49359bf2bae682cbb1041b86c3f8aa5f5734e5ae75ca` |
+| `tools/native-path-evidence-test.mjs` | 4777 | `edb79c2d35d3b44c0f361652c071223fb19f766078f64d08a34338f9b465158f` |
+| `payload-sha256.json` | 7070 | `2f0c9382d0091cf9ab6422aa9ff4b0690587faf67593ff139b46a9900cb0d3cd` |
+
 ### Doble revisión y persistencia
 
 Pasada 1 — fidelidad: alcance/arquitectura/roles originales preservados; metacanon 1.2, referencias y hash correctos; dictados separados de interpretación; privacidad actual; traslado no autorizado no ejecutado; ningún fallo nativo dado por resuelto. Los 127 archivos históricos de inventario fueron recuperados otra vez desde el commit base actual sin cambio de bytes.
@@ -375,6 +536,9 @@ Pasada 1 — fidelidad: alcance/arquitectura/roles originales preservados; metac
 Pasada 2 — readback: cotejar cuerpo histórico íntegro contra blob base, exactitud de estado repetido en ambos prompts, huellas, versiones, referencias, clasificación de evidencia y casos negativos. La verificación de la escritura pública debe venir de la lectura del mismo archivo por GitHub y el diff esperado, no de un mensaje de intención. Revisión documental no certifica obediencia universal ni funcionamiento empírico.
 
 Concurrencia: escritura de este archivo con SHA del blob leído; si GitHub informa conflicto, parar y releer antes de fusionar. No alterar archivos de producto, no hacer merge/despliegue ni mover el frente. Naturaleza temporal del marco: aproximadamente un mes, sin nueva infraestructura. Originales restringidos y paquete completo permanecen como custodia privada de esta sesión; no publicar su contenido íntegro.
+
+
+**Precedencia de crónica:** las secciones originales siguientes se conservan íntegramente; no son autorización vigente para uso remoto del constructor ni para reactivar fuentes de audio descartadas.
 
 > **Autoridad documental:** este es el único informe canónico del esfuerzo/sprint de transcripción, Live Caption y overlay de subtítulos de Signal Interpreter. Las notas antiguas de implementación, los requisitos verbatim y las notas de versión son fuentes históricas o técnicas subordinadas; no son informes alternativos del esfuerzo.
 > **Ruta canónica:** `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`
