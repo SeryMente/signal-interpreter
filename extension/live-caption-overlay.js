@@ -25,7 +25,23 @@
   if (previousOverlayRuntime && typeof previousOverlayRuntime.dispose === "function") previousOverlayRuntime.dispose("runtime-reinjected");
   var runtimeDisposed = false, runtimeStorageReady = false, runtimeEventBindings = [];
   var runtimeVersion = String(chrome.runtime.getManifest().version || "unknown");
-  var runtimeApi = { version: runtimeVersion, dispose: disposeOverlay, snapshot: function(){ return {ready:runtimeStorageReady,hostMounted:!!(host && host.isConnected && root),rowCount:rows.length,active:active,contextReady:contextReady}; } };
+  var receivedNativeCaptionEvents = 0;
+  function renderingSnapshot() {
+    var mounted = !!(host && host.isConnected && root), rendered = 0, visibleRows = 0;
+    try {
+      var nodes = mounted ? root.querySelectorAll(".transcript .row .text") : [];
+      var hostStyle = mounted ? getComputedStyle(host) : null;
+      var hostShown = !!(mounted && !collapsed && hostStyle && hostStyle.display !== "none" && hostStyle.visibility !== "hidden" && Number(hostStyle.opacity) !== 0);
+      for (var i=0;i<nodes.length;i++) {
+        var node=nodes[i]; if (!String(node.textContent || "").trim()) continue;
+        rendered++;
+        var rect=node.getBoundingClientRect(), style=getComputedStyle(node);
+        if (hostShown && style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity) !== 0 && rect.width>0 && rect.height>0 && rect.bottom>0 && rect.right>0 && rect.top<innerHeight && rect.left<innerWidth) visibleRows++;
+      }
+    } catch (_) { visibleRows = 0; }
+    return {ready:runtimeStorageReady,hostMounted:mounted,rowCount:rows.length,renderedRowCount:rendered,visibleRowCount:visibleRows,receivedNativeCaptionEvents:receivedNativeCaptionEvents,runtimeVersion:runtimeVersion,active:active,contextReady:contextReady};
+  }
+  var runtimeApi = { version: runtimeVersion, dispose: disposeOverlay, snapshot: renderingSnapshot };
   globalThis.__SIGNAL_CAPTION_OVERLAY_RUNTIME__ = runtimeApi;
   function listen(target, type, listener, options) {
     target.addEventListener(type, listener, options);
@@ -758,7 +774,8 @@
   function nativeStatusMessage() {
     var reason = nativeStatus.reasonCode || nativeStatus.reason || "native-bridge-connecting";
     if (reason === "native-host-not-registered") return "Falta preparar el puente de Chrome";
-    if (reason === "native-text-not-exposed") return "Chrome no expone texto; abre el recuadro nativo";
+    if (reason === "native-text-not-exposed" || reason === "native-candidate-not-found") return "El lector no localiza texto nativo; causa sin confirmar";
+    if (reason === "native-reader-error") return "El lector informó un error; revisa el informe de prueba";
     if (reason === "native-window-without-text" || reason === "native-caption-stale") return "Esperando texto nativo de Chrome";
     if (reason === "native-heartbeat-timeout" || reason.indexOf("native-host-") === 0 && reason !== "native-host-ready-no-text") return "Puente desconectado; reconectando";
     return nativeStatus.connected ? "Chrome conectado · esperando texto" : "Conectando con Chrome";
@@ -1201,6 +1218,7 @@
       active = true;
       sessionEnded = false;
       addRow(caption.text, caption.language, caption.source, caption.live, caption.timestamp);
+      receivedNativeCaptionEvents += 1;
     } else if (message.type === "SIGNAL_CAPTION_NATIVE_STATUS") {
       nativeStatus = message;
       active = message.captionFresh === false
@@ -1209,6 +1227,7 @@
       if (host) render(true);
     } else if (message.type === "SIGNAL_CAPTION_SESSION_RESET") {
       rows = [];
+      receivedNativeCaptionEvents = 0;
       active = false;
       sessionEnded = false;
       unreadCount = 0;
