@@ -1,34 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-86a336bc-0cb4-4422-a83c-ec34440e7a09",
-  "createdAt": "2026-10-12T02:26:21.446Z",
-  "trigger": "event-window",
+  "batchId": "batch-0801982d-65c7-4141-b66d-624ca87c0401",
+  "createdAt": "2026-10-12T02:27:58.644Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.36",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "6a258116-8a94-4acb-a8bc-4ff1ea549aa2",
-      "sequence": 158,
-      "timestamp": "2026-10-12T02:25:51.201Z",
-      "ingestedAt": "2026-10-12T02:25:51.293Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "id": "e418882c-c757-4f95-9cf1-51ab5e752edd",
+      "sequence": 159,
+      "timestamp": "2026-10-12T02:27:42.180Z",
+      "ingestedAt": "2026-10-12T02:27:42.180Z",
+      "level": "warn",
+      "category": "BILLING",
+      "component": "background",
       "extensionVersion": "0.10.36",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "b6357012-688e-485c-b8e6-7daddac71381",
+      "phase": "error",
+      "action": "EXCHANGE_RATE_ERROR",
+      "outcome": "error",
+      "traceId": "9c6c9a99-d981-4e48-99e9-8282dcccda5b",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 1802946493,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.36",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -36,49 +34,39 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
-      "error": null,
+      "reasonCode": "alarm",
+      "error": "Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy.",
       "metrics": {},
-      "context": {
-        "route": "/settings/personal-access-tokens/20006129",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 1802946493,
-        "sourceWindowId": 1802945210,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://github.com/settings/personal-access-tokens/20006129"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/settings/personal-access-tokens/20006129",
-        "extensionVersion": "0.10.36",
-        "hostRemoved": true
+        "pair": "USD/MXN",
+        "message": "Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy.",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
     "eventsTotal": 1,
     "errors": 0,
-    "warnings": 0,
-    "critical": false,
+    "warnings": 1,
+    "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 158,
-    "lastSequence": 158,
-    "firstTimestamp": "2026-10-12T02:25:51.201Z",
-    "lastTimestamp": "2026-10-12T02:25:51.201Z",
+    "firstSequence": 159,
+    "lastSequence": 159,
+    "firstTimestamp": "2026-10-12T02:27:42.180Z",
+    "lastTimestamp": "2026-10-12T02:27:42.180Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
+      "EXCHANGE_RATE_ERROR": 1
     },
     "categories": {
-      "CAPTION": 1
+      "BILLING": 1
     }
   }
 }
