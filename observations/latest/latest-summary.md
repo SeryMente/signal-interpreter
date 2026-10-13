@@ -1,30 +1,37 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-fdee40c5-5252-4ba2-9e5f-ac01b6cb42c9
-- Creado: 2026-10-13T17:01:53.367Z
-- Trigger: alarm
+- Batch: batch-159c7873-ddfa-41e7-ad97-8bcff013edf2
+- Creado: 2026-10-13T17:03:28.658Z
+- Trigger: critical
 - Extensión: 0.10.29
-- Eventos: 13
-- Errores: 0
+- Eventos: 21
+- Errores: 1
 - Warnings: 0
-- Secuencia: 3910 → 3922
+- Secuencia: 3990 → 4010
 - Identidades de plataforma: 14
-- Snapshots de plataforma: 897
-- Deltas de plataforma: 895
+- Snapshots de plataforma: 900
+- Deltas de plataforma: 898
 
 ## Categorías
 
 {
-  "PORTAL": 3,
-  "RUNTIME": 10
+  "RUNTIME": 20,
+  "PORTAL": 1
 }
 
 ## Acciones
 
 {
-  "PLATFORM_OFFICIAL_SYNC_REQUESTED": 1,
-  "AUTO_ANSWER_READINESS": 9,
-  "PLATFORM_OFFICIAL_SYNC_COMPLETED": 1,
-  "PLATFORM_OFFICIAL_HOURLY_SYNC_COMPLETED": 1,
-  "NETWORK_ACTIVITY_WINDOW": 1
+  "INCOMING_DIALOG_DETECTED": 1,
+  "CONNECT_BUTTON_FOUND": 1,
+  "AUTO_ANSWER_ELIGIBLE": 1,
+  "USER_INTERACTION": 1,
+  "CONNECT_CLICKED": 1,
+  "PLATFORM_INTEGRITY_CHECK": 1,
+  "SCREEN_MAP": 3,
+  "AUTO_ANSWER_READINESS": 8,
+  "INCOMING_DIALOG_CLOSED": 1,
+  "CONNECT_ACCEPTED_PENDING": 1,
+  "NETWORK_ACTIVITY_WINDOW": 1,
+  "CONNECT_ROUTE_TIMEOUT": 1
 }
