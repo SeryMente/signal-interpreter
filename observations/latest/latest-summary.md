@@ -1,29 +1,52 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-45ecae59-52ad-4b7a-b9dd-77dd4dce9fb2
-- Creado: 2026-10-13T17:38:10.839Z
+- Batch: batch-8d439d04-d2ba-4c8a-b240-e2e91b5fb2db
+- Creado: 2026-10-13T17:39:12.026Z
 - Trigger: event-window
 - Extensión: 0.10.29
-- Eventos: 24
+- Eventos: 35
 - Errores: 0
 - Warnings: 0
-- Secuencia: 6817 → 6840
+- Secuencia: 6887 → 6921
 - Identidades de plataforma: 14
-- Snapshots de plataforma: 942
-- Deltas de plataforma: 940
+- Snapshots de plataforma: 944
+- Deltas de plataforma: 942
 
 ## Categorías
 
 {
-  "RUNTIME": 20,
-  "CAPTION": 4
+  "RUNTIME": 28,
+  "PORTAL": 3,
+  "CAPTION": 1,
+  "SESSION": 3
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 17,
-  "LIVE_CAPTION_OVERLAY_HEALTH": 4,
-  "PERFORMANCE_HEARTBEAT": 2,
-  "AUTO_ANSWER_BOOTSTRAP_REQUESTED": 1
+  "AUTO_ANSWER_READINESS": 7,
+  "INCOMING_DIALOG_DETECTED": 1,
+  "CONNECT_BUTTON_FOUND": 1,
+  "AUTO_ANSWER_ELIGIBLE": 1,
+  "USER_INTERACTION": 1,
+  "CONNECT_CLICKED": 1,
+  "PLATFORM_INTEGRITY_CHECK": 2,
+  "SCREEN_MAP": 2,
+  "AVAILABILITY_STATE": 1,
+  "CONNECT_ACCEPTED_PENDING": 1,
+  "PLATFORM_SURFACE_SNAPSHOT": 2,
+  "PERFORMANCE_HEARTBEAT": 1,
+  "LIVE_CAPTION_OVERLAY_HEALTH": 1,
+  "NETWORK_ACTIVITY_WINDOW": 1,
+  "TAB_LIFECYCLE": 2,
+  "CALL_ALERT_PAGE_BEEP_REQUESTED": 1,
+  "PLATFORM_ONLINE_RECONCILED_ENDED": 1,
+  "CALL_ALERT_PAGE_BEEP_PLAYED": 1,
+  "CALL_ALERT_TTS_PLAYED": 1,
+  "ANSWER_FLOW_ROUTE_CONFIRMED": 1,
+  "EARNINGS_OVERLAY_STARTED": 1,
+  "EARNINGS_OVERLAY_ACTIVATION_REQUESTED": 1,
+  "EARNINGS_OVERLAY_MOUNTED": 1,
+  "EARNINGS_OVERLAY_VISIBLE": 1,
+  "MEDIA_HEALTH": 1
 }
