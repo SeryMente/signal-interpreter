@@ -1,13 +1,13 @@
 # Signal Interpreter — informe de cierre de llamada
 
 - Estado de recolección: **complete**
-- Referencia opaca: 797d9f7bb8fdd32a1470ffdf
+- Referencia opaca: be48b4097ce2016b87988dbc
 - Versión runtime: 0.10.29
 - Modalidad/estado: OPI / completed
-- Inicio: 2026-10-13T17:09:09.850Z
-- Fin: 2026-10-13T17:28:23.204Z
-- Duración observada / plataforma / facturable asumida (s): 442.295 / 439 / 439
-- Ingreso estimado: 1.4633 USD
+- Inicio: 2026-10-13T17:19:00.436Z
+- Fin: 2026-10-13T17:33:27.809Z
+- Duración observada / plataforma / facturable asumida (s): 46.891 / 44 / 44
+- Ingreso estimado: 0.1467 USD
 - Fin por: rating-route
 
 ## Confirmación de calificación
@@ -23,7 +23,7 @@
 - Checkpoint recibido: true
 - Disparador del lote: call-ended
 - Envío automático: true
-- Publicación del lote: 2026-10-13T17:29:01.033Z
+- Publicación del lote: 2026-10-13T17:34:02.907Z
 
 ## Diagnóstico de subtítulos
 - Máximo de filas observado: 0
@@ -36,10 +36,10 @@
 
 ## Cobertura y señales
 
-- Eventos correlacionados: 1383
+- Eventos correlacionados: 213
 - Warnings / errores / eventos fallidos-bloqueados: 2 / 0 / 1
-- Muestras de rendimiento / media: 15 / 440
-- Conteo por grupos: {"answerFlow":768,"other":14,"overlayActivation":42,"platformAndUi":53,"mediaAndCapture":441,"performanceAndNetwork":15,"transcriptionAndCaptions":2,"ratingAndClose":6,"billingAndEarnings":1,"observabilityPipeline":1,"microphoneAndSafety":20,"runtimeAndRecovery":20}
+- Muestras de rendimiento / media: 2 / 49
+- Conteo por grupos: {"answerFlow":106,"other":12,"overlayActivation":15,"platformAndUi":14,"mediaAndCapture":50,"performanceAndNetwork":2,"ratingAndClose":6,"transcriptionAndCaptions":2,"billingAndEarnings":1,"microphoneAndSafety":2,"runtimeAndRecovery":2,"observabilityPipeline":1}
 
 ## Señales ausentes o incompletas
 
@@ -48,8 +48,8 @@
 
 | Momento | Acción | Nivel | Categoría | Motivo |
 |---|---|---|---|---|
-| 2026-10-13T17:09:10.305Z | LIVE_CAPTION_OVERLAY_LOCAL_ROUTE_FALLBACK | warn | CAPTION | spa-call-route-observed |
-| 2026-10-13T17:09:17.462Z | EARNINGS_OVERLAY_CHART_SYNC_ERROR | warn | RUNTIME |  |
+| 2026-10-13T17:19:01.229Z | LIVE_CAPTION_OVERLAY_LOCAL_ROUTE_FALLBACK | warn | CAPTION | spa-call-route-observed |
+| 2026-10-13T17:19:06.839Z | EARNINGS_OVERLAY_CHART_SYNC_ERROR | warn | RUNTIME |  |
 
 ## Privacidad
 
