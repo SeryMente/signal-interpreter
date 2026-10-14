@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-f6a4e805-f98b-4f55-825a-d4a0a13a0a42",
-  "createdAt": "2026-10-14T21:06:10.823Z",
-  "trigger": "alarm",
+  "batchId": "batch-0247047d-bcb2-4201-8f05-ee12df48f77e",
+  "createdAt": "2026-10-14T21:06:43.846Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "dbc2df1a-382e-46f6-b22d-2dd8f0c12698",
-      "sequence": 24928,
-      "timestamp": "2026-10-14T21:05:40.381Z",
-      "ingestedAt": "2026-10-14T21:05:40.434Z",
+      "id": "c3c3a2b2-e941-45c7-a577-80a38da16a8d",
+      "sequence": 24929,
+      "timestamp": "2026-10-14T21:06:13.385Z",
+      "ingestedAt": "2026-10-14T21:06:13.437Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -20,7 +20,7 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "a3e60549-225d-4298-9993-28e7359746aa",
+      "traceId": "098cad97-e466-4dc4-8367-5d0e76fbac17",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -40,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/playlist/37i9dQZF1DWWFNSpryCCH5",
+        "route": "/search/Blackhole",
         "visibility": "visible",
         "online": true,
         "sourceTabId": 220919580,
         "sourceWindowId": 220918417,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://open.spotify.com/playlist/37i9dQZF1DWWFNSpryCCH5"
+        "observedTabUrl": "https://open.spotify.com/search/Blackhole"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,31 +56,89 @@
       },
       "payload": {
         "callId": null,
-        "route": "/playlist/37i9dQZF1DWWFNSpryCCH5",
+        "route": "/search/Blackhole",
         "extensionVersion": "0.10.29",
-        "previousRoute": "/intl-es/",
-        "currentRoute": "/playlist/37i9dQZF1DWWFNSpryCCH5",
+        "previousRoute": "/playlist/37i9dQZF1DWWFNSpryCCH5",
+        "currentRoute": "/search/Blackhole",
+        "activeCallRoute": false
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "a8e5a79e-3f3b-495e-b0d1-b9fbd20c5ff7",
+      "sequence": 24930,
+      "timestamp": "2026-10-14T21:06:35.381Z",
+      "ingestedAt": "2026-10-14T21:06:35.441Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.29",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "ceee5276-3423-47d6-86af-db08ea5b076a",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220919580,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.29",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/search/Meditation",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220919580,
+        "sourceWindowId": 220918417,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://open.spotify.com/search/Meditation"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/search/Meditation",
+        "extensionVersion": "0.10.29",
+        "previousRoute": "/search/Blackhole",
+        "currentRoute": "/search/Meditation",
         "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 24928,
-    "lastSequence": 24928,
-    "firstTimestamp": "2026-10-14T21:05:40.381Z",
-    "lastTimestamp": "2026-10-14T21:05:40.381Z",
+    "firstSequence": 24929,
+    "lastSequence": 24930,
+    "firstTimestamp": "2026-10-14T21:06:13.385Z",
+    "lastTimestamp": "2026-10-14T21:06:35.381Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
     },
     "categories": {
-      "CAPTION": 1
+      "CAPTION": 2
     }
   }
 }
