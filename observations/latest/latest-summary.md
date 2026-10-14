@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-cfd4bd02-1baf-4cbe-bd78-34ccc8d96c5c
-- Creado: 2026-10-14T23:32:17.700Z
-- Trigger: critical
+- Batch: batch-c6ac0c9d-9998-4a26-afeb-f64e9877d21e
+- Creado: 2026-10-14T23:33:20.679Z
+- Trigger: alarm
 - Extensión: 0.10.29
-- Eventos: 3
+- Eventos: 1
 - Errores: 0
-- Warnings: 2
-- Secuencia: 25022 → 25024
+- Warnings: 0
+- Secuencia: 25025 → 25025
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 1151
 - Deltas de plataforma: 1149
@@ -15,13 +15,11 @@
 ## Categorías
 
 {
-  "RUNTIME": 3
+  "CAPTION": 1
 }
 
 ## Acciones
 
 {
-  "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
-  "EARNINGS_SYNC_QUEUE_ERROR": 1,
-  "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+  "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
 }
