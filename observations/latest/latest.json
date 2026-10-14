@@ -1,16 +1,62 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-be0f6d15-2602-4d81-9308-a69893937bfe",
-  "createdAt": "2026-10-14T22:22:20.674Z",
-  "trigger": "alarm",
+  "batchId": "batch-339c2354-adb0-4c2f-bc2c-a8dbd48b041a",
+  "createdAt": "2026-10-14T22:27:53.266Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "9b5a9991-ba67-4584-b719-ceeb9b321136",
-      "sequence": 24970,
-      "timestamp": "2026-10-14T22:22:11.869Z",
-      "ingestedAt": "2026-10-14T22:22:11.925Z",
+      "id": "0120fa2d-3d63-4586-9878-1a2a7403274b",
+      "sequence": 24971,
+      "timestamp": "2026-10-14T22:27:22.816Z",
+      "ingestedAt": "2026-10-14T22:27:22.816Z",
+      "level": "info",
+      "category": "BILLING",
+      "component": "background",
+      "extensionVersion": "0.10.29",
+      "host": "",
+      "url": "",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
+      "outcome": "success",
+      "traceId": "00142dfa-4c4c-4739-83d7-1625a16e0833",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.29",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "alarm",
+      "error": null,
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "pair": "USD/MXN",
+        "rate": 18.492291,
+        "rateDate": "[PHONE]",
+        "source": "ExchangeRate.fun / hourly snapshot",
+        "reason": "alarm"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "0d6b25ac-5548-4964-8eae-f7e6eef04e40",
+      "sequence": 24972,
+      "timestamp": "2026-10-14T22:27:28.879Z",
+      "ingestedAt": "2026-10-14T22:27:28.926Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -20,7 +66,7 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "80b84ea2-e917-461a-94b1-1064cdf91c61",
+      "traceId": "2ee9d7ca-402c-49c6-bf8b-7878c9ddd3fb",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -40,14 +86,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/sistema/volcados",
+        "route": "/sistema/ingreso",
         "visibility": "visible",
         "online": true,
         "sourceTabId": 220919588,
         "sourceWindowId": 220918417,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://khora-web.vercel.app/sistema/volcados"
+        "observedTabUrl": "https://khora-web.vercel.app/sistema/ingreso"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,30 +102,32 @@
       },
       "payload": {
         "callId": null,
-        "route": "/sistema/volcados",
+        "route": "/sistema/ingreso",
         "extensionVersion": "0.10.29",
-        "previousRoute": "/sistema/ingreso",
-        "currentRoute": "/sistema/volcados",
+        "previousRoute": "/sistema/volcados",
+        "currentRoute": "/sistema/ingreso",
         "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 24970,
-    "lastSequence": 24970,
-    "firstTimestamp": "2026-10-14T22:22:11.869Z",
-    "lastTimestamp": "2026-10-14T22:22:11.869Z",
+    "firstSequence": 24971,
+    "lastSequence": 24972,
+    "firstTimestamp": "2026-10-14T22:27:22.816Z",
+    "lastTimestamp": "2026-10-14T22:27:28.879Z",
     "actions": {
+      "EXCHANGE_RATE_UPDATED": 1,
       "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
     },
     "categories": {
+      "BILLING": 1,
       "CAPTION": 1
     }
   }
