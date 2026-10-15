@@ -1,34 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-a23b3a84-43b1-47cf-8367-919685ce34c7",
-  "createdAt": "2026-10-15T22:09:48.000Z",
+  "batchId": "batch-2bd36a7f-94bd-4bd3-94bc-35bced9a733f",
+  "createdAt": "2026-10-15T22:20:02.851Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "695cc42a-a22a-4fea-95e3-53f1cd8f46d7",
-      "sequence": 29315,
-      "timestamp": "2026-10-15T22:09:17.416Z",
-      "ingestedAt": "2026-10-15T22:09:17.505Z",
+      "id": "822a6d03-7b1c-4371-ac35-acb8c26d8d2c",
+      "sequence": 29317,
+      "timestamp": "2026-10-15T22:20:02.143Z",
+      "ingestedAt": "2026-10-15T22:20:02.143Z",
       "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "category": "RUNTIME",
+      "component": "background",
       "extensionVersion": "0.10.29",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "phase": "event",
+      "action": "TELEMETRY_MAINTENANCE",
       "outcome": "observed",
-      "traceId": "b07fc34e-3841-4f7c-a0de-96861d4a2e32",
+      "traceId": "b466559d-f6bb-4db1-a5a5-5fb44a0344b0",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920693,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.29",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -39,26 +37,31 @@
       "reasonCode": null,
       "error": null,
       "metrics": {},
-      "context": {
-        "route": "/ai",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220920693,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://app.notion.com/ai"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/ai",
-        "extensionVersion": "0.10.29",
-        "hostRemoved": true
+        "pruned": {
+          "cutoff": "[PHONE]T22:20:01.847Z",
+          "expiredEvents": 0,
+          "expiredSnapshots": 0,
+          "expiredSignalSegments": 0,
+          "excessEvents": 0,
+          "excessSignalSegments": 0
+        },
+        "stats": {
+          "database": "signal-interpreter-telemetry",
+          "events": 29316,
+          "snapshots": 42,
+          "signalSegments": 0,
+          "oldestEventAt": "[PHONE]T20:16:04.115Z",
+          "newestEventAt": "[PHONE]T22:19:10.345Z",
+          "usageBytes": 28244400,
+          "quotaBytes": 66294761904
+        }
       }
     }
   ],
@@ -70,15 +73,15 @@
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 29315,
-    "lastSequence": 29315,
-    "firstTimestamp": "2026-10-15T22:09:17.416Z",
-    "lastTimestamp": "2026-10-15T22:09:17.416Z",
+    "firstSequence": 29317,
+    "lastSequence": 29317,
+    "firstTimestamp": "2026-10-15T22:20:02.143Z",
+    "lastTimestamp": "2026-10-15T22:20:02.143Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
+      "TELEMETRY_MAINTENANCE": 1
     },
     "categories": {
-      "CAPTION": 1
+      "RUNTIME": 1
     }
   }
 }
