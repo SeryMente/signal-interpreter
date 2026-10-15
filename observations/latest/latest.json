@@ -1,32 +1,34 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-8bafcd61-67b0-4873-a09e-d571a9aee907",
-  "createdAt": "2026-10-15T22:24:03.184Z",
-  "trigger": "critical",
+  "batchId": "batch-6abd28b3-8ab8-4133-adbe-d0c1f4de8281",
+  "createdAt": "2026-10-15T22:29:02.842Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "91545892-9386-4ec2-b68c-b9741d7de1ce",
-      "sequence": 29318,
-      "timestamp": "2026-10-15T22:24:01.888Z",
-      "ingestedAt": "2026-10-15T22:24:01.889Z",
+      "id": "41156315-017f-4e66-b660-3f7c08bfc6f8",
+      "sequence": 29321,
+      "timestamp": "2026-10-15T22:28:47.255Z",
+      "ingestedAt": "2026-10-15T22:28:47.312Z",
       "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
       "extensionVersion": "0.10.29",
       "host": "",
       "url": "",
-      "phase": "started",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
-      "outcome": "success",
-      "traceId": "94393e00-1a0b-42b0-aa24-5949701d9cbf",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "1c646145-1637-4413-a4d4-47f3d4b8afe0",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": null,
-      "session": {},
+      "tabId": 220920690,
+      "session": {
+        "callId": null
+      },
       "environment": {
         "extensionVersion": "0.10.29",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -37,38 +39,54 @@
       "reasonCode": null,
       "error": null,
       "metrics": {},
-      "context": {},
+      "context": {
+        "route": "/chat",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220920690,
+        "sourceWindowId": 220919694,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://app.notion.com/chat"
+      },
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly"
+        "callId": null,
+        "route": "/chat",
+        "extensionVersion": "0.10.29",
+        "previousRoute": "/chat",
+        "currentRoute": "/chat",
+        "activeCallRoute": false
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "e400ab47-1215-4a5b-b975-4b24ed10f9dc",
-      "sequence": 29319,
-      "timestamp": "2026-10-15T22:24:02.478Z",
-      "ingestedAt": "2026-10-15T22:24:02.478Z",
-      "level": "warn",
-      "category": "RUNTIME",
-      "component": "background",
+      "id": "c9e634db-d353-4be5-8370-178443b40385",
+      "sequence": 29322,
+      "timestamp": "2026-10-15T22:28:48.470Z",
+      "ingestedAt": "2026-10-15T22:28:48.546Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
       "extensionVersion": "0.10.29",
       "host": "",
       "url": "",
-      "phase": "error",
-      "action": "EARNINGS_SYNC_QUEUE_ERROR",
-      "outcome": "error",
-      "traceId": "433f8401-3255-4190-bb41-0fe079484ac9",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "5da30d36-fa93-49b6-93a1-4a1c7d6d611a",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": null,
-      "session": {},
+      "tabId": 220920690,
+      "session": {
+        "callId": null
+      },
       "environment": {
         "extensionVersion": "0.10.29",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -77,82 +95,50 @@
       "expected": null,
       "observed": null,
       "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
+      "error": null,
       "metrics": {},
-      "context": {},
+      "context": {
+        "route": "/chat",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220920690,
+        "sourceWindowId": 220919694,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://app.notion.com/chat"
+      },
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "operation": "official-today",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "5ff03694-6d08-4467-bb63-5d9c7f8820d4",
-      "sequence": 29320,
-      "timestamp": "2026-10-15T22:24:03.143Z",
-      "ingestedAt": "2026-10-15T22:24:03.143Z",
-      "level": "warn",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "error",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
-      "outcome": "error",
-      "traceId": "67d12650-53d3-4bff-a168-ce4e488f84ec",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
+        "callId": null,
+        "route": "/chat",
         "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "hourly",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
+        "previousRoute": "/chat",
+        "currentRoute": "/chat",
+        "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 2,
     "errors": 0,
-    "warnings": 2,
-    "critical": true,
+    "warnings": 0,
+    "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 29318,
-    "lastSequence": 29320,
-    "firstTimestamp": "2026-10-15T22:24:01.888Z",
-    "lastTimestamp": "2026-10-15T22:24:03.143Z",
+    "firstSequence": 29321,
+    "lastSequence": 29322,
+    "firstTimestamp": "2026-10-15T22:28:47.255Z",
+    "lastTimestamp": "2026-10-15T22:28:48.470Z",
     "actions": {
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
-      "EARNINGS_SYNC_QUEUE_ERROR": 1,
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
     },
     "categories": {
-      "RUNTIME": 3
+      "CAPTION": 2
     }
   }
 }
