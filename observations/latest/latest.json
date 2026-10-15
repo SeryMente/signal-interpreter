@@ -1,16 +1,62 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-97cf8e0e-cd67-4297-a14c-ca25f4bf0f69",
-  "createdAt": "2026-10-15T18:19:02.851Z",
-  "trigger": "alarm",
+  "batchId": "batch-527fb730-d9a6-4e50-b95e-38477e55d9f9",
+  "createdAt": "2026-10-15T18:19:38.767Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "be82c856-7a92-4a70-bf4a-1eb000966ff7",
-      "sequence": 25783,
-      "timestamp": "2026-10-15T18:18:36.584Z",
-      "ingestedAt": "2026-10-15T18:18:36.671Z",
+      "id": "202ba149-0754-4a13-9a68-9601978fb32f",
+      "sequence": 25785,
+      "timestamp": "2026-10-15T18:19:08.071Z",
+      "ingestedAt": "2026-10-15T18:19:08.071Z",
+      "level": "info",
+      "category": "BILLING",
+      "component": "background",
+      "extensionVersion": "0.10.29",
+      "host": "",
+      "url": "",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
+      "outcome": "success",
+      "traceId": "3a81c268-392d-42bc-9100-175318898af4",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.29",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "alarm",
+      "error": null,
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "pair": "USD/MXN",
+        "rate": 18.365544,
+        "rateDate": "[PHONE]",
+        "source": "ExchangeRate.fun / hourly snapshot",
+        "reason": "alarm"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "4a17a47b-db55-48c9-b66f-d5dd1a969051",
+      "sequence": 25786,
+      "timestamp": "2026-10-15T18:19:36.590Z",
+      "ingestedAt": "2026-10-15T18:19:36.680Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -20,7 +66,7 @@
       "phase": "event",
       "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "6b88bcec-a45b-4657-b66b-19f95674b304",
+      "traceId": "42a76770-3604-4c49-bfdf-8fd0b0b924f9",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +92,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 7160573,
+        "monotonicMs": 7220579,
         "callId": null,
         "pageLifecycleId": "60a9e975-5ddf-4d64-b72f-8f2d676a2a95",
         "sourceTabId": 220919756,
@@ -72,10 +118,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "668fcbea-c439-4576-bee7-a93c22d09070",
-      "sequence": 25784,
-      "timestamp": "2026-10-15T18:18:36.584Z",
-      "ingestedAt": "2026-10-15T18:18:37.434Z",
+      "id": "b66af666-0fb5-4ef0-9097-077c5343255e",
+      "sequence": 25787,
+      "timestamp": "2026-10-15T18:19:36.590Z",
+      "ingestedAt": "2026-10-15T18:19:37.484Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -85,7 +131,7 @@
       "phase": "event",
       "action": "PERFORMANCE_HEARTBEAT",
       "outcome": "observed",
-      "traceId": "f22bfc37-6b14-4c9b-b870-a463936af18c",
+      "traceId": "ea15a71f-a751-4dbe-919a-985d713f7542",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -111,7 +157,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 7160574,
+        "monotonicMs": 7220579,
         "callId": null,
         "pageLifecycleId": "60a9e975-5ddf-4d64-b72f-8f2d676a2a95",
         "sourceTabId": 220919756,
@@ -128,7 +174,7 @@
       "payload": {
         "reason": "heartbeat",
         "route": "/profile/<ID>",
-        "uptimeMs": 7160573,
+        "uptimeMs": 7220579,
         "callId": null,
         "document": {
           "readyState": "complete",
@@ -158,8 +204,8 @@
           "saveData": false
         },
         "memory": {
-          "usedBytes": 26517172,
-          "totalBytes": 28702152,
+          "usedBytes": 28445299,
+          "totalBytes": 30020743,
           "limitBytes": 4395630592
         },
         "performance": {
@@ -195,22 +241,24 @@
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 3,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 25783,
-    "lastSequence": 25784,
-    "firstTimestamp": "2026-10-15T18:18:36.584Z",
-    "lastTimestamp": "2026-10-15T18:18:36.584Z",
+    "firstSequence": 25785,
+    "lastSequence": 25787,
+    "firstTimestamp": "2026-10-15T18:19:08.071Z",
+    "lastTimestamp": "2026-10-15T18:19:36.590Z",
     "actions": {
+      "EXCHANGE_RATE_UPDATED": 1,
       "AUTO_ANSWER_READINESS": 1,
       "PERFORMANCE_HEARTBEAT": 1
     },
     "categories": {
+      "BILLING": 1,
       "RUNTIME": 2
     }
   }
