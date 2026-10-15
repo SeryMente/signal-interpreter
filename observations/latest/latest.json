@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-079b0945-45b5-48f9-a0af-d78b9d00c6da",
-  "createdAt": "2026-10-15T19:30:30.761Z",
+  "batchId": "batch-073636dc-f474-4015-aa2d-c6378d6e3499",
+  "createdAt": "2026-10-15T19:31:00.752Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "428de83d-2a04-4aaf-b829-8811c2ab6633",
-      "sequence": 29197,
-      "timestamp": "2026-10-15T19:30:29.403Z",
-      "ingestedAt": "2026-10-15T19:30:29.457Z",
+      "id": "4f57abb0-78b0-4217-90a6-3442254c4681",
+      "sequence": 29199,
+      "timestamp": "2026-10-15T19:30:33.402Z",
+      "ingestedAt": "2026-10-15T19:30:33.454Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -20,7 +20,65 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "1b999554-357c-461c-9d08-3d628c6c6aca",
+      "traceId": "fb9db538-4bf5-4e78-9331-338b4dfd15c0",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220920654,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.29",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/sistema/consulta",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220920654,
+        "sourceWindowId": 220919694,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://khora-web.vercel.app/sistema/consulta"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/sistema/consulta",
+        "extensionVersion": "0.10.29",
+        "previousRoute": "/sistema/ingreso",
+        "currentRoute": "/sistema/consulta",
+        "activeCallRoute": false
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "9077b3a3-a651-48e7-a7f1-a267a7b6f2f8",
+      "sequence": 29200,
+      "timestamp": "2026-10-15T19:30:34.403Z",
+      "ingestedAt": "2026-10-15T19:30:34.452Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.29",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "994dd820-b6c3-4eb8-91b8-67536eb72a8b",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -58,17 +116,17 @@
         "callId": null,
         "route": "/sistema/volcados",
         "extensionVersion": "0.10.29",
-        "previousRoute": "/sistema/ingreso",
+        "previousRoute": "/sistema/consulta",
         "currentRoute": "/sistema/volcados",
         "activeCallRoute": false
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "7b885b21-3e70-461c-9178-0a5b5b963424",
-      "sequence": 29198,
-      "timestamp": "2026-10-15T19:30:30.406Z",
-      "ingestedAt": "2026-10-15T19:30:30.457Z",
+      "id": "c419392d-7ecc-47c4-98fa-89266bb72df1",
+      "sequence": 29201,
+      "timestamp": "2026-10-15T19:30:35.405Z",
+      "ingestedAt": "2026-10-15T19:30:35.459Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -78,7 +136,7 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "baf1aa23-658d-4714-b117-fcea24b1facc",
+      "traceId": "49d210f1-89b3-43a1-ab56-28c615112a43",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -123,22 +181,22 @@
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 3,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 29197,
-    "lastSequence": 29198,
-    "firstTimestamp": "2026-10-15T19:30:29.403Z",
-    "lastTimestamp": "2026-10-15T19:30:30.406Z",
+    "firstSequence": 29199,
+    "lastSequence": 29201,
+    "firstTimestamp": "2026-10-15T19:30:33.402Z",
+    "lastTimestamp": "2026-10-15T19:30:35.405Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 3
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 3
     }
   }
 }
