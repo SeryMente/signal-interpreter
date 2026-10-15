@@ -1,98 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-aabdc130-e64d-415f-a59a-0b477e73e303",
-  "createdAt": "2026-10-15T18:53:06.884Z",
-  "trigger": "critical",
+  "batchId": "batch-57d20c3d-0c40-4a03-a9f5-8efdba038166",
+  "createdAt": "2026-10-15T19:19:38.402Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "bdef1c73-f562-4883-adb9-a9fc085c3745",
-      "sequence": 29184,
-      "timestamp": "2026-10-15T18:46:30.752Z",
-      "ingestedAt": "2026-10-15T18:53:05.436Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "7f5a610e-7961-43a9-b8c7-a9ee265bb831",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920654,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/sistema/ingreso",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220920654,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://khora-web.vercel.app/sistema/ingreso"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/sistema/ingreso",
-        "extensionVersion": "0.10.29",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "743e9ff1-69cc-4d6a-a021-39c9b1e19875",
-      "sequence": 29185,
-      "timestamp": "2026-10-15T18:46:30.752Z",
-      "ingestedAt": "2026-10-15T18:53:05.797Z",
+      "id": "677dd9b5-0afa-44e4-840e-5e169c47d6ba",
+      "sequence": 29186,
+      "timestamp": "2026-10-15T19:19:08.109Z",
+      "ingestedAt": "2026-10-15T19:19:08.109Z",
       "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "category": "BILLING",
+      "component": "background",
       "extensionVersion": "0.10.29",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "56d6085a-b485-4162-9a86-62189fc68939",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
+      "outcome": "success",
+      "traceId": "db770af8-1430-4d6e-843a-ef6201e027f8",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920654,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.29",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -100,59 +34,41 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "alarm",
       "error": null,
       "metrics": {},
-      "context": {
-        "route": "/sistema/ingreso",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220920654,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://khora-web.vercel.app/sistema/ingreso"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/sistema/ingreso",
-        "extensionVersion": "0.10.29",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": true,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
+        "pair": "USD/MXN",
+        "rate": 18.403455,
+        "rateDate": "[PHONE]",
+        "source": "ExchangeRate.fun / hourly snapshot",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 1,
+    "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 29184,
-    "lastSequence": 29185,
-    "firstTimestamp": "2026-10-15T18:46:30.752Z",
-    "lastTimestamp": "2026-10-15T18:46:30.752Z",
+    "firstSequence": 29186,
+    "lastSequence": 29186,
+    "firstTimestamp": "2026-10-15T19:19:08.109Z",
+    "lastTimestamp": "2026-10-15T19:19:08.109Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
+      "EXCHANGE_RATE_UPDATED": 1
     },
     "categories": {
-      "CAPTION": 2
+      "BILLING": 1
     }
   }
 }
