@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-a58d6b72-f207-4517-b126-98a3c9827a50",
-  "createdAt": "2026-10-15T18:10:02.857Z",
+  "batchId": "batch-5d4f8991-93c1-44c2-b1d1-e66f9ec5ee4e",
+  "createdAt": "2026-10-15T18:11:02.842Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "b105658a-503c-4685-90a6-56b511122bd4",
-      "sequence": 25761,
-      "timestamp": "2026-10-15T18:09:36.568Z",
-      "ingestedAt": "2026-10-15T18:09:36.662Z",
+      "id": "bda509ed-2e4b-405d-a2d3-ce4cbc2cf9dc",
+      "sequence": 25765,
+      "timestamp": "2026-10-15T18:10:36.585Z",
+      "ingestedAt": "2026-10-15T18:10:36.682Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -20,7 +20,7 @@
       "phase": "event",
       "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "d34c02b4-b557-47b5-aad0-4586d61fcb05",
+      "traceId": "46d3b6f9-e1c7-4dfd-8695-31ada83e0b9e",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +46,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 6620559,
+        "monotonicMs": 6680575,
         "callId": null,
         "pageLifecycleId": "60a9e975-5ddf-4d64-b72f-8f2d676a2a95",
         "sourceTabId": 220919756,
@@ -72,10 +72,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "ed74f3d1-2dfb-44e0-9147-8cfea9c8d1f2",
-      "sequence": 25762,
-      "timestamp": "2026-10-15T18:09:36.569Z",
-      "ingestedAt": "2026-10-15T18:09:37.440Z",
+      "id": "ac6443f8-a434-4c0d-9c02-e17e2916dd35",
+      "sequence": 25766,
+      "timestamp": "2026-10-15T18:10:36.585Z",
+      "ingestedAt": "2026-10-15T18:10:37.474Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -85,7 +85,7 @@
       "phase": "event",
       "action": "PERFORMANCE_HEARTBEAT",
       "outcome": "observed",
-      "traceId": "3c8cd1a8-a4d3-4c44-b6db-44b1f8f5c4e2",
+      "traceId": "55423fde-d9fa-43d5-963b-1720f400669d",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -111,7 +111,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 6620559,
+        "monotonicMs": 6680576,
         "callId": null,
         "pageLifecycleId": "60a9e975-5ddf-4d64-b72f-8f2d676a2a95",
         "sourceTabId": 220919756,
@@ -128,7 +128,7 @@
       "payload": {
         "reason": "heartbeat",
         "route": "/profile/<ID>",
-        "uptimeMs": 6620559,
+        "uptimeMs": 6680576,
         "callId": null,
         "document": {
           "readyState": "complete",
@@ -154,12 +154,12 @@
         "connection": {
           "effectiveType": "4g",
           "downlinkMbps": 10,
-          "rttMs": 150,
+          "rttMs": 50,
           "saveData": false
         },
         "memory": {
-          "usedBytes": 29809047,
-          "totalBytes": 35706627,
+          "usedBytes": 26397169,
+          "totalBytes": 32375489,
           "limitBytes": 4395630592
         },
         "performance": {
@@ -192,158 +192,26 @@
           "iframes": 0
         }
       }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "396c68bc-b089-43c8-82b9-1c100418dada",
-      "sequence": 25763,
-      "timestamp": "2026-10-15T18:09:48.795Z",
-      "ingestedAt": "2026-10-15T18:09:48.922Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "338374f4-ca45-4809-98a0-37f73dff7480",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920664,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/search",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220920664,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://www.google.com/search"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/search",
-        "extensionVersion": "0.10.29",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "cabaf7f0-9c51-42ce-a45b-cb918592dd68",
-      "sequence": 25764,
-      "timestamp": "2026-10-15T18:09:48.796Z",
-      "ingestedAt": "2026-10-15T18:09:49.912Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "8b7d8525-1c9f-4c98-9aff-396b5b3c2a79",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920664,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/search",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220920664,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://www.google.com/search"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/search",
-        "extensionVersion": "0.10.29",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": false,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
-      }
     }
   ],
   "summary": {
-    "eventsTotal": 4,
+    "eventsTotal": 2,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 1,
+    "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 25761,
-    "lastSequence": 25764,
-    "firstTimestamp": "2026-10-15T18:09:36.568Z",
-    "lastTimestamp": "2026-10-15T18:09:48.796Z",
+    "firstSequence": 25765,
+    "lastSequence": 25766,
+    "firstTimestamp": "2026-10-15T18:10:36.585Z",
+    "lastTimestamp": "2026-10-15T18:10:36.585Z",
     "actions": {
       "AUTO_ANSWER_READINESS": 1,
-      "PERFORMANCE_HEARTBEAT": 1,
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
+      "PERFORMANCE_HEARTBEAT": 1
     },
     "categories": {
-      "RUNTIME": 2,
-      "CAPTION": 2
+      "RUNTIME": 2
     }
   }
 }
