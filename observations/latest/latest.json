@@ -1,98 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-4d7a92dc-ec05-493c-aebb-c94687a895dc",
-  "createdAt": "2026-10-15T21:03:02.853Z",
-  "trigger": "alarm",
+  "batchId": "batch-1cd48596-5460-496f-a2e0-6e0c845662bc",
+  "createdAt": "2026-10-15T21:19:38.592Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "3a3eb676-ea0a-4d14-b663-06fdebe258f7",
-      "sequence": 29291,
-      "timestamp": "2026-10-15T21:02:36.180Z",
-      "ingestedAt": "2026-10-15T21:02:36.263Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "1b5b6377-2d0a-49b0-8868-4be28b6a92de",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920690,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/ai",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220920690,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://app.notion.com/ai"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/ai",
-        "extensionVersion": "0.10.29",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "194c39d1-6823-4dbb-a6a7-2637ba7ca6b4",
-      "sequence": 29292,
-      "timestamp": "2026-10-15T21:02:36.180Z",
-      "ingestedAt": "2026-10-15T21:02:37.301Z",
+      "id": "825d9f62-0268-471c-ab71-e992a7a9ab4c",
+      "sequence": 29293,
+      "timestamp": "2026-10-15T21:19:08.104Z",
+      "ingestedAt": "2026-10-15T21:19:08.104Z",
       "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "category": "BILLING",
+      "component": "background",
       "extensionVersion": "0.10.29",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "e3f7a062-0203-4dff-8cc7-962e4435af75",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
+      "outcome": "success",
+      "traceId": "56c3ee43-0de5-4612-927a-02075665df03",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920690,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.29",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -100,59 +34,41 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "alarm",
       "error": null,
       "metrics": {},
-      "context": {
-        "route": "/ai",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220920690,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://app.notion.com/ai"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/ai",
-        "extensionVersion": "0.10.29",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": true,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
+        "pair": "USD/MXN",
+        "rate": 18.413572,
+        "rateDate": "[PHONE]",
+        "source": "ExchangeRate.fun / hourly snapshot",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 1,
+    "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 29291,
-    "lastSequence": 29292,
-    "firstTimestamp": "2026-10-15T21:02:36.180Z",
-    "lastTimestamp": "2026-10-15T21:02:36.180Z",
+    "firstSequence": 29293,
+    "lastSequence": 29293,
+    "firstTimestamp": "2026-10-15T21:19:08.104Z",
+    "lastTimestamp": "2026-10-15T21:19:08.104Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
+      "EXCHANGE_RATE_UPDATED": 1
     },
     "categories": {
-      "CAPTION": 2
+      "BILLING": 1
     }
   }
 }
