@@ -1,34 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-76a02b42-3e88-4670-9085-d570a00786cd",
-  "createdAt": "2026-10-16T21:13:02.855Z",
-  "trigger": "alarm",
+  "batchId": "batch-716bd238-30fc-40ac-bdcf-919eb6020224",
+  "createdAt": "2026-10-16T21:19:38.537Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "be95b878-9eb1-4a03-a896-b67204a41137",
-      "sequence": 29579,
-      "timestamp": "2026-10-16T21:12:35.986Z",
-      "ingestedAt": "2026-10-16T21:12:36.033Z",
+      "id": "d2e96931-5bb7-4878-b3f6-1fda981e6e36",
+      "sequence": 29580,
+      "timestamp": "2026-10-16T21:19:08.110Z",
+      "ingestedAt": "2026-10-16T21:19:08.111Z",
       "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "category": "BILLING",
+      "component": "background",
       "extensionVersion": "0.10.29",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
-      "outcome": "observed",
-      "traceId": "41956dcd-5ae2-4774-8bc7-310a29aae32e",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
+      "outcome": "success",
+      "traceId": "fb2a904b-96c8-4f9b-bc7c-19ac45fa930e",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920807,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.29",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -36,31 +34,21 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "alarm",
       "error": null,
       "metrics": {},
-      "context": {
-        "route": "/chat",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220920807,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://app.notion.com/chat"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/chat",
-        "extensionVersion": "0.10.29",
-        "previousRoute": "/ai",
-        "currentRoute": "/chat",
-        "activeCallRoute": false
+        "pair": "USD/MXN",
+        "rate": 18.4924,
+        "rateDate": "[PHONE]",
+        "source": "ExchangeRate.fun / hourly snapshot",
+        "reason": "alarm"
       }
     }
   ],
@@ -72,15 +60,15 @@
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 29579,
-    "lastSequence": 29579,
-    "firstTimestamp": "2026-10-16T21:12:35.986Z",
-    "lastTimestamp": "2026-10-16T21:12:35.986Z",
+    "firstSequence": 29580,
+    "lastSequence": 29580,
+    "firstTimestamp": "2026-10-16T21:19:08.110Z",
+    "lastTimestamp": "2026-10-16T21:19:08.110Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
+      "EXCHANGE_RATE_UPDATED": 1
     },
     "categories": {
-      "CAPTION": 1
+      "BILLING": 1
     }
   }
 }
