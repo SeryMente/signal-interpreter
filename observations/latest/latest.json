@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-c90193af-9108-498f-9a45-145b4ca64fcf",
-  "createdAt": "2026-10-16T22:26:50.542Z",
-  "trigger": "event-window",
+  "batchId": "batch-1ee01ea1-483b-476e-bd21-f5c1346d6274",
+  "createdAt": "2026-10-16T22:28:03.692Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "bc5834d9-9043-43d5-878d-20074fd8eb0d",
-      "sequence": 29630,
-      "timestamp": "2026-10-16T22:26:19.904Z",
-      "ingestedAt": "2026-10-16T22:26:19.942Z",
+      "id": "c309cbbe-d788-4966-af90-70f1c2e4c5de",
+      "sequence": 29635,
+      "timestamp": "2026-10-16T22:28:01.972Z",
+      "ingestedAt": "2026-10-16T22:28:02.070Z",
       "level": "warn",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -20,12 +20,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
       "outcome": "degraded",
-      "traceId": "029fdce6-8ed1-49d1-846d-c83aa41de44c",
+      "traceId": "80dd258a-6e26-48e3-8e8d-8fc5d5586db0",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920830,
+      "tabId": 220920833,
       "session": {
         "callId": null
       },
@@ -40,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/",
+        "route": "/ai",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220920830,
+        "sourceTabId": 220920833,
         "sourceWindowId": 220919694,
         "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://www.messenger.com/"
+        "observedTabUrl": "https://app.notion.com/ai"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,7 +56,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/",
+        "route": "/ai",
         "extensionVersion": "0.10.29",
         "visible": false,
         "reason": "page-not-allowed",
@@ -71,10 +71,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "d4a811a5-cc70-48c4-9b00-c90b771e2a2d",
-      "sequence": 29631,
-      "timestamp": "2026-10-16T22:26:19.905Z",
-      "ingestedAt": "2026-10-16T22:26:20.604Z",
+      "id": "a15b0c96-b591-4aef-bb48-62ece4c8f9e4",
+      "sequence": 29636,
+      "timestamp": "2026-10-16T22:28:01.972Z",
+      "ingestedAt": "2026-10-16T22:28:02.756Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -84,12 +84,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "8aa81cc6-b861-4a71-be9b-0829f4271c1e",
+      "traceId": "83d98b55-bae6-481c-85e4-3cc3849384bb",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920830,
+      "tabId": 220920833,
       "session": {
         "callId": null
       },
@@ -104,14 +104,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/",
+        "route": "/ai",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220920830,
+        "sourceTabId": 220920833,
         "sourceWindowId": 220919694,
         "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://www.messenger.com/"
+        "observedTabUrl": "https://app.notion.com/ai"
       },
       "privacy": {
         "rawTextStored": false,
@@ -120,192 +120,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/",
-        "extensionVersion": "0.10.29",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": true,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "40cc61f9-fe58-42e7-83fd-b3d0eb424368",
-      "sequence": 29632,
-      "timestamp": "2026-10-16T22:26:24.021Z",
-      "ingestedAt": "2026-10-16T22:26:24.094Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "35dfbde3-b8db-46d8-88f5-ca5304644b86",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920830,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220920830,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://www.messenger.com/"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/",
-        "extensionVersion": "0.10.29",
-        "hostRemoved": true
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "427220e6-480e-4c54-8b91-dd6a048b3f56",
-      "sequence": 29633,
-      "timestamp": "2026-10-16T22:26:27.484Z",
-      "ingestedAt": "2026-10-16T22:26:27.539Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "64597d6f-1c6f-4ad8-a75a-c94687a391db",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920830,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220920830,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://www.messenger.com/"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/",
-        "extensionVersion": "0.10.29",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "e1168342-083f-4b7a-a2ae-f58b8f11650f",
-      "sequence": 29634,
-      "timestamp": "2026-10-16T22:26:27.484Z",
-      "ingestedAt": "2026-10-16T22:26:28.304Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "516392df-a050-400e-ae80-abe4881fd16f",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920830,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220920830,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://www.messenger.com/"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/",
+        "route": "/ai",
         "extensionVersion": "0.10.29",
         "enabled": true,
         "scope": "source-only",
@@ -321,24 +136,23 @@
     }
   ],
   "summary": {
-    "eventsTotal": 5,
+    "eventsTotal": 2,
     "errors": 0,
-    "warnings": 2,
+    "warnings": 1,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 2,
+    "contextEvents": 1,
     "invariantSignals": 0,
-    "firstSequence": 29630,
-    "lastSequence": 29634,
-    "firstTimestamp": "2026-10-16T22:26:19.904Z",
-    "lastTimestamp": "2026-10-16T22:26:27.484Z",
+    "firstSequence": 29635,
+    "lastSequence": 29636,
+    "firstTimestamp": "2026-10-16T22:28:01.972Z",
+    "lastTimestamp": "2026-10-16T22:28:01.972Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 2,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 2,
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
     },
     "categories": {
-      "CAPTION": 5
+      "CAPTION": 2
     }
   }
 }
