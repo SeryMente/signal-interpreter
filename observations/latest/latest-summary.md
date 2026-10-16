@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-2f634864-00f8-4670-a3f9-5f56f51298ae
-- Creado: 2026-10-16T20:24:02.933Z
-- Trigger: critical
+- Batch: batch-bb93984e-4557-49d6-a73a-a60a6e11e69a
+- Creado: 2026-10-16T20:25:20.109Z
+- Trigger: event-window
 - Extensión: 0.10.29
-- Eventos: 11
+- Eventos: 4
 - Errores: 0
-- Warnings: 3
-- Secuencia: 29497 → 29507
+- Warnings: 1
+- Secuencia: 29519 → 29522
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 1212
 - Deltas de plataforma: 1210
@@ -15,23 +15,13 @@
 ## Categorías
 
 {
-  "CAPTION": 4,
-  "RUNTIME": 6,
-  "SOUND": 1
+  "CAPTION": 4
 }
 
 ## Acciones
 
 {
-  "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1,
+  "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2,
   "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-  "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1,
-  "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1,
-  "EXTENSION_MICROPHONE_GESTURE_TRIGGERED": 1,
-  "EXTENSION_MICROPHONE_MUTE_REQUESTED": 1,
-  "EXTENSION_MICROPHONE_MUTE_APPLIED": 1,
-  "EXTENSION_MICROPHONE_SOUND_PLAYED": 1,
-  "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
-  "EARNINGS_SYNC_QUEUE_ERROR": 1,
-  "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+  "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
 }
