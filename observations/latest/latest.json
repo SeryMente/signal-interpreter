@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-b1e45f04-12d6-477e-9cad-1386b3502b3b",
-  "createdAt": "2026-10-16T18:38:34.029Z",
-  "trigger": "event-window",
+  "batchId": "batch-9e7ed820-9ffc-4ea6-8bbd-5e50b7a41449",
+  "createdAt": "2026-10-16T18:58:02.839Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "4faa1a6b-80d1-4408-951e-4cdf2df3e732",
-      "sequence": 29441,
-      "timestamp": "2026-10-16T18:38:03.347Z",
-      "ingestedAt": "2026-10-16T18:38:03.418Z",
+      "id": "9f23cb85-fd98-4b90-9af1-ddfd34701749",
+      "sequence": 29444,
+      "timestamp": "2026-10-16T18:57:34.321Z",
+      "ingestedAt": "2026-10-16T18:57:34.382Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -18,14 +18,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "31ca52c2-48d6-4131-a791-18484209da3f",
+      "traceId": "73af7edb-bc78-48af-b79a-1755018997a5",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920675,
+      "tabId": 220920715,
       "session": {
         "callId": null
       },
@@ -40,70 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/sistema/ingreso",
+        "route": "/chat",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220920675,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://khora-web.vercel.app/sistema/ingreso"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/sistema/ingreso",
-        "extensionVersion": "0.10.29",
-        "hostRemoved": true
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "0e8a2e28-ce72-4431-b53b-116bcf4bf3b4",
-      "sequence": 29442,
-      "timestamp": "2026-10-16T18:38:04.044Z",
-      "ingestedAt": "2026-10-16T18:38:04.098Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "c73634f5-f376-477a-8439-15f4ded51c20",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920675,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/sistema/ingreso",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220920675,
+        "sourceTabId": 220920715,
         "sourceWindowId": 220919694,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://khora-web.vercel.app/sistema/ingreso"
+        "observedTabUrl": "https://app.notion.com/chat"
       },
       "privacy": {
         "rawTextStored": false,
@@ -112,104 +56,31 @@
       },
       "payload": {
         "callId": null,
-        "route": "/sistema/ingreso",
+        "route": "/chat",
         "extensionVersion": "0.10.29",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "9292b982-35d8-43a0-acda-6b88a6269d46",
-      "sequence": 29443,
-      "timestamp": "2026-10-16T18:38:04.045Z",
-      "ingestedAt": "2026-10-16T18:38:04.767Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "af2c4fab-8444-4be2-bbd1-5807f25b1d99",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920675,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/sistema/ingreso",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220920675,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://khora-web.vercel.app/sistema/ingreso"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/sistema/ingreso",
-        "extensionVersion": "0.10.29",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": true,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
+        "previousRoute": "/ai",
+        "currentRoute": "/chat",
+        "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 1,
+    "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 29441,
-    "lastSequence": 29443,
-    "firstTimestamp": "2026-10-16T18:38:03.347Z",
-    "lastTimestamp": "2026-10-16T18:38:04.045Z",
+    "firstSequence": 29444,
+    "lastSequence": 29444,
+    "firstTimestamp": "2026-10-16T18:57:34.321Z",
+    "lastTimestamp": "2026-10-16T18:57:34.321Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1,
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
     },
     "categories": {
-      "CAPTION": 3
+      "CAPTION": 1
     }
   }
 }
