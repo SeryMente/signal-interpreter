@@ -1,32 +1,34 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-2deb0254-118b-41a9-a044-2f0d44bba0a9",
-  "createdAt": "2026-10-16T23:20:02.887Z",
-  "trigger": "alarm",
+  "batchId": "batch-dc1ad396-ebf3-48b1-b0f3-70221f9ee69d",
+  "createdAt": "2026-10-16T23:22:55.835Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "7f471e94-fc8b-4115-8d7d-522b2472a40a",
-      "sequence": 29705,
-      "timestamp": "2026-10-16T23:20:02.265Z",
-      "ingestedAt": "2026-10-16T23:20:02.266Z",
+      "id": "a3109cda-fbd2-41f3-bec0-267162f016c4",
+      "sequence": 29706,
+      "timestamp": "2026-10-16T23:22:25.227Z",
+      "ingestedAt": "2026-10-16T23:22:25.273Z",
       "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
       "extensionVersion": "0.10.29",
       "host": "",
       "url": "",
-      "phase": "event",
-      "action": "TELEMETRY_MAINTENANCE",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "86502b31-86d9-4a0b-a9e1-9cd903a16b97",
+      "traceId": "4a604cca-6f0f-4b08-a5d7-e7c8cfbde858",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": null,
-      "session": {},
+      "tabId": 220920776,
+      "session": {
+        "callId": null
+      },
       "environment": {
         "extensionVersion": "0.10.29",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -37,31 +39,26 @@
       "reasonCode": null,
       "error": null,
       "metrics": {},
-      "context": {},
+      "context": {
+        "route": "/p/Auditor-a-de-no-regresi-n-Ingreso-custodia-de-Volcados-e-Ingesta-3f45d4a3b[PHONE]cf7250a378f5",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220920776,
+        "sourceWindowId": 220919694,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://app.notion.com/p/Auditor-a-de-no-regresi-n-Ingreso-custodia-de-Volcados-e-Ingesta-3f45d4a3b[PHONE]cf7250a378f5"
+      },
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "pruned": {
-          "cutoff": "[PHONE]T23:20:01.833Z",
-          "expiredEvents": 0,
-          "expiredSnapshots": 0,
-          "expiredSignalSegments": 0,
-          "excessEvents": 0,
-          "excessSignalSegments": 0
-        },
-        "stats": {
-          "database": "signal-interpreter-telemetry",
-          "events": 29704,
-          "snapshots": 42,
-          "signalSegments": 0,
-          "oldestEventAt": "[PHONE]T20:16:04.115Z",
-          "newestEventAt": "[PHONE]T23:19:08.068Z",
-          "usageBytes": 26700945,
-          "quotaBytes": 53956983953
-        }
+        "callId": null,
+        "route": "/p/Auditor-a-de-no-regresi-n-Ingreso-custodia-de-Volcados-e-Ingesta-3f45d4a3b[PHONE]cf7250a378f5",
+        "extensionVersion": "0.10.29",
+        "hostRemoved": true
       }
     }
   ],
@@ -73,15 +70,15 @@
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 29705,
-    "lastSequence": 29705,
-    "firstTimestamp": "2026-10-16T23:20:02.265Z",
-    "lastTimestamp": "2026-10-16T23:20:02.265Z",
+    "firstSequence": 29706,
+    "lastSequence": 29706,
+    "firstTimestamp": "2026-10-16T23:22:25.227Z",
+    "lastTimestamp": "2026-10-16T23:22:25.227Z",
     "actions": {
-      "TELEMETRY_MAINTENANCE": 1
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "CAPTION": 1
     }
   }
 }
