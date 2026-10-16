@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-d6758885-01d5-4429-a369-5f3098cac867",
-  "createdAt": "2026-10-16T20:49:55.618Z",
+  "batchId": "batch-9f3bf7fe-2f64-4dc0-a249-cb240234ee0a",
+  "createdAt": "2026-10-16T20:50:36.580Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "edbc83be-592a-49b6-92b1-f74a929beaa1",
-      "sequence": 29555,
-      "timestamp": "2026-10-16T20:49:25.151Z",
-      "ingestedAt": "2026-10-16T20:49:25.192Z",
+      "id": "be57e14f-b778-4188-b50b-c7b48d1b700e",
+      "sequence": 29561,
+      "timestamp": "2026-10-16T20:50:05.874Z",
+      "ingestedAt": "2026-10-16T20:50:05.953Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -18,14 +18,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "f8629e94-769c-4454-8084-935af1109af4",
+      "traceId": "25029827-9171-40a8-bd18-4826378f3d15",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920784,
+      "tabId": 220920788,
       "session": {
         "callId": null
       },
@@ -40,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/chat",
+        "route": "/ai",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220920784,
+        "sourceTabId": 220920788,
         "sourceWindowId": 220919694,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://app.notion.com/chat"
+        "observedTabUrl": "https://app.notion.com/ai"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,17 +56,19 @@
       },
       "payload": {
         "callId": null,
-        "route": "/chat",
+        "route": "/ai",
         "extensionVersion": "0.10.29",
-        "hostRemoved": true
+        "previousRoute": "/chat",
+        "currentRoute": "/ai",
+        "activeCallRoute": false
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "702a5ae8-22be-4a88-8931-e220b328ca48",
-      "sequence": 29556,
-      "timestamp": "2026-10-16T20:49:38.797Z",
-      "ingestedAt": "2026-10-16T20:49:38.858Z",
+      "id": "4ce40fc5-ea68-48c6-a198-a81e69b63157",
+      "sequence": 29562,
+      "timestamp": "2026-10-16T20:50:07.873Z",
+      "ingestedAt": "2026-10-16T20:50:07.922Z",
       "level": "warn",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -76,12 +78,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
       "outcome": "degraded",
-      "traceId": "b8320313-57db-41f3-9d16-bb5d3f27aac3",
+      "traceId": "10653c18-107d-4c21-b958-c3328b80366d",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920788,
+      "tabId": 220920795,
       "session": {
         "callId": null
       },
@@ -99,9 +101,9 @@
         "route": "/chat",
         "visibility": "hidden",
         "online": true,
-        "sourceTabId": 220920788,
+        "sourceTabId": 220920795,
         "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
+        "observedTabStatus": "complete",
         "observedTabActive": false,
         "observedTabUrl": "https://app.notion.com/chat"
       },
@@ -127,10 +129,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "e171986e-06bd-45dc-9993-2dd14a35e46d",
-      "sequence": 29557,
-      "timestamp": "2026-10-16T20:49:38.797Z",
-      "ingestedAt": "2026-10-16T20:49:39.420Z",
+      "id": "3b125447-7eb8-463a-bb42-3bd46c1b2000",
+      "sequence": 29563,
+      "timestamp": "2026-10-16T20:50:07.873Z",
+      "ingestedAt": "2026-10-16T20:50:08.581Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -140,12 +142,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "6abfd744-91e6-4808-aa74-97cd285846f0",
+      "traceId": "b73f8d71-2eeb-49ba-a9c1-e2d425b4e36d",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920788,
+      "tabId": 220920795,
       "session": {
         "callId": null
       },
@@ -163,9 +165,9 @@
         "route": "/chat",
         "visibility": "hidden",
         "online": true,
-        "sourceTabId": 220920788,
+        "sourceTabId": 220920795,
         "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
+        "observedTabStatus": "complete",
         "observedTabActive": false,
         "observedTabUrl": "https://app.notion.com/chat"
       },
@@ -192,10 +194,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "66c79de9-12b2-4faf-99ad-e759d9abac35",
-      "sequence": 29558,
-      "timestamp": "2026-10-16T20:49:39.406Z",
-      "ingestedAt": "2026-10-16T20:49:39.959Z",
+      "id": "5d285b84-f762-4e88-a34c-35a287fd133a",
+      "sequence": 29564,
+      "timestamp": "2026-10-16T20:50:12.851Z",
+      "ingestedAt": "2026-10-16T20:50:12.893Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -203,14 +205,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "ebfe6ce4-804e-480c-8c23-54d87ffedf96",
+      "traceId": "0bd45e76-e659-46cc-ab9b-c5130e7b905b",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920761,
+      "tabId": 220920788,
       "session": {
         "callId": null
       },
@@ -225,68 +227,12 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/p/Auditor-a-de-no-regresi-n-Ingreso-custodia-de-Volcados-e-Ingesta-3f45d4a3b[PHONE]cf7250a378f5",
-        "visibility": "visible",
+        "route": "/chat",
+        "visibility": "hidden",
         "online": true,
-        "sourceTabId": 220920761,
+        "sourceTabId": 220920788,
         "sourceWindowId": 220919694,
         "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://app.notion.com/p/Auditor-a-de-no-regresi-n-Ingreso-custodia-de-Volcados-e-Ingesta-3f45d4a3b[PHONE]cf7250a378f5"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/p/Auditor-a-de-no-regresi-n-Ingreso-custodia-de-Volcados-e-Ingesta-3f45d4a3b[PHONE]cf7250a378f5",
-        "extensionVersion": "0.10.29",
-        "hostRemoved": true
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "912e9ae0-b820-41bf-8a2a-316a6e5126b7",
-      "sequence": 29559,
-      "timestamp": "2026-10-16T20:49:49.393Z",
-      "ingestedAt": "2026-10-16T20:49:49.455Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "dd04e845-d648-47ae-9e72-09607b603fb2",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920792,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/chat",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220920792,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
         "observedTabActive": false,
         "observedTabUrl": "https://app.notion.com/chat"
       },
@@ -299,102 +245,31 @@
         "callId": null,
         "route": "/chat",
         "extensionVersion": "0.10.29",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "827b538e-b919-42b7-8b52-7b12d4989986",
-      "sequence": 29560,
-      "timestamp": "2026-10-16T20:49:49.393Z",
-      "ingestedAt": "2026-10-16T20:49:50.179Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "249aa6f8-3f68-4e28-aa62-9d12354528ef",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920792,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/chat",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220920792,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://app.notion.com/chat"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/chat",
-        "extensionVersion": "0.10.29",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": true,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
+        "previousRoute": "/ai",
+        "currentRoute": "/chat",
+        "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 6,
+    "eventsTotal": 4,
     "errors": 0,
-    "warnings": 2,
+    "warnings": 1,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 2,
+    "contextEvents": 1,
     "invariantSignals": 0,
-    "firstSequence": 29555,
-    "lastSequence": 29560,
-    "firstTimestamp": "2026-10-16T20:49:25.151Z",
-    "lastTimestamp": "2026-10-16T20:49:49.393Z",
+    "firstSequence": 29561,
+    "lastSequence": 29564,
+    "firstTimestamp": "2026-10-16T20:50:05.874Z",
+    "lastTimestamp": "2026-10-16T20:50:12.851Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 2,
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 2,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 2
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2,
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
     },
     "categories": {
-      "CAPTION": 6
+      "CAPTION": 4
     }
   }
 }
