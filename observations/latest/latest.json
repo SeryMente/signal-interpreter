@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-bcee67f3-0256-4660-88e5-a6dadc71e9a6",
-  "createdAt": "2026-10-16T18:03:02.839Z",
-  "trigger": "alarm",
+  "batchId": "batch-1a3c31bb-a57d-4c91-94f2-6a0fe1922b40",
+  "createdAt": "2026-10-16T18:05:35.850Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "2ef9dab2-eb6c-494c-ba32-c3a7f451c479",
-      "sequence": 29431,
-      "timestamp": "2026-10-16T18:02:59.207Z",
-      "ingestedAt": "2026-10-16T18:02:59.253Z",
+      "id": "29d7de00-3f94-4d6c-a72d-81219eb2af33",
+      "sequence": 29433,
+      "timestamp": "2026-10-16T18:05:05.252Z",
+      "ingestedAt": "2026-10-16T18:05:05.307Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -20,12 +20,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "d45ec0db-d862-47e8-b19b-242826daff32",
+      "traceId": "62a5b320-6ad1-4484-9075-09c1f035a531",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920675,
+      "tabId": 220920708,
       "session": {
         "callId": null
       },
@@ -40,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/sistema/volcados",
+        "route": "/chat",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220920675,
+        "sourceTabId": 220920708,
         "sourceWindowId": 220919694,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://khora-web.vercel.app/sistema/volcados"
+        "observedTabUrl": "https://app.notion.com/chat"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,89 +56,31 @@
       },
       "payload": {
         "callId": null,
-        "route": "/sistema/volcados",
+        "route": "/chat",
         "extensionVersion": "0.10.29",
-        "previousRoute": "/sistema/ingreso",
-        "currentRoute": "/sistema/volcados",
-        "activeCallRoute": false
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "2649582b-1a8e-45e9-a124-065432a25119",
-      "sequence": 29432,
-      "timestamp": "2026-10-16T18:03:00.210Z",
-      "ingestedAt": "2026-10-16T18:03:00.244Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
-      "outcome": "observed",
-      "traceId": "d4c58a7a-842d-440f-867d-272434c2cd60",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920675,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/sistema/ingreso",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220920675,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://khora-web.vercel.app/sistema/ingreso"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/sistema/ingreso",
-        "extensionVersion": "0.10.29",
-        "previousRoute": "/sistema/volcados",
-        "currentRoute": "/sistema/ingreso",
+        "previousRoute": "/ai",
+        "currentRoute": "/chat",
         "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 29431,
-    "lastSequence": 29432,
-    "firstTimestamp": "2026-10-16T18:02:59.207Z",
-    "lastTimestamp": "2026-10-16T18:03:00.210Z",
+    "firstSequence": 29433,
+    "lastSequence": 29433,
+    "firstTimestamp": "2026-10-16T18:05:05.252Z",
+    "lastTimestamp": "2026-10-16T18:05:05.252Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 1
     }
   }
 }
