@@ -1,98 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-6dd9db22-697e-4972-b789-f0a47c059eba",
-  "createdAt": "2026-10-16T18:23:02.851Z",
-  "trigger": "alarm",
+  "batchId": "batch-e02705d5-274c-49ed-8366-c7e4f9670340",
+  "createdAt": "2026-10-16T18:24:03.045Z",
+  "trigger": "critical",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "5223b90e-ecd9-475c-8d15-3c049ec76d81",
-      "sequence": 29436,
-      "timestamp": "2026-10-16T18:22:44.174Z",
-      "ingestedAt": "2026-10-16T18:22:44.252Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "efc9fb0e-887e-4f69-a7da-91689b478fe6",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920715,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/ai",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220920715,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://app.notion.com/ai"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/ai",
-        "extensionVersion": "0.10.29",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "c236bd3e-608a-45bf-844b-229f960b1a60",
-      "sequence": 29437,
-      "timestamp": "2026-10-16T18:22:44.174Z",
-      "ingestedAt": "2026-10-16T18:22:45.063Z",
+      "id": "9ccf6f39-2978-440c-bf19-90b77f393ecd",
+      "sequence": 29438,
+      "timestamp": "2026-10-16T18:24:01.871Z",
+      "ingestedAt": "2026-10-16T18:24:01.871Z",
       "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "category": "RUNTIME",
+      "component": "background",
       "extensionVersion": "0.10.29",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "91dac2bd-73c1-4e30-83da-42373ad88df7",
+      "phase": "started",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
+      "outcome": "success",
+      "traceId": "c809347e-2638-4b6f-bc99-55b2245c1e83",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920715,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.29",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -103,56 +37,122 @@
       "reasonCode": null,
       "error": null,
       "metrics": {},
-      "context": {
-        "route": "/ai",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220920715,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://app.notion.com/ai"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/ai",
+        "trigger": "hourly"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "8490d8bb-ed36-45cc-9190-0448fc819bea",
+      "sequence": 29439,
+      "timestamp": "2026-10-16T18:24:02.436Z",
+      "ingestedAt": "2026-10-16T18:24:02.436Z",
+      "level": "warn",
+      "category": "RUNTIME",
+      "component": "background",
+      "extensionVersion": "0.10.29",
+      "host": "",
+      "url": "",
+      "phase": "error",
+      "action": "EARNINGS_SYNC_QUEUE_ERROR",
+      "outcome": "error",
+      "traceId": "66eca246-d45a-45a3-b641-9baa6996772f",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
         "extensionVersion": "0.10.29",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": true,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "operation": "official-today",
+        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "f5eda23e-045b-4d41-8181-f797aef1eafb",
+      "sequence": 29440,
+      "timestamp": "2026-10-16T18:24:03.013Z",
+      "ingestedAt": "2026-10-16T18:24:03.013Z",
+      "level": "warn",
+      "category": "RUNTIME",
+      "component": "background",
+      "extensionVersion": "0.10.29",
+      "host": "",
+      "url": "",
+      "phase": "error",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
+      "outcome": "error",
+      "traceId": "52e34b87-8816-423d-a6c0-23c833f22b3d",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.29",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "trigger": "hourly",
+        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 3,
     "errors": 0,
-    "warnings": 1,
-    "critical": false,
+    "warnings": 2,
+    "critical": true,
     "scopeRejected": 0,
-    "contextEvents": 1,
+    "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 29436,
-    "lastSequence": 29437,
-    "firstTimestamp": "2026-10-16T18:22:44.174Z",
-    "lastTimestamp": "2026-10-16T18:22:44.174Z",
+    "firstSequence": 29438,
+    "lastSequence": 29440,
+    "firstTimestamp": "2026-10-16T18:24:01.871Z",
+    "lastTimestamp": "2026-10-16T18:24:03.013Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
+      "EARNINGS_SYNC_QUEUE_ERROR": 1,
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
     },
     "categories": {
-      "CAPTION": 2
+      "RUNTIME": 3
     }
   }
 }
