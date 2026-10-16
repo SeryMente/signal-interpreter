@@ -1,80 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-dea680b3-6324-472d-9b2b-f08f9ec82039",
-  "createdAt": "2026-10-16T22:59:02.838Z",
+  "batchId": "batch-7bf4d557-7a53-4dee-81cc-322bba3b71e4",
+  "createdAt": "2026-10-16T23:02:02.857Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "ba8b070b-d172-4348-96c2-18f96a1652d1",
-      "sequence": 29673,
-      "timestamp": "2026-10-16T22:58:57.544Z",
-      "ingestedAt": "2026-10-16T22:58:57.588Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "7b496578-a704-4ab8-9981-bc6e0e7d961e",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920858,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/dashboard",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220920858,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://github.com/dashboard"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/dashboard",
-        "extensionVersion": "0.10.29",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "dd31f33f-e2cb-4b2a-8631-7832eb418680",
-      "sequence": 29674,
-      "timestamp": "2026-10-16T22:58:57.544Z",
-      "ingestedAt": "2026-10-16T22:58:58.306Z",
+      "id": "9dfe574b-4d26-4fb6-b25f-9ae209d3d928",
+      "sequence": 29675,
+      "timestamp": "2026-10-16T23:01:39.200Z",
+      "ingestedAt": "2026-10-16T23:01:39.313Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -82,14 +18,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "fb779e9f-bd0c-4163-b0c2-91fa2257073c",
+      "traceId": "a4995462-46ef-4bc8-8103-d363f2ebe623",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920858,
+      "tabId": 220920843,
       "session": {
         "callId": null
       },
@@ -104,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/dashboard",
+        "route": "/search",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220920858,
+        "sourceTabId": 220920843,
         "sourceWindowId": 220919694,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://github.com/dashboard"
+        "observedTabUrl": "https://www.google.com/search"
       },
       "privacy": {
         "rawTextStored": false,
@@ -120,39 +56,29 @@
       },
       "payload": {
         "callId": null,
-        "route": "/dashboard",
+        "route": "/search",
         "extensionVersion": "0.10.29",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": true,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
+        "hostRemoved": true
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 1,
+    "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 29673,
-    "lastSequence": 29674,
-    "firstTimestamp": "2026-10-16T22:58:57.544Z",
-    "lastTimestamp": "2026-10-16T22:58:57.544Z",
+    "firstSequence": 29675,
+    "lastSequence": 29675,
+    "firstTimestamp": "2026-10-16T23:01:39.200Z",
+    "lastTimestamp": "2026-10-16T23:01:39.200Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 1
     }
   }
 }
