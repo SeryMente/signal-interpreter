@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-508c8098-f8d5-4dfe-8b55-0116d8d29903
-- Creado: 2026-10-17T18:37:02.854Z
-- Trigger: alarm
+- Batch: batch-cefaeda4-1e5a-4053-9e2b-dc20b397ddda
+- Creado: 2026-10-17T18:43:41.586Z
+- Trigger: event-window
 - Extensión: 0.10.29
 - Eventos: 2
 - Errores: 0
 - Warnings: 0
-- Secuencia: 29965 → 29966
+- Secuencia: 29967 → 29968
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 1212
 - Deltas de plataforma: 1210
@@ -21,5 +21,5 @@
 ## Acciones
 
 {
-  "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
+  "LIVE_CAPTION_OVERLAY_PAGEHIDE": 2
 }
