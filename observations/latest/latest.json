@@ -1,31 +1,31 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-cefaeda4-1e5a-4053-9e2b-dc20b397ddda",
-  "createdAt": "2026-10-17T18:43:41.586Z",
-  "trigger": "event-window",
+  "batchId": "batch-3ed72a35-c706-43ac-b239-0de30385d61b",
+  "createdAt": "2026-10-17T18:44:02.846Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "8d825f9c-e907-4441-8f49-d0bcc715a520",
-      "sequence": 29967,
-      "timestamp": "2026-10-17T18:43:11.093Z",
-      "ingestedAt": "2026-10-17T18:43:11.134Z",
-      "level": "info",
+      "id": "1876768e-8c74-48e7-bf71-9521c5a70ae7",
+      "sequence": 29969,
+      "timestamp": "2026-10-17T18:43:41.879Z",
+      "ingestedAt": "2026-10-17T18:43:41.925Z",
+      "level": "warn",
       "category": "CAPTION",
       "component": "live-caption-overlay",
       "extensionVersion": "0.10.29",
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "23c1d7db-ad6e-4d40-9128-3afdf40944da",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "fcae52f6-5d78-4b4c-b4b8-b38f2b906741",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920930,
+      "tabId": 220920953,
       "session": {
         "callId": null
       },
@@ -36,18 +36,18 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "page-not-allowed",
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/p/Welcome-to-Notion-3de86f44318b801e9dd4c5f7c0e2f415",
-        "visibility": "visible",
+        "route": "/sistema/ingreso",
+        "visibility": "hidden",
         "online": true,
-        "sourceTabId": 220920930,
+        "sourceTabId": 220920953,
         "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://app.notion.com/p/Welcome-to-Notion-3de86f44318b801e9dd4c5f7c0e2f415"
+        "observedTabStatus": "loading",
+        "observedTabActive": false,
+        "observedTabUrl": "https://khora-web.vercel.app/sistema/ingreso"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,17 +56,25 @@
       },
       "payload": {
         "callId": null,
-        "route": "/p/Welcome-to-Notion-3de86f44318b801e9dd4c5f7c0e2f415",
+        "route": "/sistema/ingreso",
         "extensionVersion": "0.10.29",
-        "hostRemoved": true
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "e360e740-e0b9-44e5-a09b-87c230f65496",
-      "sequence": 29968,
-      "timestamp": "2026-10-17T18:43:29.032Z",
-      "ingestedAt": "2026-10-17T18:43:29.119Z",
+      "id": "13ec9c58-f4c1-4c96-a4ce-f5443662301e",
+      "sequence": 29970,
+      "timestamp": "2026-10-17T18:43:41.880Z",
+      "ingestedAt": "2026-10-17T18:43:42.436Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -74,14 +82,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "d53fbf7d-9fa9-48a9-a6c8-2ddb6721a6cb",
+      "traceId": "4ca7d6af-0eb4-4031-ad75-f38933b01251",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920923,
+      "tabId": 220920953,
       "session": {
         "callId": null
       },
@@ -96,14 +104,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/u/login/identifier",
-        "visibility": "visible",
+        "route": "/sistema/ingreso",
+        "visibility": "hidden",
         "online": true,
-        "sourceTabId": 220920923,
+        "sourceTabId": 220920953,
         "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://login.neo4j.com/u/login/identifier"
+        "observedTabStatus": "loading",
+        "observedTabActive": false,
+        "observedTabUrl": "https://khora-web.vercel.app/sistema/ingreso"
       },
       "privacy": {
         "rawTextStored": false,
@@ -112,26 +120,36 @@
       },
       "payload": {
         "callId": null,
-        "route": "/u/login/identifier",
+        "route": "/sistema/ingreso",
         "extensionVersion": "0.10.29",
-        "hostRemoved": true
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": true,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
       }
     }
   ],
   "summary": {
     "eventsTotal": 2,
     "errors": 0,
-    "warnings": 0,
+    "warnings": 1,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 0,
+    "contextEvents": 1,
     "invariantSignals": 0,
-    "firstSequence": 29967,
-    "lastSequence": 29968,
-    "firstTimestamp": "2026-10-17T18:43:11.093Z",
-    "lastTimestamp": "2026-10-17T18:43:29.032Z",
+    "firstSequence": 29969,
+    "lastSequence": 29970,
+    "firstTimestamp": "2026-10-17T18:43:41.879Z",
+    "lastTimestamp": "2026-10-17T18:43:41.880Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 2
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
     },
     "categories": {
       "CAPTION": 2
