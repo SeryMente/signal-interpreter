@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-b92f8f1f-f572-4c05-b7a8-db4b08a90ed8",
-  "createdAt": "2026-10-17T21:00:50.919Z",
+  "batchId": "batch-fd8982c4-3526-43ac-b806-00e8c848549c",
+  "createdAt": "2026-10-17T21:01:53.858Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "54f67485-f3c3-4f6b-a9c8-4d7aa4d06a57",
-      "sequence": 30096,
-      "timestamp": "2026-10-17T21:00:20.225Z",
-      "ingestedAt": "2026-10-17T21:00:20.272Z",
+      "id": "e42dbf78-d886-4ef2-a9ca-596d64ff3d53",
+      "sequence": 30097,
+      "timestamp": "2026-10-17T21:01:23.254Z",
+      "ingestedAt": "2026-10-17T21:01:23.298Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -20,12 +20,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "4f0af348-b844-4b04-9823-3f9bd1fe20a6",
+      "traceId": "e4a82562-8a93-44dd-91d1-39699a45b943",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220921016,
+      "tabId": 220920984,
       "session": {
         "callId": null
       },
@@ -43,7 +43,7 @@
         "route": "/chat",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220921016,
+        "sourceTabId": 220920984,
         "sourceWindowId": 220919694,
         "observedTabStatus": "complete",
         "observedTabActive": true,
@@ -58,29 +58,87 @@
         "callId": null,
         "route": "/chat",
         "extensionVersion": "0.10.29",
-        "previousRoute": "/ai",
+        "previousRoute": "/chat",
+        "currentRoute": "/chat",
+        "activeCallRoute": false
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "a113221e-fee9-4bde-87fb-0eb7805f48fa",
+      "sequence": 30098,
+      "timestamp": "2026-10-17T21:01:25.294Z",
+      "ingestedAt": "2026-10-17T21:01:25.341Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.29",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "a667a21c-8e2b-4664-b685-29343c6b8d2f",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220920984,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.29",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/chat",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220920984,
+        "sourceWindowId": 220919694,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://app.notion.com/chat"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/chat",
+        "extensionVersion": "0.10.29",
+        "previousRoute": "/chat",
         "currentRoute": "/chat",
         "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 30096,
-    "lastSequence": 30096,
-    "firstTimestamp": "2026-10-17T21:00:20.225Z",
-    "lastTimestamp": "2026-10-17T21:00:20.225Z",
+    "firstSequence": 30097,
+    "lastSequence": 30098,
+    "firstTimestamp": "2026-10-17T21:01:23.254Z",
+    "lastTimestamp": "2026-10-17T21:01:25.294Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
     },
     "categories": {
-      "CAPTION": 1
+      "CAPTION": 2
     }
   }
 }
