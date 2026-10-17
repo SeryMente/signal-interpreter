@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-cff720b4-8855-4e0d-8974-a37ab4313d02",
-  "createdAt": "2026-10-17T02:19:38.763Z",
-  "trigger": "event-window",
+  "batchId": "batch-ac1aa0c6-35a5-48b4-982f-73958df71bc1",
+  "createdAt": "2026-10-17T02:20:03.457Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "5378cd3d-ab47-41a4-9ce6-21c0240a83f4",
-      "sequence": 29732,
-      "timestamp": "2026-10-17T02:19:08.230Z",
-      "ingestedAt": "2026-10-17T02:19:08.230Z",
+      "id": "c0243c78-db88-45f8-89c0-46217256848a",
+      "sequence": 29733,
+      "timestamp": "2026-10-17T02:20:02.394Z",
+      "ingestedAt": "2026-10-17T02:20:02.394Z",
       "level": "info",
-      "category": "BILLING",
+      "category": "RUNTIME",
       "component": "background",
       "extensionVersion": "0.10.29",
       "host": "",
       "url": "",
-      "phase": "completed",
-      "action": "EXCHANGE_RATE_UPDATED",
-      "outcome": "success",
-      "traceId": "c3e7e737-2e83-4da0-9cfb-bf47b2e81d8b",
+      "phase": "event",
+      "action": "TELEMETRY_MAINTENANCE",
+      "outcome": "observed",
+      "traceId": "1f878811-df58-49a0-97a7-9f1571894c91",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -34,7 +34,7 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": "alarm",
+      "reasonCode": null,
       "error": null,
       "metrics": {},
       "context": {},
@@ -44,11 +44,24 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "pair": "USD/MXN",
-        "rate": 18.4332,
-        "rateDate": "[PHONE]",
-        "source": "Frankfurter / blended daily",
-        "reason": "alarm"
+        "pruned": {
+          "cutoff": "[PHONE]T02:20:01.835Z",
+          "expiredEvents": 0,
+          "expiredSnapshots": 0,
+          "expiredSignalSegments": 0,
+          "excessEvents": 0,
+          "excessSignalSegments": 0
+        },
+        "stats": {
+          "database": "signal-interpreter-telemetry",
+          "events": 29732,
+          "snapshots": 42,
+          "signalSegments": 0,
+          "oldestEventAt": "[PHONE]T20:16:04.115Z",
+          "newestEventAt": "[PHONE]T02:19:08.230Z",
+          "usageBytes": 26758439,
+          "quotaBytes": 52923428135
+        }
       }
     }
   ],
@@ -60,15 +73,15 @@
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 29732,
-    "lastSequence": 29732,
-    "firstTimestamp": "2026-10-17T02:19:08.230Z",
-    "lastTimestamp": "2026-10-17T02:19:08.230Z",
+    "firstSequence": 29733,
+    "lastSequence": 29733,
+    "firstTimestamp": "2026-10-17T02:20:02.394Z",
+    "lastTimestamp": "2026-10-17T02:20:02.394Z",
     "actions": {
-      "EXCHANGE_RATE_UPDATED": 1
+      "TELEMETRY_MAINTENANCE": 1
     },
     "categories": {
-      "BILLING": 1
+      "RUNTIME": 1
     }
   }
 }
