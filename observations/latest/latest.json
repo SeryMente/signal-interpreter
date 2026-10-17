@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-9d573af7-5ec7-4ec9-bcbe-a112b6516135",
-  "createdAt": "2026-10-17T18:14:02.845Z",
-  "trigger": "alarm",
+  "batchId": "batch-2e8a1ca1-1240-468e-81bc-4b81aafe02dc",
+  "createdAt": "2026-10-17T18:14:53.655Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.29",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "4b77a36d-be01-414c-8e88-041638e2decc",
-      "sequence": 29892,
-      "timestamp": "2026-10-17T18:13:45.823Z",
-      "ingestedAt": "2026-10-17T18:13:45.908Z",
+      "id": "914474ca-ed3c-42e5-be05-87c73f8fc53f",
+      "sequence": 29898,
+      "timestamp": "2026-10-17T18:14:23.113Z",
+      "ingestedAt": "2026-10-17T18:14:23.168Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -18,14 +18,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "8e5d7d9b-1481-433d-ba5e-580d036e878a",
+      "traceId": "63d9e976-77a5-4dc0-86b4-4a75d0d71162",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920923,
+      "tabId": 220920907,
       "session": {
         "callId": null
       },
@@ -40,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/projects/a78b5135-a5c[PHONE]d9-43e189e33ac3/home",
-        "visibility": "hidden",
+        "route": "/chat",
+        "visibility": "visible",
         "online": true,
-        "sourceTabId": 220920923,
+        "sourceTabId": 220920907,
         "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://console.neo4j.io/projects/a78b5135-a5c[PHONE]d9-43e189e33ac3/home"
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://app.notion.com/chat"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,17 +56,19 @@
       },
       "payload": {
         "callId": null,
-        "route": "/projects/a78b5135-a5c[PHONE]d9-43e189e33ac3/home",
+        "route": "/chat",
         "extensionVersion": "0.10.29",
-        "hostRemoved": true
+        "previousRoute": "/chat",
+        "currentRoute": "/chat",
+        "activeCallRoute": false
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "4ec08f12-299a-4efd-b75b-960619d7f68e",
-      "sequence": 29893,
-      "timestamp": "2026-10-17T18:13:47.001Z",
-      "ingestedAt": "2026-10-17T18:13:47.044Z",
+      "id": "1bcf4883-4a40-4cc6-a929-81fda3087525",
+      "sequence": 29899,
+      "timestamp": "2026-10-17T18:14:26.617Z",
+      "ingestedAt": "2026-10-17T18:14:26.679Z",
       "level": "warn",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -76,12 +78,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
       "outcome": "degraded",
-      "traceId": "5e3ed82a-41aa-4fd1-98d9-3a7a6e23064e",
+      "traceId": "b344664b-0983-42fd-b578-9c3534ad75fd",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920923,
+      "tabId": 220920927,
       "session": {
         "callId": null
       },
@@ -96,14 +98,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/login",
+        "route": "/ai",
         "visibility": "hidden",
         "online": true,
-        "sourceTabId": 220920923,
+        "sourceTabId": 220920927,
         "sourceWindowId": 220919694,
         "observedTabStatus": "loading",
         "observedTabActive": false,
-        "observedTabUrl": "https://console.neo4j.io/login"
+        "observedTabUrl": "https://app.notion.com/ai"
       },
       "privacy": {
         "rawTextStored": false,
@@ -112,7 +114,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/login",
+        "route": "/ai",
         "extensionVersion": "0.10.29",
         "visible": false,
         "reason": "page-not-allowed",
@@ -127,10 +129,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "9072f7d5-6ed2-4105-9959-cb0b8e757df7",
-      "sequence": 29894,
-      "timestamp": "2026-10-17T18:13:47.002Z",
-      "ingestedAt": "2026-10-17T18:13:47.555Z",
+      "id": "3bf50899-5532-4454-9fe9-dbf051428c31",
+      "sequence": 29900,
+      "timestamp": "2026-10-17T18:14:26.617Z",
+      "ingestedAt": "2026-10-17T18:14:27.315Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -140,12 +142,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "c16cc338-49bc-4d31-aa4f-5ded92a20098",
+      "traceId": "7a5c5323-31ee-4ba0-bf57-a2377ad7c44d",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220920923,
+      "tabId": 220920927,
       "session": {
         "callId": null
       },
@@ -160,14 +162,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/login",
+        "route": "/ai",
         "visibility": "hidden",
         "online": true,
-        "sourceTabId": 220920923,
+        "sourceTabId": 220920927,
         "sourceWindowId": 220919694,
         "observedTabStatus": "loading",
         "observedTabActive": false,
-        "observedTabUrl": "https://console.neo4j.io/login"
+        "observedTabUrl": "https://app.notion.com/ai"
       },
       "privacy": {
         "rawTextStored": false,
@@ -176,192 +178,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/login",
-        "extensionVersion": "0.10.29",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": true,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "935f68a9-272a-435e-8ff3-0c12875cad31",
-      "sequence": 29895,
-      "timestamp": "2026-10-17T18:13:47.991Z",
-      "ingestedAt": "2026-10-17T18:13:48.052Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "780f567f-14cc-4b13-9619-bf1ec1d7d79e",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920923,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/login",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220920923,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://login.neo4j.com/u/login/identifier"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/login",
-        "extensionVersion": "0.10.29",
-        "hostRemoved": true
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "710f3e04-f3b9-436f-adc1-682e6d828321",
-      "sequence": 29896,
-      "timestamp": "2026-10-17T18:13:49.028Z",
-      "ingestedAt": "2026-10-17T18:13:49.069Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "d3e540f8-a282-4b32-bc26-551ddf6f8973",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920923,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/u/login/identifier",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220920923,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://login.neo4j.com/u/login/identifier"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/u/login/identifier",
-        "extensionVersion": "0.10.29",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "3b125401-2dca-423c-b26d-c83e410be1e5",
-      "sequence": 29897,
-      "timestamp": "2026-10-17T18:13:49.028Z",
-      "ingestedAt": "2026-10-17T18:13:49.605Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.29",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "3398dd30-468f-4f29-a8c5-147ccd0c3821",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220920923,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.29",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/u/login/identifier",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220920923,
-        "sourceWindowId": 220919694,
-        "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://login.neo4j.com/u/login/identifier"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/u/login/identifier",
+        "route": "/ai",
         "extensionVersion": "0.10.29",
         "enabled": true,
         "scope": "source-only",
@@ -377,24 +194,24 @@
     }
   ],
   "summary": {
-    "eventsTotal": 6,
+    "eventsTotal": 3,
     "errors": 0,
-    "warnings": 2,
+    "warnings": 1,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 2,
+    "contextEvents": 1,
     "invariantSignals": 0,
-    "firstSequence": 29892,
-    "lastSequence": 29897,
-    "firstTimestamp": "2026-10-17T18:13:45.823Z",
-    "lastTimestamp": "2026-10-17T18:13:49.028Z",
+    "firstSequence": 29898,
+    "lastSequence": 29900,
+    "firstTimestamp": "2026-10-17T18:14:23.113Z",
+    "lastTimestamp": "2026-10-17T18:14:26.617Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 2,
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 2,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 2
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1,
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
     },
     "categories": {
-      "CAPTION": 6
+      "CAPTION": 3
     }
   }
 }
