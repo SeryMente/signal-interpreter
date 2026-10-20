@@ -1,6 +1,6 @@
 # Signal Interpreter
 
-> **Documento canónico único del esfuerzo de transcripción/Live Caption/overlay:** [docs/TRANSCRIPTION-SPRINT-CANONICAL.md](docs/TRANSCRIPTION-SPRINT-CANONICAL.md). Toda la narrativa del sprint, evolución, decisiones, pruebas, límites y registro VERBATIM se centraliza ahí. Los documentos restantes citados a continuación tienen funciones acotadas (requisito fuente, notas por versión o arquitectura general), no son informes alternativos del esfuerzo.
+> **Frente de trabajo — núcleo operativo único:** [Objeto canónico de Signal Interpreter](docs/frentes/signal-interpreter/OBJETO-CANONICO.md). Gobierno, estado, pendientes y prompts vigentes en esa carpeta; [historia íntegra del sprint](docs/frentes/signal-interpreter/antecedentes/TRANSCRIPTION-SPRINT-CANONICAL.pre-1.9.md). La ruta documental anterior es solo una remisión compatible, no otro estado.
 
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
@@ -17,7 +17,7 @@ El **ZIP del repositorio** contiene la extensión cargable: `manifest.json` est�
 
 Muestra de voz generada localmente al instalar, o archivo local autorizado; no se sube audio/texto. El laboratorio no toma llamadas ni produce ingresos/exportación de producción. Una prueba local no certifica Cloud Interpreter; si Chrome destruye el árbol accesible al cerrar la burbuja, no se fabrica texto ni se captura audio como alternativa. Windows/Chrome deben tener Live Caption disponible; puede requerir sus propios modelos. MacOS y Linux no pertenecen al alcance del producto.
 
-En cada computadora registra/carga la carpeta para su usuario Windows. Sin rutas fijas, servicios ni runtime de desarrollo; las preferencias locales no se sincronizan automáticamente entre equipos. Canon completo y límites: [TRANSCRIPTION-SPRINT-CANONICAL.md](docs/TRANSCRIPTION-SPRINT-CANONICAL.md), §16.
+En cada computadora registra/carga la carpeta para su usuario Windows. Sin rutas fijas, servicios ni runtime de desarrollo; las preferencias locales no se sincronizan automáticamente entre equipos. Canon completo y límites: [antecedente del sprint](docs/frentes/signal-interpreter/antecedentes/TRANSCRIPTION-SPRINT-CANONICAL.pre-1.9.md), §16.
 
 ## Arquitectura vigente 0.10.36 — exclusivamente texto nativo
 
@@ -94,7 +94,7 @@ El overlay conserva su historial desplazable, controles para mover/redimensionar
 
 ## Histórico superado: corrección de transcripción 0.10.32 — exclusivamente audio entrante
 
-El relato único del esfuerzo y sus límites está en [el documento canónico](docs/TRANSCRIPTION-SPRINT-CANONICAL.md#13-alcance-vigente--calidad-de-vida-para-interpretación-telefónica). El preview de llamada puede funcionar sin consola ni sesión durable; no solicita ni captura el micrófono. Prepare el host y la clave local con `extension/PREPARE-CAPTIONS.cmd` bajo su cuenta Windows normal, fuera de una llamada, y recargue la extensión. Si Chrome exige invocación, abrir el popup existente en la pestaña de Cloud Interpreter reintenta la captura.
+El relato único del esfuerzo y sus límites está en [el documento canónico](docs/frentes/signal-interpreter/antecedentes/TRANSCRIPTION-SPRINT-CANONICAL.pre-1.9.md#13-alcance-vigente--calidad-de-vida-para-interpretación-telefónica). El preview de llamada puede funcionar sin consola ni sesión durable; no solicita ni captura el micrófono. Prepare el host y la clave local con `extension/PREPARE-CAPTIONS.cmd` bajo su cuenta Windows normal, fuera de una llamada, y recargue la extensión. Si Chrome exige invocación, abrir el popup existente en la pestaña de Cloud Interpreter reintenta la captura.
 
 Los informes de cierre exponen `captionDiagnosis` y `exportEvidence`; la publicación del checkpoint no espera a consultas de ingresos. La evidencia de audio sintético/fixtures no sustituye una llamada real en Cloud Interpreter.
 
