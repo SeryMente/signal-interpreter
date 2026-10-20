@@ -1,33 +1,35 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-b0c633b6-7e8e-4dae-84fe-89b80d1fc73c
-- Creado: 2026-10-20T16:54:59.335Z
+- Batch: batch-0616c166-0a18-49d1-a186-d983bac8ec81
+- Creado: 2026-10-20T16:55:29.479Z
 - Trigger: event-window
 - Extensión: 0.10.29
-- Eventos: 42
+- Eventos: 43
 - Errores: 0
 - Warnings: 1
-- Secuencia: 37499 → 37540
+- Secuencia: 37541 → 37583
 - Identidades de plataforma: 14
-- Snapshots de plataforma: 1298
-- Deltas de plataforma: 1296
+- Snapshots de plataforma: 1299
+- Deltas de plataforma: 1297
 
 ## Categorías
 
 {
-  "RUNTIME": 39,
-  "CAPTION": 2,
-  "SESSION": 1
+  "RUNTIME": 38,
+  "CAPTION": 4,
+  "PORTAL": 1
 }
 
 ## Acciones
 
 {
+  "AUTO_ANSWER_READINESS": 21,
   "MEDIA_HEALTH": 15,
-  "AUTO_ANSWER_READINESS": 22,
   "PLATFORM_INTEGRITY_CHECK": 1,
   "LIVE_CAPTION_OVERLAY_HEALTH": 1,
-  "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1,
-  "EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFY_DEFERRED": 1,
-  "HOTLOAD_CALL_LEASE_HEARTBEAT": 1
+  "PERFORMANCE_HEARTBEAT": 1,
+  "PLATFORM_SURFACE_SNAPSHOT": 1,
+  "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1,
+  "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
+  "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
 }
