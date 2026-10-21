@@ -1,31 +1,35 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-68cbaa1e-f34a-4537-942c-fff94ba803d3
-- Creado: 2026-10-21T19:43:53.709Z
+- Batch: batch-eb9921cd-5ef6-4b29-bf42-5de5e3404c73
+- Creado: 2026-10-21T19:44:54.634Z
 - Trigger: event-window
 - Extensión: 0.10.37
-- Eventos: 18
+- Eventos: 31
 - Errores: 0
-- Warnings: 0
-- Secuencia: 2434 → 2451
+- Warnings: 4
+- Secuencia: 2489 → 2519
 - Identidades de plataforma: 14
-- Snapshots de plataforma: 1404
-- Deltas de plataforma: 1402
+- Snapshots de plataforma: 1405
+- Deltas de plataforma: 1403
 
 ## Categorías
 
 {
-  "RUNTIME": 17,
-  "PORTAL": 1
+  "RUNTIME": 27,
+  "PORTAL": 3,
+  "CAPTION": 1
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 13,
-  "SCREEN_MAP": 1,
-  "PAGE_LIFECYCLE": 1,
-  "PAGE_VISIBILITY_CHANGED": 1,
-  "NETWORK_ACTIVITY_WINDOW": 1,
-  "PERFORMANCE_HEARTBEAT": 1
+  "AUTO_ANSWER_READINESS": 17,
+  "SCREEN_MAP": 3,
+  "NETWORK_ACTIVITY_WINDOW": 2,
+  "PERFORMANCE_HEARTBEAT": 1,
+  "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1,
+  "INCOMING_DIALOG_DETECTED": 1,
+  "CONNECT_BUTTON_FOUND": 1,
+  "AUTO_ANSWER_SKIPPED_UNVERIFIED_MODALITY": 4,
+  "PLATFORM_SURFACE_SNAPSHOT": 1
 }
