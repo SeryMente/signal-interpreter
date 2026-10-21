@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-8ce4c682-aa7a-452a-8fcc-1bc12d7a06d0
-- Creado: 2026-10-21T19:37:02.708Z
+- Batch: batch-faf68864-7b3d-4281-96d9-4338ef306f72
+- Creado: 2026-10-21T19:37:33.647Z
 - Trigger: event-threshold
 - Extensión: 0.10.37
-- Eventos: 50
-- Errores: 0
+- Eventos: 51
+- Errores: 1
 - Warnings: 0
-- Secuencia: 1998 → 2047
+- Secuencia: 2048 → 2098
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 1403
 - Deltas de plataforma: 1401
@@ -15,23 +15,21 @@
 ## Categorías
 
 {
-  "RUNTIME": 48,
-  "PORTAL": 2
+  "RUNTIME": 50,
+  "PORTAL": 1
 }
 
 ## Acciones
 
 {
-  "CONNECT_BUTTON_FOUND": 2,
-  "SCREEN_MAP": 9,
-  "AUTO_ANSWER_READINESS": 25,
-  "INCOMING_DIALOG_CLOSED": 2,
-  "USER_INTERACTION": 2,
-  "PLATFORM_SCREENSHOT_CHANGED": 2,
   "PAGE_LIFECYCLE": 2,
   "PAGE_VISIBILITY_CHANGED": 2,
-  "INCOMING_DIALOG_DETECTED": 1,
+  "AUTO_ANSWER_READINESS": 28,
+  "INCOMING_DIALOG_DETECTED": 3,
+  "CONNECT_BUTTON_FOUND": 3,
+  "SCREEN_MAP": 8,
+  "INCOMING_DIALOG_CLOSED": 2,
   "NETWORK_ACTIVITY_WINDOW": 1,
-  "PERFORMANCE_HEARTBEAT": 1,
-  "PLATFORM_SURFACE_SNAPSHOT": 1
+  "PLATFORM_SCREENSHOT_CAPTURE_ERROR": 1,
+  "USER_INTERACTION": 1
 }
