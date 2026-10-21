@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-e9afebbe-d6d6-4e16-b1ee-7552de02ae8d",
-  "createdAt": "2026-10-21T23:07:34.455Z",
-  "trigger": "alarm",
+  "batchId": "batch-ba95feec-4f8c-422a-b59f-b1cfffad19ea",
+  "createdAt": "2026-10-21T23:08:07.694Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "96a7c93d-2bbc-48c2-b72b-4030878564c2",
-      "sequence": 4637,
-      "timestamp": "2026-10-21T23:07:12.264Z",
-      "ingestedAt": "2026-10-21T23:07:12.400Z",
+      "id": "e498bc50-cb59-4264-81a6-c31cf89271f0",
+      "sequence": 4638,
+      "timestamp": "2026-10-21T23:07:36.264Z",
+      "ingestedAt": "2026-10-21T23:07:36.412Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -18,9 +18,9 @@
       "host": "app.cloudinterpreter.com",
       "url": "https://app.cloudinterpreter.com/profile/<ID>/logs",
       "phase": "event",
-      "action": "PERFORMANCE_HEARTBEAT",
+      "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "0d8d0544-3268-4126-b2e6-ee8c5608e3bd",
+      "traceId": "e9a1073a-f3f7-4507-9fe2-f95e528b3c49",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +46,72 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 7698282,
+        "monotonicMs": 7722282,
+        "callId": null,
+        "pageLifecycleId": "782c38b9-646a-479a-8425-bbd826588d0b",
+        "sourceTabId": 220922917,
+        "sourceWindowId": 220922873,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz/logs"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "ready": false,
+        "availability": "offline",
+        "authorizedProfile": false,
+        "route": "/profile/<ID>/logs",
+        "exactUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz/logs",
+        "runtimeVersion": "0.10.37",
+        "reason": "heartbeat"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "2f0fa50c-87ba-431f-8576-fbe528ccde29",
+      "sequence": 4639,
+      "timestamp": "2026-10-21T23:07:42.265Z",
+      "ingestedAt": "2026-10-21T23:07:42.424Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "extensionVersion": "0.10.37",
+      "host": "app.cloudinterpreter.com",
+      "url": "https://app.cloudinterpreter.com/profile/<ID>/logs",
+      "phase": "event",
+      "action": "PERFORMANCE_HEARTBEAT",
+      "outcome": "observed",
+      "traceId": "7930ec0a-b423-4735-a07b-f644b6250059",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220922917,
+      "session": {
+        "sessionId": "fb7977a0-2e[PHONE]af-dac199a51207",
+        "pageLifecycleId": "782c38b9-646a-479a-8425-bbd826588d0b",
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "heartbeat",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/profile/<ID>/logs",
+        "visibility": "hidden",
+        "focused": false,
+        "online": true,
+        "monotonicMs": 7728283,
         "callId": null,
         "pageLifecycleId": "782c38b9-646a-479a-8425-bbd826588d0b",
         "sourceTabId": 220922917,
@@ -63,7 +128,7 @@
       "payload": {
         "reason": "heartbeat",
         "route": "/profile/<ID>/logs",
-        "uptimeMs": 7698282,
+        "uptimeMs": 7728283,
         "callId": null,
         "document": {
           "readyState": "complete",
@@ -93,8 +158,8 @@
           "saveData": false
         },
         "memory": {
-          "usedBytes": 25368790,
-          "totalBytes": 32840426,
+          "usedBytes": 20253944,
+          "totalBytes": 25393012,
           "limitBytes": 4395630592
         },
         "performance": {
@@ -130,22 +195,23 @@
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 4637,
-    "lastSequence": 4637,
-    "firstTimestamp": "2026-10-21T23:07:12.264Z",
-    "lastTimestamp": "2026-10-21T23:07:12.264Z",
+    "firstSequence": 4638,
+    "lastSequence": 4639,
+    "firstTimestamp": "2026-10-21T23:07:36.264Z",
+    "lastTimestamp": "2026-10-21T23:07:42.265Z",
     "actions": {
+      "AUTO_ANSWER_READINESS": 1,
       "PERFORMANCE_HEARTBEAT": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "RUNTIME": 2
     }
   }
 }
