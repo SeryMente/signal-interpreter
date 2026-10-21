@@ -1,38 +1,30 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-7c2aebc3-8c32-4131-83bc-ed11fa85c85f
-- Creado: 2026-10-21T19:32:35.360Z
-- Trigger: alarm
+- Batch: batch-b1465bf7-9f7a-477c-bdca-f72a1ca0c4a0
+- Creado: 2026-10-21T19:33:07.594Z
+- Trigger: event-window
 - Extensión: 0.10.37
-- Eventos: 36
+- Eventos: 25
 - Errores: 0
 - Warnings: 1
-- Secuencia: 1776 → 1811
+- Secuencia: 1812 → 1836
 - Identidades de plataforma: 14
-- Snapshots de plataforma: 1401
-- Deltas de plataforma: 1399
+- Snapshots de plataforma: 1402
+- Deltas de plataforma: 1400
 
 ## Categorías
 
 {
-  "RUNTIME": 33,
-  "PORTAL": 3
+  "RUNTIME": 23,
+  "PORTAL": 1,
+  "SESSION": 1
 }
 
 ## Acciones
 
 {
-  "INCOMING_RING_SIGNAL": 1,
-  "AUTO_ANSWER_READINESS": 19,
-  "AUTO_ANSWER_SKIPPED_UNVERIFIED_MODALITY": 1,
-  "SCREEN_MAP": 3,
-  "AUTO_ANSWER_BOOTSTRAP_INJECTED": 1,
-  "INCOMING_DIALOG_CLOSED": 1,
-  "PAGE_VISIBILITY_CHANGED": 2,
-  "PAGE_LIFECYCLE": 2,
-  "NETWORK_ACTIVITY_WINDOW": 2,
-  "PERFORMANCE_HEARTBEAT": 1,
-  "USER_INTERACTION": 1,
+  "AUTO_ANSWER_READINESS": 21,
+  "PERFORMANCE_HEARTBEAT": 2,
   "PLATFORM_SURFACE_SNAPSHOT": 1,
-  "PLATFORM_SCREENSHOT_CHANGED": 1
+  "MISSED_CALL_CLASSIFIED": 1
 }
