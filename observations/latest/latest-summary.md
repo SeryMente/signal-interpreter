@@ -1,38 +1,30 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-fc0a9c9c-d741-40a8-8434-c40b80469875
-- Creado: 2026-10-21T19:56:48.395Z
-- Trigger: critical
+- Batch: batch-0a2c5620-7412-4bb8-ab07-d054e397fb4c
+- Creado: 2026-10-21T19:57:43.609Z
+- Trigger: event-window
 - Extensión: 0.10.37
-- Eventos: 23
-- Errores: 1
-- Warnings: 0
-- Secuencia: 3054 → 3076
+- Eventos: 11
+- Errores: 0
+- Warnings: 1
+- Secuencia: 3118 → 3128
 - Identidades de plataforma: 14
-- Snapshots de plataforma: 1409
-- Deltas de plataforma: 1407
+- Snapshots de plataforma: 1410
+- Deltas de plataforma: 1408
 
 ## Categorías
 
 {
-  "RUNTIME": 22,
-  "PORTAL": 1
+  "RUNTIME": 9,
+  "SESSION": 1,
+  "CAPTION": 1
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 9,
+  "AUTO_ANSWER_READINESS": 8,
   "PERFORMANCE_HEARTBEAT": 1,
-  "AUTO_ANSWER_BOOTSTRAP_REQUESTED": 1,
-  "INCOMING_DIALOG_DETECTED": 1,
-  "CONNECT_BUTTON_FOUND": 1,
-  "SCREEN_MAP": 3,
-  "AUTO_ANSWER_BOOTSTRAP_INJECTED": 1,
-  "INCOMING_RING_SIGNAL": 1,
-  "PLATFORM_SURFACE_SNAPSHOT": 1,
-  "INCOMING_DIALOG_CLOSED": 1,
-  "PAGE_VISIBILITY_CHANGED": 1,
-  "PAGE_LIFECYCLE": 1,
-  "PLATFORM_SCREENSHOT_CAPTURE_ERROR": 1
+  "MISSED_CALL_CLASSIFIED": 1,
+  "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
 }
