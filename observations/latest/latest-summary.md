@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-bfa2a686-8769-49f3-b908-133759f589ed
-- Creado: 2026-10-21T19:50:34.443Z
+- Batch: batch-9c695c47-bed5-49fa-9040-996483252e61
+- Creado: 2026-10-21T19:51:05.834Z
 - Trigger: event-window
 - Extensión: 0.10.37
-- Eventos: 22
+- Eventos: 19
 - Errores: 0
-- Warnings: 1
-- Secuencia: 2805 → 2826
+- Warnings: 0
+- Secuencia: 2827 → 2845
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 1408
 - Deltas de plataforma: 1406
@@ -15,16 +15,14 @@
 ## Categorías
 
 {
-  "RUNTIME": 20,
-  "PORTAL": 1,
-  "SESSION": 1
+  "RUNTIME": 18,
+  "CAPTION": 1
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 19,
-  "NETWORK_ACTIVITY_WINDOW": 1,
-  "PERFORMANCE_HEARTBEAT": 1,
-  "MISSED_CALL_CLASSIFIED": 1
+  "AUTO_ANSWER_READINESS": 16,
+  "PERFORMANCE_HEARTBEAT": 2,
+  "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
 }
