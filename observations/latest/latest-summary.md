@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-7d239ad1-2782-4834-a669-f4cbcce60db1
-- Creado: 2026-10-21T01:32:12.243Z
-- Trigger: alarm
+- Batch: batch-c37ef6e3-26bd-49a5-8e2e-f819fb92142a
+- Creado: 2026-10-21T01:33:09.659Z
+- Trigger: event-window
 - Extensión: 0.10.36
-- Eventos: 26
+- Eventos: 6
 - Errores: 0
-- Warnings: 2
-- Secuencia: 3539 → 3564
+- Warnings: 1
+- Secuencia: 3565 → 3570
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 1353
 - Deltas de plataforma: 1351
@@ -15,25 +15,17 @@
 ## Categorías
 
 {
-  "RUNTIME": 13,
-  "CAPTION": 8,
-  "PORTAL": 4,
-  "SESSION": 1
+  "CAPTION": 4,
+  "RUNTIME": 2
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 8,
-  "LIVE_CAPTION_OVERLAY_HEALTH": 3,
-  "PERFORMANCE_HEARTBEAT": 3,
-  "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1,
-  "NETWORK_ACTIVITY_WINDOW": 2,
-  "CALL_OBSERVABILITY_EXPORT_COMPLETED": 1,
-  "PLATFORM_OFFICIAL_SYNC_REQUESTED": 1,
-  "PLATFORM_OFFICIAL_SYNC_COMPLETED": 1,
-  "PLATFORM_EARNINGS_RANGE_REQUESTED": 1,
-  "PLATFORM_EARNINGS_RANGE_COMPLETED": 1,
-  "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 2,
-  "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 2
+  "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
+  "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1,
+  "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1,
+  "AUTO_ANSWER_READINESS": 1,
+  "LIVE_CAPTION_OVERLAY_HEALTH": 1,
+  "PERFORMANCE_HEARTBEAT": 1
 }
