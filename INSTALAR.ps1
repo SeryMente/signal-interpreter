@@ -4,7 +4,7 @@ $ErrorActionPreference='Stop'
 $root=$PSScriptRoot
 $native=Join-Path $root 'extension\native'
 $manifest=Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $root 'manifest.json') | ConvertFrom-Json
-if($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.36'){throw 'Paquete inesperado; no se modificó el registro.'}
+if($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.37'){throw 'Paquete inesperado; no se modificó el registro.'}
 $sha=[Security.Cryptography.SHA256]::Create()
 try{$digest=$sha.ComputeHash([Convert]::FromBase64String([string]$manifest.key))}finally{$sha.Dispose()}
 $id=-join($digest[0..15] | ForEach-Object{[char](97+($_ -shr 4));[char](97+($_ -band 15))})

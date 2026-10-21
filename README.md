@@ -5,6 +5,12 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
+## Candidata 0.10.37 — NO liberada para uso ni transcripción validada
+
+La protección de contestación está en revisión y requiere aceptación Windows antes de sustituir una instalación activa. Arranca pausada; «Estoy disponible» necesita confirmación y un límite de inactividad elegido expresamente. Las opciones 1/3/5/10 minutos NO constituyen un valor predeterminado aprobado. Vídeo siempre manual; la contestación manual de la plataforma no se altera. El permiso Chrome `idle` consulta estado agregado de inactividad/bloqueo; no registra teclas, ratón, cámara o audio. Volver al equipo no rearma el automatismo. No se cuelga la llamada actual.
+
+Pruebas locales/sintéticas no certifican presencia humana ni bloqueo/suspensión en Windows. Es obligatorio verificar el recorrido real y los casos de suspensión corta sin bloqueo antes de liberar. Una pausa conservadora después de reiniciar el worker es deliberada. [Alcance y evidencia de la candidata](docs/versions/0.10.37-candidata.md).
+
 ## Uso portable — Windows + Chrome
 
 El **ZIP del repositorio** contiene la extensión cargable: `manifest.json` está en la **raíz** de la carpeta extraída, no dentro de `extension/`.
@@ -15,7 +21,7 @@ El **ZIP del repositorio** contiene la extensión cargable: `manifest.json` est�
 4. Enciende Live Caption, cierra las pestañas Cloud Interpreter y pausa otros audios. Abre **Probar** en el popup; pulsa **Iniciar prueba** y luego reproducir. También puedes usar **PROBAR.cmd** si el perfil cargado se identifica sin ambigüedad.
 5. Comprueba texto nativo y filas del panel, prueba abrir/cerrar la burbuja, y **Finalizar y exportar**. El fin del audio también solicita la descarga. Si cierras abruptamente la página, recupera **Descargar último informe** al reabrir.
 
-Muestra de voz generada localmente al instalar, o archivo local autorizado; no se sube audio/texto. El laboratorio no toma llamadas ni produce ingresos/exportación de producción. Una prueba local no certifica Cloud Interpreter; si Chrome destruye el árbol accesible al cerrar la burbuja, no se fabrica texto ni se captura audio como alternativa. Windows/Chrome deben tener Live Caption disponible; puede requerir sus propios modelos. MacOS y Linux no pertenecen al alcance del producto.
+Muestra de voz incluida y verificada por hash al instalar, o archivo local autorizado; no se sube audio/texto. El laboratorio no toma llamadas ni produce ingresos/exportación de producción. Una prueba local no certifica Cloud Interpreter; si Chrome destruye el árbol accesible al cerrar la burbuja, no se fabrica texto ni se captura audio como alternativa. Windows/Chrome deben tener Live Caption disponible; puede requerir sus propios modelos. MacOS y Linux no pertenecen al alcance del producto.
 
 En cada computadora registra/carga la carpeta para su usuario Windows. Sin rutas fijas, servicios ni runtime de desarrollo; las preferencias locales no se sincronizan automáticamente entre equipos. Canon completo y límites: [antecedente del sprint](docs/frentes/signal-interpreter/antecedentes/TRANSCRIPTION-SPRINT-CANONICAL.pre-1.9.md), §16.
 
@@ -39,7 +45,7 @@ Auto-Answer, OPI/VRI, Online/Offline, llamadas perdidas, cronómetros, ingresos,
 
 ## Carga local
 
-En chrome://extensions activa Developer mode y usa Load unpacked sobre la carpeta extension/.
+En chrome://extensions activa Developer mode y usa Load unpacked sobre la raíz que contiene manifest.json, nunca sobre extension/.
 
 Para el overlay de Live Caption, los artefactos adicionales viven íntegramente en extension/native/. El registro del host se realiza una vez por usuario con extension/native/register-caption-host.ps1.
 
@@ -47,7 +53,7 @@ No se instala un servicio de Windows, Scheduled Task, watchdog ni servidor local
 
 ## Pruebas
 
-La prueba de transcripción está en tools/groq-transcriber-tests.mjs y valida endpoint, modelo, parámetros de Groq, segmentos y redacción de credenciales.
+Pruebas de la ruta nativa: tools/live-caption-core-test.mjs, tools/live-caption-bridge-tests.mjs, tools/caption-lab-test.mjs y auditorías. Las pruebas Groq son históricas y no prueban la transcripción vigente.
 ## Persistencia automática de observabilidad
 
 La observabilidad de Signal Interpreter cubre dos planos: telemetría de la propia extensión y observación superficial de Cloud Interpreter.

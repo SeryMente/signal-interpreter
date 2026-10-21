@@ -1,0 +1,157 @@
+{
+  "schema": "signal-presence-candidate-evidence/v1",
+  "candidateVersion": "0.10.37",
+  "baseCommit": "787bae590861f1a720bffa9a1b951161ee803f5e",
+  "guardUnitChecks": 29,
+  "actualConnectFunctionChecks": 22,
+  "regressionSuites": [
+    {
+      "name": "presence-guard-test",
+      "exit": 0,
+      "seconds": 0.06
+    },
+    {
+      "name": "portable-root-test",
+      "exit": 0,
+      "seconds": 0.05
+    },
+    {
+      "name": "caption-lab-test",
+      "exit": 0,
+      "seconds": 0.06
+    },
+    {
+      "name": "live-caption-core-test",
+      "exit": 0,
+      "seconds": 0.09
+    },
+    {
+      "name": "live-caption-bridge-tests",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "name": "live-caption-static-audit",
+      "exit": 0,
+      "seconds": 0.05
+    },
+    {
+      "name": "overlay-activation-regression-test",
+      "exit": 0,
+      "seconds": 0.05
+    },
+    {
+      "name": "hotload-active-call-test",
+      "exit": 0,
+      "seconds": 0.07
+    },
+    {
+      "name": "cloud-login-bootstrap-test",
+      "exit": 0,
+      "seconds": 0.05
+    },
+    {
+      "name": "microphone-feedback-test",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "name": "observability-static-audit",
+      "exit": 0,
+      "seconds": 0.05
+    },
+    {
+      "name": "earnings-overlay-tests",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "name": "call-caption-runtime-test",
+      "exit": 0,
+      "seconds": 0.04
+    },
+    {
+      "name": "call-export-runtime-test",
+      "exit": 0,
+      "seconds": 0.07
+    }
+  ],
+  "chromiumRealDom": {
+    "suite": "presence-connect-browser",
+    "environment": "sandbox Chromium / real DOM / synthetic authorization",
+    "result": "PASS",
+    "cases": [
+      {
+        "test": "phone",
+        "clicks": 1
+      },
+      {
+        "test": "video",
+        "clicks": 0
+      },
+      {
+        "test": "unknown",
+        "clicks": 0
+      },
+      {
+        "test": "lock-before-grant",
+        "clicks": 0
+      },
+      {
+        "test": "call-started-before-grant",
+        "clicks": 0
+      },
+      {
+        "test": "duplicate-mutation",
+        "clicks": 1
+      },
+      {
+        "test": "hidden-button",
+        "clicks": 0
+      },
+      {
+        "test": "dialog-changed",
+        "clicks": 0
+      }
+    ],
+    "windowsAccepted": false,
+    "transcriptionAccepted": false
+  },
+  "windowsSafetyAccepted": false,
+  "transcriptionFixed": false,
+  "installedOnOperatorMachine": false,
+  "merged": false,
+  "limits": [
+    "Synthetic authorization is not OS presence proof.",
+    "Windows lock/idle, short unlocked sleep and stale-content-script upgrade must pass before release.",
+    "Native reader and binaries unchanged. No claim of fixed transcription.",
+    "No fixed inactivity number selected by operator. Default remains disarmed until explicit user selection."
+  ],
+  "operatorReportsNativeTranscriptionWorkingInOneCall": true,
+  "remainingTranscriptionIssue": "Local conservative span correction passes synthetic actual-overlay DOM; real Windows/repeatability and speaker-source identity remain unaccepted.",
+  "languageSpanTests": {
+    "suite": "caption-language-spans",
+    "checks": 46,
+    "result": "PASS",
+    "environment": "Node / synthetic nonclinical phrases",
+    "speakerDiarization": false,
+    "windowsAcceptance": false
+  },
+  "languageOverlayBrowser": {
+    "suite": "caption-language-browser",
+    "result": "PASS",
+    "environment": "sandbox Chromium / actual overlay and DOM / synthetic native messages",
+    "cases": [
+      "English-Spanish boundary",
+      "rolling English-Spanish-English without lost or duplicated text",
+      "Spanish numbers not assigned English",
+      "microphone/non-native source rejected",
+      "routing telemetry metadata only"
+    ],
+    "pageErrors": [],
+    "windowsNativeAcceptance": false,
+    "speakerDiarization": false
+  },
+  "languageCorrectionImplemented": true,
+  "rawTextPublished": false
+}

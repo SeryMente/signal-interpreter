@@ -37,9 +37,11 @@
 
       <section class="quick-controls" aria-label="Controles principales">
         <label class="control-row">
-          <span><strong>Auto-Answer</strong><small>Detector y respuesta automática</small></span>
+          <span><strong>Estoy disponible</strong><small>Automático solo para llamadas telefónicas · vídeo manual</small></span>
           <span class="switch"><input id="enabled" type="checkbox"><i></i></span>
         </label>
+        <label class="control-row"><span>Pausar al no usar teclado o ratón</span><select id="presenceIdleSeconds" aria-label="Límite de inactividad"><option value="">Elige un límite</option><option value="60">1 minuto</option><option value="180">3 minutos</option><option value="300">5 minutos</option><option value="600">10 minutos</option></select></label>
+        <p id="presenceStatus" role="status">Pausado · confirma disponibilidad</p>
         <label class="control-row">
           <span><strong>Observador</strong><small>Observabilidad de Cloud Interpreter</small></span>
           <span class="switch"><input id="observation" type="checkbox"><i></i></span>

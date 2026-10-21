@@ -1,0 +1,52 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const code=fs.readFileSync('extension/presence-guard.js','utf8');
+const PROFILE='https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz';
+let checks=0;
+function eq(a,b,label){assert.equal(a,b,label);checks++;}
+function harness(seed={}){
+ let now=100000,idle='active',hold=null;
+ const events=()=>({listeners:[],addListener(f){this.listeners.push(f)},emit(...args){this.listeners.forEach(f=>f(...args))}});
+ const data={effectifConfig:{autoAnswerEnabled:true,presenceIdleSeconds:60},...seed};
+ const changed=events(),stateChanged=events(),messages=events(),intervals=[];
+ const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},storage:{onChanged:changed,local:{get:async keys=>Object.fromEntries(keys.map(k=>[k,data[k]])),set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}}},tabs:{get:async()=>({url:PROFILE}),query:async()=>[]}};
+ const ctx={chrome,Date:class extends Date{static now(){return now}},setInterval:f=>intervals.push(f),setTimeout,clearTimeout,self:{}};
+ ctx.self=ctx;vm.createContext(ctx);vm.runInContext(code,ctx);
+ const sender={id:'id',frameId:0,url:PROFILE,tab:{id:7,url:PROFILE}};
+ return {guard:ctx.SignalPresenceGuard,chrome,data,sender,stateChanged,intervals,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
+}
+const h=harness();
+eq(h.guard.snapshot().armed,false,'upgraded stored enabled does not arm');
+eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,false,'unarmed blocks');
+eq((await h.guard.arm(150)).ok,false,'revoked 150s never implicit policy');
+eq((await h.message({type:'SIGNAL_PRESENCE_ARM',idleSeconds:60},h.sender)).ok,false,'web content cannot arm');
+eq((await h.guard.arm(60)).ok,true,'explicit valid selection arms');
+eq((await h.guard.authorize({modality:'VRI',requestId:'v'},h.sender)).ok,false,'video manual only');
+eq((await h.guard.authorize({modality:'UNKNOWN',requestId:'u'},h.sender)).ok,false,'unknown modality blocks');
+eq((await h.guard.authorize({modality:'OPI',requestId:'f'},{...h.sender,frameId:1})).ok,false,'subframe blocks');
+eq((await h.guard.authorize({modality:'OPI',requestId:'o'},{...h.sender,url:'https://example.org'})).ok,false,'wrong origin blocks');
+eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,true,'verified phone gets short-lived grant');
+eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,false,'same grant request cannot replay');
+eq((await h.guard.authorize({modality:'OPI',requestId:'other'}, {...h.sender,tab:{id:8,url:PROFILE}})).ok,false,'cross-tab reservation blocks double click');
+h.setIdle('idle');h.stateChanged.emit('idle');eq(h.guard.snapshot().armed,false,'OS idle revokes');
+h.setIdle('active');h.stateChanged.emit('active');eq(h.guard.snapshot().armed,false,'return never rearms');
+await h.guard.arm(60);h.stateChanged.emit('locked');h.stateChanged.emit('active');eq(h.guard.snapshot().armed,false,'unlock never rearms');
+await h.guard.arm(60);h.setNow(180001);eq((await h.guard.authorize({modality:'OPI',requestId:'s'},h.sender)).ok,false,'sleep/long observation gap revokes');
+await h.guard.arm(60);await h.chrome.storage.local.set({signalLabLock:true});eq(h.guard.snapshot().armed,false,'lab immediately revokes');
+eq((await h.guard.arm(60)).ok,false,'cannot arm in lab');
+await h.chrome.storage.local.set({signalLabLock:false});await h.guard.arm(60);await h.chrome.storage.local.set({effectifConfig:{autoAnswerEnabled:false,presenceIdleSeconds:60}});eq(h.guard.snapshot().armed,false,'config off revokes');
+h.data.effectifConfig={autoAnswerEnabled:true,presenceIdleSeconds:60};await h.guard.arm(60);
+let release;h.hold(cb=>release=cb);const pending=h.guard.authorize({modality:'OPI',requestId:'race'},h.sender);
+await new Promise(r=>setImmediate(r));h.guard.disarm('locked');release('active');eq((await pending).ok,false,'lock racing query invalidates grant');
+h.hold(null);await h.guard.arm(60);h.chrome.tabs.get=async()=>({url:PROFILE+'/call/private'});eq((await h.guard.authorize({modality:'OPI',requestId:'route'},h.sender)).ok,false,'live route revalidated');
+h.chrome.tabs.get=async()=>{throw Error('closed')};eq((await h.guard.authorize({modality:'OPI',requestId:'closed'},h.sender)).ok,false,'closed tab fails closed');
+eq(h.guard.snapshot().armed,false,'verification error revokes');
+const missing=harness();delete missing.chrome.idle;eq((await missing.guard.arm(60)).ok,false,'missing permission/API blocks');
+const err=harness();err.chrome.runtime.lastError={message:'not allowed'};eq((await err.guard.arm(60)).ok,false,'API error blocks');
+const restart=harness({signalPresenceGuard:{armed:true,generation:8}});eq(restart.guard.snapshot().armed,false,'stored arm never survives worker restart');
+const duringCall=harness();await duringCall.guard.arm(60);duringCall.chrome.tabs.query=async()=>[{id:9}];eq((await duringCall.guard.authorize({modality:'OPI',requestId:'during-call'},duringCall.sender)).ok,false,'a call in another tab blocks new automatic answer');
+const end=harness();await end.guard.arm(60);await end.message({type:'SIGNAL_PRESENCE_END'},end.sender);eq(end.guard.snapshot().armed,false,'ending work session revokes');
+// Current media is untouched: the module has no call/hangup/audio mutation surface.
+assert(!/\.click\(|hangup|\.pause\(|\.stop\(|getUserMedia|tabCapture/.test(code));checks++;
+console.log(JSON.stringify({suite:'presence-guard',environment:'Node VM / synthetic Chrome APIs',checks,result:'PASS',windowsAccepted:false}));
