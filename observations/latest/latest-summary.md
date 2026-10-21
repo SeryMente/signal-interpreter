@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-5a530eb9-79df-421a-901a-0002662ab66a
-- Creado: 2026-10-21T18:06:34.466Z
+- Batch: batch-cfda23dd-b983-477e-94e9-5ec582e96ca1
+- Creado: 2026-10-21T18:07:06.387Z
 - Trigger: alarm
 - Extensión: 0.10.37
 - Eventos: 2
 - Errores: 0
 - Warnings: 0
-- Secuencia: 677 → 678
+- Secuencia: 679 → 680
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 1391
 - Deltas de plataforma: 1389
@@ -21,6 +21,6 @@
 ## Acciones
 
 {
-  "PERFORMANCE_HEARTBEAT": 1,
-  "TELEMETRY_MAINTENANCE": 1
+  "AUTO_ANSWER_READINESS": 1,
+  "PERFORMANCE_HEARTBEAT": 1
 }
