@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-314ac2f5-68e0-46ba-8d9c-25fb4a0da856",
-  "createdAt": "2026-10-21T22:48:07.633Z",
+  "batchId": "batch-41af33d7-8e42-4af1-95e8-823681c2e35c",
+  "createdAt": "2026-10-21T22:49:07.618Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "ebdd4ef9-702d-4cd7-b780-d9c8366f3f52",
-      "sequence": 4580,
-      "timestamp": "2026-10-21T22:47:36.250Z",
-      "ingestedAt": "2026-10-21T22:47:36.375Z",
+      "id": "cfbf09c1-19e7-436d-8b94-4dcdc87c7909",
+      "sequence": 4584,
+      "timestamp": "2026-10-21T22:48:36.261Z",
+      "ingestedAt": "2026-10-21T22:48:36.388Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -20,7 +20,7 @@
       "phase": "event",
       "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "a5b561f7-b41c-4852-b8c2-519befdf9546",
+      "traceId": "e92c2f3e-33bf-44d8-b224-30783b7bddf8",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +46,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 6522296,
+        "monotonicMs": 6582304,
         "callId": null,
         "pageLifecycleId": "782c38b9-646a-479a-8425-bbd826588d0b",
         "sourceTabId": 220922917,
@@ -72,10 +72,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "06750794-4fc6-43b1-b6ec-676c7560c830",
-      "sequence": 4581,
-      "timestamp": "2026-10-21T22:47:36.250Z",
-      "ingestedAt": "2026-10-21T22:47:37.804Z",
+      "id": "04c21a0d-10f4-4bda-920e-16388e14fddd",
+      "sequence": 4585,
+      "timestamp": "2026-10-21T22:48:36.261Z",
+      "ingestedAt": "2026-10-21T22:48:37.769Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -85,7 +85,7 @@
       "phase": "event",
       "action": "PERFORMANCE_HEARTBEAT",
       "outcome": "observed",
-      "traceId": "bbc0e97d-4f91-45e6-886a-b4cc5ee3aace",
+      "traceId": "9db6d7d1-eb3c-4839-ad33-2439295ccb92",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -111,7 +111,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 6522296,
+        "monotonicMs": 6582305,
         "callId": null,
         "pageLifecycleId": "782c38b9-646a-479a-8425-bbd826588d0b",
         "sourceTabId": 220922917,
@@ -128,7 +128,7 @@
       "payload": {
         "reason": "heartbeat",
         "route": "/profile/<ID>/logs",
-        "uptimeMs": 6522296,
+        "uptimeMs": 6582304,
         "callId": null,
         "document": {
           "readyState": "complete",
@@ -158,8 +158,8 @@
           "saveData": false
         },
         "memory": {
-          "usedBytes": 20679110,
-          "totalBytes": 26282754,
+          "usedBytes": 26692098,
+          "totalBytes": 29945894,
           "limitBytes": 4395630592
         },
         "performance": {
@@ -195,28 +195,26 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "a0eb3ce9-a37c-4b9d-8b1d-2ccd92c5e6bc",
-      "sequence": 4582,
-      "timestamp": "2026-10-21T22:47:38.460Z",
-      "ingestedAt": "2026-10-21T22:47:39.422Z",
+      "id": "aaf30f0b-52a1-48fe-a768-6a223ab88f43",
+      "sequence": 4586,
+      "timestamp": "2026-10-21T22:48:48.587Z",
+      "ingestedAt": "2026-10-21T22:48:48.588Z",
       "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "category": "PORTAL",
+      "component": "webRequest",
       "extensionVersion": "0.10.37",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "phase": "event",
+      "action": "NETWORK_ACTIVITY_WINDOW",
       "outcome": "observed",
-      "traceId": "a8924f8e-2f36-49e5-90ae-1a495c31b6cd",
+      "traceId": "57012771-5f0e-49eb-992b-b1b1dace0352",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220922874,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.37",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -227,109 +225,50 @@
       "reasonCode": null,
       "error": null,
       "metrics": {},
-      "context": {
-        "route": "/chat",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220922874,
-        "sourceWindowId": 220922873,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://app.notion.com/chat"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/chat",
-        "extensionVersion": "0.10.37",
-        "previousRoute": "/chat",
-        "currentRoute": "/chat",
-        "activeCallRoute": false
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "7da157dc-fb95-41da-bcb3-c2a67c46e482",
-      "sequence": 4583,
-      "timestamp": "2026-10-21T22:47:39.417Z",
-      "ingestedAt": "2026-10-21T22:47:40.972Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
-      "outcome": "observed",
-      "traceId": "6e1e64fc-ac6f-4d66-8832-72954b92d7e2",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220922874,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/chat",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220922874,
-        "sourceWindowId": 220922873,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://app.notion.com/chat"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/chat",
-        "extensionVersion": "0.10.37",
-        "previousRoute": "/chat",
-        "currentRoute": "/chat",
-        "activeCallRoute": false
+        "windowSeconds": 15,
+        "endpointCount": 1,
+        "endpoints": [
+          {
+            "method": "POST",
+            "type": "xmlhttprequest",
+            "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
+            "statusCode": 200,
+            "count": 1,
+            "totalDurationMs": 305,
+            "maxDurationMs": 305,
+            "avgDurationMs": 305
+          }
+        ]
       }
     }
   ],
   "summary": {
-    "eventsTotal": 4,
+    "eventsTotal": 3,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 4580,
-    "lastSequence": 4583,
-    "firstTimestamp": "2026-10-21T22:47:36.250Z",
-    "lastTimestamp": "2026-10-21T22:47:39.417Z",
+    "firstSequence": 4584,
+    "lastSequence": 4586,
+    "firstTimestamp": "2026-10-21T22:48:36.261Z",
+    "lastTimestamp": "2026-10-21T22:48:48.587Z",
     "actions": {
       "AUTO_ANSWER_READINESS": 1,
       "PERFORMANCE_HEARTBEAT": 1,
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
+      "NETWORK_ACTIVITY_WINDOW": 1
     },
     "categories": {
       "RUNTIME": 2,
-      "CAPTION": 2
+      "PORTAL": 1
     }
   }
 }
