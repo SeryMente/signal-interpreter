@@ -3,6 +3,7 @@
 
   var HOST_NAME = "com.signalinterpreter.captionhost";
   var port = null;
+  var nativeEvidence = {readyObserved:false,schema:null,statusMessages:0,captionMessages:0,lastType:null,windowDetected:null,textReadActive:null,readerErrorObserved:false};
   var targetTabId = null;
   var targetCallId = null;
   var lastCaptionAt = 0;
@@ -77,7 +78,8 @@
       captionFresh: fresh,
       lastCaptionAgeMs: lastCaptionAt > 0 ? Math.max(0, Date.now() - lastCaptionAt) : null,
       reason: String(reason || "native-status").slice(0, 80),
-      error: raw.error ? String(raw.error).slice(0, 240) : null
+      error: raw.error ? String(raw.error).slice(0, 240) : null,
+      nativeEvidence: Object.assign({}, nativeEvidence)
     };
     var reasonChanged = currentStatus.reason !== status.reason;
     currentStatus = status;
@@ -98,13 +100,19 @@
     if (!message || typeof message !== "object") return;
     if (ownerPort && ownerPort !== port) return;
     lastMessageAt = Date.now();
+    nativeEvidence.lastType = String(message.type || "unknown").slice(0,40);
     if (message.type === "ready") {
+      nativeEvidence.schema = message.schema === "signal-caption-native/v1" ? message.schema : null;
+      nativeEvidence.readyObserved = nativeEvidence.schema !== null;
       notifyStatus({active:false,visible:false}, "native-connected", true); return;
     }
 
     if (message.type === "caption") {
       var text = String(message.text || "").trim();
       if (!text) return;
+      nativeEvidence.captionMessages += 1;
+      nativeEvidence.windowDetected = message.visible === true;
+      nativeEvidence.textReadActive = true;
       lastCaptionAt = Date.now();
       var caption = {
         text: text,
@@ -127,6 +135,10 @@
     }
 
     if (message.type === "status" || message.type === "heartbeat") {
+      nativeEvidence.statusMessages += 1;
+      nativeEvidence.windowDetected = message.visible === true;
+      nativeEvidence.textReadActive = message.active === true;
+      nativeEvidence.readerErrorObserved = nativeEvidence.readerErrorObserved || !!message.error;
       if (message.error) markError(message.error);
       if (message.type === "heartbeat" && connectionStartedAt > 0 &&
           Date.now() - connectionStartedAt >= 15000) reconnectAttempt = 0;
@@ -135,7 +147,7 @@
         active: message.active === true,
         visible: message.visible === true,
         error: message.error || null
-      }, message.active !== true ? (message.visible === true ? "native-window-without-text" : "native-text-not-exposed") : (isFresh(4500) ? "native-caption" : "native-caption-stale"));
+      }, message.error ? "native-reader-error" : message.active !== true ? (message.visible === true ? "native-window-without-text" : "native-candidate-not-found") : (isFresh(4500) ? "native-caption" : "native-caption-stale"));
     }
   }
 
@@ -196,6 +208,7 @@
   }
 
   function resetCallState() {
+    nativeEvidence = {readyObserved:false,schema:null,statusMessages:0,captionMessages:0,lastType:null,windowDetected:null,textReadActive:null,readerErrorObserved:false};
     lastCaptionAt = 0;
     lastNotifiedActive = false;
     lastNotifiedVisible = false;
@@ -253,6 +266,7 @@
   root.SignalCaptionBridge = {
     nativeErrorCode: nativeErrorCode,
     getContext: getContext,
+    getDiagnostics: function () { return Object.assign({}, nativeEvidence); },
     getStatus: function () { return Object.assign({}, currentStatus); },
     start: start,
     stop: stop,
