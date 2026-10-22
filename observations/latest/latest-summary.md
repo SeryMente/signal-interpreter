@@ -1,34 +1,37 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-f490ba8d-39cb-4c82-aa22-e2914639deaf
-- Creado: 2026-10-22T21:29:32.134Z
-- Trigger: event-threshold
+- Batch: batch-329e441d-9adf-4d2b-bcc8-ba49a2273444
+- Creado: 2026-10-22T21:30:01.787Z
+- Trigger: alarm
 - Extensión: 0.10.36
-- Eventos: 51
+- Eventos: 48
 - Errores: 0
 - Warnings: 0
-- Secuencia: 1837 → 1887
+- Secuencia: 1888 → 1935
 - Identidades de plataforma: 14
-- Snapshots de plataforma: 1554
-- Deltas de plataforma: 1534
+- Snapshots de plataforma: 1555
+- Deltas de plataforma: 1535
 
 ## Categorías
 
 {
-  "RUNTIME": 43,
-  "PORTAL": 4,
-  "CAPTION": 4
+  "RUNTIME": 45,
+  "CAPTION": 2,
+  "PORTAL": 1
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 33,
+  "AUTO_ANSWER_READINESS": 31,
   "PERFORMANCE_HEARTBEAT": 2,
-  "PLATFORM_SURFACE_SNAPSHOT": 2,
+  "LIVE_CAPTION_OVERLAY_HEALTH": 2,
+  "AUTO_ANSWER_BOOTSTRAP_REQUESTED": 1,
+  "SCREEN_MAP": 4,
+  "AUTO_ANSWER_BOOTSTRAP_INJECTED": 1,
+  "INCOMING_RING_SIGNAL": 1,
+  "PAGE_VISIBILITY_CHANGED": 1,
   "PAGE_LIFECYCLE": 3,
-  "PAGE_VISIBILITY_CHANGED": 3,
-  "PLATFORM_SCREENSHOT_CHANGED": 2,
-  "LIVE_CAPTION_OVERLAY_HEALTH": 4,
-  "NETWORK_ACTIVITY_WINDOW": 2
+  "PLATFORM_SCREENSHOT_CHANGED": 1,
+  "PLATFORM_SURFACE_SNAPSHOT": 1
 }
