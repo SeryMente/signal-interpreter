@@ -109,3 +109,7 @@ Para preparar solo el host de una carpeta staged, `tools/prepare-caption-device.
 ## Muestra incluida en el laboratorio · 0.10.36
 
 `INSTALAR.cmd` prepara y verifica automáticamente el audio incluido; ya no genera voz sintética ni depende de voces SAPI. `Probar` reproduce por defecto el segmento continuo **16:02–20:43.6 (281.6 s)** de la práctica de hernia aportada por el operador: médico/cliente, paciente LEP e interpretaciones inglés/español. No hace falta descargar YouTube, elegir un archivo ni instalar codecs o runtimes. La atribución y huella están en `extension/ui/sample.json`; el audio portátil está en `sample.ogg.b64` y se materializa como `sample.ogg` con PowerShell/.NET. El informe identifica `bundled-sample`, separado de `local-file`. La recepción nativa real sigue pendiente: reproducción de audio no equivale a subtítulos visibles.
+
+## Organización de frentes y recursos
+
+El OCP observado para este repositorio está en [`docs/frentes/signal-interpreter/`](docs/frentes/signal-interpreter/README.md). Se conserva esta ruta histórica, declarada por el propio frente; no se mueve a `frentes/` solo para uniformidad. El código, las capturas, los datos y las herramientas de producto siguen en sus áreas existentes y no se interpretan como frentes independientes solo por ser directorios o archivos numerosos.
