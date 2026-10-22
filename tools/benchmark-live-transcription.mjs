@@ -25,7 +25,12 @@ function score(ref, hyp) {
   while(i||j){ if(i&&j&&a[i-1]===b[j-1]&&d[i][j]===d[i-1][j-1]){i--;j--;}
     else if(i&&j&&d[i][j]===d[i-1][j-1]+1){s++;i--;j--;}
     else if(i&&d[i][j]===d[i-1][j]+1){del++;i--;} else {ins++;j--;} }
-  return {referenceWords:a.length,hypothesisWords:b.length,substitutions:s,deletions:del,insertions:ins,wer:a.length?(s+del+ins)/a.length:null,coverage:a.length?Math.max(0,(a.length-del-s)/a.length):null};
+  const ca=Array.from(String(ref||"").normalize("NFKC")), cb=Array.from(String(hyp||"").normalize("NFKC"));
+  const cd=Array.from({length:ca.length+1},()=>Array(cb.length+1).fill(0));
+  for(let x=0;x<=ca.length;x++)cd[x][0]=x;
+  for(let y=0;y<=cb.length;y++)cd[0][y]=y;
+  for(let x=1;x<=ca.length;x++)for(let y=1;y<=cb.length;y++)cd[x][y]=Math.min(cd[x-1][y]+1,cd[x][y-1]+1,cd[x-1][y-1]+(ca[x-1]===cb[y-1]?0:1));
+  return {referenceWords:a.length,hypothesisWords:b.length,substitutions:s,deletions:del,insertions:ins,wer:a.length?(s+del+ins)/a.length:null,coverage:a.length?Math.max(0,(a.length-del-s)/a.length):null,referenceCharacters:ca.length,cer:ca.length?cd[ca.length][cb.length]/ca.length:null};
 }
 function sha(buf){return crypto.createHash("sha256").update(buf).digest("hex");}
 function mime(f){return ({".wav":"audio/wav",".mp3":"audio/mpeg",".m4a":"audio/mp4",".mp4":"audio/mp4",".webm":"audio/webm",".ogg":"audio/ogg",".flac":"audio/flac"})[path.extname(f).toLowerCase()]||"application/octet-stream";}
