@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-2e485046-920e-41fd-a5ae-025e7a2dbec6",
-  "createdAt": "2026-10-22T19:43:23.456Z",
-  "trigger": "event-window",
+  "batchId": "batch-f60b71eb-a054-4a00-9091-e305ecafe55e",
+  "createdAt": "2026-10-22T19:44:03.394Z",
+  "trigger": "critical",
   "extensionVersion": "0.10.36",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "cdbaf00e-9ddb-4180-8fa0-319a61de689f",
-      "sequence": 340,
-      "timestamp": "2026-10-22T19:43:16.369Z",
-      "ingestedAt": "2026-10-22T19:43:16.369Z",
-      "level": "info",
-      "category": "PORTAL",
-      "component": "webRequest",
+      "id": "fca0bf62-9f2c-4eed-a70f-2e628c7b8c7a",
+      "sequence": 345,
+      "timestamp": "2026-10-22T19:44:02.047Z",
+      "ingestedAt": "2026-10-22T19:44:02.047Z",
+      "level": "warn",
+      "category": "RUNTIME",
+      "component": "background",
       "extensionVersion": "0.10.36",
       "host": "",
       "url": "",
-      "phase": "event",
-      "action": "NETWORK_ACTIVITY_WINDOW",
-      "outcome": "observed",
-      "traceId": "d72b607f-5af0-43e0-b700-0fcc259cb60d",
+      "phase": "error",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
+      "outcome": "error",
+      "traceId": "05499a75-582b-4a32-90d5-45eee44dd09e",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -35,7 +35,7 @@
       "expected": null,
       "observed": null,
       "reasonCode": null,
-      "error": null,
+      "error": "Error: No se pudo sincronizar silenciosamente: Error: Frame with ID 0 is showing error page",
       "metrics": {},
       "context": {},
       "privacy": {
@@ -44,70 +44,28 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "windowSeconds": 15,
-        "endpointCount": 4,
-        "endpoints": [
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/_next/data/bl7BG4EK_HJqcr6KmGzFa/en/profile/<ID>",
-            "statusCode": 502,
-            "count": 1,
-            "totalDurationMs": 26860,
-            "maxDurationMs": 26860,
-            "avgDurationMs": 26860
-          },
-          {
-            "method": "GET",
-            "type": "other",
-            "url": "https://app.cloudinterpreter.com/sdk/krisp/1.0.0/dist/krisp.processor.js",
-            "statusCode": 502,
-            "count": 1,
-            "totalDurationMs": 24669,
-            "maxDurationMs": 24669,
-            "avgDurationMs": 24669
-          },
-          {
-            "method": "GET",
-            "type": "main_frame",
-            "url": "https://app.cloudinterpreter.com/",
-            "statusCode": 502,
-            "count": 1,
-            "totalDurationMs": 22031,
-            "maxDurationMs": 22031,
-            "avgDurationMs": 22031
-          },
-          {
-            "method": "POST",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
-            "statusCode": 502,
-            "count": 1,
-            "totalDurationMs": 20888,
-            "maxDurationMs": 20888,
-            "avgDurationMs": 20888
-          }
-        ]
+        "trigger": "hourly",
+        "error": "Error: No se pudo sincronizar silenciosamente: Error: Frame with ID 0 is showing error page"
       }
     }
   ],
   "summary": {
     "eventsTotal": 1,
     "errors": 0,
-    "warnings": 0,
-    "critical": false,
+    "warnings": 1,
+    "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 340,
-    "lastSequence": 340,
-    "firstTimestamp": "2026-10-22T19:43:16.369Z",
-    "lastTimestamp": "2026-10-22T19:43:16.369Z",
+    "firstSequence": 345,
+    "lastSequence": 345,
+    "firstTimestamp": "2026-10-22T19:44:02.047Z",
+    "lastTimestamp": "2026-10-22T19:44:02.047Z",
     "actions": {
-      "NETWORK_ACTIVITY_WINDOW": 1
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
     },
     "categories": {
-      "PORTAL": 1
+      "RUNTIME": 1
     }
   }
 }
