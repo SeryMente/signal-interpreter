@@ -1,34 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-0a1c7caf-d952-4c0d-bbc9-72f240e4902f",
-  "createdAt": "2026-10-22T23:03:30.046Z",
+  "batchId": "batch-72e2ad9d-c726-4a49-9ed7-abced56aaaed",
+  "createdAt": "2026-10-22T23:06:10.727Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "8888bfe3-c15c-445f-b264-388027ef4154",
-      "sequence": 4989,
-      "timestamp": "2026-10-22T23:02:58.813Z",
-      "ingestedAt": "2026-10-22T23:02:58.914Z",
+      "id": "a5b9e601-bb1f-48cf-b5b1-263cd3fe612b",
+      "sequence": 4990,
+      "timestamp": "2026-10-22T23:05:39.760Z",
+      "ingestedAt": "2026-10-22T23:05:39.760Z",
       "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "category": "BILLING",
+      "component": "background",
       "extensionVersion": "0.10.37",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
-      "outcome": "observed",
-      "traceId": "d01d3f91-e5ed-4897-88aa-a0419f77e2d7",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
+      "outcome": "success",
+      "traceId": "d180940e-cd4d-49a6-b8aa-b7824fcdf362",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220922948,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.37",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -36,31 +34,21 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "alarm",
       "error": null,
       "metrics": {},
-      "context": {
-        "route": "/c/6ada959d-bab8-83e8-aefc-f360dc39c40a",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220922948,
-        "sourceWindowId": 220922873,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/c/6ada959d-bab8-83e8-aefc-f360dc39c40a"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/c/6ada959d-bab8-83e8-aefc-f360dc39c40a",
-        "extensionVersion": "0.10.37",
-        "previousRoute": "/",
-        "currentRoute": "/c/6ada959d-bab8-83e8-aefc-f360dc39c40a",
-        "activeCallRoute": false
+        "pair": "USD/MXN",
+        "rate": 18.715261,
+        "rateDate": "[PHONE]",
+        "source": "ExchangeRate.fun / hourly snapshot",
+        "reason": "alarm"
       }
     }
   ],
@@ -72,15 +60,15 @@
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 4989,
-    "lastSequence": 4989,
-    "firstTimestamp": "2026-10-22T23:02:58.813Z",
-    "lastTimestamp": "2026-10-22T23:02:58.813Z",
+    "firstSequence": 4990,
+    "lastSequence": 4990,
+    "firstTimestamp": "2026-10-22T23:05:39.760Z",
+    "lastTimestamp": "2026-10-22T23:05:39.760Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
+      "EXCHANGE_RATE_UPDATED": 1
     },
     "categories": {
-      "CAPTION": 1
+      "BILLING": 1
     }
   }
 }
