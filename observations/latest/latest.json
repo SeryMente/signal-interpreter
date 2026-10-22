@@ -1,34 +1,36 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-892380e3-1147-43a4-977e-9db9a61c7a7f",
-  "createdAt": "2026-10-22T21:10:34.772Z",
-  "trigger": "critical",
-  "extensionVersion": "0.10.37",
+  "batchId": "batch-7d90b309-aac5-48fc-9e88-179c47a43ed0",
+  "createdAt": "2026-10-22T21:10:02.329Z",
+  "trigger": "alarm",
+  "extensionVersion": "0.10.36",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "4e1d63e9-ac0d-409b-98e8-bc340629fdd1",
-      "sequence": 4837,
-      "timestamp": "2026-10-22T21:10:33.545Z",
-      "ingestedAt": "2026-10-22T21:10:33.546Z",
+      "id": "bc5647fc-af5d-42f3-94a2-7e1eea61118c",
+      "sequence": 1123,
+      "timestamp": "2026-10-22T21:09:41.479Z",
+      "ingestedAt": "2026-10-22T21:09:41.563Z",
       "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.37",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.36",
       "host": "",
       "url": "",
-      "phase": "started",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
-      "outcome": "success",
-      "traceId": "78aa7f0c-076f-4ff1-905e-605053108f81",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "5d03ed0d-d6f6-4ca2-b372-af41af68b6cd",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": null,
-      "session": {},
+      "tabId": 396050993,
+      "session": {
+        "callId": null
+      },
       "environment": {
-        "extensionVersion": "0.10.37",
+        "extensionVersion": "0.10.36",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
         "platform": "Win32"
       },
@@ -37,122 +39,297 @@
       "reasonCode": null,
       "error": null,
       "metrics": {},
-      "context": {},
+      "context": {
+        "route": "/SeryMente/metodologia/tree/main/gobernanza",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 396050993,
+        "sourceWindowId": 396050935,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://github.com/SeryMente/metodologia/tree/main/gobernanza"
+      },
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly"
+        "callId": null,
+        "route": "/SeryMente/metodologia/tree/main/gobernanza",
+        "extensionVersion": "0.10.36",
+        "previousRoute": "/SeryMente/metodologia",
+        "currentRoute": "/SeryMente/metodologia/tree/main/gobernanza",
+        "activeCallRoute": false
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "e03c1977-59e6-403c-925b-16a46b2770ba",
-      "sequence": 4838,
-      "timestamp": "2026-10-22T21:10:34.106Z",
-      "ingestedAt": "2026-10-22T21:10:34.106Z",
-      "level": "warn",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.37",
+      "id": "3c4affe5-6238-4c22-a662-5cef701bd113",
+      "sequence": 1124,
+      "timestamp": "2026-10-22T21:09:47.476Z",
+      "ingestedAt": "2026-10-22T21:09:47.538Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.36",
       "host": "",
       "url": "",
-      "phase": "error",
-      "action": "EARNINGS_SYNC_QUEUE_ERROR",
-      "outcome": "error",
-      "traceId": "38dcf05b-0f94-40d4-8e1a-3ec02e4a4196",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "81e58d25-67dc-4c74-aebd-57ecdfa70ab1",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": null,
-      "session": {},
+      "tabId": 396050993,
+      "session": {
+        "callId": null
+      },
       "environment": {
-        "extensionVersion": "0.10.37",
+        "extensionVersion": "0.10.36",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
         "platform": "Win32"
       },
       "expected": null,
       "observed": null,
       "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
+      "error": null,
       "metrics": {},
-      "context": {},
+      "context": {
+        "route": "/SeryMente/metodologia",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 396050993,
+        "sourceWindowId": 396050935,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://github.com/SeryMente/metodologia"
+      },
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "operation": "official-today",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
+        "callId": null,
+        "route": "/SeryMente/metodologia",
+        "extensionVersion": "0.10.36",
+        "previousRoute": "/SeryMente/metodologia/tree/main/gobernanza",
+        "currentRoute": "/SeryMente/metodologia",
+        "activeCallRoute": false
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "14a57476-2209-480a-93bf-1c1883dec8a8",
-      "sequence": 4839,
-      "timestamp": "2026-10-22T21:10:34.686Z",
-      "ingestedAt": "2026-10-22T21:10:34.686Z",
-      "level": "warn",
+      "id": "a93cb758-6682-4dc7-8db0-60f0607eee50",
+      "sequence": 1125,
+      "timestamp": "2026-10-22T21:09:52.276Z",
+      "ingestedAt": "2026-10-22T21:09:52.341Z",
+      "level": "info",
       "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "error",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
-      "outcome": "error",
-      "traceId": "6abf0b49-e167-450c-a153-8332c718a154",
+      "component": "content",
+      "extensionVersion": "0.10.36",
+      "host": "app.cloudinterpreter.com",
+      "url": "https://app.cloudinterpreter.com/profile/<ID>",
+      "phase": "event",
+      "action": "AUTO_ANSWER_READINESS",
+      "outcome": "observed",
+      "traceId": "0bcfb568-5852-48b4-bee3-69499852a0ab",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": null,
-      "session": {},
+      "tabId": 396050984,
+      "session": {
+        "sessionId": "81a889ba-206b-4c8a-be62-4435cc1a0863",
+        "pageLifecycleId": "d477d5b5-0f2c-40e0-80a4-bc1ce6f73b7d",
+        "callId": null
+      },
       "environment": {
-        "extensionVersion": "0.10.37",
+        "extensionVersion": "0.10.36",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
         "platform": "Win32"
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
+      "reasonCode": "heartbeat",
+      "error": null,
       "metrics": {},
-      "context": {},
+      "context": {
+        "route": "/profile/<ID>",
+        "visibility": "hidden",
+        "focused": false,
+        "online": true,
+        "monotonicMs": 3562597,
+        "callId": null,
+        "pageLifecycleId": "d477d5b5-0f2c-40e0-80a4-bc1ce6f73b7d",
+        "sourceTabId": 396050984,
+        "sourceWindowId": 396050935,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz"
+      },
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
+        "ready": true,
+        "availability": "online",
+        "authorizedProfile": true,
+        "route": "/profile/<ID>",
+        "exactUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz",
+        "runtimeVersion": "0.10.36",
+        "reason": "heartbeat"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "bc4fe310-c02c-49fb-8f43-7e0685d33271",
+      "sequence": 1126,
+      "timestamp": "2026-10-22T21:09:52.277Z",
+      "ingestedAt": "2026-10-22T21:09:52.842Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "extensionVersion": "0.10.36",
+      "host": "app.cloudinterpreter.com",
+      "url": "https://app.cloudinterpreter.com/profile/<ID>",
+      "phase": "event",
+      "action": "PERFORMANCE_HEARTBEAT",
+      "outcome": "observed",
+      "traceId": "fb743b02-4a50-4a2f-9781-aee235fbe87e",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 396050984,
+      "session": {
+        "sessionId": "81a889ba-206b-4c8a-be62-4435cc1a0863",
+        "pageLifecycleId": "d477d5b5-0f2c-40e0-80a4-bc1ce6f73b7d",
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.36",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "heartbeat",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/profile/<ID>",
+        "visibility": "hidden",
+        "focused": false,
+        "online": true,
+        "monotonicMs": 3562598,
+        "callId": null,
+        "pageLifecycleId": "d477d5b5-0f2c-40e0-80a4-bc1ce6f73b7d",
+        "sourceTabId": 396050984,
+        "sourceWindowId": 396050935,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "reason": "heartbeat",
+        "route": "/profile/<ID>",
+        "uptimeMs": 3562597,
+        "callId": null,
+        "document": {
+          "readyState": "complete",
+          "visibility": "hidden",
+          "focused": false,
+          "online": true,
+          "title": "My Profile - Cloud Interpreter",
+          "nodes": 519
+        },
+        "viewport": {
+          "width": 1920,
+          "height": 855,
+          "devicePixelRatio": 1
+        },
+        "navigation": {
+          "type": "navigate",
+          "durationMs": 6138,
+          "domInteractiveMs": 1212,
+          "domContentLoadedMs": 5456,
+          "loadMs": 6138,
+          "transferBytes": 14289
+        },
+        "connection": {
+          "effectiveType": "4g",
+          "downlinkMbps": 10,
+          "rttMs": 50,
+          "saveData": false
+        },
+        "memory": {
+          "usedBytes": 27027922,
+          "totalBytes": 32689786,
+          "limitBytes": 4395630592
+        },
+        "performance": {
+          "longTasks": 2,
+          "longTaskTotalMs": 4289,
+          "longestTaskMs": 4236,
+          "layoutShifts": 2,
+          "layoutShiftScore": 0.0008817137199853204
+        },
+        "mutations": {
+          "batches": 0,
+          "addedNodes": 0,
+          "removedNodes": 0,
+          "attributes": 0,
+          "textChanges": 0
+        },
+        "resources": {
+          "newResources": 0,
+          "byType": {},
+          "totalDurationMs": 0,
+          "transferBytes": 0,
+          "slowest": []
+        },
+        "controls": {
+          "buttons": 4,
+          "inputs": 7,
+          "selects": 0,
+          "dialogs": 0,
+          "media": 0,
+          "iframes": 0
+        }
       }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 4,
     "errors": 0,
-    "warnings": 2,
-    "critical": true,
+    "warnings": 0,
+    "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 4837,
-    "lastSequence": 4839,
-    "firstTimestamp": "2026-10-22T21:10:33.545Z",
-    "lastTimestamp": "2026-10-22T21:10:34.686Z",
+    "firstSequence": 1123,
+    "lastSequence": 1126,
+    "firstTimestamp": "2026-10-22T21:09:41.479Z",
+    "lastTimestamp": "2026-10-22T21:09:52.277Z",
     "actions": {
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
-      "EARNINGS_SYNC_QUEUE_ERROR": 1,
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2,
+      "AUTO_ANSWER_READINESS": 1,
+      "PERFORMANCE_HEARTBEAT": 1
     },
     "categories": {
-      "RUNTIME": 3
+      "CAPTION": 2,
+      "RUNTIME": 2
     }
   }
 }
