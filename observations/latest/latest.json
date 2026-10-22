@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-0431bba5-6b39-43bb-9bfd-dfff50fc2700",
-  "createdAt": "2026-10-22T20:38:02.328Z",
+  "batchId": "batch-327e819d-74df-4e2c-a88c-8798e2d03941",
+  "createdAt": "2026-10-22T20:39:02.334Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.36",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "26f2b49f-dc9c-40de-b59c-2da3eaf3993f",
-      "sequence": 628,
-      "timestamp": "2026-10-22T20:37:52.270Z",
-      "ingestedAt": "2026-10-22T20:37:52.335Z",
+      "id": "1d93938a-444a-4e11-9432-72fe14d36bf6",
+      "sequence": 630,
+      "timestamp": "2026-10-22T20:38:52.270Z",
+      "ingestedAt": "2026-10-22T20:38:52.335Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -20,7 +20,7 @@
       "phase": "event",
       "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "387c66e6-c978-4b02-96fe-cbea1ef66754",
+      "traceId": "1c292d12-ad03-4c07-aefc-715c2be89459",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +46,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 1642590,
+        "monotonicMs": 1702591,
         "callId": null,
         "pageLifecycleId": "d477d5b5-0f2c-40e0-80a4-bc1ce6f73b7d",
         "sourceTabId": 396050984,
@@ -72,10 +72,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "47193f9f-412c-4b37-8ec4-2784f85f87d7",
-      "sequence": 629,
-      "timestamp": "2026-10-22T20:37:52.270Z",
-      "ingestedAt": "2026-10-22T20:37:52.710Z",
+      "id": "ea412372-0726-4e18-a3cd-77d28dc00cb2",
+      "sequence": 631,
+      "timestamp": "2026-10-22T20:38:52.270Z",
+      "ingestedAt": "2026-10-22T20:38:52.735Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -85,7 +85,7 @@
       "phase": "event",
       "action": "PERFORMANCE_HEARTBEAT",
       "outcome": "observed",
-      "traceId": "61d6af6d-be2a-46c2-8424-8b8b7b15a451",
+      "traceId": "2fa3095f-9cfe-4ef6-a2b7-d87f56b154dd",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -111,7 +111,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 1642591,
+        "monotonicMs": 1702591,
         "callId": null,
         "pageLifecycleId": "d477d5b5-0f2c-40e0-80a4-bc1ce6f73b7d",
         "sourceTabId": 396050984,
@@ -128,7 +128,7 @@
       "payload": {
         "reason": "heartbeat",
         "route": "/profile/<ID>",
-        "uptimeMs": 1642591,
+        "uptimeMs": 1702591,
         "callId": null,
         "document": {
           "readyState": "complete",
@@ -158,8 +158,8 @@
           "saveData": false
         },
         "memory": {
-          "usedBytes": 22789662,
-          "totalBytes": 25945406,
+          "usedBytes": 22265673,
+          "totalBytes": 26217445,
           "limitBytes": 4395630592
         },
         "performance": {
@@ -192,26 +192,83 @@
           "iframes": 0
         }
       }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "df1de9f5-41fb-4914-b906-4f770ed995ec",
+      "sequence": 632,
+      "timestamp": "2026-10-22T20:39:01.387Z",
+      "ingestedAt": "2026-10-22T20:39:01.387Z",
+      "level": "info",
+      "category": "PORTAL",
+      "component": "webRequest",
+      "extensionVersion": "0.10.36",
+      "host": "",
+      "url": "",
+      "phase": "event",
+      "action": "NETWORK_ACTIVITY_WINDOW",
+      "outcome": "observed",
+      "traceId": "61f3e334-fc46-4c20-ac06-083d766294a9",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.36",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "windowSeconds": 15,
+        "endpointCount": 1,
+        "endpoints": [
+          {
+            "method": "POST",
+            "type": "xmlhttprequest",
+            "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
+            "statusCode": 200,
+            "count": 1,
+            "totalDurationMs": 141,
+            "maxDurationMs": 141,
+            "avgDurationMs": 141
+          }
+        ]
+      }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 3,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 628,
-    "lastSequence": 629,
-    "firstTimestamp": "2026-10-22T20:37:52.270Z",
-    "lastTimestamp": "2026-10-22T20:37:52.270Z",
+    "firstSequence": 630,
+    "lastSequence": 632,
+    "firstTimestamp": "2026-10-22T20:38:52.270Z",
+    "lastTimestamp": "2026-10-22T20:39:01.387Z",
     "actions": {
       "AUTO_ANSWER_READINESS": 1,
-      "PERFORMANCE_HEARTBEAT": 1
+      "PERFORMANCE_HEARTBEAT": 1,
+      "NETWORK_ACTIVITY_WINDOW": 1
     },
     "categories": {
-      "RUNTIME": 2
+      "RUNTIME": 2,
+      "PORTAL": 1
     }
   }
 }
