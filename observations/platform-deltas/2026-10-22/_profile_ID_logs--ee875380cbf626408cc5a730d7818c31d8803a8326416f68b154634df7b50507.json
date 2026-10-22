@@ -2,25 +2,144 @@
   "schema": "signal-interpreter-platform-delta/v1",
   "type": "changed",
   "identityKey": "https://app.cloudinterpreter.com|/profile/<ID>/logs|",
-  "fromSnapshotId": "snap-3a0786f2-1578-4222-b2b6-0d7c4b5b4ff4",
-  "toSnapshotId": "snap-cf5b2d45-0e3b-4103-8ac5-256d20fb8de2",
-  "fromHash": "7b427bba9767730ccab3c16ddd272b33848447f247bb5074072e1965879878ef",
+  "fromSnapshotId": "snap-4b5b1eca-17a4-43d0-8205-8d27b00d6640",
+  "toSnapshotId": "snap-f6d15dbb-70b5-4112-948e-991fe879d20d",
+  "fromHash": "2002ef95f80dd3b54cb03471682824425b9727b753ce09a99299fcd0e53aad4b",
   "toHash": "ee875380cbf626408cc5a730d7818c31d8803a8326416f68b154634df7b50507",
-  "capturedAt": "2026-10-22T21:29:56.270Z",
+  "capturedAt": "2026-10-22T21:31:54.786Z",
   "summary": {
     "added": 0,
-    "removed": 0,
-    "changed": 1,
+    "removed": 3,
+    "changed": 6,
     "sections": [
-      "page"
+      "page",
+      "dom",
+      "controls"
     ]
   },
   "changes": [
     {
       "kind": "changed",
-      "path": "page.visibility",
-      "before": "visible",
-      "after": "hidden"
+      "path": "page.nodeCount",
+      "before": 286,
+      "after": 275
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.button",
+      "before": 9,
+      "after": 8
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.div",
+      "before": 82,
+      "after": 77
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.path",
+      "before": 5,
+      "after": 3
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.span",
+      "before": 31,
+      "after": 30
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.svg",
+      "before": 4,
+      "after": 2
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div#__next>div:nth-child(1)>div:nth-child(4)>div:nth-child(1)>div:nth-child(1)|div]",
+      "value": {
+        "selector": "div#__next>div:nth-child(1)>div:nth-child(4)>div:nth-child(1)>div:nth-child(1)",
+        "tag": "div",
+        "attributes": {
+          "role": "alert"
+        },
+        "classes": [
+          "p-toast-message",
+          "p-toast-message-info",
+          "p-toast-message-enter",
+          "p-toast-message-enter-active"
+        ],
+        "text": "[TEXT:31:9d078229]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 1,
+        "textLength": 31,
+        "textFingerprint": "9d078229",
+        "computedStyle": {
+          "display": "block",
+          "position": "static",
+          "overflow": "visible",
+          "width": "400px",
+          "height": "76px",
+          "padding": "0px",
+          "margin": "0px 0px 16px",
+          "color": "rgb(111, 56, 183)",
+          "border": "0px none rgb(111, 56, 183)",
+          "opacity": "0.9694"
+        },
+        "bbox": {
+          "width": 400,
+          "height": 76
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div:nth-child(1)>div:nth-child(1)>div:nth-child(1)>div:nth-child(3)>button:nth-child(1)|button]",
+      "value": {
+        "selector": "div:nth-child(1)>div:nth-child(1)>div:nth-child(1)>div:nth-child(3)>button:nth-child(1)",
+        "tag": "button",
+        "attributes": {
+          "aria-label": "Close",
+          "type": "button"
+        },
+        "classes": [
+          "p-toast-icon-close",
+          "p-link"
+        ],
+        "text": "[TEXT:5:cd86acc3]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 1,
+        "textLength": 5,
+        "textFingerprint": "cd86acc3",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "32px",
+          "height": "32px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(111, 56, 183)",
+          "border": "0px none rgb(111, 56, 183)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 32,
+          "height": 32
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "controls.buttons[button||Close]",
+      "value": {
+        "tag": "button",
+        "role": "",
+        "label": "Close",
+        "disabled": false
+      }
     }
   ],
   "truncated": false
