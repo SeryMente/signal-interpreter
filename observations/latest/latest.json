@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-85d62d41-502d-4f02-b72c-7f0005494d0e",
-  "createdAt": "2026-10-22T02:48:39.339Z",
-  "trigger": "alarm",
-  "extensionVersion": "0.10.36",
+  "batchId": "batch-abd778be-9925-4707-9b57-21f585d3daf6",
+  "createdAt": "2026-10-22T03:05:40.726Z",
+  "trigger": "critical",
+  "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "538962fd-fb0c-4045-9131-8d557f731b6a",
-      "sequence": 5767,
-      "timestamp": "2026-10-22T02:48:21.465Z",
-      "ingestedAt": "2026-10-22T02:48:21.465Z",
-      "level": "info",
-      "category": "RUNTIME",
+      "id": "d0a7db16-b79b-4a80-b366-213f4939edb7",
+      "sequence": 4745,
+      "timestamp": "2026-10-22T03:05:40.175Z",
+      "ingestedAt": "2026-10-22T03:05:40.175Z",
+      "level": "warn",
+      "category": "BILLING",
       "component": "background",
-      "extensionVersion": "0.10.36",
+      "extensionVersion": "0.10.37",
       "host": "",
       "url": "",
-      "phase": "event",
-      "action": "PLATFORM_TELEMETRY_RECONCILED",
-      "outcome": "observed",
-      "traceId": "4a59fa9c-c445-4753-a85d-b7045caba4ca",
+      "phase": "error",
+      "action": "EXCHANGE_RATE_ERROR",
+      "outcome": "error",
+      "traceId": "9a424c5d-93b2-47fc-ba7f-cc68abfab201",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -28,14 +28,14 @@
       "tabId": null,
       "session": {},
       "environment": {
-        "extensionVersion": "0.10.36",
+        "extensionVersion": "0.10.37",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
         "platform": "Win32"
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
-      "error": null,
+      "reasonCode": "alarm",
+      "error": "Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy.",
       "metrics": {},
       "context": {},
       "privacy": {
@@ -44,176 +44,29 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "event:PLATFORM_SESSION_ENDED",
-        "tabCount": 1,
-        "authenticatedCount": 0,
-        "onlineCount": 0,
-        "callCount": 0,
-        "probeErrors": 1
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "9681e9da-0b1d-44bb-9360-8dceb315b842",
-      "sequence": 5768,
-      "timestamp": "2026-10-22T02:48:21.670Z",
-      "ingestedAt": "2026-10-22T02:48:21.670Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.36",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "PLATFORM_TELEMETRY_RECONCILED",
-      "outcome": "observed",
-      "traceId": "ed134dbf-d460-45fc-9982-404c69e3924b",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.36",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "tab-removed",
-        "tabCount": 0,
-        "authenticatedCount": 0,
-        "onlineCount": 0,
-        "callCount": 0,
-        "probeErrors": 0
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "52df2029-5084-4332-972a-85bd0b47bd32",
-      "sequence": 5769,
-      "timestamp": "2026-10-22T02:48:23.361Z",
-      "ingestedAt": "2026-10-22T02:48:23.361Z",
-      "level": "info",
-      "category": "PORTAL",
-      "component": "webRequest",
-      "extensionVersion": "0.10.36",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "NETWORK_ACTIVITY_WINDOW",
-      "outcome": "observed",
-      "traceId": "82c461e9-846d-4123-829e-5ed432499cec",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.36",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "windowSeconds": 15,
-        "endpointCount": 5,
-        "endpoints": [
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate",
-            "statusCode": 200,
-            "count": 15,
-            "totalDurationMs": 8219,
-            "maxDurationMs": 773,
-            "avgDurationMs": 548
-          },
-          {
-            "method": "POST",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
-            "statusCode": 200,
-            "count": 2,
-            "totalDurationMs": 735,
-            "maxDurationMs": 528,
-            "avgDurationMs": 368
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/user.getUserProfileInOrganisation",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 617,
-            "maxDurationMs": 617,
-            "avgDurationMs": 617
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/telecom.getClientTokens",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 606,
-            "maxDurationMs": 606,
-            "avgDurationMs": 606
-          },
-          {
-            "method": "GET",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/auth/session",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 524,
-            "maxDurationMs": 524,
-            "avgDurationMs": 524
-          }
-        ]
+        "pair": "USD/MXN",
+        "message": "Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy.",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 0,
-    "critical": false,
+    "warnings": 1,
+    "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 5767,
-    "lastSequence": 5769,
-    "firstTimestamp": "2026-10-22T02:48:21.465Z",
-    "lastTimestamp": "2026-10-22T02:48:23.361Z",
+    "firstSequence": 4745,
+    "lastSequence": 4745,
+    "firstTimestamp": "2026-10-22T03:05:40.175Z",
+    "lastTimestamp": "2026-10-22T03:05:40.175Z",
     "actions": {
-      "PLATFORM_TELEMETRY_RECONCILED": 2,
-      "NETWORK_ACTIVITY_WINDOW": 1
+      "EXCHANGE_RATE_ERROR": 1
     },
     "categories": {
-      "RUNTIME": 2,
-      "PORTAL": 1
+      "BILLING": 1
     }
   }
 }
