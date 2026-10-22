@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-a29a4f2a-3eb4-4c4c-92ba-4fdf3fa1b25c",
-  "createdAt": "2026-10-22T23:08:34.458Z",
-  "trigger": "alarm",
+  "batchId": "batch-7f5bc3c6-90c1-4931-9edd-ccdad29ec6c1",
+  "createdAt": "2026-10-22T23:10:37.453Z",
+  "trigger": "critical",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "4d9c0e28-8254-4215-b8cb-32ce80c91b85",
-      "sequence": 4992,
-      "timestamp": "2026-10-22T23:08:05.835Z",
-      "ingestedAt": "2026-10-22T23:08:06.009Z",
+      "id": "83622f4f-1c21-4a2b-9533-941142ebf154",
+      "sequence": 5007,
+      "timestamp": "2026-10-22T23:10:28.500Z",
+      "ingestedAt": "2026-10-22T23:10:28.638Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -18,14 +18,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "4dcbf022-723b-4ff6-8983-afe7d26a0bff",
+      "traceId": "c9a5ffa1-26d9-4bd5-a01c-3a5cacd373f8",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220922951,
+      "tabId": 220922953,
       "session": {
         "callId": null
       },
@@ -40,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/settings/personalization",
+        "route": "/sistema/ingreso",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220922951,
+        "sourceTabId": 220922953,
         "sourceWindowId": 220922873,
-        "observedTabStatus": "complete",
+        "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/settings/personalization"
+        "observedTabUrl": "https://khora-web.vercel.app/sistema/ingreso"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,34 +56,32 @@
       },
       "payload": {
         "callId": null,
-        "route": "/settings/personalization",
+        "route": "/sistema/ingreso",
         "extensionVersion": "0.10.37",
-        "previousRoute": "/c/6ada[PHONE]e8-bf2b-bf342c33c73e",
-        "currentRoute": "/settings/personalization",
-        "activeCallRoute": false
+        "hostRemoved": true
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "c8b7b3b9-7513-4a34-b3ad-7a7d9653080a",
-      "sequence": 4993,
-      "timestamp": "2026-10-22T23:08:09.706Z",
-      "ingestedAt": "2026-10-22T23:08:10.186Z",
-      "level": "info",
+      "id": "2e0bd705-be95-452d-a120-95ddc74678de",
+      "sequence": 5008,
+      "timestamp": "2026-10-22T23:10:29.932Z",
+      "ingestedAt": "2026-10-22T23:10:30.046Z",
+      "level": "warn",
       "category": "CAPTION",
       "component": "live-caption-overlay",
       "extensionVersion": "0.10.37",
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
-      "outcome": "observed",
-      "traceId": "dbce35ee-0f2f-4f7f-80b1-ad8007822472",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "92b39d25-f5ae-4bd0-b9b6-601e84043afe",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220922951,
+      "tabId": 220922953,
       "session": {
         "callId": null
       },
@@ -94,18 +92,18 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "page-not-allowed",
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/settings/personalization",
+        "route": "/sistema/ingreso",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220922951,
+        "sourceTabId": 220922953,
         "sourceWindowId": 220922873,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/settings/personalization"
+        "observedTabUrl": "https://khora-web.vercel.app/sistema/ingreso"
       },
       "privacy": {
         "rawTextStored": false,
@@ -114,19 +112,25 @@
       },
       "payload": {
         "callId": null,
-        "route": "/settings/personalization",
+        "route": "/sistema/ingreso",
         "extensionVersion": "0.10.37",
-        "previousRoute": "/settings/personalization",
-        "currentRoute": "/settings/personalization",
-        "activeCallRoute": false
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "4497e389-4a6a-46b8-948d-ab7ef4f2fee8",
-      "sequence": 4994,
-      "timestamp": "2026-10-22T23:08:12.699Z",
-      "ingestedAt": "2026-10-22T23:08:12.836Z",
+      "id": "529ba9b2-4847-4266-b3b6-4772845be5b1",
+      "sequence": 5009,
+      "timestamp": "2026-10-22T23:10:29.932Z",
+      "ingestedAt": "2026-10-22T23:10:31.628Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -134,14 +138,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "24580d80-2e4f-4c09-a7ed-e1118819bce9",
+      "traceId": "bd8f4def-307e-404b-9654-188ef0d7d36c",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220922951,
+      "tabId": 220922953,
       "session": {
         "callId": null
       },
@@ -156,14 +160,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/settings/personalization",
+        "route": "/sistema/ingreso",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220922951,
+        "sourceTabId": 220922953,
         "sourceWindowId": 220922873,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/settings/personalization"
+        "observedTabUrl": "https://khora-web.vercel.app/sistema/ingreso"
       },
       "privacy": {
         "rawTextStored": false,
@@ -172,37 +176,42 @@
       },
       "payload": {
         "callId": null,
-        "route": "/settings/personalization",
+        "route": "/sistema/ingreso",
         "extensionVersion": "0.10.37",
-        "previousRoute": "/settings/personalization",
-        "currentRoute": "/settings/personalization",
-        "activeCallRoute": false
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "e64bb807-7504-4d3f-881b-d875cbc0af6c",
-      "sequence": 4995,
-      "timestamp": "2026-10-22T23:08:15.558Z",
-      "ingestedAt": "2026-10-22T23:08:15.725Z",
+      "id": "637fbb3e-f8a7-4fa9-b682-0266ec99fa16",
+      "sequence": 5010,
+      "timestamp": "2026-10-22T23:10:33.627Z",
+      "ingestedAt": "2026-10-22T23:10:33.628Z",
       "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "category": "RUNTIME",
+      "component": "background",
       "extensionVersion": "0.10.37",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
-      "outcome": "observed",
-      "traceId": "1662e047-7d7b-4c4e-a38b-72a5e8382dea",
+      "phase": "started",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
+      "outcome": "success",
+      "traceId": "5894b215-f441-470c-89f5-897f08a06821",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220922951,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.37",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -213,48 +222,126 @@
       "reasonCode": null,
       "error": null,
       "metrics": {},
-      "context": {
-        "route": "/c/6ada[PHONE]e8-bf2b-bf342c33c73e",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220922951,
-        "sourceWindowId": 220922873,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/c/6ada[PHONE]e8-bf2b-bf342c33c73e"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/c/6ada[PHONE]e8-bf2b-bf342c33c73e",
+        "trigger": "hourly"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "72bea81c-8d9f-4ae9-826b-eb82655e3f67",
+      "sequence": 5011,
+      "timestamp": "2026-10-22T23:10:35.653Z",
+      "ingestedAt": "2026-10-22T23:10:35.654Z",
+      "level": "warn",
+      "category": "RUNTIME",
+      "component": "background",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "error",
+      "action": "EARNINGS_SYNC_QUEUE_ERROR",
+      "outcome": "error",
+      "traceId": "a52479f3-5408-463c-89b7-cd354c39a971",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
         "extensionVersion": "0.10.37",
-        "previousRoute": "/settings/personalization",
-        "currentRoute": "/c/6ada[PHONE]e8-bf2b-bf342c33c73e",
-        "activeCallRoute": false
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "operation": "official-today",
+        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "0e940bb7-fb22-49a2-a421-c775b2754ab8",
+      "sequence": 5012,
+      "timestamp": "2026-10-22T23:10:37.316Z",
+      "ingestedAt": "2026-10-22T23:10:37.316Z",
+      "level": "warn",
+      "category": "RUNTIME",
+      "component": "background",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "error",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
+      "outcome": "error",
+      "traceId": "5e526946-6756-4754-aae7-8072f926b40c",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "trigger": "hourly",
+        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
       }
     }
   ],
   "summary": {
-    "eventsTotal": 4,
+    "eventsTotal": 6,
     "errors": 0,
-    "warnings": 0,
-    "critical": false,
+    "warnings": 3,
+    "critical": true,
     "scopeRejected": 0,
-    "contextEvents": 0,
+    "contextEvents": 1,
     "invariantSignals": 0,
-    "firstSequence": 4992,
-    "lastSequence": 4995,
-    "firstTimestamp": "2026-10-22T23:08:05.835Z",
-    "lastTimestamp": "2026-10-22T23:08:15.558Z",
+    "firstSequence": 5007,
+    "lastSequence": 5012,
+    "firstTimestamp": "2026-10-22T23:10:28.500Z",
+    "lastTimestamp": "2026-10-22T23:10:37.316Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 4
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1,
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1,
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
+      "EARNINGS_SYNC_QUEUE_ERROR": 1,
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
     },
     "categories": {
-      "CAPTION": 4
+      "CAPTION": 3,
+      "RUNTIME": 3
     }
   }
 }
