@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-36e62bc2-ccd9-4aa9-abdd-a05bffe4d710",
-  "createdAt": "2026-10-22T20:16:02.340Z",
+  "batchId": "batch-8a8544e3-76d8-47ea-a4ad-f70c68a04a72",
+  "createdAt": "2026-10-22T20:17:02.344Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.36",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "6b025480-fba9-42a3-8074-85107ff8e5cf",
-      "sequence": 562,
-      "timestamp": "2026-10-22T20:15:52.260Z",
-      "ingestedAt": "2026-10-22T20:15:52.308Z",
+      "id": "28da154b-fed3-4175-9d82-5b9a350bf23a",
+      "sequence": 563,
+      "timestamp": "2026-10-22T20:16:52.259Z",
+      "ingestedAt": "2026-10-22T20:16:52.304Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -20,7 +20,7 @@
       "phase": "event",
       "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "b647b7d9-8bb0-4c21-806a-74733f175b1e",
+      "traceId": "94558def-6be9-4e35-bc70-3c0c274fe512",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +46,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 322581,
+        "monotonicMs": 382580,
         "callId": null,
         "pageLifecycleId": "d477d5b5-0f2c-40e0-80a4-bc1ce6f73b7d",
         "sourceTabId": 396050984,
@@ -69,25 +69,149 @@
         "runtimeVersion": "0.10.36",
         "reason": "heartbeat"
       }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "2bed7326-9bc7-412c-8c3d-0e516f2221c7",
+      "sequence": 564,
+      "timestamp": "2026-10-22T20:16:52.260Z",
+      "ingestedAt": "2026-10-22T20:16:52.569Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "extensionVersion": "0.10.36",
+      "host": "app.cloudinterpreter.com",
+      "url": "https://app.cloudinterpreter.com/profile/<ID>",
+      "phase": "event",
+      "action": "PERFORMANCE_HEARTBEAT",
+      "outcome": "observed",
+      "traceId": "7fb48566-3fc6-4e2f-bb42-666c4adf7e04",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 396050984,
+      "session": {
+        "sessionId": "81a889ba-206b-4c8a-be62-4435cc1a0863",
+        "pageLifecycleId": "d477d5b5-0f2c-40e0-80a4-bc1ce6f73b7d",
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.36",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "heartbeat",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/profile/<ID>",
+        "visibility": "hidden",
+        "focused": false,
+        "online": true,
+        "monotonicMs": 382580,
+        "callId": null,
+        "pageLifecycleId": "d477d5b5-0f2c-40e0-80a4-bc1ce6f73b7d",
+        "sourceTabId": 396050984,
+        "sourceWindowId": 396050935,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "reason": "heartbeat",
+        "route": "/profile/<ID>",
+        "uptimeMs": 382580,
+        "callId": null,
+        "document": {
+          "readyState": "complete",
+          "visibility": "hidden",
+          "focused": false,
+          "online": true,
+          "title": "My Profile - Cloud Interpreter",
+          "nodes": 517
+        },
+        "viewport": {
+          "width": 1920,
+          "height": 855,
+          "devicePixelRatio": 1
+        },
+        "navigation": {
+          "type": "navigate",
+          "durationMs": 6138,
+          "domInteractiveMs": 1212,
+          "domContentLoadedMs": 5456,
+          "loadMs": 6138,
+          "transferBytes": 14289
+        },
+        "connection": {
+          "effectiveType": "4g",
+          "downlinkMbps": 10,
+          "rttMs": 50,
+          "saveData": false
+        },
+        "memory": {
+          "usedBytes": 21387372,
+          "totalBytes": 24804348,
+          "limitBytes": 4395630592
+        },
+        "performance": {
+          "longTasks": 1,
+          "longTaskTotalMs": 4236,
+          "longestTaskMs": 4236,
+          "layoutShifts": 0,
+          "layoutShiftScore": 0
+        },
+        "mutations": {
+          "batches": 0,
+          "addedNodes": 0,
+          "removedNodes": 0,
+          "attributes": 0,
+          "textChanges": 0
+        },
+        "resources": {
+          "newResources": 0,
+          "byType": {},
+          "totalDurationMs": 0,
+          "transferBytes": 0,
+          "slowest": []
+        },
+        "controls": {
+          "buttons": 4,
+          "inputs": 11,
+          "selects": 0,
+          "dialogs": 0,
+          "media": 0,
+          "iframes": 0
+        }
+      }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 562,
-    "lastSequence": 562,
-    "firstTimestamp": "2026-10-22T20:15:52.260Z",
-    "lastTimestamp": "2026-10-22T20:15:52.260Z",
+    "firstSequence": 563,
+    "lastSequence": 564,
+    "firstTimestamp": "2026-10-22T20:16:52.259Z",
+    "lastTimestamp": "2026-10-22T20:16:52.260Z",
     "actions": {
-      "AUTO_ANSWER_READINESS": 1
+      "AUTO_ANSWER_READINESS": 1,
+      "PERFORMANCE_HEARTBEAT": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "RUNTIME": 2
     }
   }
 }
