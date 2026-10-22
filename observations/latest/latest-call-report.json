@@ -1,7 +1,7 @@
 {
   "schema": "signal-interpreter-call-report/v1",
-  "generatedAt": "2026-10-22T21:45:48.327Z",
-  "updatedAt": "2026-10-22T21:45:48.327Z",
+  "generatedAt": "2026-10-22T21:46:52.852Z",
+  "updatedAt": "2026-10-22T21:46:52.852Z",
   "callRef": "7b382bef3b0fb33ad99bbe8d",
   "status": "complete",
   "completeness": {
@@ -38,7 +38,7 @@
   },
   "time": {
     "firstObservedAt": "2026-10-22T21:33:05.735Z",
-    "lastObservedAt": "2026-10-22T21:44:04.652Z"
+    "lastObservedAt": "2026-10-22T21:45:29.035Z"
   },
   "call": {
     "callRef": "7b382bef3b0fb33ad99bbe8d",
@@ -79,9 +79,9 @@
     "confirmationFallbacks": 0
   },
   "correlation": {
-    "eventCount": 1201,
+    "eventCount": 1203,
     "firstSequence": 2150,
-    "lastSequence": 3477,
+    "lastSequence": 3643,
     "batches": [
       "batch-3cb17fea-3184-4cb9-bce8-803e7770073e",
       "batch-1db8d244-68b1-4f35-8527-00bd23ee8872",
@@ -132,7 +132,7 @@
   },
   "telemetry": {
     "eventLevels": {
-      "info": 1180,
+      "info": 1182,
       "warn": 21
     },
     "actions": {
@@ -176,7 +176,7 @@
       "CALL_START_MONTH_SYNC_COMPLETED": 1,
       "EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFIED": 11,
       "HOTLOAD_CALL_LEASE_HEARTBEAT": 12,
-      "CALL_OBSERVABILITY_EXPORT_COMPLETED": 1,
+      "CALL_OBSERVABILITY_EXPORT_COMPLETED": 3,
       "CALL_END_CLICKED": 1,
       "CALL_END_CONTROL_INTERACTION": 1,
       "CALL_RATING_STARS_CONFIRMED": 1,
@@ -189,7 +189,7 @@
     },
     "categories": {
       "RUNTIME": 1040,
-      "SESSION": 31,
+      "SESSION": 33,
       "PORTAL": 10,
       "CAPTION": 21,
       "LIVE_CAPTION": 98,
@@ -198,7 +198,7 @@
     "components": {
       "content": 1043,
       "live-caption-overlay": 21,
-      "background": 12,
+      "background": 14,
       "caption": 98,
       "offscreen": 1,
       "microphone": 12,
@@ -216,7 +216,7 @@
       "transcriptionAndCaptions": 99,
       "ratingAndClose": 8,
       "billingAndEarnings": 1,
-      "observabilityPipeline": 2,
+      "observabilityPipeline": 4,
       "microphoneAndSafety": 12,
       "runtimeAndRecovery": 12
     },
@@ -460,30 +460,6 @@
         "outcome": "degraded",
         "durationMs": null,
         "reasonCode": "spa-call-route-observed"
-      },
-      {
-        "at": "2026-10-22T21:37:11.922Z",
-        "sequence": 2535,
-        "action": "SIGNAL_CAPTION_NATIVE_STATUS",
-        "level": "info",
-        "category": "LIVE_CAPTION",
-        "component": "caption",
-        "phase": "event",
-        "outcome": "observed",
-        "durationMs": null,
-        "reasonCode": "native-host-not-registered"
-      },
-      {
-        "at": "2026-10-22T21:37:12.151Z",
-        "sequence": 3335,
-        "action": "AUTO_ANSWER_READINESS",
-        "level": "info",
-        "category": "RUNTIME",
-        "component": "content",
-        "phase": "event",
-        "outcome": "observed",
-        "durationMs": null,
-        "reasonCode": "availability"
       },
       {
         "at": "2026-10-22T21:37:12.151Z",
@@ -2140,37 +2116,33 @@
         "outcome": "observed",
         "durationMs": null,
         "reasonCode": null
+      },
+      {
+        "at": "2026-10-22T21:45:22.200Z",
+        "sequence": 3630,
+        "action": "CALL_OBSERVABILITY_EXPORT_COMPLETED",
+        "level": "info",
+        "category": "SESSION",
+        "component": "background",
+        "phase": "completed",
+        "outcome": "success",
+        "durationMs": null,
+        "reasonCode": "remote-accepted"
+      },
+      {
+        "at": "2026-10-22T21:45:29.035Z",
+        "sequence": 3643,
+        "action": "CALL_OBSERVABILITY_EXPORT_COMPLETED",
+        "level": "info",
+        "category": "SESSION",
+        "component": "background",
+        "phase": "completed",
+        "outcome": "success",
+        "durationMs": null,
+        "reasonCode": "remote-accepted"
       }
     ],
     "keySignals": [
-      {
-        "at": "2026-10-22T21:37:16.151Z",
-        "sequence": 3363,
-        "action": "AUTO_ANSWER_READINESS",
-        "level": "info",
-        "category": "RUNTIME",
-        "component": "content",
-        "phase": "event",
-        "outcome": "observed",
-        "durationMs": null,
-        "reasonCode": "availability",
-        "ready": false,
-        "authorizedProfile": false
-      },
-      {
-        "at": "2026-10-22T21:37:16.470Z",
-        "sequence": 3368,
-        "action": "AUTO_ANSWER_READINESS",
-        "level": "info",
-        "category": "RUNTIME",
-        "component": "content",
-        "phase": "event",
-        "outcome": "observed",
-        "durationMs": null,
-        "reasonCode": "availability",
-        "ready": false,
-        "authorizedProfile": false
-      },
       {
         "at": "2026-10-22T21:37:16.564Z",
         "sequence": 3373,
@@ -3558,10 +3530,42 @@
         "status": "unfinished",
         "modality": "OPI",
         "confirmation": "fallback-route"
+      },
+      {
+        "at": "2026-10-22T21:45:22.200Z",
+        "sequence": 3630,
+        "action": "CALL_OBSERVABILITY_EXPORT_COMPLETED",
+        "level": "info",
+        "category": "SESSION",
+        "component": "background",
+        "phase": "completed",
+        "outcome": "success",
+        "durationMs": null,
+        "reasonCode": "remote-accepted",
+        "automatic": true,
+        "targetSequence": 3395,
+        "ackedSequence": 3396,
+        "batches": 1
+      },
+      {
+        "at": "2026-10-22T21:45:29.035Z",
+        "sequence": 3643,
+        "action": "CALL_OBSERVABILITY_EXPORT_COMPLETED",
+        "level": "info",
+        "category": "SESSION",
+        "component": "background",
+        "phase": "completed",
+        "outcome": "success",
+        "durationMs": null,
+        "reasonCode": "remote-accepted",
+        "automatic": true,
+        "targetSequence": 3477,
+        "ackedSequence": 3478,
+        "batches": 1
       }
     ],
     "eventTimelineTruncated": true,
-    "sourceEventCount": 1201,
+    "sourceEventCount": 1203,
     "warnings": 21,
     "errors": 0,
     "failedOrBlockedEvents": 18,
