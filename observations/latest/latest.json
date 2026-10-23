@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-e22ec68a-7a7f-4ad1-a3e5-1c7fe172d256",
-  "createdAt": "2026-10-23T16:51:46.227Z",
+  "batchId": "batch-14a2c385-d7e4-4172-84c7-b3750eaad2a7",
+  "createdAt": "2026-10-23T16:53:38.641Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "f23842a3-eeaf-4914-8bf5-17c07d6de152",
-      "sequence": 5668,
-      "timestamp": "2026-10-23T16:51:15.327Z",
-      "ingestedAt": "2026-10-23T16:51:15.392Z",
+      "id": "557680c4-6365-41f8-89bc-d81da74908e1",
+      "sequence": 5670,
+      "timestamp": "2026-10-23T16:53:07.587Z",
+      "ingestedAt": "2026-10-23T16:53:07.654Z",
       "level": "warn",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -20,12 +20,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
       "outcome": "degraded",
-      "traceId": "d4d4a38f-8215-40d4-960c-84e15eccc4e2",
+      "traceId": "801412bf-0c6c-4265-9479-79dbb16c7ea3",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923274,
+      "tabId": 220923275,
       "session": {
         "callId": null
       },
@@ -40,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/c/6ada72ea-f2a4-83e8-81c8-b4fa6fdbc7ae",
+        "route": "/search",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220923274,
+        "sourceTabId": 220923275,
         "sourceWindowId": 220923191,
-        "observedTabStatus": "complete",
+        "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/c/6ada72ea-f2a4-83e8-81c8-b4fa6fdbc7ae"
+        "observedTabUrl": "https://www.google.com/search"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,7 +56,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/c/6ada72ea-f2a4-83e8-81c8-b4fa6fdbc7ae",
+        "route": "/search",
         "extensionVersion": "0.10.37",
         "visible": false,
         "reason": "page-not-allowed",
@@ -71,10 +71,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "0b7dd58a-a772-49be-b7c6-bf918780a1f0",
-      "sequence": 5669,
-      "timestamp": "2026-10-23T16:51:15.328Z",
-      "ingestedAt": "2026-10-23T16:51:16.315Z",
+      "id": "ef66687c-98af-421c-a036-862a06911d30",
+      "sequence": 5671,
+      "timestamp": "2026-10-23T16:53:07.587Z",
+      "ingestedAt": "2026-10-23T16:53:08.772Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -84,12 +84,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "c9c6b2d6-dd98-473b-9120-5b6afec08900",
+      "traceId": "bd7bfe64-d71c-41de-be4a-e9080e84fd5c",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923274,
+      "tabId": 220923275,
       "session": {
         "callId": null
       },
@@ -104,14 +104,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/c/6ada72ea-f2a4-83e8-81c8-b4fa6fdbc7ae",
+        "route": "/search",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220923274,
+        "sourceTabId": 220923275,
         "sourceWindowId": 220923191,
-        "observedTabStatus": "complete",
+        "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/c/6ada72ea-f2a4-83e8-81c8-b4fa6fdbc7ae"
+        "observedTabUrl": "https://www.google.com/search"
       },
       "privacy": {
         "rawTextStored": false,
@@ -120,7 +120,192 @@
       },
       "payload": {
         "callId": null,
-        "route": "/c/6ada72ea-f2a4-83e8-81c8-b4fa6fdbc7ae",
+        "route": "/search",
+        "extensionVersion": "0.10.37",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "882eed72-d41f-49dd-8f3c-b836fc03e76e",
+      "sequence": 5672,
+      "timestamp": "2026-10-23T16:53:09.677Z",
+      "ingestedAt": "2026-10-23T16:53:09.771Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "cfb22da8-aa5e-4fd5-a89a-25ca4c6b9c0d",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923275,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/search",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923275,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://www.torproject.org/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/search",
+        "extensionVersion": "0.10.37",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "d10d1b95-10f0-4ddf-b4d8-028eb206257b",
+      "sequence": 5673,
+      "timestamp": "2026-10-23T16:53:11.164Z",
+      "ingestedAt": "2026-10-23T16:53:11.280Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "e341bcf5-0044-4be0-9451-bb1eb573b9b1",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923275,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220923275,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": false,
+        "observedTabUrl": "https://www.torproject.org/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "11bccbd1-b628-4791-a02d-10c355dff2e2",
+      "sequence": 5674,
+      "timestamp": "2026-10-23T16:53:11.165Z",
+      "ingestedAt": "2026-10-23T16:53:12.636Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "aace3c4c-210e-4dfc-a340-d3bb67293591",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923275,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220923275,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": false,
+        "observedTabUrl": "https://www.torproject.org/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/",
         "extensionVersion": "0.10.37",
         "enabled": true,
         "scope": "source-only",
@@ -136,23 +321,24 @@
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 5,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 2,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 1,
+    "contextEvents": 2,
     "invariantSignals": 0,
-    "firstSequence": 5668,
-    "lastSequence": 5669,
-    "firstTimestamp": "2026-10-23T16:51:15.327Z",
-    "lastTimestamp": "2026-10-23T16:51:15.328Z",
+    "firstSequence": 5670,
+    "lastSequence": 5674,
+    "firstTimestamp": "2026-10-23T16:53:07.587Z",
+    "lastTimestamp": "2026-10-23T16:53:11.165Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 2,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 2,
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 5
     }
   }
 }
