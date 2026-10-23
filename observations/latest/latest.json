@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-74d73e7e-0ba9-41e6-b636-4e32362a4719",
-  "createdAt": "2026-10-22T23:46:50.505Z",
+  "batchId": "batch-4339628c-dec3-4a1e-9af5-d2dfc4572e29",
+  "createdAt": "2026-10-23T00:37:26.825Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "011b590b-d3b1-4944-affa-f07dc0e813a2",
-      "sequence": 5472,
-      "timestamp": "2026-10-22T23:46:42.558Z",
-      "ingestedAt": "2026-10-22T23:46:42.558Z",
+      "id": "916a1ef0-5381-479e-9927-0acc8dd0574d",
+      "sequence": 5474,
+      "timestamp": "2026-10-23T00:36:56.655Z",
+      "ingestedAt": "2026-10-23T00:36:56.656Z",
       "level": "info",
-      "category": "RUNTIME",
+      "category": "BILLING",
       "component": "background",
       "extensionVersion": "0.10.37",
       "host": "",
       "url": "",
-      "phase": "event",
-      "action": "PLATFORM_TELEMETRY_RECONCILED",
-      "outcome": "observed",
-      "traceId": "97ddae02-bf4e-4f0a-b2a4-cc7144f6146d",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
+      "outcome": "success",
+      "traceId": "33d9696f-eb0f-42e5-8dfc-8774c24d1527",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -34,7 +34,7 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "alarm",
       "error": null,
       "metrics": {},
       "context": {},
@@ -44,79 +44,31 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "event:PLATFORM_SESSION_ENDED",
-        "tabCount": 1,
-        "authenticatedCount": 0,
-        "onlineCount": 0,
-        "callCount": 0,
-        "probeErrors": 1
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "97814202-c8ef-400e-8af8-7e66cb572b83",
-      "sequence": 5473,
-      "timestamp": "2026-10-22T23:46:43.167Z",
-      "ingestedAt": "2026-10-22T23:46:43.167Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "PLATFORM_TELEMETRY_RECONCILED",
-      "outcome": "observed",
-      "traceId": "48612161-9b6f-4f54-b6bf-b33fc5cb6df2",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "tab-removed",
-        "tabCount": 0,
-        "authenticatedCount": 0,
-        "onlineCount": 0,
-        "callCount": 0,
-        "probeErrors": 0
+        "pair": "USD/MXN",
+        "rate": 18.683,
+        "rateDate": "[PHONE]",
+        "source": "Frankfurter / blended daily",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 5472,
-    "lastSequence": 5473,
-    "firstTimestamp": "2026-10-22T23:46:42.558Z",
-    "lastTimestamp": "2026-10-22T23:46:43.167Z",
+    "firstSequence": 5474,
+    "lastSequence": 5474,
+    "firstTimestamp": "2026-10-23T00:36:56.655Z",
+    "lastTimestamp": "2026-10-23T00:36:56.655Z",
     "actions": {
-      "PLATFORM_TELEMETRY_RECONCILED": 2
+      "EXCHANGE_RATE_UPDATED": 1
     },
     "categories": {
-      "RUNTIME": 2
+      "BILLING": 1
     }
   }
 }
