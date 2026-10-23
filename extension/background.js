@@ -2,6 +2,20 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
 (function () {
   "use strict";
 
+  // The extension action opens the dedicated workspace tab, not a cramped popup.
+  chrome.action.onClicked.addListener(function () {
+    var targetUrl = chrome.runtime.getURL("extension/ui/observability.html");
+    chrome.tabs.query({ url: targetUrl }, function (tabs) {
+      var existing = Array.isArray(tabs) ? tabs.find(function (tab) { return Number.isFinite(Number(tab.id)); }) : null;
+      if (existing && Number.isFinite(Number(existing.id))) {
+        chrome.tabs.update(existing.id, { active: true });
+        if (Number.isFinite(Number(existing.windowId))) chrome.windows.update(existing.windowId, { focused: true });
+        return;
+      }
+      chrome.tabs.create({ url: targetUrl, active: true });
+    });
+  });
+
   function extensionResource(path) { if(path === "manifest.json") return path; var m=chrome.runtime.getManifest(); return m.background && String(m.background.service_worker).indexOf("extension/")===0 ? "extension/"+path : path; }
   function runExtensionScript(spec) { if(spec.files) spec=Object.assign({},spec,{files:spec.files.map(extensionResource)}); return chrome.scripting.executeScript(spec); }
   var GROQ_MODEL = "whisper-large-v3-turbo";
