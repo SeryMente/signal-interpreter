@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-1470c29c-8bd4-43ae-8880-4f329cf46712",
-  "createdAt": "2026-10-23T16:11:30.522Z",
+  "batchId": "batch-a3116392-c1f5-49a5-9e2c-c30186ecf07d",
+  "createdAt": "2026-10-23T16:11:51.248Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "17f447a6-0e8c-4720-9310-0f13a8f92121",
-      "sequence": 5565,
-      "timestamp": "2026-10-23T16:11:00.093Z",
-      "ingestedAt": "2026-10-23T16:11:00.164Z",
+      "id": "672335bb-d9c5-45c6-9cd0-5ef7b9e0090f",
+      "sequence": 5568,
+      "timestamp": "2026-10-23T16:11:46.514Z",
+      "ingestedAt": "2026-10-23T16:11:46.580Z",
       "level": "warn",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -20,12 +20,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
       "outcome": "degraded",
-      "traceId": "db3df173-8554-4d16-b06d-4a8181f8b411",
+      "traceId": "2f610346-3130-48ed-9d28-46f87ffaf98e",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923246,
+      "tabId": 220923247,
       "session": {
         "callId": null
       },
@@ -40,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/",
+        "route": "/search",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220923246,
+        "sourceTabId": 220923247,
         "sourceWindowId": 220923191,
-        "observedTabStatus": "complete",
+        "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://www.messenger.com/"
+        "observedTabUrl": "https://www.google.com/search"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,7 +56,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/",
+        "route": "/search",
         "extensionVersion": "0.10.37",
         "visible": false,
         "reason": "page-not-allowed",
@@ -71,10 +71,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "851dfabc-7af6-4e01-9788-5c721ae736db",
-      "sequence": 5566,
-      "timestamp": "2026-10-23T16:11:00.093Z",
-      "ingestedAt": "2026-10-23T16:11:00.605Z",
+      "id": "6b763d39-cacc-4583-a55b-121fbe4f3370",
+      "sequence": 5569,
+      "timestamp": "2026-10-23T16:11:46.515Z",
+      "ingestedAt": "2026-10-23T16:11:47.039Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -84,12 +84,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "e97b4dee-bf50-41dd-a00d-7059d3ba273b",
+      "traceId": "cc0cc861-2551-486b-b761-b30d50d84eda",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923246,
+      "tabId": 220923247,
       "session": {
         "callId": null
       },
@@ -104,14 +104,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/",
+        "route": "/search",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220923246,
+        "sourceTabId": 220923247,
         "sourceWindowId": 220923191,
-        "observedTabStatus": "complete",
+        "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://www.messenger.com/"
+        "observedTabUrl": "https://www.google.com/search"
       },
       "privacy": {
         "rawTextStored": false,
@@ -120,7 +120,7 @@
       },
       "payload": {
         "callId": null,
-        "route": "/",
+        "route": "/search",
         "extensionVersion": "0.10.37",
         "enabled": true,
         "scope": "source-only",
@@ -133,85 +133,26 @@
         "contextSyncAttempts": 1,
         "contextSyncFailures": 0
       }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "7879d084-4ef6-4694-9df0-24646b28ab1a",
-      "sequence": 5567,
-      "timestamp": "2026-10-23T16:11:20.229Z",
-      "ingestedAt": "2026-10-23T16:11:20.290Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
-      "outcome": "observed",
-      "traceId": "8d07e069-6bd5-4246-be42-f1938e6d0d6c",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220923246,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/e2ee/t/[PHONE]",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220923246,
-        "sourceWindowId": 220923191,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://www.messenger.com/e2ee/t/[PHONE]"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/e2ee/t/[PHONE]",
-        "extensionVersion": "0.10.37",
-        "previousRoute": "/",
-        "currentRoute": "/e2ee/t/[PHONE]",
-        "activeCallRoute": false
-      }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 1,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 1,
     "invariantSignals": 0,
-    "firstSequence": 5565,
-    "lastSequence": 5567,
-    "firstTimestamp": "2026-10-23T16:11:00.093Z",
-    "lastTimestamp": "2026-10-23T16:11:20.229Z",
+    "firstSequence": 5568,
+    "lastSequence": 5569,
+    "firstTimestamp": "2026-10-23T16:11:46.514Z",
+    "lastTimestamp": "2026-10-23T16:11:46.515Z",
     "actions": {
       "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1,
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
     },
     "categories": {
-      "CAPTION": 3
+      "CAPTION": 2
     }
   }
 }
