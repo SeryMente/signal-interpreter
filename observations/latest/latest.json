@@ -1,80 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-2c0bf351-66a3-4772-87c1-b47c020f2418",
-  "createdAt": "2026-10-23T20:45:51.252Z",
-  "trigger": "alarm",
+  "batchId": "batch-73ee9e30-1247-4b78-8d40-0d03f4d1b7d3",
+  "createdAt": "2026-10-23T20:52:02.277Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "244093f5-5bb6-4201-97ef-7da1ee388b51",
-      "sequence": 6227,
-      "timestamp": "2026-10-23T20:45:20.926Z",
-      "ingestedAt": "2026-10-23T20:45:21.037Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "34c53931-c1af-4412-ab22-fd7aab385bd0",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220923402,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220923402,
-        "sourceWindowId": 220923191,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://www.facebook.com/"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/",
-        "extensionVersion": "0.10.37",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "5c9ce8cd-0863-4741-ba3b-ee913ee12f39",
-      "sequence": 6228,
-      "timestamp": "2026-10-23T20:45:20.926Z",
-      "ingestedAt": "2026-10-23T20:45:21.725Z",
+      "id": "bfab5413-e724-44ad-83f5-d986bdb5c44a",
+      "sequence": 6231,
+      "timestamp": "2026-10-23T20:51:58.924Z",
+      "ingestedAt": "2026-10-23T20:51:58.969Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -82,9 +18,9 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "7bd9d05a-b2af-4c99-8be9-d23e58dd28e2",
+      "traceId": "5145b6b0-4ed2-464f-9ee5-453cb10f5c73",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -104,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/",
+        "route": "/freewillman2",
         "visibility": "visible",
         "online": true,
         "sourceTabId": 220923402,
         "sourceWindowId": 220923191,
-        "observedTabStatus": "loading",
+        "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://www.facebook.com/"
+        "observedTabUrl": "https://www.facebook.com/freewillman2"
       },
       "privacy": {
         "rawTextStored": false,
@@ -120,39 +56,31 @@
       },
       "payload": {
         "callId": null,
-        "route": "/",
+        "route": "/freewillman2",
         "extensionVersion": "0.10.37",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": false,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
+        "previousRoute": "/",
+        "currentRoute": "/freewillman2",
+        "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 1,
+    "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 6227,
-    "lastSequence": 6228,
-    "firstTimestamp": "2026-10-23T20:45:20.926Z",
-    "lastTimestamp": "2026-10-23T20:45:20.926Z",
+    "firstSequence": 6231,
+    "lastSequence": 6231,
+    "firstTimestamp": "2026-10-23T20:51:58.924Z",
+    "lastTimestamp": "2026-10-23T20:51:58.924Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 1
     }
   }
 }
