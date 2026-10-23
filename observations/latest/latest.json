@@ -1,32 +1,34 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-4ad54213-8775-40d5-84be-485fc03ab19e",
-  "createdAt": "2026-10-23T15:41:50.699Z",
-  "trigger": "critical",
+  "batchId": "batch-a42777a3-09ca-48b0-a5b4-990257f4a874",
+  "createdAt": "2026-10-23T16:10:10.497Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "edd79d63-3f4c-4c04-bb94-9aeb52e81fb5",
-      "sequence": 5552,
-      "timestamp": "2026-10-23T15:41:50.276Z",
-      "ingestedAt": "2026-10-23T15:41:50.276Z",
+      "id": "f3e9619e-26cb-4289-8e6a-4478616b38c0",
+      "sequence": 5564,
+      "timestamp": "2026-10-23T16:09:53.122Z",
+      "ingestedAt": "2026-10-23T16:09:53.177Z",
       "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
       "extensionVersion": "0.10.37",
       "host": "",
       "url": "",
-      "phase": "started",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
-      "outcome": "success",
-      "traceId": "37a919ee-c4f0-44b4-8156-bd7ed7d76013",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "ad494bd0-8ccf-4904-82a1-b52dffb872e9",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": null,
-      "session": {},
+      "tabId": 220923192,
+      "session": {
+        "callId": null
+      },
       "environment": {
         "extensionVersion": "0.10.37",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -37,122 +39,48 @@
       "reasonCode": null,
       "error": null,
       "metrics": {},
-      "context": {},
+      "context": {
+        "route": "/auth",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923192,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://auth.ente.com/auth"
+      },
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "a64ea280-84ab-4eaa-b71b-5e7e9cd28cd6",
-      "sequence": 5553,
-      "timestamp": "2026-10-23T15:41:50.472Z",
-      "ingestedAt": "2026-10-23T15:41:50.472Z",
-      "level": "warn",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "error",
-      "action": "EARNINGS_SYNC_QUEUE_ERROR",
-      "outcome": "error",
-      "traceId": "7590beaf-8c25-4515-a7bd-83427e4e646e",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
+        "callId": null,
+        "route": "/auth",
         "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "operation": "official-today",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "f7bfb0c6-f7c7-4c3c-b21b-e79b11cd120c",
-      "sequence": 5554,
-      "timestamp": "2026-10-23T15:41:50.660Z",
-      "ingestedAt": "2026-10-23T15:41:50.660Z",
-      "level": "warn",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "error",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
-      "outcome": "error",
-      "traceId": "f89eb045-5856-4e71-ad80-4bb81e501ada",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "hourly",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
+        "previousRoute": "/credentials",
+        "currentRoute": "/auth",
+        "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 2,
-    "critical": true,
+    "warnings": 0,
+    "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 5552,
-    "lastSequence": 5554,
-    "firstTimestamp": "2026-10-23T15:41:50.276Z",
-    "lastTimestamp": "2026-10-23T15:41:50.660Z",
+    "firstSequence": 5564,
+    "lastSequence": 5564,
+    "firstTimestamp": "2026-10-23T16:09:53.122Z",
+    "lastTimestamp": "2026-10-23T16:09:53.122Z",
     "actions": {
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
-      "EARNINGS_SYNC_QUEUE_ERROR": 1,
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
     },
     "categories": {
-      "RUNTIME": 3
+      "CAPTION": 1
     }
   }
 }
