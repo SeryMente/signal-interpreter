@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-2850020a-f20f-472b-b44b-2d01059880af
-- Creado: 2026-10-23T16:33:29.188Z
+- Batch: batch-40f7a425-b3fc-4df5-a32d-f70a793f718e
+- Creado: 2026-10-23T16:35:25.619Z
 - Trigger: event-window
 - Extensión: 0.10.37
-- Eventos: 5
+- Eventos: 2
 - Errores: 0
-- Warnings: 2
-- Secuencia: 5600 → 5604
+- Warnings: 0
+- Secuencia: 5605 → 5606
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 1582
 - Deltas de plataforma: 1562
@@ -15,13 +15,11 @@
 ## Categorías
 
 {
-  "CAPTION": 5
+  "CAPTION": 2
 }
 
 ## Acciones
 
 {
-  "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 2,
-  "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 2,
-  "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
+  "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
 }
