@@ -1,34 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-283611bd-7167-4f73-8cd4-b5ab93a77b84",
-  "createdAt": "2026-10-23T21:12:24.193Z",
+  "batchId": "batch-210ab24d-b284-4b9d-8959-2671ba2c18d5",
+  "createdAt": "2026-10-23T21:37:26.610Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "66bfd15b-6fc2-4ed8-801f-f92d889fd65e",
-      "sequence": 6245,
-      "timestamp": "2026-10-23T21:11:53.923Z",
-      "ingestedAt": "2026-10-23T21:11:53.998Z",
+      "id": "ce0f130e-0a17-45fd-bc30-5089c40781c1",
+      "sequence": 6247,
+      "timestamp": "2026-10-23T21:36:56.483Z",
+      "ingestedAt": "2026-10-23T21:36:56.483Z",
       "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "category": "BILLING",
+      "component": "background",
       "extensionVersion": "0.10.37",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "e70904a7-872c-48a2-991c-3ed848c7d7b8",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
+      "outcome": "success",
+      "traceId": "eb912e70-afef-4c05-abb7-6880cbd8ad24",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923339,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.37",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -36,105 +34,41 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "alarm",
       "error": null,
       "metrics": {},
-      "context": {
-        "route": "/chat/d2bd14d1-4e0e-4e78-8c57-6a2e4af15ff7",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220923339,
-        "sourceWindowId": 220923191,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://claude.ai/chat/d2bd14d1-4e0e-4e78-8c57-6a2e4af15ff7"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/chat/d2bd14d1-4e0e-4e78-8c57-6a2e4af15ff7",
-        "extensionVersion": "0.10.37",
-        "hostRemoved": true
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "3432484b-4f00-4263-92ac-c52ceacc384e",
-      "sequence": 6246,
-      "timestamp": "2026-10-23T21:11:58.035Z",
-      "ingestedAt": "2026-10-23T21:11:58.180Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "248825ec-b183-4879-b709-7b6d7eddaaa0",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220923192,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/auth",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220923192,
-        "sourceWindowId": 220923191,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://auth.ente.com/auth"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/auth",
-        "extensionVersion": "0.10.37",
-        "hostRemoved": true
+        "pair": "USD/MXN",
+        "rate": 18.65861,
+        "rateDate": "[PHONE]",
+        "source": "ExchangeRate.fun / hourly snapshot",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 6245,
-    "lastSequence": 6246,
-    "firstTimestamp": "2026-10-23T21:11:53.923Z",
-    "lastTimestamp": "2026-10-23T21:11:58.035Z",
+    "firstSequence": 6247,
+    "lastSequence": 6247,
+    "firstTimestamp": "2026-10-23T21:36:56.483Z",
+    "lastTimestamp": "2026-10-23T21:36:56.483Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 2
+      "EXCHANGE_RATE_UPDATED": 1
     },
     "categories": {
-      "CAPTION": 2
+      "BILLING": 1
     }
   }
 }
