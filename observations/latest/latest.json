@@ -1,16 +1,386 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-ab001bc3-90d7-4870-a5cd-e09b04a1ce63",
-  "createdAt": "2026-10-23T19:35:39.785Z",
+  "batchId": "batch-7d59653f-92b2-4a44-91e9-777d0349eeca",
+  "createdAt": "2026-10-23T19:36:26.244Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "23f4573c-2c9c-479f-81d6-a9228b8007b2",
-      "sequence": 6009,
-      "timestamp": "2026-10-23T19:35:09.012Z",
-      "ingestedAt": "2026-10-23T19:35:09.078Z",
+      "id": "fceb77e6-bdb8-44ab-9b56-bc90cb14c23d",
+      "sequence": 6011,
+      "timestamp": "2026-10-23T19:35:55.646Z",
+      "ingestedAt": "2026-10-23T19:35:55.697Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "841336ad-f418-407c-8720-1cf875e3ca61",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923330,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/chat/2546f6e7-a32b-4c2c-97c1-cb668f18253e",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923330,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://claude.ai/chat/2546f6e7-a32b-4c2c-97c1-cb668f18253e#customize/connectors/yours/id/integration-github"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/chat/2546f6e7-a32b-4c2c-97c1-cb668f18253e",
+        "extensionVersion": "0.10.37",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "f1bdbf2f-3033-44b9-a3a6-2f96643ac7ff",
+      "sequence": 6012,
+      "timestamp": "2026-10-23T19:35:57.499Z",
+      "ingestedAt": "2026-10-23T19:35:57.563Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "b2144910-91bf-4f97-97c4-1f851cfe9545",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923330,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/connect/github/callback",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923330,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://claude.ai/connect/github/callback"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/connect/github/callback",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "9433c9ad-2f6a-46ab-9d2a-fab83450cf2b",
+      "sequence": 6013,
+      "timestamp": "2026-10-23T19:35:57.499Z",
+      "ingestedAt": "2026-10-23T19:35:58.235Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "36c2355c-2738-4756-9b56-29b2623a34a0",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923330,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/connect/github/callback",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923330,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://claude.ai/connect/github/callback"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/connect/github/callback",
+        "extensionVersion": "0.10.37",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "fab4077f-316a-4176-9d24-107687ea0ded",
+      "sequence": 6014,
+      "timestamp": "2026-10-23T19:36:04.994Z",
+      "ingestedAt": "2026-10-23T19:36:05.048Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "f8c44e22-f00d-46a3-b60b-40f4c6bb3a51",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923330,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/connect/github/callback",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220923330,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": false,
+        "observedTabUrl": "https://claude.ai/connect/github/callback"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/connect/github/callback",
+        "extensionVersion": "0.10.37",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "66eea476-35f3-4962-896b-034e17f980f3",
+      "sequence": 6015,
+      "timestamp": "2026-10-23T19:36:07.961Z",
+      "ingestedAt": "2026-10-23T19:36:08.006Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "21cc67aa-533c-4558-8708-cd1029230fae",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923330,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/chat/2546f6e7-a32b-4c2c-97c1-cb668f18253e",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220923330,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": false,
+        "observedTabUrl": "https://claude.ai/chat/2546f6e7-a32b-4c2c-97c1-cb668f18253e"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/chat/2546f6e7-a32b-4c2c-97c1-cb668f18253e",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "8d744a91-f20e-442e-90e3-1aa3ebb4ea6b",
+      "sequence": 6016,
+      "timestamp": "2026-10-23T19:36:07.961Z",
+      "ingestedAt": "2026-10-23T19:36:08.676Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "3a8996da-9414-40e6-849e-2f7775d4a2d2",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923330,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/chat/2546f6e7-a32b-4c2c-97c1-cb668f18253e",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220923330,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": false,
+        "observedTabUrl": "https://claude.ai/chat/2546f6e7-a32b-4c2c-97c1-cb668f18253e"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/chat/2546f6e7-a32b-4c2c-97c1-cb668f18253e",
+        "extensionVersion": "0.10.37",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b432ff4f-645b-434d-a460-73607ec8be60",
+      "sequence": 6017,
+      "timestamp": "2026-10-23T19:36:15.093Z",
+      "ingestedAt": "2026-10-23T19:36:15.178Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -20,7 +390,7 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "f8815246-e030-459b-abf7-e42d1e1e85ea",
+      "traceId": "eb6f91d8-d9d4-4dbb-b4a9-b8056648b78a",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -40,14 +410,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c5fad4-e524-800b-9df2-e03945ff570f",
+        "route": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c754a5-c2a0-800b-8765-ba27f7d7f2c3",
         "visibility": "visible",
         "online": true,
         "sourceTabId": 220923344,
         "sourceWindowId": 220923191,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c5fad4-e524-800b-9df2-e03945ff570f"
+        "observedTabUrl": "https://chatgpt.com/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c754a5-c2a0-800b-8765-ba27f7d7f2c3"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,19 +426,19 @@
       },
       "payload": {
         "callId": null,
-        "route": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c5fad4-e524-800b-9df2-e03945ff570f",
+        "route": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c754a5-c2a0-800b-8765-ba27f7d7f2c3",
         "extensionVersion": "0.10.37",
-        "previousRoute": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67cdee22-1ad4-800b-b65e-56d7e80157b6",
-        "currentRoute": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c5fad4-e524-800b-9df2-e03945ff570f",
+        "previousRoute": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c532d0-d300-800b-b653-dedbae00b149",
+        "currentRoute": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c754a5-c2a0-800b-8765-ba27f7d7f2c3",
         "activeCallRoute": false
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "5e3e6d94-4f68-4ca0-bd55-e9b30970bcc4",
-      "sequence": 6010,
-      "timestamp": "2026-10-23T19:35:13.722Z",
-      "ingestedAt": "2026-10-23T19:35:13.802Z",
+      "id": "e2b82f79-1d73-4a22-9ae5-fb109219e5b1",
+      "sequence": 6018,
+      "timestamp": "2026-10-23T19:36:23.248Z",
+      "ingestedAt": "2026-10-23T19:36:23.296Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -78,7 +448,7 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "d2c86eb3-c2af-4983-be42-15802f09a394",
+      "traceId": "0bc733a1-9fee-44d1-a414-3ceeb8a8c0d8",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -98,14 +468,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c532d0-d300-800b-b653-dedbae00b149",
+        "route": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c8b07c-e898-800b-94f4-1773b80edf57",
         "visibility": "visible",
         "online": true,
         "sourceTabId": 220923344,
         "sourceWindowId": 220923191,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c532d0-d300-800b-b653-dedbae00b149"
+        "observedTabUrl": "https://chatgpt.com/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c8b07c-e898-800b-94f4-1773b80edf57"
       },
       "privacy": {
         "rawTextStored": false,
@@ -114,31 +484,34 @@
       },
       "payload": {
         "callId": null,
-        "route": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c532d0-d300-800b-b653-dedbae00b149",
+        "route": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c8b07c-e898-800b-94f4-1773b80edf57",
         "extensionVersion": "0.10.37",
-        "previousRoute": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c5fad4-e524-800b-9df2-e03945ff570f",
-        "currentRoute": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c532d0-d300-800b-b653-dedbae00b149",
+        "previousRoute": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c754a5-c2a0-800b-8765-ba27f7d7f2c3",
+        "currentRoute": "/g/g-p-67c33dfc5d108191b870f60e8a4266de-abdf-ingles-practico/c/67c8b07c-e898-800b-94f4-1773b80edf57",
         "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 8,
     "errors": 0,
-    "warnings": 0,
+    "warnings": 2,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 0,
+    "contextEvents": 2,
     "invariantSignals": 0,
-    "firstSequence": 6009,
-    "lastSequence": 6010,
-    "firstTimestamp": "2026-10-23T19:35:09.012Z",
-    "lastTimestamp": "2026-10-23T19:35:13.722Z",
+    "firstSequence": 6011,
+    "lastSequence": 6018,
+    "firstTimestamp": "2026-10-23T19:35:55.646Z",
+    "lastTimestamp": "2026-10-23T19:36:23.248Z",
     "actions": {
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 2,
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 2,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 2,
       "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 8
     }
   }
 }
