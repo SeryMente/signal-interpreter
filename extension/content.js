@@ -17,7 +17,7 @@
   var PAGE_FAVICON_MARKER = "data-signal-interpreter-favicon";
   var config = {
     targetHost: "app.cloudinterpreter.com",
-    autoAnswerEnabled: true,
+    autoAnswerEnabled: false,
     soundEnabled: true,
     volume: 0.8,
     observationEnabled: true,
@@ -66,6 +66,10 @@
   var mutationAggregate = { batches: 0, addedNodes: 0, removedNodes: 0, attributes: 0, textChanges: 0 };
   var performanceAggregate = { longTasks: 0, longTaskTotalMs: 0, longestTaskMs: 0, layoutShifts: 0, layoutShiftScore: 0 };
   var clickedNodes = new WeakSet();
+  var pendingConnect = new WeakSet();
+  var presenceState = { armed: false };
+  chrome.storage.local.get(["signalPresenceGuard"]).then(function (stored) { presenceState = stored.signalPresenceGuard || { armed: false }; });
+  chrome.storage.onChanged.addListener(function (changes, area) { if (area === "local" && changes.signalPresenceGuard) presenceState = changes.signalPresenceGuard.newValue || { armed: false }; });
   var fingerprints = new Map();
   var route = location.pathname;
   var callRouteId = null;
@@ -450,7 +454,7 @@
       return;
     }
     var availability = readAvailabilityState();
-    var status = !config.autoAnswerEnabled ? "disabled" : availability === "online" ? "active" : availability === "offline" ? "offline" : "waiting";
+    var status = !config.autoAnswerEnabled || !presenceState.armed ? "disabled" : availability === "online" ? "active" : availability === "offline" ? "offline" : "waiting";
     var colors = { active: "#22c55e", waiting: "#f59e0b", offline: "#6b7280", disabled: "#ef4444" };
     var color = colors[status];
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#111827"/><circle cx="32" cy="32" r="22" fill="' + color + '"/><circle cx="32" cy="32" r="9" fill="#fff"/></svg>';
@@ -464,7 +468,7 @@
     existing.href = href;
   }
   function isAutoAnswerReady() {
-    return !labSafetyLock && isAuthorizedProfilePage() && config.autoAnswerEnabled && readAvailabilityState() === "online";
+    return !labSafetyLock && presenceState.armed === true && isAuthorizedProfilePage() && config.autoAnswerEnabled && readAvailabilityState() === "online";
   }
   function currentCallId() {
     var match = location.pathname.match(/^\/call\/([^/?#]+)\/?$/);
@@ -830,7 +834,7 @@
       lastIncomingSignature = "";
       return;
     }
-    dialogs.forEach(function (dialog) {
+    dialogs.forEach(async function (dialog) {
       var text = normalized(dialog.innerText || dialog.textContent);
       if (!/(?:is\s+requesting\s+interpretation|requesting\s+interpretation)/i.test(text)) return;
       var modality = /Audio interpreting/i.test(text) ? "OPI" :
@@ -865,7 +869,7 @@
         else emit("CONNECT_BUTTON_NOT_FOUND", { modality: modality, dialogButtons: dialog.querySelectorAll("button,[role='button']").length }, "warn");
         if (button && button.disabled) emit("CONNECT_BUTTON_DISABLED", { modality: modality }, "warn");
       }
-      if (labSafetyLock || !config.autoAnswerEnabled || !button || button.disabled || clickedNodes.has(button)) return;
+      if (labSafetyLock || !config.autoAnswerEnabled || !button || button.disabled || clickedNodes.has(button) || pendingConnect.has(button)) return;
       if (modality !== "OPI") {
         emit("AUTO_ANSWER_SKIPPED_UNVERIFIED_MODALITY", { modality: modality, decision: "blocked", reason: "only-verified-OPI" }, "warn");
         return;
@@ -873,6 +877,17 @@
       cleanupFingerprints();
       var fingerprint = safe(text) + "|" + modality;
       if (fingerprints.has(fingerprint)) return;
+      pendingConnect.add(button);
+      var grant;
+      try { grant = await chrome.runtime.sendMessage({ type: "SIGNAL_PRESENCE_AUTHORIZE", modality: modality, requestId: crypto.randomUUID() }); }
+      catch (_) { grant = null; }
+      pendingConnect.delete(button);
+      if (!grant || grant.ok !== true || Date.now() > grant.expiresAt ||
+          !presenceState.armed || grant.generation !== presenceState.generation ||
+          !isAutoAnswerReady() || currentCallId() || !button.isConnected || button.disabled || clickedNodes.has(button)) return;
+      // Re-read modality and dialog ownership after asynchronous authorization.
+      var currentText = normalized(dialog.innerText || dialog.textContent);
+      if (!visibleElement(button) || !dialog.contains(button) || !/Audio interpreting/i.test(currentText) || /Video interpreting/i.test(currentText)) return;
       emit("AUTO_ANSWER_ELIGIBLE", {
         modality: modality, decision: "click-connect",
         buttonLabel: safe(button.getAttribute("aria-label") || button.textContent).slice(0, 120)
@@ -923,7 +938,7 @@
   }
   function emitAutoAnswerReadiness(reason) {
     var availability = readAvailabilityState();
-    var ready = isAuthorizedProfilePage() && config.autoAnswerEnabled && availability === "online";
+    var ready = !labSafetyLock && presenceState.armed === true && isAuthorizedProfilePage() && config.autoAnswerEnabled && availability === "online";
     emit("AUTO_ANSWER_READINESS", {
       ready: ready,
       availability: availability,
@@ -948,6 +963,7 @@
     emitAutoAnswerReadiness("availability");
     if (next !== "unknown" && next !== lastAvailability) {
       lastAvailability = next;
+      if (next === "offline") chrome.runtime.sendMessage({ type: "SIGNAL_PRESENCE_END" }).catch(function () {});
       emit("AVAILABILITY_STATE", { state: next });
     }
     return next;

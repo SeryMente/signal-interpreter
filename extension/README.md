@@ -2,6 +2,12 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
+## Candidata 0.10.37 — NO liberada para uso ni transcripción validada
+
+La protección de contestación está en revisión y requiere aceptación Windows antes de sustituir una instalación activa. Arranca pausada; «Estoy disponible» necesita confirmación y un límite de inactividad elegido expresamente. Las opciones 1/3/5/10 minutos NO constituyen un valor predeterminado aprobado. Vídeo siempre manual; la contestación manual de la plataforma no se altera. El permiso Chrome `idle` consulta estado agregado de inactividad/bloqueo; no registra teclas, ratón, cámara o audio. Volver al equipo no rearma el automatismo. No se cuelga la llamada actual.
+
+Pruebas locales/sintéticas no certifican presencia humana ni bloqueo/suspensión en Windows. Es obligatorio verificar el recorrido real y los casos de suspensión corta sin bloqueo antes de liberar. Una pausa conservadora después de reiniciar el worker es deliberada. [Alcance y evidencia de la candidata](../docs/versions/0.10.37-candidata.md).
+
 ## Uso portable — Windows + Chrome
 
 El **ZIP del repositorio** contiene la extensión cargable: `manifest.json` está en la **raíz** de la carpeta extraída, no dentro de `extension/`.
@@ -12,7 +18,7 @@ El **ZIP del repositorio** contiene la extensión cargable: `manifest.json` est�
 4. Enciende Live Caption, cierra las pestañas Cloud Interpreter y pausa otros audios. Abre **Probar** en el popup; pulsa **Iniciar prueba** y luego reproducir. También puedes usar **PROBAR.cmd** si el perfil cargado se identifica sin ambigüedad.
 5. Comprueba texto nativo y filas del panel, prueba abrir/cerrar la burbuja, y **Finalizar y exportar**. El fin del audio también solicita la descarga. Si cierras abruptamente la página, recupera **Descargar último informe** al reabrir.
 
-Muestra de voz generada localmente al instalar, o archivo local autorizado; no se sube audio/texto. El laboratorio no toma llamadas ni produce ingresos/exportación de producción. Una prueba local no certifica Cloud Interpreter; si Chrome destruye el árbol accesible al cerrar la burbuja, no se fabrica texto ni se captura audio como alternativa. Windows/Chrome deben tener Live Caption disponible; puede requerir sus propios modelos. MacOS y Linux no pertenecen al alcance del producto.
+Muestra de voz incluida y verificada por hash al instalar, o archivo local autorizado; no se sube audio/texto. El laboratorio no toma llamadas ni produce ingresos/exportación de producción. Una prueba local no certifica Cloud Interpreter; si Chrome destruye el árbol accesible al cerrar la burbuja, no se fabrica texto ni se captura audio como alternativa. Windows/Chrome deben tener Live Caption disponible; puede requerir sus propios modelos. MacOS y Linux no pertenecen al alcance del producto.
 
 En cada computadora registra/carga la carpeta para su usuario Windows. Sin rutas fijas, servicios ni runtime de desarrollo; las preferencias locales no se sincronizan automáticamente entre equipos. Canon completo y límites: [TRANSCRIPTION-SPRINT-CANONICAL.md](../docs/TRANSCRIPTION-SPRINT-CANONICAL.md), §16.
 
@@ -36,7 +42,7 @@ Auto-Answer, OPI/VRI, Online/Offline, llamadas perdidas, cronómetros, ingresos,
 
 ## Carga local
 
-En el checkout del repositorio se selecciona extension/. En el ZIP distribuido se selecciona su raíz, que contiene manifest.json. No seleccionar la carpeta padre ni native/.
+Tanto en el checkout como en el ZIP distribuido se selecciona la raíz que contiene manifest.json. No seleccionar extension/, la carpeta padre ni native/.
 
 La fuente nativa exige preparar el host para el mismo usuario Windows que Chrome: PREPARE.cmd en el paquete verifica identidad, hashes, registro HKCU y protocolo. No reinicia ni navega Chrome. Preparar no equivale a activar ni verificar una llamada real; la prueba en PC-8 continúa NO VERIFICADA si el dispositivo no responde.
 
@@ -53,9 +59,9 @@ Pruebas vigentes: tools/call-caption-runtime-test.mjs, live-caption-bridge-tests
 
 ## Control de Auto-Answer por perfil y disponibilidad
 
-**Versión vigente: 0.10.34; controles de Auto-Answer conservados.**
+**0.10.37 es candidata no liberada. El estado operativo de aceptación se consulta en el núcleo canónico.**
 
-En cada ciclo de modificación de la extensión, este README debe leerse antes de editar y la versión de `extension/manifest.json` debe incrementarse.
+En cada ciclo de modificación de la extensión, este README debe leerse antes de editar y la versión de `manifest.json` en la raíz debe incrementarse.
 
 Auto-Answer solo puede ejecutar **Connect** cuando se cumplen simultáneamente estas condiciones:
 

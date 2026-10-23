@@ -5,7 +5,7 @@ $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $manifestFile = Join-Path $root 'manifest.json'
 if (-not (Test-Path -LiteralPath $manifestFile)) { throw 'Extension manifest missing; no changes applied.' }
 $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestFile | ConvertFrom-Json
-if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.36') { throw 'Expected Signal Interpreter 0.10.36; no changes applied.' }
+if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.37') { throw 'Expected Signal Interpreter 0.10.37; no changes applied.' }
 $hash = [Security.Cryptography.SHA256]::Create()
 try { $digest = $hash.ComputeHash([Convert]::FromBase64String([string]$manifest.key)) } finally { $hash.Dispose() }
 $id = -join ($digest[0..15] | ForEach-Object { [char](97 + ($_ -shr 4)); [char](97 + ($_ -band 15)) })

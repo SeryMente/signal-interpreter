@@ -59,6 +59,12 @@ jobs:
           node --check tools/observability-cycle-delta-test.mjs
           node --check tools/call-observability-report-test.mjs
           node --check tools/overlay-activation-regression-test.mjs
+      - name: Explicit availability and fail-closed answer regression
+        run: |
+          node --check extension/presence-guard.js
+          node tools/presence-guard-test.mjs
+          node tools/presence-connect-test.mjs
+          node tools/caption-language-spans-test.mjs
       - name: Platform learning unit test
         run: node tools/observability/platform-learning-test.mjs
       - name: Screenshot relay unit test
