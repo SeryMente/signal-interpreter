@@ -1,80 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-2d05439d-4bdf-4778-b75a-ccf0ffc703e8",
-  "createdAt": "2026-10-23T17:54:20.237Z",
+  "batchId": "batch-7169ba7a-fc03-4a50-a5c0-e13280eb398b",
+  "createdAt": "2026-10-23T17:54:51.839Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "fe789fa2-6da0-4ab7-9733-da1f055d94ec",
-      "sequence": 5736,
-      "timestamp": "2026-10-23T17:53:36.876Z",
-      "ingestedAt": "2026-10-23T17:54:02.191Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "c51704e5-a074-46c1-8696-ddbc8c3d1a5d",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220923283,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/prompts/new_chat",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220923283,
-        "sourceWindowId": 220923191,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://aistudio.google.com/prompts/new_chat"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/prompts/new_chat",
-        "extensionVersion": "0.10.37",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "461c5534-f7fc-402e-9945-e02e609c34c7",
-      "sequence": 5737,
-      "timestamp": "2026-10-23T17:53:36.878Z",
-      "ingestedAt": "2026-10-23T17:54:13.476Z",
+      "id": "ad495bcc-b127-41c2-b327-fb37514383f1",
+      "sequence": 5741,
+      "timestamp": "2026-10-23T17:54:08.429Z",
+      "ingestedAt": "2026-10-23T17:54:42.146Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -82,9 +18,9 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "61b6479b-a42a-41aa-862a-283c26aa78a5",
+      "traceId": "6808426a-6514-49d0-af64-9f2637e9fcf1",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -104,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/prompts/new_chat",
-        "visibility": "hidden",
+        "route": "/apps",
+        "visibility": "visible",
         "online": true,
         "sourceTabId": 220923283,
         "sourceWindowId": 220923191,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://aistudio.google.com/prompts/new_chat"
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://aistudio.google.com/apps"
       },
       "privacy": {
         "rawTextStored": false,
@@ -120,39 +56,31 @@
       },
       "payload": {
         "callId": null,
-        "route": "/prompts/new_chat",
+        "route": "/apps",
         "extensionVersion": "0.10.37",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": false,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
+        "previousRoute": "/prompts/new_chat",
+        "currentRoute": "/apps",
+        "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 1,
+    "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 5736,
-    "lastSequence": 5737,
-    "firstTimestamp": "2026-10-23T17:53:36.876Z",
-    "lastTimestamp": "2026-10-23T17:53:36.878Z",
+    "firstSequence": 5741,
+    "lastSequence": 5741,
+    "firstTimestamp": "2026-10-23T17:54:08.429Z",
+    "lastTimestamp": "2026-10-23T17:54:08.429Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 1
     }
   }
 }
