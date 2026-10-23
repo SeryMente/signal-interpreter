@@ -3,7 +3,7 @@
 **Estado:** propuesta de ingeniería para revisión; no es una release ni autorización para capturar contenido.
 **Fecha:** 2026-10-22
 **Repositorio:** `SeryMente/signal-interpreter`
-**Ámbito:** instrumentación observable y no invasiva de la interfaz web en Google Chrome sobre Windows, con una futura extensión como cliente principal.
+**Ámbito:** contrato de diseño para la observabilidad de Chrome/Windows. La implementación existente tiene como superficie operativa canónica Cloud Interpreter; ChatGPT es un perfil futuro separado que requiere revisión explícita de permisos, origen, privacidad y pruebas. Este documento no amplía por sí solo la allowlist de sitios.
 
 ## 1. Propósito
 
@@ -32,7 +32,7 @@ Cada evento debe ser autocontenido y versionado. Esquema lógico mínimo:
 | `event_id` | UUID aleatorio, sin identidad de usuario |
 | `session_id` | Identificador efímero, regenerable |
 | `observed_at` | Hora UTC ISO-8601 |
-| `source` | `content-script`, `service-worker`, `native-host`, `manual` o `ci` |
+| `source` | `content-script`, `service-worker`, `manual` o `ci` |
 | `origin` | Origen permitido; nunca credenciales ni query string |
 | `kind` | Evento tipado de la taxonomía §4 |
 | `confidence` | `direct`, `inferred` o `unknown` |
@@ -71,8 +71,8 @@ Cada observación debe distinguir `observed` de `inferred`. La ausencia de un ev
 3. **Local spool:** IndexedDB con límites de tamaño/retención, transacciones y recuperación tras suspensión del worker.
 4. **Normalizer/redactor:** contrato único para saneamiento, allowlists y validación de esquema antes de persistir o publicar.
 5. **Reporter:** exportación manual por defecto; publicación remota deshabilitada hasta consentimiento explícito.
-6. **CI/replay sintético:** fixtures no sensibles, snapshots de referencia, pruebas de deltas y compatibilidad entre versiones.
-7. **Native host (si es imprescindible):** proceso independiente, protocolo versionado y mínimo privilegio; no introducirlo para una necesidad que Chrome pueda cubrir directamente.
+6. **CI/replay sintético:** fixtures no sensibles, snapshots de referencia, pruebas de deltas y compatibilidad entre versiones. El replay solo usa fixtures sintéticos; nunca reproduce conversaciones reales ni opera la cuenta del usuario.
+7. **Host nativo:** fuera del runtime permitido para observabilidad de producción. La arquitectura vinculante existente es extensión MV3 + APIs de Chrome + Vercel Relay + GitHub; no añadir Native Messaging, procesos Windows residentes, localhost, tareas programadas, watchdogs ni supervisores.
 
 La arquitectura debe tolerar que el service worker MV3 se suspenda, que una pestaña desaparezca y que el DOM cambie entre lectura y acción. No depender de timers perpetuos ni de un único contexto vivo.
 
