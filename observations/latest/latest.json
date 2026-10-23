@@ -1,80 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-6d371a5b-23bb-4a1e-8fff-0c232ed40ffd",
-  "createdAt": "2026-10-23T18:16:51.912Z",
-  "trigger": "alarm",
+  "batchId": "batch-c6570602-7f12-4685-b3ee-8b6cc9b8a7db",
+  "createdAt": "2026-10-23T18:17:20.152Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "29a502ba-c452-4abb-af39-fc97542a7ce4",
-      "sequence": 5780,
-      "timestamp": "2026-10-23T18:16:48.470Z",
-      "ingestedAt": "2026-10-23T18:16:48.544Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "8d91c6c0-387f-4fc0-965a-957769a80556",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220923297,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/apps",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220923297,
-        "sourceWindowId": 220923191,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://aistudio.google.com/apps"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/apps",
-        "extensionVersion": "0.10.37",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "5b4d8d82-0471-4e4a-9bbc-3dcae1fb3849",
-      "sequence": 5781,
-      "timestamp": "2026-10-23T18:16:48.471Z",
-      "ingestedAt": "2026-10-23T18:16:49.647Z",
+      "id": "5bb3eec1-bdcf-4962-94e7-8991704c847a",
+      "sequence": 5783,
+      "timestamp": "2026-10-23T18:17:07.137Z",
+      "ingestedAt": "2026-10-23T18:17:07.202Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -82,14 +18,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "3d12db7e-6be1-4a46-b8d0-bc8b15f6264b",
+      "traceId": "3e8d54ba-a08c-4e45-b9b2-b9e6c548ae13",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923297,
+      "tabId": 220923277,
       "session": {
         "callId": null
       },
@@ -104,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/apps",
+        "route": "/app/login",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220923297,
+        "sourceTabId": 220923277,
         "sourceWindowId": 220923191,
         "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://aistudio.google.com/apps"
+        "observedTabUrl": "https://app.todoist.com/app/login"
       },
       "privacy": {
         "rawTextStored": false,
@@ -120,7 +56,127 @@
       },
       "payload": {
         "callId": null,
-        "route": "/apps",
+        "route": "/app/login",
+        "extensionVersion": "0.10.37",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "52dc2eef-7cc3-4cd3-a56b-e0d0a9aee01c",
+      "sequence": 5784,
+      "timestamp": "2026-10-23T18:17:08.093Z",
+      "ingestedAt": "2026-10-23T18:17:08.158Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "b9dd0e44-ec9b-4bcf-9c71-d89daa8ea595",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923277,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/app/oauth-start",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923277,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://app.todoist.com/app/oauth-start"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/app/oauth-start",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "74ea855a-8936-4d03-ba52-078b2eec5454",
+      "sequence": 5785,
+      "timestamp": "2026-10-23T18:17:08.093Z",
+      "ingestedAt": "2026-10-23T18:17:09.338Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "ecff00b0-d516-445e-bf70-feb49ddd1b87",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923277,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/app/oauth-start",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923277,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://app.todoist.com/app/oauth-start"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/app/oauth-start",
         "extensionVersion": "0.10.37",
         "enabled": true,
         "scope": "source-only",
@@ -136,10 +192,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "832317f5-f9eb-4926-90e6-b9e582ef681c",
-      "sequence": 5782,
-      "timestamp": "2026-10-23T18:16:50.434Z",
-      "ingestedAt": "2026-10-23T18:16:50.882Z",
+      "id": "d1cea16c-41cf-48a1-9292-31ef2fc58671",
+      "sequence": 5786,
+      "timestamp": "2026-10-23T18:17:10.092Z",
+      "ingestedAt": "2026-10-23T18:17:10.242Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -147,14 +203,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "d59990ae-31c9-4f55-ba9e-0f71eea5ec92",
+      "traceId": "f85ecfc1-8f7a-40cf-afe9-21f5727ade33",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923297,
+      "tabId": 220923277,
       "session": {
         "callId": null
       },
@@ -169,14 +225,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/prompts/new_chat",
-        "visibility": "visible",
+        "route": "/app/oauth-start",
+        "visibility": "hidden",
         "online": true,
-        "sourceTabId": 220923297,
+        "sourceTabId": 220923277,
         "sourceWindowId": 220923191,
-        "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://aistudio.google.com/prompts/new_chat"
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://accounts.google.com/v3/signin/accountchooser"
       },
       "privacy": {
         "rawTextStored": false,
@@ -185,33 +241,460 @@
       },
       "payload": {
         "callId": null,
-        "route": "/prompts/new_chat",
+        "route": "/app/oauth-start",
         "extensionVersion": "0.10.37",
-        "previousRoute": "/apps",
-        "currentRoute": "/prompts/new_chat",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "0152edec-92c7-4557-90de-dff3309d88e7",
+      "sequence": 5787,
+      "timestamp": "2026-10-23T18:17:11.055Z",
+      "ingestedAt": "2026-10-23T18:17:11.204Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "8a22e862-b542-47af-b0c9-b75fe7795c48",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923267,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/PTSC/IdcSiat/IdcGeneraConstancia.jsf",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923267,
+        "sourceWindowId": 220923268,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://rfcampc.siat.sat.gob.mx/PTSC/IdcSiat/IdcGeneraConstancia.jsf"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/PTSC/IdcSiat/IdcGeneraConstancia.jsf",
+        "extensionVersion": "0.10.37",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b5c39d8f-81e4-4fbd-929f-cec8e99074ca",
+      "sequence": 5788,
+      "timestamp": "2026-10-23T18:17:11.080Z",
+      "ingestedAt": "2026-10-23T18:17:12.222Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "7cf54b33-51df-4c21-8992-48a064f7d19b",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923277,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/v3/signin/accountchooser",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220923277,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://accounts.google.com/v3/signin/accountchooser"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/v3/signin/accountchooser",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "ff43eff8-a9f8-4ae8-8d2a-543874d6322a",
+      "sequence": 5789,
+      "timestamp": "2026-10-23T18:17:11.081Z",
+      "ingestedAt": "2026-10-23T18:17:13.103Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "15af12d1-4643-45dd-88c1-f9da7c4b115b",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923277,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/v3/signin/accountchooser",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220923277,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://accounts.google.com/v3/signin/accountchooser"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/v3/signin/accountchooser",
+        "extensionVersion": "0.10.37",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b3b3cc5a-6b8e-441d-a1f4-8b392f9f7f9b",
+      "sequence": 5790,
+      "timestamp": "2026-10-23T18:17:16.034Z",
+      "ingestedAt": "2026-10-23T18:17:16.187Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "e19903f2-f0e7-48c9-8d01-72b2d81cff32",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923277,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/v3/signin/accountchooser",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220923277,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.todoist.com/app/google-redirect"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/v3/signin/accountchooser",
+        "extensionVersion": "0.10.37",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "d5c0c7e2-f607-48f1-9998-4870794538a3",
+      "sequence": 5791,
+      "timestamp": "2026-10-23T18:17:17.188Z",
+      "ingestedAt": "2026-10-23T18:17:17.301Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "3671be30-abbf-4a58-a7a6-8b111f0a7c69",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923277,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/app/google-redirect",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220923277,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.todoist.com/app/google-redirect"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/app/google-redirect",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "5d021eca-3b31-4e48-a141-6752d83e0766",
+      "sequence": 5792,
+      "timestamp": "2026-10-23T18:17:17.188Z",
+      "ingestedAt": "2026-10-23T18:17:18.274Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "cbf05a50-3836-40b0-abcc-8df93ed386dc",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923277,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/app/google-redirect",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220923277,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.todoist.com/app/google-redirect"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/app/google-redirect",
+        "extensionVersion": "0.10.37",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "aca7f295-b800-4ae4-82a5-5d285e1772f7",
+      "sequence": 5793,
+      "timestamp": "2026-10-23T18:17:19.227Z",
+      "ingestedAt": "2026-10-23T18:17:19.375Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "ac689657-3ae7-4f71-8188-9d57020bd5b4",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923277,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/app/google-redirect",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220923277,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.todoist.com/app/google-redirect"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/app/google-redirect",
+        "extensionVersion": "0.10.37",
+        "previousRoute": "/app/google-redirect",
+        "currentRoute": "/app/google-redirect",
         "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 11,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 3,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 1,
+    "contextEvents": 3,
     "invariantSignals": 0,
-    "firstSequence": 5780,
-    "lastSequence": 5782,
-    "firstTimestamp": "2026-10-23T18:16:48.470Z",
-    "lastTimestamp": "2026-10-23T18:16:50.434Z",
+    "firstSequence": 5783,
+    "lastSequence": 5793,
+    "firstTimestamp": "2026-10-23T18:17:07.137Z",
+    "lastTimestamp": "2026-10-23T18:17:19.227Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1,
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 4,
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 3,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 3,
       "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
     },
     "categories": {
-      "CAPTION": 3
+      "CAPTION": 11
     }
   }
 }
