@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Observabilidad · KHORA</title>
+  <link rel="stylesheet" href="observability.css">
+</head>
+<body>
+  <div class="workspace">
+    <aside class="rail" aria-label="Taxonomía">
+      <div class="brand-mark" aria-hidden="true">K</div>
+      <div class="rail-label">DESARROLLO</div>
+      <div class="tree">
+        <div class="tree-item"><span class="tree-glyph">◈</span><span>Gobernanza</span></div>
+        <div class="tree-item nested"><span class="tree-glyph">⌘</span><span>Plataforma</span></div>
+        <div class="tree-item nested active"><span class="tree-glyph">◉</span><span>ChatGPT</span></div>
+        <div class="tree-item nested selected"><span class="tree-glyph">⌁</span><span>Observabilidad</span></div>
+        <div class="tree-item leaf"><span class="tree-glyph">▤</span><span>Arquitectura de la interfaz</span></div>
+      </div>
+      <div class="rail-foot"><span class="live-dot"></span>Ámbito de trabajo</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb">Desarrollo <span>/</span> Gobernanza <span>/</span> ChatGPT <span>/</span> Observabilidad</div>
+        <div class="product-label">COMPAÑERA DE KHORA</div>
+      </header>
+
+      <section class="intro">
+        <div class="eyebrow">PLATAFORMA · INTERFAZ WEB</div>
+        <h1>Arquitectura de la interfaz</h1>
+        <p class="lead">Regiones que la extensión debe reconocer y mantener bajo observación en ChatGPT.</p>
+        <div class="scope-note"><span class="scope-icon">i</span><span>Inventario inicial basado en el alcance acordado y el marco documental. La cobertura real de ChatGPT todavía no está verificada; no se presenta como captura en vivo.</span></div>
+      </section>
+
+      <section class="metrics" aria-label="Resumen de evidencia">
+        <article class="metric"><span class="metric-label">REGIONES DEFINIDAS</span><strong id="regionCount">11</strong><small>Baseline documental</small></article>
+        <article class="metric"><span class="metric-label">OBSERVADAS EN CHATGPT</span><strong class="unknown" id="observedCount">—</strong><small>Sin captura real vinculada</small></article>
+        <article class="metric"><span class="metric-label">EXCLUSIONES EXPLÍCITAS</span><strong id="excludedCount">1</strong><small>Menú de cuenta</small></article>
+      </section>
+
+      <section class="inventory-section">
+        <div class="section-head">
+          <div><div class="eyebrow">MAPA DE SUPERFICIE</div><h2>Regiones de la interfaz</h2></div>
+          <span class="evidence-pill"><span class="dot"></span>Base documental</span>
+        </div>
+        <div id="regionList" class="region-list" aria-live="polite"></div>
+      </section>
+
+      <footer class="footnote">
+        <div><span class="footer-mark">K</span><span>KHORA · Observabilidad de plataforma</span></div>
+        <span id="sourceState">Fuente: contrato e inventario del repositorio</span>
+      </footer>
+    </main>
+  </div>
+  <script src="observability.js"></script>
+</body>
+</html>
