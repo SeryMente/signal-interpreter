@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-a19507e4-4255-41aa-8551-39d45ad1170e",
-  "createdAt": "2026-10-23T18:57:51.241Z",
+  "batchId": "batch-b76cc88b-a342-4095-9a60-00b457a888e2",
+  "createdAt": "2026-10-23T18:58:22.818Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "d9b2a88a-6c40-4604-90b7-893d852b0782",
-      "sequence": 5917,
-      "timestamp": "2026-10-23T18:57:27.802Z",
-      "ingestedAt": "2026-10-23T18:57:27.863Z",
+      "id": "f4209de5-97d1-43bf-be7d-37cb5d3a7994",
+      "sequence": 5918,
+      "timestamp": "2026-10-23T18:57:52.070Z",
+      "ingestedAt": "2026-10-23T18:57:52.129Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -20,12 +20,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "68560c4c-9ab6-49e8-b4c5-bb37afb5c69e",
+      "traceId": "e8f48abd-1499-4b45-a848-8652eeb4c535",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923319,
+      "tabId": 220923322,
       "session": {
         "callId": null
       },
@@ -40,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/chat/70fd8bd7-9ca0-4f3a-a973-e253570a330e",
+        "route": "/search",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220923319,
+        "sourceTabId": 220923322,
         "sourceWindowId": 220923191,
-        "observedTabStatus": "complete",
+        "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://claude.ai/chat/70fd8bd7-9ca0-4f3a-a973-e253570a330e"
+        "observedTabUrl": "https://dreadforum.io/"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,29 +56,160 @@
       },
       "payload": {
         "callId": null,
-        "route": "/chat/70fd8bd7-9ca0-4f3a-a973-e253570a330e",
+        "route": "/search",
         "extensionVersion": "0.10.37",
         "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "61c9d807-b2b1-4e43-8cbc-47ce5bacd95a",
+      "sequence": 5919,
+      "timestamp": "2026-10-23T18:57:53.114Z",
+      "ingestedAt": "2026-10-23T18:57:53.153Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "0c85c365-5f1c-4e0a-8739-2f77e31a17b4",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923322,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923322,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://dreadforum.io/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "c6f49654-276c-439f-b8e1-bb23ed27ca1f",
+      "sequence": 5920,
+      "timestamp": "2026-10-23T18:57:53.115Z",
+      "ingestedAt": "2026-10-23T18:57:53.778Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "22d796ca-a85f-4c2b-ae29-de53bae7f562",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923322,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923322,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://dreadforum.io/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/",
+        "extensionVersion": "0.10.37",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
       }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 3,
     "errors": 0,
-    "warnings": 0,
+    "warnings": 1,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 0,
+    "contextEvents": 1,
     "invariantSignals": 0,
-    "firstSequence": 5917,
-    "lastSequence": 5917,
-    "firstTimestamp": "2026-10-23T18:57:27.802Z",
-    "lastTimestamp": "2026-10-23T18:57:27.802Z",
+    "firstSequence": 5918,
+    "lastSequence": 5920,
+    "firstTimestamp": "2026-10-23T18:57:52.070Z",
+    "lastTimestamp": "2026-10-23T18:57:53.115Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1,
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
     },
     "categories": {
-      "CAPTION": 1
+      "CAPTION": 3
     }
   }
 }
