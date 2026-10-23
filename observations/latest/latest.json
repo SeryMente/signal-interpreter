@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-2b1c15d7-abe7-4455-a411-ab1fc736cd9e",
-  "createdAt": "2026-10-23T16:57:51.252Z",
-  "trigger": "alarm",
+  "batchId": "batch-1da75374-cb78-4135-9b70-fa085e374b4c",
+  "createdAt": "2026-10-23T17:11:37.963Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "5cb4fefb-00f3-4cff-a6be-13b7c3113875",
-      "sequence": 5680,
-      "timestamp": "2026-10-23T16:57:25.315Z",
-      "ingestedAt": "2026-10-23T16:57:25.369Z",
+      "id": "0be34315-e311-4e32-9077-883f862b25c1",
+      "sequence": 5682,
+      "timestamp": "2026-10-23T17:11:07.181Z",
+      "ingestedAt": "2026-10-23T17:11:07.238Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -18,14 +18,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "ee870126-e58c-432a-baf0-8c27f39ee62d",
+      "traceId": "145de9e8-4844-4f5a-8494-8235930573d8",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923274,
+      "tabId": 220923275,
       "session": {
         "callId": null
       },
@@ -40,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/c/local-chatgpt%3A3a7669b1-5c34-4594-aba4-29efc3a0c95a",
+        "route": "/",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220923274,
+        "sourceTabId": 220923275,
         "sourceWindowId": 220923191,
-        "observedTabStatus": "complete",
+        "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/c/local-chatgpt%3A3a7669b1-5c34-4594-aba4-29efc3a0c95a"
+        "observedTabUrl": "https://www.torproject.org/"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,19 +56,81 @@
       },
       "payload": {
         "callId": null,
-        "route": "/c/local-chatgpt%3A3a7669b1-5c34-4594-aba4-29efc3a0c95a",
+        "route": "/",
         "extensionVersion": "0.10.37",
-        "previousRoute": "/",
-        "currentRoute": "/c/local-chatgpt%3A3a7669b1-5c34-4594-aba4-29efc3a0c95a",
-        "activeCallRoute": false
+        "hostRemoved": true
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "5456e265-0d63-4963-8ceb-76a1f3c7a72a",
-      "sequence": 5681,
-      "timestamp": "2026-10-23T16:57:26.477Z",
-      "ingestedAt": "2026-10-23T16:57:26.532Z",
+      "id": "e9cf6dbf-de5d-4dda-bea2-4e4203500ae3",
+      "sequence": 5683,
+      "timestamp": "2026-10-23T17:11:08.137Z",
+      "ingestedAt": "2026-10-23T17:11:08.187Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "4e52d926-8966-459f-8ba2-161b46c17975",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923275,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923275,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://download.torproject.org/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "32aab3b4-0fee-4a00-8481-c7cecd3d89e3",
+      "sequence": 5684,
+      "timestamp": "2026-10-23T17:11:08.137Z",
+      "ingestedAt": "2026-10-23T17:11:08.999Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -76,14 +138,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "a97eca07-5c8a-4219-9b50-d9293e513d46",
+      "traceId": "844d59d5-3b78-4280-a9f0-f997723af58f",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923274,
+      "tabId": 220923275,
       "session": {
         "callId": null
       },
@@ -98,14 +160,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/c/6adb9187-7cac-83e8-bcef-5cfa715df61b",
+        "route": "/",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220923274,
+        "sourceTabId": 220923275,
         "sourceWindowId": 220923191,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/c/6adb9187-7cac-83e8-bcef-5cfa715df61b"
+        "observedTabUrl": "https://download.torproject.org/"
       },
       "privacy": {
         "rawTextStored": false,
@@ -114,31 +176,410 @@
       },
       "payload": {
         "callId": null,
-        "route": "/c/6adb9187-7cac-83e8-bcef-5cfa715df61b",
+        "route": "/",
         "extensionVersion": "0.10.37",
-        "previousRoute": "/c/local-chatgpt%3A3a7669b1-5c34-4594-aba4-29efc3a0c95a",
-        "currentRoute": "/c/6adb9187-7cac-83e8-bcef-5cfa715df61b",
-        "activeCallRoute": false
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "a9375491-d1c0-48d6-828f-e51ff16c6611",
+      "sequence": 5685,
+      "timestamp": "2026-10-23T17:11:12.760Z",
+      "ingestedAt": "2026-10-23T17:11:12.825Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "3c7aebe5-54f6-46dc-a231-6e936c8d955a",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923275,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923275,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://download.torproject.org/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/",
+        "extensionVersion": "0.10.37",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b17330a6-7034-4145-84f4-1b78cfcc70e4",
+      "sequence": 5686,
+      "timestamp": "2026-10-23T17:11:13.598Z",
+      "ingestedAt": "2026-10-23T17:11:13.660Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "a0ec5a94-2f94-4f88-9be4-fbae48e222aa",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923275,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/tor-browser-for-desktop/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923275,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://download.torproject.org/tor-browser-for-desktop/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/tor-browser-for-desktop/",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "0583ee45-429d-432c-9141-61da9c2b6575",
+      "sequence": 5687,
+      "timestamp": "2026-10-23T17:11:13.598Z",
+      "ingestedAt": "2026-10-23T17:11:14.439Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "39747b1a-a91d-41a6-9194-9b0196b4c0bd",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923275,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/tor-browser-for-desktop/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923275,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://download.torproject.org/tor-browser-for-desktop/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/tor-browser-for-desktop/",
+        "extensionVersion": "0.10.37",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "d0c9a903-0107-43ef-b56d-ad6e0dc1b06d",
+      "sequence": 5688,
+      "timestamp": "2026-10-23T17:11:17.631Z",
+      "ingestedAt": "2026-10-23T17:11:17.708Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "b882cd40-ffba-4fe5-ac66-d4d7637de49f",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923275,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/tor-browser-for-desktop/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923275,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://download.torproject.org/tor-browser-for-desktop/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/tor-browser-for-desktop/",
+        "extensionVersion": "0.10.37",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "fa5b46ed-dee9-426a-93d1-afc099711ad5",
+      "sequence": 5689,
+      "timestamp": "2026-10-23T17:11:18.607Z",
+      "ingestedAt": "2026-10-23T17:11:18.682Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "8f29f225-2de8-452e-a222-fcb73bb281ad",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923275,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/success/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923275,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://download.torproject.org/success/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/success/",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "50b66f80-1563-423a-aaaf-1eb881c3b42f",
+      "sequence": 5690,
+      "timestamp": "2026-10-23T17:11:18.608Z",
+      "ingestedAt": "2026-10-23T17:11:19.678Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "85fd0dcb-0536-443f-8eb1-7894d26f5200",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923275,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/success/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923275,
+        "sourceWindowId": 220923191,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://download.torproject.org/success/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/success/",
+        "extensionVersion": "0.10.37",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 9,
     "errors": 0,
-    "warnings": 0,
+    "warnings": 3,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 0,
+    "contextEvents": 3,
     "invariantSignals": 0,
-    "firstSequence": 5680,
-    "lastSequence": 5681,
-    "firstTimestamp": "2026-10-23T16:57:25.315Z",
-    "lastTimestamp": "2026-10-23T16:57:26.477Z",
+    "firstSequence": 5682,
+    "lastSequence": 5690,
+    "firstTimestamp": "2026-10-23T17:11:07.181Z",
+    "lastTimestamp": "2026-10-23T17:11:18.608Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 3,
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 3,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 3
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 9
     }
   }
 }
