@@ -1,16 +1,80 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-80f8e9b1-fb3c-4e9d-9e8d-fb9a39182f3b",
-  "createdAt": "2026-10-24T19:16:41.901Z",
+  "batchId": "batch-e3664d7d-c533-4d9b-90d4-d7f123532183",
+  "createdAt": "2026-10-24T19:20:47.897Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "b117885d-01ab-40ab-904c-f4aa366f08fb",
-      "sequence": 6402,
-      "timestamp": "2026-10-24T19:16:11.359Z",
-      "ingestedAt": "2026-10-24T19:16:11.415Z",
+      "id": "840ee815-7a6e-4ebd-b306-ea85d5bb4863",
+      "sequence": 6404,
+      "timestamp": "2026-10-24T19:20:17.312Z",
+      "ingestedAt": "2026-10-24T19:20:17.375Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "dafc5ea6-7f89-4e85-b156-2fdf58ad95cc",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923434,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/search",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923434,
+        "sourceWindowId": 220923420,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://www.google.com/search"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/search",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "658e8586-8d10-444e-a3ea-f66c76e3d77a",
+      "sequence": 6405,
+      "timestamp": "2026-10-24T19:20:17.313Z",
+      "ingestedAt": "2026-10-24T19:20:17.944Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -18,14 +82,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "5210e647-7de0-43f9-ac60-e42cefd474a1",
+      "traceId": "f25a212a-52fe-43f0-9360-d545ecf2caca",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923432,
+      "tabId": 220923434,
       "session": {
         "callId": null
       },
@@ -40,14 +104,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/c/local-chatgpt%3A505bffcf-f17d-4dd2-bfeb-85de7aa6b839",
+        "route": "/search",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220923432,
+        "sourceTabId": 220923434,
         "sourceWindowId": 220923420,
-        "observedTabStatus": "complete",
+        "observedTabStatus": "loading",
         "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/c/local-chatgpt%3A505bffcf-f17d-4dd2-bfeb-85de7aa6b839"
+        "observedTabUrl": "https://www.google.com/search"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,19 +120,269 @@
       },
       "payload": {
         "callId": null,
-        "route": "/c/local-chatgpt%3A505bffcf-f17d-4dd2-bfeb-85de7aa6b839",
+        "route": "/search",
         "extensionVersion": "0.10.37",
-        "previousRoute": "/",
-        "currentRoute": "/c/local-chatgpt%3A505bffcf-f17d-4dd2-bfeb-85de7aa6b839",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "6d90f2c6-7187-42dc-bba4-c2c94b689f06",
+      "sequence": 6406,
+      "timestamp": "2026-10-24T19:20:18.743Z",
+      "ingestedAt": "2026-10-24T19:20:18.782Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "0377109b-42ee-4eb4-89d8-941a835cb284",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923434,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/search",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923434,
+        "sourceWindowId": 220923420,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://convertio.co/es/pdf-html/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/search",
+        "extensionVersion": "0.10.37",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b98093bf-0db0-4de5-a571-28f4c615fb9b",
+      "sequence": 6407,
+      "timestamp": "2026-10-24T19:20:19.883Z",
+      "ingestedAt": "2026-10-24T19:20:19.927Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "01e1a771-f448-4004-9182-723b12dfdca0",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923434,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/pdf-html/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923434,
+        "sourceWindowId": 220923420,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://convertio.co/es/pdf-html/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/pdf-html/",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "41ac60ef-5c35-4262-8f5e-a940865269a0",
+      "sequence": 6408,
+      "timestamp": "2026-10-24T19:20:19.883Z",
+      "ingestedAt": "2026-10-24T19:20:20.414Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "da6b7740-8622-4e1a-843c-192e2825e9bf",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923434,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/pdf-html/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923434,
+        "sourceWindowId": 220923420,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://convertio.co/es/pdf-html/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/pdf-html/",
+        "extensionVersion": "0.10.37",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "ecebeb23-fb0a-4bae-a1d9-2fc6651a7eb6",
+      "sequence": 6409,
+      "timestamp": "2026-10-24T19:20:27.873Z",
+      "ingestedAt": "2026-10-24T19:20:27.904Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "54dbd02c-604c-4e7c-b803-c2303c0e6a09",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923434,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/html-jpg/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923434,
+        "sourceWindowId": 220923420,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://convertio.co/es/html-jpg/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/html-jpg/",
+        "extensionVersion": "0.10.37",
+        "previousRoute": "/es/pdf-html/",
+        "currentRoute": "/es/html-jpg/",
         "activeCallRoute": false
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "0efa150b-33ee-4846-8e97-5dfebe891730",
-      "sequence": 6403,
-      "timestamp": "2026-10-24T19:16:12.989Z",
-      "ingestedAt": "2026-10-24T19:16:13.031Z",
+      "id": "9f78ccf2-f51f-4498-8a48-06b953f14d78",
+      "sequence": 6410,
+      "timestamp": "2026-10-24T19:20:32.873Z",
+      "ingestedAt": "2026-10-24T19:20:32.904Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -78,12 +392,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "57a7c823-7ee3-4fae-aa39-5581e9917532",
+      "traceId": "d1db90ed-820f-4818-a403-a8a63fe5e29d",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923432,
+      "tabId": 220923434,
       "session": {
         "callId": null
       },
@@ -98,14 +412,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/c/6add039a-966c-83e8-a82a-ed6bdb52a7e8",
+        "route": "/es/html-pdf/",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220923432,
+        "sourceTabId": 220923434,
         "sourceWindowId": 220923420,
         "observedTabStatus": "complete",
         "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/c/6add039a-966c-83e8-a82a-ed6bdb52a7e8"
+        "observedTabUrl": "https://convertio.co/es/html-pdf/"
       },
       "privacy": {
         "rawTextStored": false,
@@ -114,31 +428,219 @@
       },
       "payload": {
         "callId": null,
-        "route": "/c/6add039a-966c-83e8-a82a-ed6bdb52a7e8",
+        "route": "/es/html-pdf/",
         "extensionVersion": "0.10.37",
-        "previousRoute": "/c/local-chatgpt%3A505bffcf-f17d-4dd2-bfeb-85de7aa6b839",
-        "currentRoute": "/c/6add039a-966c-83e8-a82a-ed6bdb52a7e8",
+        "previousRoute": "/es/html-jpg/",
+        "currentRoute": "/es/html-pdf/",
         "activeCallRoute": false
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "2f970c94-ee31-4ae7-8214-bbe63c80d3d5",
+      "sequence": 6411,
+      "timestamp": "2026-10-24T19:20:39.279Z",
+      "ingestedAt": "2026-10-24T19:20:39.368Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "315e845c-7c68-4519-adcb-dd374d12affc",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923434,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/html-pdf/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923434,
+        "sourceWindowId": 220923420,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://convertio.co/es/html-pdf/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/html-pdf/",
+        "extensionVersion": "0.10.37",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "785bc5a9-5795-4644-8953-778f920903d3",
+      "sequence": 6412,
+      "timestamp": "2026-10-24T19:20:39.873Z",
+      "ingestedAt": "2026-10-24T19:20:39.908Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "7e65e702-e305-4d9b-89ae-82b239b0fd65",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923434,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/download/f147cee0285bb494e8b0d5e7187224c60d0205/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923434,
+        "sourceWindowId": 220923420,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://convertio.co/es/download/f147cee0285bb494e8b0d5e7187224c60d0205/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/download/f147cee0285bb494e8b0d5e7187224c60d0205/",
+        "extensionVersion": "0.10.37",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "afa34624-88fd-46f1-918a-135272c22ebb",
+      "sequence": 6413,
+      "timestamp": "2026-10-24T19:20:39.873Z",
+      "ingestedAt": "2026-10-24T19:20:40.444Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "0cff2fb6-34bd-4286-b924-05f33464f244",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220923434,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/es/download/f147cee0285bb494e8b0d5e7187224c60d0205/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923434,
+        "sourceWindowId": 220923420,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://convertio.co/es/download/f147cee0285bb494e8b0d5e7187224c60d0205/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/es/download/f147cee0285bb494e8b0d5e7187224c60d0205/",
+        "extensionVersion": "0.10.37",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 10,
     "errors": 0,
-    "warnings": 0,
+    "warnings": 3,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 0,
+    "contextEvents": 3,
     "invariantSignals": 0,
-    "firstSequence": 6402,
-    "lastSequence": 6403,
-    "firstTimestamp": "2026-10-24T19:16:11.359Z",
-    "lastTimestamp": "2026-10-24T19:16:12.989Z",
+    "firstSequence": 6404,
+    "lastSequence": 6413,
+    "firstTimestamp": "2026-10-24T19:20:17.312Z",
+    "lastTimestamp": "2026-10-24T19:20:39.873Z",
     "actions": {
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 3,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 3,
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 2,
       "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 10
     }
   }
 }
