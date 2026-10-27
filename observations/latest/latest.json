@@ -1,68 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-2b444139-0fff-4c9e-bd61-19aeba9a4727",
-  "createdAt": "2026-10-27T02:41:50.521Z",
+  "batchId": "batch-87ce02a3-f547-4b2b-a24c-9fbbc1e77f5c",
+  "createdAt": "2026-10-27T03:36:57.141Z",
   "trigger": "critical",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "7e72acb4-e2a7-498f-8079-6222c8241e04",
-      "sequence": 6738,
-      "timestamp": "2026-10-27T02:41:50.258Z",
-      "ingestedAt": "2026-10-27T02:41:50.258Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "started",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
-      "outcome": "success",
-      "traceId": "01313f56-3a2c-497a-b548-6a9198182c8f",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "hourly"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "55de3875-dd5f-4dbf-9dfb-8b1f2be8ed65",
-      "sequence": 6739,
-      "timestamp": "2026-10-27T02:41:50.374Z",
-      "ingestedAt": "2026-10-27T02:41:50.374Z",
+      "id": "b695545e-2815-4286-8ce2-75dcc586055e",
+      "sequence": 6741,
+      "timestamp": "2026-10-27T03:36:57.042Z",
+      "ingestedAt": "2026-10-27T03:36:57.042Z",
       "level": "warn",
-      "category": "RUNTIME",
+      "category": "BILLING",
       "component": "background",
       "extensionVersion": "0.10.37",
       "host": "",
       "url": "",
       "phase": "error",
-      "action": "EARNINGS_SYNC_QUEUE_ERROR",
+      "action": "EXCHANGE_RATE_ERROR",
       "outcome": "error",
-      "traceId": "c295d098-de3e-41e8-9b16-d9da45ef6c3f",
+      "traceId": "7d47a263-2f2b-4b69-bbc6-1dbd939ef969",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -76,8 +34,8 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
+      "reasonCode": "alarm",
+      "error": "Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy.",
       "metrics": {},
       "context": {},
       "privacy": {
@@ -86,73 +44,29 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "operation": "official-today",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "f15907d3-9ed1-45c5-bc38-b12c2968f2a1",
-      "sequence": 6740,
-      "timestamp": "2026-10-27T02:41:50.497Z",
-      "ingestedAt": "2026-10-27T02:41:50.497Z",
-      "level": "warn",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "error",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
-      "outcome": "error",
-      "traceId": "e6b986b4-b382-4484-bfff-244d27e237d8",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "hourly",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
+        "pair": "USD/MXN",
+        "message": "Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy.",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 2,
+    "warnings": 1,
     "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 6738,
-    "lastSequence": 6740,
-    "firstTimestamp": "2026-10-27T02:41:50.258Z",
-    "lastTimestamp": "2026-10-27T02:41:50.497Z",
+    "firstSequence": 6741,
+    "lastSequence": 6741,
+    "firstTimestamp": "2026-10-27T03:36:57.042Z",
+    "lastTimestamp": "2026-10-27T03:36:57.042Z",
     "actions": {
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
-      "EARNINGS_SYNC_QUEUE_ERROR": 1,
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+      "EXCHANGE_RATE_ERROR": 1
     },
     "categories": {
-      "RUNTIME": 3
+      "BILLING": 1
     }
   }
 }
