@@ -27,7 +27,9 @@ assert.match(content, /config\.callOverlaysVisible === false/);
 assert.match(content, /runtimeMarker\.dispose = deactivateForHotload/);
 assert.match(background, /async function prepareCloudRuntimeReplacement/);
 assert.match(content, /staleEarningsOverlay = document\.getElementById\("signal-interpreter-earnings-overlay"\)/);
-const recovery = background.slice(background.indexOf("async function recoverAfterRuntimeBoundary"), background.indexOf("async function scheduleSafeRuntimeReload"));
+const recoveryStart = background.indexOf("async function recoverAfterRuntimeBoundary");
+const recoveryEnd = background.indexOf("function uid()", recoveryStart);
+const recovery = background.slice(recoveryStart, recoveryEnd);
 assert.ok(recovery.includes('prepareCloudRuntimeReplacement(callTabId'),
   "active-call recovery must clean the previous runtime before injecting the new one");
 
