@@ -25,7 +25,7 @@ assert.match(popupJs, /save\(\{ callOverlaysVisible: this\.checked \}\)/);
 
 assert.match(content, /config\.callOverlaysVisible === false/);
 assert.match(content, /runtimeMarker\.dispose = deactivateForHotload/);
-assert.match(content, /prepareCloudRuntimeReplacement/);
+assert.match(background, /async function prepareCloudRuntimeReplacement/);
 assert.match(content, /staleEarningsOverlay = document\.getElementById\("signal-interpreter-earnings-overlay"\)/);
 const recovery = background.slice(background.indexOf("async function recoverAfterRuntimeBoundary"), background.indexOf("async function scheduleSafeRuntimeReload"));
 assert.ok(recovery.includes('prepareCloudRuntimeReplacement(callTabId'),
