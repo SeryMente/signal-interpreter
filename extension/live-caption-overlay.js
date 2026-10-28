@@ -52,7 +52,7 @@
   var rows = [];
   var host = null;
   var root = null;
-  var config = { liveCaptionOverlayEnabled: true, liveCaptionOverlayScope: "source-only" };
+  var config = { liveCaptionOverlayEnabled: true, overlaysGlobalEnabled: true, liveCaptionOverlayScope: "source-only" };
   var layout = { left: null, top: null, width: 560, height: 400, manual: false };
   var sourceTabId = null;
   var isSourceTab = false;
@@ -156,8 +156,10 @@
     } catch (_) {}
   }
 
+  function overlayPreferenceEnabled() { return config.liveCaptionOverlayEnabled !== false && config.overlaysGlobalEnabled !== false; }
+
   function currentBlockReason() {
-    if (config.liveCaptionOverlayEnabled === false) return "preference-disabled";
+    if (!overlayPreferenceEnabled()) return config.overlaysGlobalEnabled === false ? "global-overlays-hidden" : "preference-disabled";
     if (!contextReady) return "context-not-ready";
     if (!pageAllowed) return isCloudCallRoute() ? "call-route-not-authorized" : "page-not-allowed";
     if (!youtubeTarget && !isCloudCallRoute() && !scopeIsGlobal() && !isSourceTab) return "not-source-tab";
@@ -174,7 +176,7 @@
   }
 
   function canShowOnThisPage() {
-    if (config.liveCaptionOverlayEnabled === false || !contextReady || !pageAllowed) return false;
+    if (!overlayPreferenceEnabled() || !contextReady || !pageAllowed) return false;
     if (youtubeTarget) return true;
     // La ruta activa es evidencia local suficiente para mostrar el panel mientras el
     // estado de llamada del service worker termina de reconciliarse.
@@ -914,7 +916,7 @@
         reasonCode: "invalid-context-response", responsePresent: !!result,
         responseOk: !!(result && result.ok === true), contextSyncAttempts: contextSyncAttempts
       }, "warn");
-      if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+      if (isCloudCallRoute() && overlayPreferenceEnabled()) {
         activateLocalCallFallback("invalid-context-response");
       }
       return false;
@@ -926,14 +928,14 @@
     sourceTabId = result.sourceTabId != null && Number.isFinite(Number(result.sourceTabId))
       ? Number(result.sourceTabId) : null;
     youtubeTarget = isYoutubeTargetPage();
-    var localCallRoute = isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false;
+    var localCallRoute = isCloudCallRoute() && overlayPreferenceEnabled();
     isSourceTab = result.isSourceTab === true || localCallRoute;
     callActive = result.callActive === true || localCallRoute;
     sessionEnded = !callActive && result.sessionEnded === true;
     pageAllowed = result.pageAllowed === true || youtubeTarget || localCallRoute;
     if (hydrate && Array.isArray(result.history)) hydrateHistory(result.history);
     reportLifecycle("LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED", {
-      enabled: config.liveCaptionOverlayEnabled !== false, scope: config.liveCaptionOverlayScope,
+      enabled: overlayPreferenceEnabled(), scope: config.liveCaptionOverlayScope,
       pageAllowed: pageAllowed, callActive: callActive, sourceTabMatched: isSourceTab,
       sourceTabKnown: sourceTabId != null, routeFallbackApplied: localCallRoute && result.pageAllowed !== true,
       historyRows: Array.isArray(result.history) ? result.history.length : rows.length,
@@ -946,7 +948,7 @@
 
   function scheduleContextRetry(reasonCode) {
     if (runtimeDisposed) return;
-    if (contextRetryTimer || config.liveCaptionOverlayEnabled === false) return;
+    if (contextRetryTimer || !overlayPreferenceEnabled()) return;
     if (!isCloudCallRoute() && !host && contextSyncAttempts >= 5) return;
     var delay = contextRetryDelayMs;
     contextRetryDelayMs = Math.min(15000, contextRetryDelayMs * 2);
@@ -967,7 +969,7 @@
   }
 
   function activateLocalCallFallback(reasonCode) {
-    if (!isCloudCallRoute() || config.liveCaptionOverlayEnabled === false) return false;
+    if (!isCloudCallRoute() || !overlayPreferenceEnabled()) return false;
     var wasReady = contextReady;
     contextReady = true;
     pageAllowed = true;
@@ -977,7 +979,7 @@
     reportLifecycle("LIVE_CAPTION_OVERLAY_LOCAL_ROUTE_FALLBACK", {
       reasonCode: String(reasonCode || "call-route-reconciliation-pending"),
       contextReadyFromServiceWorker: wasReady, sourceTabKnown: sourceTabId != null,
-      preferenceEnabled: config.liveCaptionOverlayEnabled !== false
+      preferenceEnabled: overlayPreferenceEnabled()
     }, "warn", "local-route-fallback:" + String(currentCloudCallId()) + ":" + String(reasonCode || "pending"));
     ensureHost();
     render(true);
@@ -1007,7 +1009,7 @@
             attempt: attempt, durationMs: Math.max(0, Date.now() - requestStartedAt),
             activeCallRoute: isCloudCallRoute(), failureCount: contextSyncFailures
           }, "warn");
-          if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+          if (isCloudCallRoute() && overlayPreferenceEnabled()) {
             activateLocalCallFallback(runtimeError ? "runtime-message-error" : "context-response-invalid");
           }
           scheduleContextRetry(runtimeError ? "runtime-message-error" : "invalid-context-response");
@@ -1015,7 +1017,7 @@
           cancelContextRetry();
           contextSyncFailures = 0;
           applyContext(result, hydrate === true);
-          if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false && !canShowOnThisPage()) {
+          if (isCloudCallRoute() && overlayPreferenceEnabled() && !canShowOnThisPage()) {
             activateLocalCallFallback("call-route-context-gate-recovery");
           }
         }
@@ -1033,7 +1035,7 @@
         attempt: attempt, durationMs: Math.max(0, Date.now() - requestStartedAt),
         activeCallRoute: isCloudCallRoute(), failureCount: contextSyncFailures
       }, "warn");
-      if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+      if (isCloudCallRoute() && overlayPreferenceEnabled()) {
         activateLocalCallFallback("send-message-threw");
       }
       scheduleContextRetry("send-message-threw");
@@ -1044,16 +1046,17 @@
     config = Object.assign({}, config, next || {});
     if (isLabPage) {config.liveCaptionOverlayEnabled=true;config.liveCaptionOverlayScope="source-only";}
     youtubeTarget = isYoutubeTargetPage();
-    if (config.liveCaptionOverlayEnabled === false) {
+    if (!overlayPreferenceEnabled()) {
+      var disabledReason = config.overlaysGlobalEnabled === false ? "global-overlays-hidden" : "preference-disabled";
       active = false;
       cancelContextRetry();
       if (host) host.style.display = "none";
       updateAriaVisibility();
       reportLifecycle("LIVE_CAPTION_OVERLAY_ACTIVATION_BLOCKED", {
-        reasonCode: "preference-disabled", contextReady: contextReady,
+        reasonCode: disabledReason, contextReady: contextReady,
         hostConnected: !!(host && host.isConnected)
-      }, "warn", "preference-disabled");
-      reportVisibility("preference-disabled");
+      }, disabledReason === "preference-disabled" ? "warn" : "info", disabledReason);
+      reportVisibility(disabledReason);
       return;
     }
     if (isCloudCallRoute() && !contextReady) activateLocalCallFallback("preference-enabled-on-call-route");
@@ -1085,7 +1088,7 @@
         manual: saved.manual === true
       };
     }
-    if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+    if (isCloudCallRoute() && overlayPreferenceEnabled()) {
       activateLocalCallFallback("initial-storage-call-route");
     }
     startRecoveryWatchdogs();
@@ -1108,12 +1111,12 @@
             previousRoute: previousPath, currentRoute: safeRoutePath(location.pathname),
             activeCallRoute: isCloudCallRoute()
           }, "info");
-          if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+          if (isCloudCallRoute() && overlayPreferenceEnabled()) {
             activateLocalCallFallback("spa-call-route-observed");
           }
           syncContext(true);
         }
-        if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+        if (isCloudCallRoute() && overlayPreferenceEnabled()) {
           if (!contextReady || !pageAllowed) activateLocalCallFallback("call-route-watchdog-context-recovery");
           if (!host || !host.isConnected || host.style.display === "none" || !root) {
             reportLifecycle("LIVE_CAPTION_OVERLAY_RECOVERY_ATTEMPTED", {
@@ -1184,7 +1187,7 @@
     if (runtimeDisposed) return false;
     if (message && message.type === "SIGNAL_CAPTION_OVERLAY_PROBE") {
       if (typeof sendResponse === "function") sendResponse({ ok: true, ready: runtimeStorageReady, runtimeVersion: runtimeVersion,
-        enabled: config.liveCaptionOverlayEnabled !== false, hostMounted: !!(host && host.isConnected && root),
+        enabled: overlayPreferenceEnabled(), hostMounted: !!(host && host.isConnected && root),
         contextReady: contextReady, rowCount: rows.length, callActive: callActive });
       return false;
     }

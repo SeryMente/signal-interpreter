@@ -5,8 +5,13 @@
   var ANSWER_LEASE_MARKER = "__SIGNAL_INTERPRETER_ANSWER_LEASE__";
   var CALL_BEEP_MARKER = "__SIGNAL_INTERPRETER_CALL_BEEP__";
   var existingRuntimeMarker = window[SIGNAL_RUNTIME_MARKER];
-  if (existingRuntimeMarker && existingRuntimeMarker.extensionId === chrome.runtime.id && existingRuntimeMarker.version === RUNTIME_VERSION && existingRuntimeMarker.active) return;
-  window[SIGNAL_RUNTIME_MARKER] = { extensionId: chrome.runtime.id, version: RUNTIME_VERSION, active: true, startedAt: new Date().toISOString() };
+  if (existingRuntimeMarker && existingRuntimeMarker.active) {
+    try { if (typeof existingRuntimeMarker.dispose === "function") existingRuntimeMarker.dispose("runtime-replaced"); } catch (_) {}
+  }
+  try { Array.from(document.querySelectorAll("#signal-interpreter-earnings-overlay")).forEach(function (node) { node.remove(); }); }
+  catch (_) { var staleEarningsOverlay = document.getElementById("signal-interpreter-earnings-overlay"); if (staleEarningsOverlay) staleEarningsOverlay.remove(); }
+  var runtimeMarker = { extensionId: chrome.runtime.id, version: RUNTIME_VERSION, active: true, startedAt: new Date().toISOString(), dispose: deactivateForHotload };
+  window[SIGNAL_RUNTIME_MARKER] = runtimeMarker;
   try { delete window.__SIGNAL_INTERPRETER_CLOUD_V0913__; } catch (_) {}
 
   var DIALOG = '[role="dialog"]';
@@ -27,6 +32,7 @@
     telemetryHeartbeatSeconds: 30,
     transcriptionEnabled: true,
     overlayEnabled: true,
+    overlaysGlobalEnabled: true,
     overlayCompact: true,
     opiRatePerMinute: 0.20,
     vriRatePerMinute: 0.25,
@@ -35,6 +41,7 @@
     exchangeRateUpdatedAt: null,
     earningsDisplayCurrency: "MXN"
   };
+  function earningsOverlayEnabled() { return config.overlayEnabled !== false && config.overlaysGlobalEnabled !== false; }
   var state = {};
   var platformMirror = {};
   var activeCallEarnings = {};
@@ -1684,7 +1691,7 @@
       activeRoute: routeTemplate(),
       documentReadyState: document.readyState || "unknown",
       documentVisible: document.visibilityState === "visible",
-      overlayEnabled: config.overlayEnabled !== false,
+      overlayEnabled: earningsOverlayEnabled(),
       lifecycleActive: overlayLifecycleActive,
       hostConnected: !!(overlayHost && overlayHost.isConnected),
       shadowRootReady: !!overlayRoot,
@@ -1702,9 +1709,13 @@
     }, "info", "watchdog-stopped:" + String(reason));
   }
 
+  function removeDuplicateEarningsOverlayHosts() {
+    try { Array.from(document.querySelectorAll("#signal-interpreter-earnings-overlay")).forEach(function (node) { if (node !== overlayHost) node.remove(); }); } catch (_) {}
+  }
+
   function startOverlayActivationWatchdog(reason) {
-    if (!isTarget() || config.overlayEnabled === false) {
-      stopOverlayActivationWatchdog(config.overlayEnabled === false ? "preference-disabled" : "host-mismatch");
+    if (!isTarget() || !earningsOverlayEnabled()) {
+      stopOverlayActivationWatchdog(!earningsOverlayEnabled() ? (config.overlaysGlobalEnabled === false ? "global-overlays-hidden" : "preference-disabled") : "host-mismatch");
       return;
     }
     if (overlayActivationWatchdog) return;
@@ -1715,7 +1726,8 @@
       observationEnabled: config.observationEnabled !== false
     }, "info", "watchdog-started:" + String(reason || "extension-config-ready"));
     overlayActivationWatchdog = setInterval(function () {
-      if (!isTarget() || config.overlayEnabled === false) return;
+      removeDuplicateEarningsOverlayHosts();
+      if (!isTarget() || !earningsOverlayEnabled()) return;
       var pathname = location.pathname;
       if (pathname !== overlayLastRoute || pathname !== route) {
         var previousPath = String(overlayLastRoute || route || "/")
@@ -1776,18 +1788,23 @@
     renderOverlay();
   }
   function ensureOverlay() {
-    if (!config.overlayEnabled || !document.documentElement || !overlayLifecycleActive) {
-      var reasonCode = config.overlayEnabled === false ? "preference-disabled" :
+    if (!earningsOverlayEnabled() && overlayHost) overlayHost.style.display = "none";
+    if (!earningsOverlayEnabled() || !document.documentElement || !overlayLifecycleActive) {
+      var reasonCode = !earningsOverlayEnabled() ? (config.overlaysGlobalEnabled === false ? "global-overlays-hidden" : "preference-disabled") :
         (!document.documentElement ? "document-element-not-ready" : "call-lifecycle-inactive");
       reportOverlayLifecycle("EARNINGS_OVERLAY_ACTIVATION_BLOCKED", {
         reasonCode: reasonCode,
         documentElementPresent: !!document.documentElement
       }, reasonCode === "preference-disabled" ? "warn" : "info",
       "activation-blocked:" + String(currentCallId() || "none") + ":" + reasonCode);
+      if (!earningsOverlayEnabled()) return;
       if (!overlayLifecycleActive) stopOverlay();
       return;
     }
-    if (overlayHost && overlayHost.isConnected && overlayRoot) return;
+    if (overlayHost && overlayHost.isConnected && overlayRoot) {
+      overlayHost.style.display = "";
+      return;
+    }
     try {
     overlayHost = document.createElement("div");
     overlayHost.id = "signal-interpreter-earnings-overlay";
@@ -1861,6 +1878,12 @@
     }
   }
   function renderOverlay() {
+    // A disposed runtime must never remount an overlay after an extension reload.
+    if (!runtimeMarker.active) return;
+    if (!earningsOverlayEnabled()) {
+      stopOverlay(config.overlaysGlobalEnabled === false ? "global-overlays-hidden" : "preference-disabled");
+      return;
+    }
     var routeCallId = currentCallId();
     if (!routeCallId) {
       if (overlayLifecycleActive) stopOverlay(isRatingRoute() ? "rating-route" : "route-not-call");
@@ -1960,7 +1983,7 @@
     });
     window.addEventListener("pageshow", function () {
       if (isTarget() && (config.autoAnswerEnabled || config.observationEnabled) && !observer) start();
-      if (isTarget() && config.overlayEnabled !== false) startOverlayActivationWatchdog("pageshow");
+      if (isTarget() && earningsOverlayEnabled()) startOverlayActivationWatchdog("pageshow");
       observePlatformUrl("pageshow");
       emitAutoAnswerReadiness("pageshow");
       renderOverlay();
@@ -2021,7 +2044,7 @@
   function deactivateForHotload(reason) {
     var stopReason = reason || "hotload-replace";
     stopOverlayActivationWatchdog("hotload:" + stopReason);
-    try { window[SIGNAL_RUNTIME_MARKER] = { extensionId: chrome.runtime.id, version: RUNTIME_VERSION, active: false, stoppedAt: iso(), reason: stopReason }; } catch (_) {}
+    try { if (window[SIGNAL_RUNTIME_MARKER] === runtimeMarker) { runtimeMarker.active = false; runtimeMarker.stoppedAt = iso(); runtimeMarker.reason = stopReason; } } catch (_) {}
     if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; }
     if (ratingConfirmationTimer) { clearTimeout(ratingConfirmationTimer); ratingConfirmationTimer = null; }
     if (mirrorTimer) { clearTimeout(mirrorTimer); mirrorTimer = null; }
@@ -2043,8 +2066,8 @@
   }
   function apply(next) {
     config = Object.assign({}, config, next || {});
-    if (isTarget() && config.overlayEnabled !== false) startOverlayActivationWatchdog("config-applied");
-    else stopOverlayActivationWatchdog(config.overlayEnabled === false ? "preference-disabled" : "host-mismatch");
+    if (isTarget() && earningsOverlayEnabled()) startOverlayActivationWatchdog("config-applied");
+    else stopOverlayActivationWatchdog(!earningsOverlayEnabled() ? (config.overlaysGlobalEnabled === false ? "global-overlays-hidden" : "preference-disabled") : "host-mismatch");
     if (isTarget() && (config.autoAnswerEnabled || config.observationEnabled)) start();
     else stop("disabled-or-host-mismatch");
     detectAvailability();
@@ -2073,7 +2096,20 @@
     if (changes.effectifState) { state = changes.effectifState.newValue || {}; renderOverlay(); }
     if (changes.effectifPlatformMirror) { platformMirror = changes.effectifPlatformMirror.newValue || {}; renderOverlay(); }
     if (changes.effectifCallEarnings) { activeCallEarnings = changes.effectifCallEarnings.newValue || {}; renderOverlay(); }
-    if (changes.effectifConfig) apply(changes.effectifConfig.newValue);
+    if (changes.effectifConfig) {
+      var oldConfig = changes.effectifConfig.oldValue || {};
+      var newConfig = changes.effectifConfig.newValue || {};
+      var configKeys = Object.keys(Object.assign({}, oldConfig, newConfig));
+      var globalOverlayOnly = configKeys.indexOf("overlaysGlobalEnabled") >= 0 && configKeys.every(function (key) {
+        return key === "overlaysGlobalEnabled" || JSON.stringify(oldConfig[key]) === JSON.stringify(newConfig[key]);
+      });
+      if (globalOverlayOnly) {
+        config = Object.assign({}, config, newConfig);
+        if (isTarget() && earningsOverlayEnabled()) startOverlayActivationWatchdog("global-overlays-enabled");
+        else stopOverlayActivationWatchdog(!earningsOverlayEnabled() ? (config.overlaysGlobalEnabled === false ? "global-overlays-hidden" : "preference-disabled") : "host-mismatch");
+        renderOverlay();
+      } else { apply(newConfig); }
+    }
   });
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
      if (message && message.type === "EFFECTIF_SCREENSHOT_PREPARE") {

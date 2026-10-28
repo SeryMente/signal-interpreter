@@ -1,0 +1,17 @@
+SIGNAL INTERPRETER — ENTREGA 0.10.37
+
+INSTALACIÓN LIMPIA
+1. Descarga el ZIP de esta rama y extráelo en una carpeta NUEVA. No lo extraigas encima de una carpeta de una versión anterior.
+2. Ejecuta PREPARAR-Y-CARGAR.cmd con la misma cuenta de Windows que utiliza Chrome.
+3. En chrome://extensions, activa el modo de desarrollador y selecciona “Cargar descomprimida”.
+4. Selecciona la carpeta extraída que contiene manifest.json, INSTALAR.ps1 y PREPARAR-Y-CARGAR.cmd.
+
+CONTROLES DE OVERLAYS
+- “Mostrar ambos overlays” es un interruptor global persistente para el resumen de ganancias y el panel de subtítulos.
+- Atajo: Ctrl+Shift+8. Si Chrome no lo asigna, revisa chrome://extensions/shortcuts.
+- Ocultar los overlays no debe cambiar el estado del micrófono, la llamada, Auto-Answer ni la preferencia individual de subtítulos/ganancias.
+- Los interruptores individuales siguen disponibles para elegir qué overlay puede aparecer cuando el control global está activo.
+
+VERIFICACIÓN
+El instalador comprueba el inventario, los SHA-256 del paquete y el protocolo Native Messaging antes de registrar el puente. La prueba automatizada de integridad no abre Chrome ni prueba una llamada real.
+La prueba de Chrome y llamada en vivo debe realizarse por separado; este paquete no se considera probado en una llamada únicamente por haber instalado el puente.
