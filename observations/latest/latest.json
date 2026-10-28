@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-dc381123-34a1-4912-b5c2-5c9e57e326a1",
-  "createdAt": "2026-10-28T11:41:50.502Z",
-  "trigger": "critical",
+  "batchId": "batch-a3e8ffcd-3f7e-4036-910e-b65d95c2c751",
+  "createdAt": "2026-10-28T12:37:26.553Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "2a8253b8-6762-41d7-af82-2d993ee4b8ce",
-      "sequence": 6903,
-      "timestamp": "2026-10-28T11:41:50.252Z",
-      "ingestedAt": "2026-10-28T11:41:50.252Z",
+      "id": "3a822c45-7610-4ba8-a9b9-df53562a09ad",
+      "sequence": 6906,
+      "timestamp": "2026-10-28T12:36:56.451Z",
+      "ingestedAt": "2026-10-28T12:36:56.452Z",
       "level": "info",
-      "category": "RUNTIME",
+      "category": "BILLING",
       "component": "background",
       "extensionVersion": "0.10.37",
       "host": "",
       "url": "",
-      "phase": "started",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
       "outcome": "success",
-      "traceId": "234ca456-9095-42cf-860b-77e105c2f581",
+      "traceId": "4feb7265-e5ab-4a69-a537-f1cdd48c3f99",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -34,7 +34,7 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "alarm",
       "error": null,
       "metrics": {},
       "context": {},
@@ -44,115 +44,31 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "1fc6614c-e100-499b-bade-fe743c649514",
-      "sequence": 6904,
-      "timestamp": "2026-10-28T11:41:50.364Z",
-      "ingestedAt": "2026-10-28T11:41:50.365Z",
-      "level": "warn",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "error",
-      "action": "EARNINGS_SYNC_QUEUE_ERROR",
-      "outcome": "error",
-      "traceId": "5c43a190-9261-4d4d-b382-f7d0c17ab870",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "operation": "official-today",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "b31bb87d-2b17-481b-b411-1a76ddc58d0e",
-      "sequence": 6905,
-      "timestamp": "2026-10-28T11:41:50.480Z",
-      "ingestedAt": "2026-10-28T11:41:50.480Z",
-      "level": "warn",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.37",
-      "host": "",
-      "url": "",
-      "phase": "error",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
-      "outcome": "error",
-      "traceId": "6eca69f6-1194-4898-a8d4-78ac3781eda5",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.37",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero.",
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "hourly",
-        "error": "Error: No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero."
+        "pair": "USD/MXN",
+        "rate": 18.648815,
+        "rateDate": "[PHONE]",
+        "source": "ExchangeRate.fun / hourly snapshot",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 2,
-    "critical": true,
+    "warnings": 0,
+    "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 6903,
-    "lastSequence": 6905,
-    "firstTimestamp": "2026-10-28T11:41:50.252Z",
-    "lastTimestamp": "2026-10-28T11:41:50.480Z",
+    "firstSequence": 6906,
+    "lastSequence": 6906,
+    "firstTimestamp": "2026-10-28T12:36:56.451Z",
+    "lastTimestamp": "2026-10-28T12:36:56.451Z",
     "actions": {
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
-      "EARNINGS_SYNC_QUEUE_ERROR": 1,
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+      "EXCHANGE_RATE_UPDATED": 1
     },
     "categories": {
-      "RUNTIME": 3
+      "BILLING": 1
     }
   }
 }
