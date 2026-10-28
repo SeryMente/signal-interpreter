@@ -7,7 +7,7 @@ $native = Join-Path $root 'extension\native'
 $manifestFile = Join-Path $root 'manifest.json'
 $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestFile | ConvertFrom-Json
 
-if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.37') {
+if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.38') {
     throw 'Unexpected Signal Interpreter package version; nothing was registered.'
 }
 if (-not $env:LOCALAPPDATA) { throw 'LOCALAPPDATA is undefined; no host was installed.' }
@@ -18,19 +18,71 @@ $id = -join ($digest[0..15] | ForEach-Object { [char](97 + ($_ -shr 4)); [char](
 if ($id -ne 'ldpbjhobnfgmhdoehehdmnbhhjckebmj') { throw 'Extension identity mismatch; no host was registered.' }
 
 # Verify every payload file before materializing the native executable or touching the registry.
+# Accept the current schema (object with files[]) and legacy top-level arrays. This
+# prevents Windows PowerShell 5.1 from treating an inventory container as one path.
 $inventoryPath = Join-Path $root 'payload-sha256.json'
-$inventoryText = Get-Content -Raw -Encoding UTF8 -LiteralPath $inventoryPath
-try { $inventory = ConvertFrom-Json -InputObject $inventoryText } catch { throw "Invalid payload-sha256.json: $($_.Exception.Message)" }
-if ($inventory.schema -ne 'signal-interpreter-payload-sha256/v1' -or $null -eq $inventory.files) {
-    throw 'Payload inventory schema is invalid; no native host or registry values were changed.'
+try {
+    $inventoryText = [IO.File]::ReadAllText($inventoryPath, [Text.Encoding]::UTF8)
+    $inventory = ConvertFrom-Json -InputObject $inventoryText
+} catch {
+    throw "Invalid payload-sha256.json: $($_.Exception.Message)"
 }
-$entries = @($inventory.files)
+
+$entries = @()
+if ($inventory -is [System.Array]) {
+    $entries = @($inventory)
+} elseif ($null -ne $inventory -and $inventory.PSObject.Properties['files'] -and $null -ne $inventory.files) {
+    if ($inventory.schema -ne 'signal-interpreter-payload-sha256/v1') {
+        throw 'Payload inventory schema is invalid; no native host or registry values were changed.'
+    }
+    $entries = @($inventory.files)
+} elseif ($null -ne $inventory -and $inventory.PSObject.Properties['path'] -and $inventory.PSObject.Properties['sha256']) {
+    # Compatibility with inventories that store parallel path/hash arrays.
+    if ($inventory.path -is [System.Array] -or $inventory.sha256 -is [System.Array]) {
+        $paths = @($inventory.path)
+        $hashes = @($inventory.sha256)
+        if ($paths.Count -lt 1 -or $paths.Count -ne $hashes.Count) {
+            throw 'Legacy payload path/hash arrays are empty or have different lengths.'
+        }
+        for ($i = 0; $i -lt $paths.Count; $i++) {
+            $entries += [pscustomobject]@{ path = $paths[$i]; sha256 = $hashes[$i] }
+        }
+    } else {
+        $entries = @($inventory)
+    }
+} else {
+    throw 'Payload inventory schema is invalid; expected files[] or a legacy list. No native host or registry values were changed.'
+}
+
+# Normalize a legacy single object whose path and sha256 properties are arrays.
+if ($entries.Count -eq 1 -and $null -ne $entries[0] -and
+    $entries[0].PSObject.Properties['path'] -and $entries[0].path -is [System.Array]) {
+    $paths = @($entries[0].path)
+    $hashes = @($entries[0].sha256)
+    if ($paths.Count -lt 1 -or $paths.Count -ne $hashes.Count) {
+        throw 'Legacy payload path/hash arrays are empty or have different lengths.'
+    }
+    $entries = @()
+    for ($i = 0; $i -lt $paths.Count; $i++) {
+        $entries += [pscustomobject]@{ path = $paths[$i]; sha256 = $hashes[$i] }
+    }
+}
 if ($entries.Count -lt 1) { throw 'Payload inventory is empty; no native host or registry values were changed.' }
+
+$seenPayloadPaths = @{}
 foreach ($entry in $entries) {
+    if ($null -eq $entry -or $entry.path -is [System.Array]) {
+        throw 'Payload inventory entry has a non-scalar path; extract a fresh package and retry.'
+    }
     $relative = [string]$entry.path
     $expectedHash = [string]$entry.sha256
-    if ([string]::IsNullOrWhiteSpace($relative) -or $expectedHash -notmatch '^[A-Fa-f0-9]{64}$') { throw 'Payload inventory entry is malformed.' }
+    if ([string]::IsNullOrWhiteSpace($relative) -or $relative -match '\\s' -or $expectedHash -notmatch '^[A-Fa-f0-9]{64}$') {
+        throw 'Payload inventory entry is malformed; each entry must contain one relative path and one SHA-256 hash.'
+    }
     if ([IO.Path]::IsPathRooted($relative) -or $relative -match '(^|[/\\])\.\.([/\\]|$)') { throw "Unsafe payload path: $relative" }
+    $pathKey = $relative.Replace('\\', '/').ToLowerInvariant()
+    if ($seenPayloadPaths.ContainsKey($pathKey)) { throw "Duplicate payload path in inventory: $relative" }
+    $seenPayloadPaths[$pathKey] = $true
     $file = Join-Path $root $relative
     if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "Missing payload file: $relative" }
     $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash
