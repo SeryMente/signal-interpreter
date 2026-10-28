@@ -80,7 +80,7 @@ foreach ($entry in $entries) {
         throw 'Payload inventory entry is malformed; each entry must contain one relative path and one SHA-256 hash.'
     }
     if ([IO.Path]::IsPathRooted($relative) -or $relative -match '(^|[/\\])\.\.([/\\]|$)') { throw "Unsafe payload path: $relative" }
-    $pathKey = $relative.Replace('\\', '/').ToLowerInvariant()
+    $pathKey = $relative.Replace([char]92, '/').ToLowerInvariant()
     if ($seenPayloadPaths.ContainsKey($pathKey)) { throw "Duplicate payload path in inventory: $relative" }
     $seenPayloadPaths[$pathKey] = $true
     $file = Join-Path $root $relative
