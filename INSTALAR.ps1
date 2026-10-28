@@ -7,7 +7,7 @@ $native = Join-Path $root 'extension\native'
 $manifestFile = Join-Path $root 'manifest.json'
 $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestFile | ConvertFrom-Json
 
-if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.38') {
+if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.37) {
     throw 'Unexpected Signal Interpreter package version; nothing was registered.'
 }
 if (-not $env:LOCALAPPDATA) { throw 'LOCALAPPDATA is undefined; no host was installed.' }
@@ -76,7 +76,7 @@ foreach ($entry in $entries) {
     }
     $relative = [string]$entry.path
     $expectedHash = [string]$entry.sha256
-    if ([string]::IsNullOrWhiteSpace($relative) -or $relative -match '\\s' -or $expectedHash -notmatch '^[A-Fa-f0-9]{64}$') {
+    if ([string]::IsNullOrWhiteSpace($relative) -or $relative -match '\s' -or $expectedHash -notmatch '^[A-Fa-f0-9]{64}$') {
         throw 'Payload inventory entry is malformed; each entry must contain one relative path and one SHA-256 hash.'
     }
     if ([IO.Path]::IsPathRooted($relative) -or $relative -match '(^|[/\\])\.\.([/\\]|$)') { throw "Unsafe payload path: $relative" }
