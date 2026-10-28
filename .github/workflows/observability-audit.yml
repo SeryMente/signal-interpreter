@@ -59,6 +59,7 @@ jobs:
           node --check tools/observability-cycle-delta-test.mjs
           node --check tools/call-observability-report-test.mjs
           node --check tools/overlay-activation-regression-test.mjs
+          node --check tools/overlay-global-control-test.mjs
       - name: Platform learning unit test
         run: node tools/observability/platform-learning-test.mjs
       - name: Screenshot relay unit test
@@ -85,6 +86,8 @@ jobs:
         run: node tools/call-observability-report-test.mjs
       - name: Overlay activation and recovery regression test
         run: node tools/overlay-activation-regression-test.mjs
+      - name: Global overlay switch and hotkey regression test
+        run: node tools/overlay-global-control-test.mjs
       - name: Observability package audit unit test
         run: node tools/observability-package-audit-test.mjs
       - name: Observability package baseline audit
@@ -117,3 +120,11 @@ jobs:
           node tools/portable-root-test.mjs
           node tools/caption-lab-test.mjs
           node tools/bundled-lab-sample-test.mjs
+
+  powershell-5-1-package-integrity:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Payload integrity with Windows PowerShell 5.1
+        shell: powershell
+        run: .\\tools\\installer-payload-parser-test.ps1
