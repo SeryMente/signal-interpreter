@@ -1,13 +1,13 @@
 # Signal Interpreter — informe de cierre de llamada
 
 - Estado de recolección: **complete**
-- Referencia opaca: db295772d5115d26cbd92287
+- Referencia opaca: 0c5bab2262f3c639d6dae8f7
 - Versión runtime: 0.10.36
 - Modalidad/estado: OPI / completed
-- Inicio: 2026-10-28T20:18:59.638Z
-- Fin: 2026-10-28T20:23:53.128Z
-- Duración observada / plataforma / facturable asumida (s): 293.49 / 291 / 291
-- Ingreso estimado: 0.97 USD
+- Inicio: 2026-10-28T20:32:41.138Z
+- Fin: 2026-10-28T20:33:38.248Z
+- Duración observada / plataforma / facturable asumida (s): 57.11 / 55 / 55
+- Ingreso estimado: 0.1833 USD
 - Fin por: rating-route
 
 ## Confirmación de calificación
@@ -23,7 +23,7 @@
 - Checkpoint recibido: true
 - Disparador del lote: call-ended
 - Envío automático: true
-- Publicación del lote: 2026-10-28T20:24:01.466Z
+- Publicación del lote: 2026-10-28T20:33:58.649Z
 
 ## Diagnóstico de subtítulos
 - Máximo de filas observado: 0
@@ -31,15 +31,15 @@
 - Texto nativo fresco observado: false
 - Preview de audio histórico (no permitido en 0.10.36): false
 - Resultados de preview / con texto: 0 / 0
-- Motivos registrados: ["call-route-not-authorized","spa-call-route-observed","target-changed","native-host-not-registered"]
+- Motivos registrados: ["spa-call-route-observed","target-changed","native-host-not-registered"]
 - Montaje visible o ausencia de errores no prueban reconocimiento de voz.
 
 ## Cobertura y señales
 
-- Eventos correlacionados: 1157
-- Warnings / errores / eventos fallidos-bloqueados: 31 / 0 / 31
-- Muestras de rendimiento / media: 11 / 355
-- Conteo por grupos: {"answerFlow":574,"other":40,"overlayActivation":33,"platformAndUi":45,"mediaAndCapture":356,"transcriptionAndCaptions":64,"ratingAndClose":6,"billingAndEarnings":1,"observabilityPipeline":3,"performanceAndNetwork":11,"microphoneAndSafety":12,"runtimeAndRecovery":12}
+- Eventos correlacionados: 226
+- Warnings / errores / eventos fallidos-bloqueados: 7 / 0 / 6
+- Muestras de rendimiento / media: 3 / 4
+- Conteo por grupos: {"answerFlow":141,"other":16,"overlayActivation":16,"platformAndUi":17,"mediaAndCapture":5,"performanceAndNetwork":3,"transcriptionAndCaptions":16,"ratingAndClose":6,"billingAndEarnings":1,"observabilityPipeline":3,"microphoneAndSafety":1,"runtimeAndRecovery":1}
 
 ## Señales ausentes o incompletas
 
@@ -48,38 +48,13 @@
 
 | Momento | Acción | Nivel | Categoría | Motivo |
 |---|---|---|---|---|
-| 2026-10-28T20:18:59.773Z | LIVE_CAPTION_OVERLAY_ACTIVATION_BLOCKED | info | CAPTION | call-route-not-authorized |
-| 2026-10-28T20:18:59.789Z | LIVE_CAPTION_OVERLAY_LOCAL_ROUTE_FALLBACK | warn | CAPTION | spa-call-route-observed |
-| 2026-10-28T20:19:00.627Z | EARNINGS_OVERLAY_CHART_SYNC_ERROR | warn | RUNTIME |  |
-| 2026-10-28T20:19:00.777Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:19:18.423Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:19:28.433Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:19:38.526Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:19:48.592Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:19:58.627Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:20:08.637Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:20:18.718Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:20:28.774Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:20:38.785Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:20:48.810Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:20:58.816Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:21:08.936Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:21:18.894Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:21:28.915Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:21:38.912Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:21:48.952Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:21:58.957Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:22:08.974Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:22:18.975Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:22:28.977Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:22:38.990Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:22:49.022Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:22:59.008Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:23:09.001Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:23:19.037Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:23:29.052Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:23:39.045Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T20:23:51.383Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
+| 2026-10-28T20:32:41.193Z | LIVE_CAPTION_OVERLAY_LOCAL_ROUTE_FALLBACK | warn | CAPTION | spa-call-route-observed |
+| 2026-10-28T20:32:44.307Z | EARNINGS_OVERLAY_CHART_SYNC_ERROR | warn | RUNTIME |  |
+| 2026-10-28T20:32:58.711Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
+| 2026-10-28T20:33:22.715Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
+| 2026-10-28T20:33:33.955Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
+| 2026-10-28T20:33:39.812Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
+| 2026-10-28T20:33:45.566Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
 
 ## Privacidad
 
