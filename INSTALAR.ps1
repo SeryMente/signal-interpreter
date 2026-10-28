@@ -28,7 +28,9 @@ foreach ($entry in $entries) {
     if ($actual -ine [string]$entry.sha256) { throw "Payload SHA-256 mismatch: $relative" }
 }
 
-$sampleInfo = & (Join-Path $root 'tools\materialize-lab-sample.ps1') -Root $root
+$sampleOutput = @(& (Join-Path $root 'tools\materialize-lab-sample.ps1') -Root $root)
+if ($sampleOutput.Count -lt 1) { throw 'Bundled laboratory sample could not be verified.' }
+$sampleInfo = $sampleOutput[-1]
 if (Get-Process -Name 'SignalInterpreter.CaptionHost' -ErrorAction SilentlyContinue) {
     throw 'Native caption host is running. End the current call/test before preparing the bridge; no process was stopped.'
 }
@@ -47,7 +49,8 @@ if (-not $expectedMatch.Success) { throw 'Expected native executable hash was no
 $expectedExeHash = $expectedMatch.Groups[1].Value.ToUpperInvariant()
 $payloadFile = Join-Path $native 'SignalInterpreter.CaptionHost.exe.b64'
 $bytes = [Convert]::FromBase64String(([IO.File]::ReadAllText($payloadFile)).Trim())
-$actualExeHash = [BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($bytes)).Replace('-', '')
+$exeHasher = [Security.Cryptography.SHA256]::Create()
+try { $actualExeHash = [BitConverter]::ToString($exeHasher.ComputeHash($bytes)).Replace('-', '') } finally { $exeHasher.Dispose() }
 if ($actualExeHash -ne $expectedExeHash) { throw "Native executable SHA-256 mismatch. Expected=$expectedExeHash Actual=$actualExeHash" }
 
 # First materialize and test the exact bytes bundled with this package.
