@@ -33,6 +33,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     currency: "USD",
     billingRule: "pro_rata_by_second_assumed",
     overlayEnabled: true,
+    overlaysGlobalEnabled: true,
     overlayCompact: true,
     usdMxnRate: null,
     exchangeRateDate: null,
@@ -3408,6 +3409,17 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   chrome.commands.onCommand.addListener(function (command) {
     if (command === "toggle-extension-microphone") {
       requestKeyboardMicrophoneToggle("keyboard-command");
+      return;
+    }
+    if (command === "toggle-global-overlays") {
+      chrome.storage.local.get(["effectifConfig"], function (stored) {
+        var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+        config.overlaysGlobalEnabled = config.overlaysGlobalEnabled === false;
+        chrome.storage.local.set({ effectifConfig: config }, function () {
+          record(config.overlaysGlobalEnabled ? "GLOBAL_OVERLAYS_ENABLED" : "GLOBAL_OVERLAYS_DISABLED",
+            { source: "keyboard-command", hotkey: "Ctrl+Shift+8" }, "info", "keyboard");
+        });
+      });
       return;
     }
     if (command !== "toggle-auto-answer") return;
