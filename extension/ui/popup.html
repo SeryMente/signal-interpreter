@@ -45,18 +45,26 @@
           <span class="switch"><input id="observation" type="checkbox"><i></i></span>
         </label>
         <label class="control-row">
-          <span><strong>Overlay</strong><small>Resumen de ganancias sobre la llamada</small></span>
+          <span><strong>Overlays de llamada</strong><small>Ocultar o mostrar subtítulos e ingresos</small></span>
+          <span class="switch"><input id="allOverlaysEnabled" type="checkbox"><i></i></span>
+        </label>
+        <label class="control-row">
+          <span><strong>Overlay de ingresos</strong><small>Resumen de ganancias sobre la llamada</small></span>
           <span class="switch"><input id="overlayEnabled" type="checkbox"><i></i></span>
         </label>
       </section>
 
+
+      <div class="safety-hints overlay-shortcut-hint" aria-label="Atajo de overlays">
+        <div><kbd>Ctrl+Shift+8</kbd><span id="overlayShortcutStatus">Atajo para ocultar o mostrar los overlays</span></div>
+      </div>
 
       <section class="sub-card caption-preferences" aria-labelledby="caption-preferences-title">
         <div class="sub-head">
           <div><strong id="caption-preferences-title">Subtítulos en vivo</strong><small>Texto nativo · sin capturar audio</small></div>
           <label class="caption-enable"><input id="captionOverlayEnabled" type="checkbox" checked><span>Visible</span></label>
         </div>
-        <small class="caption-help">Live Caption de Chrome es la única fuente. Si Chrome deja de exponer texto, el panel te lo indicará.</small>
+        <small class="caption-help">Live Caption de Chrome es la única fuente. El control global oculta los paneles sin desconectar el puente ni detener la transcripción.</small>
         <label class="select-row" for="captionOverlayScope">
           <span>Visibilidad del overlay</span>
           <select id="captionOverlayScope">

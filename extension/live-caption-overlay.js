@@ -52,7 +52,7 @@
   var rows = [];
   var host = null;
   var root = null;
-  var config = { liveCaptionOverlayEnabled: true, liveCaptionOverlayScope: "source-only" };
+  var config = { liveCaptionOverlayEnabled: true, callOverlaysVisible: true, liveCaptionOverlayScope: "source-only" };
   var layout = { left: null, top: null, width: 560, height: 400, manual: false };
   var sourceTabId = null;
   var isSourceTab = false;
@@ -157,6 +157,7 @@
   }
 
   function currentBlockReason() {
+    if (config.callOverlaysVisible === false) return "master-visibility-disabled";
     if (config.liveCaptionOverlayEnabled === false) return "preference-disabled";
     if (!contextReady) return "context-not-ready";
     if (!pageAllowed) return isCloudCallRoute() ? "call-route-not-authorized" : "page-not-allowed";
@@ -174,7 +175,7 @@
   }
 
   function canShowOnThisPage() {
-    if (config.liveCaptionOverlayEnabled === false || !contextReady || !pageAllowed) return false;
+    if (config.callOverlaysVisible === false || config.liveCaptionOverlayEnabled === false || !contextReady || !pageAllowed) return false;
     if (youtubeTarget) return true;
     // La ruta activa es evidencia local suficiente para mostrar el panel mientras el
     // estado de llamada del service worker termina de reconciliarse.
@@ -1056,6 +1057,17 @@
       reportVisibility("preference-disabled");
       return;
     }
+    if (config.callOverlaysVisible === false) {
+      if (host) host.style.display = "none";
+      updateAriaVisibility();
+      reportLifecycle("LIVE_CAPTION_OVERLAY_ACTIVATION_BLOCKED", {
+        reasonCode: "master-visibility-disabled", contextReady: contextReady,
+        hostConnected: !!(host && host.isConnected),
+        nativeBridgePreferenceEnabled: config.liveCaptionOverlayEnabled !== false
+      }, "info", "master-visibility-disabled");
+      reportVisibility("master-visibility-disabled");
+      return;
+    }
     if (isCloudCallRoute() && !contextReady) activateLocalCallFallback("preference-enabled-on-call-route");
     if (canShowOnThisPage()) ensureHost();
     render(true);
@@ -1113,7 +1125,7 @@
           }
           syncContext(true);
         }
-        if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false) {
+        if (isCloudCallRoute() && config.liveCaptionOverlayEnabled !== false && config.callOverlaysVisible !== false) {
           if (!contextReady || !pageAllowed) activateLocalCallFallback("call-route-watchdog-context-recovery");
           if (!host || !host.isConnected || host.style.display === "none" || !root) {
             reportLifecycle("LIVE_CAPTION_OVERLAY_RECOVERY_ATTEMPTED", {

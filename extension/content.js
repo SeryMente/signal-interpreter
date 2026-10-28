@@ -6,7 +6,12 @@
   var CALL_BEEP_MARKER = "__SIGNAL_INTERPRETER_CALL_BEEP__";
   var existingRuntimeMarker = window[SIGNAL_RUNTIME_MARKER];
   if (existingRuntimeMarker && existingRuntimeMarker.extensionId === chrome.runtime.id && existingRuntimeMarker.version === RUNTIME_VERSION && existingRuntimeMarker.active) return;
-  window[SIGNAL_RUNTIME_MARKER] = { extensionId: chrome.runtime.id, version: RUNTIME_VERSION, active: true, startedAt: new Date().toISOString() };
+  if (existingRuntimeMarker && existingRuntimeMarker.active) {
+    try { if (typeof existingRuntimeMarker.dispose === "function") existingRuntimeMarker.dispose("runtime-version-replaced"); } catch (_) {}
+    try { var staleEarningsOverlay = document.getElementById("signal-interpreter-earnings-overlay"); if (staleEarningsOverlay) staleEarningsOverlay.remove(); } catch (_) {}
+  }
+  var runtimeMarker = { extensionId: chrome.runtime.id, version: RUNTIME_VERSION, active: true, startedAt: new Date().toISOString() };
+  window[SIGNAL_RUNTIME_MARKER] = runtimeMarker;
   try { delete window.__SIGNAL_INTERPRETER_CLOUD_V0913__; } catch (_) {}
 
   var DIALOG = '[role="dialog"]';
@@ -27,6 +32,7 @@
     telemetryHeartbeatSeconds: 30,
     transcriptionEnabled: true,
     overlayEnabled: true,
+    callOverlaysVisible: true,
     overlayCompact: true,
     opiRatePerMinute: 0.20,
     vriRatePerMinute: 0.25,
@@ -1776,15 +1782,16 @@
     renderOverlay();
   }
   function ensureOverlay() {
-    if (!config.overlayEnabled || !document.documentElement || !overlayLifecycleActive) {
-      var reasonCode = config.overlayEnabled === false ? "preference-disabled" :
-        (!document.documentElement ? "document-element-not-ready" : "call-lifecycle-inactive");
+    if (config.callOverlaysVisible === false || config.overlayEnabled === false || !document.documentElement || !overlayLifecycleActive) {
+      var reasonCode = config.callOverlaysVisible === false ? "master-visibility-disabled" :
+        (config.overlayEnabled === false ? "preference-disabled" :
+        (!document.documentElement ? "document-element-not-ready" : "call-lifecycle-inactive"));
       reportOverlayLifecycle("EARNINGS_OVERLAY_ACTIVATION_BLOCKED", {
         reasonCode: reasonCode,
         documentElementPresent: !!document.documentElement
-      }, reasonCode === "preference-disabled" ? "warn" : "info",
+      }, reasonCode === "preference-disabled" || reasonCode === "master-visibility-disabled" ? "warn" : "info",
       "activation-blocked:" + String(currentCallId() || "none") + ":" + reasonCode);
-      if (!overlayLifecycleActive) stopOverlay();
+      if (!overlayLifecycleActive || config.callOverlaysVisible === false || config.overlayEnabled === false) stopOverlay(reasonCode);
       return;
     }
     if (overlayHost && overlayHost.isConnected && overlayRoot) return;
@@ -1861,6 +1868,14 @@
     }
   }
   function renderOverlay() {
+    if (window[SIGNAL_RUNTIME_MARKER] !== runtimeMarker || runtimeMarker.active !== true) {
+      try { deactivateForHotload("superseded-runtime"); } catch (_) {}
+      return;
+    }
+    if (config.callOverlaysVisible === false || config.overlayEnabled === false) {
+      if (overlayHost || overlayLifecycleActive || overlayTimer) stopOverlay(config.callOverlaysVisible === false ? "master-visibility-disabled" : "preference-disabled");
+      return;
+    }
     var routeCallId = currentCallId();
     if (!routeCallId) {
       if (overlayLifecycleActive) stopOverlay(isRatingRoute() ? "rating-route" : "route-not-call");
@@ -2021,7 +2036,12 @@
   function deactivateForHotload(reason) {
     var stopReason = reason || "hotload-replace";
     stopOverlayActivationWatchdog("hotload:" + stopReason);
-    try { window[SIGNAL_RUNTIME_MARKER] = { extensionId: chrome.runtime.id, version: RUNTIME_VERSION, active: false, stoppedAt: iso(), reason: stopReason }; } catch (_) {}
+    try {
+      runtimeMarker.active = false;
+      runtimeMarker.stoppedAt = iso();
+      runtimeMarker.reason = stopReason;
+      window[SIGNAL_RUNTIME_MARKER] = runtimeMarker;
+    } catch (_) {}
     if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; }
     if (ratingConfirmationTimer) { clearTimeout(ratingConfirmationTimer); ratingConfirmationTimer = null; }
     if (mirrorTimer) { clearTimeout(mirrorTimer); mirrorTimer = null; }
@@ -2030,6 +2050,7 @@
     stopOverlay(stopReason);
     stop(stopReason);
   }
+  runtimeMarker.dispose = deactivateForHotload;
 
   function stop(reason) {
     if (observer) {
@@ -2043,8 +2064,8 @@
   }
   function apply(next) {
     config = Object.assign({}, config, next || {});
-    if (isTarget() && config.overlayEnabled !== false) startOverlayActivationWatchdog("config-applied");
-    else stopOverlayActivationWatchdog(config.overlayEnabled === false ? "preference-disabled" : "host-mismatch");
+    if (isTarget() && config.callOverlaysVisible !== false && config.overlayEnabled !== false) startOverlayActivationWatchdog("config-applied");
+    else stopOverlayActivationWatchdog(config.callOverlaysVisible === false ? "master-visibility-disabled" : (config.overlayEnabled === false ? "preference-disabled" : "host-mismatch"));
     if (isTarget() && (config.autoAnswerEnabled || config.observationEnabled)) start();
     else stop("disabled-or-host-mismatch");
     detectAvailability();

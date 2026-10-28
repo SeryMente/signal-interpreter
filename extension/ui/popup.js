@@ -20,6 +20,7 @@
     currency: "USD",
     billingRule: "pro_rata_by_second_assumed",
     overlayEnabled: true,
+    callOverlaysVisible: true,
     overlayCompact: true,
     liveCaptionOverlayEnabled: true,
     liveCaptionOverlayScope: "source-only",
@@ -76,6 +77,18 @@
     });
   }
 
+  function renderOverlayShortcut() {
+    var node = $("overlayShortcutStatus");
+    if (!node || !chrome.commands || typeof chrome.commands.getAll !== "function") return;
+    chrome.commands.getAll(function (commands) {
+      var item = (commands || []).find(function (command) { return command.name === "toggle-call-overlays"; });
+      var shortcut = item && item.shortcut ? item.shortcut : "";
+      node.textContent = shortcut
+        ? "Atajo activo · " + shortcut
+        : "Atajo no asignado · configúralo en chrome://extensions/shortcuts";
+    });
+  }
+
   function renderMicrophone() {
     var muted = !!state.microphoneMuted;
     var muteStatus = String(state.microphoneMuteStatus || "");
@@ -127,6 +140,7 @@
     $("telemetryMaxEvents").value = String(config.telemetryMaxEvents || 250000);
     $("telemetryHeartbeatSeconds").value = String(config.telemetryHeartbeatSeconds || 30);
     $("overlayEnabled").checked = !!config.overlayEnabled;
+    if ($("allOverlaysEnabled")) $("allOverlaysEnabled").checked = config.callOverlaysVisible !== false;
     if ($("captionOverlayEnabled")) $("captionOverlayEnabled").checked = config.liveCaptionOverlayEnabled !== false;
     if ($("captionOverlayScope")) $("captionOverlayScope").value = config.liveCaptionOverlayScope === "all-tabs" ? "all-tabs" : "source-only";
     if ($("captionInterpreterEnabled")) { $("captionInterpreterEnabled").checked = false; $("captionInterpreterEnabled").disabled = true; }
@@ -268,6 +282,7 @@
   $("telemetryMaxEvents").addEventListener("change", function () { save({ telemetryMaxEvents: Math.max(1000, Math.min(1000000, Number(this.value) || 250000)) }); });
   $("telemetryHeartbeatSeconds").addEventListener("change", function () { save({ telemetryHeartbeatSeconds: Math.max(10, Math.min(300, Number(this.value) || 30)) }); });
   $("overlayEnabled").addEventListener("change", function () { save({ overlayEnabled: this.checked }); });
+  if ($("allOverlaysEnabled")) $("allOverlaysEnabled").addEventListener("change", function () { save({ callOverlaysVisible: this.checked }); });
   if ($("captionOverlayEnabled")) $("captionOverlayEnabled").addEventListener("change", function () { save({ liveCaptionOverlayEnabled: this.checked }); });
   if ($("captionOverlayScope")) $("captionOverlayScope").addEventListener("change", function () { save({ liveCaptionOverlayScope: this.value === "all-tabs" ? "all-tabs" : "source-only" }); });
   $("volume").addEventListener("input", function () {
@@ -467,6 +482,7 @@
   });
   renderRelayStatus();
   renderMicrophoneShortcut();
+  renderOverlayShortcut();
   function renderEarningsOnly() {
     var today = localDay();
     var completed = Array.isArray(state.completedCalls) ? state.completedCalls.filter(function (call) { return localDay(call.startedAt || call.endedAt) === today; }) : [];
@@ -530,5 +546,6 @@
   setInterval(refreshTelemetryStats, 30000);
   setInterval(renderRelayMomentLabels, 10000);
   setInterval(renderMicrophoneShortcut, 10000);
+  setInterval(renderOverlayShortcut, 10000);
   setInterval(renderRelayMomentLabels, 10000);
 })();

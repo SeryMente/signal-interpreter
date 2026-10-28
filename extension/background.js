@@ -24,6 +24,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     transcriptionAvailable: true,
     transcriptionEnabled: true,
     liveCaptionOverlayEnabled: true,
+    callOverlaysVisible: true,
     liveCaptionInterpreterEnabled: false,
     liveCaptionBilingualTabEnabled: false,
     instantPreviewEnabled: false,
@@ -730,6 +731,23 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     return { ok: result.errors === 0, result: result };
   }
 
+  async function prepareCloudRuntimeReplacement(tabId, reason) {
+    var acknowledgement = null;
+    try { acknowledgement = await chrome.tabs.sendMessage(tabId, { type: "EFFECTIF_HOTLOAD_REPLACE", reason: reason || "runtime-replace" }); } catch (_) {}
+    if (!acknowledgement || acknowledgement.ok !== true || acknowledgement.reason !== "deactivated-for-hotload") {
+      await runExtensionScript({
+        target: { tabId: tabId }, world: "ISOLATED",
+        func: function () {
+          try { var owner = window.__SIGNAL_INTERPRETER_CLOUD_RUNTIME__; if (owner && typeof owner.dispose === "function") owner.dispose("hotload-fallback"); } catch (_) {}
+          try { var captionRuntime = window.__SIGNAL_CAPTION_OVERLAY_RUNTIME__; if (captionRuntime && typeof captionRuntime.dispose === "function") captionRuntime.dispose("hotload-fallback"); } catch (_) {}
+          try { var staleHost = document.getElementById("signal-interpreter-earnings-overlay"); if (staleHost) staleHost.remove(); } catch (_) {}
+        }
+      });
+    }
+    await runExtensionScript({ target: { tabId: tabId }, world: "ISOLATED", func: function () { try { window.__SIGNAL_INTERPRETER_CLOUD_RUNTIME__ = null; } catch (_) {} } });
+    return acknowledgement;
+  }
+
   async function hotloadExistingCloudTabs(trigger) {
     var now = Date.now();
     if (now - hotloadLastExistingTabScanAt < HOTLOAD_EXISTING_TAB_SCAN_MIN_MS) {
@@ -765,16 +783,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var lastError = null;
       for (var attempt = 1; attempt <= 3 && !success; attempt += 1) {
         try {
-          try {
-            await chrome.tabs.sendMessage(tabId, { type: "EFFECTIF_HOTLOAD_REPLACE", reason: trigger || "runtime-start" });
-          } catch (_) {}
-          await runExtensionScript({
-            target: { tabId: tabId },
-            world: "ISOLATED",
-            func: function () {
-              try { window.__SIGNAL_INTERPRETER_CLOUD_RUNTIME__ = null; } catch (_) {}
-            }
-          });
+          await prepareCloudRuntimeReplacement(tabId, trigger || "runtime-start");
           await runExtensionScript({ target: { tabId: tabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
           await runExtensionScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
           await runExtensionScript({ target: { tabId: tabId }, files: ["live-caption-core.js", "live-caption-overlay.js"], world: "ISOLATED", injectImmediately: true });
@@ -851,6 +860,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
         var tab = await chrome.tabs.get(callTabId);
         if (tab && isAuthorizedCloudUrl(tab.url) && isCloudCallUrl(tab.url)) {
           validCallTab = true;
+          await prepareCloudRuntimeReplacement(callTabId, trigger || "runtime-boundary-recovery");
           await runExtensionScript({ target: { tabId: callTabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
           await runExtensionScript({ target: { tabId: callTabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
           record("HOTLOAD_CONTENT_RUNTIME_REHYDRATED", { callId: state.callId, tabId: callTabId }, "info", "runtime");
@@ -3408,6 +3418,24 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   chrome.commands.onCommand.addListener(function (command) {
     if (command === "toggle-extension-microphone") {
       requestKeyboardMicrophoneToggle("keyboard-command");
+      return;
+    }
+    if (command === "toggle-call-overlays") {
+      chrome.storage.local.get(["effectifConfig"], function (stored) {
+        var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+        config.callOverlaysVisible = config.callOverlaysVisible === false;
+        var visible = config.callOverlaysVisible;
+        chrome.storage.local.set({ effectifConfig: config }, function () {
+          if (chrome.runtime.lastError) {
+            record("CALL_OVERLAYS_TOGGLE_SAVE_ERROR", { error: String(chrome.runtime.lastError.message || "storage-error") }, "error", "keyboard");
+            return;
+          }
+          record(visible ? "CALL_OVERLAYS_SHOWN" : "CALL_OVERLAYS_HIDDEN", {
+            source: "keyboard", earningsPreferenceEnabled: config.overlayEnabled !== false,
+            captionPipelinePreferenceEnabled: config.liveCaptionOverlayEnabled !== false
+          }, "info", "keyboard");
+        });
+      });
       return;
     }
     if (command !== "toggle-auto-answer") return;
