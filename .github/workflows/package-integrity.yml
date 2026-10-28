@@ -17,5 +17,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Report payload digest values for integrity inventory
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import crypto from 'node:crypto';
+          const inventory = JSON.parse(fs.readFileSync('payload-sha256.json', 'utf8'));
+          for (const entry of inventory.files || inventory) {
+            const actual = fs.existsSync(entry.path)
+              ? crypto.createHash('sha256').update(fs.readFileSync(entry.path)).digest('hex').toUpperCase()
+              : 'MISSING';
+            if (actual !== String(entry.sha256).toUpperCase()) {
+              console.log('PAYLOAD_HASH_MISMATCH ' + entry.path + ' expected=' + entry.sha256 + ' actual=' + actual);
+            }
+          }
+          NODE
       - name: Verify package inventory and overlay invariants
         run: node tools/verify-release-package.mjs
