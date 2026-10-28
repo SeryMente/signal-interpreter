@@ -1,5 +1,13 @@
 # Signal Interpreter — Extension
 
+## Candidata 0.10.38 — puente estable y control global de overlays
+
+El switch **Mostrar overlays** de la ventana emergente y el atajo **Ctrl+Shift+Y** ocultan/restauran a la vez el panel de ingresos y el overlay de subtítulos nativos, sin cambiar sus preferencias individuales ni afectar Auto-Answer. El atajo se puede reasignar en `chrome://extensions/shortcuts`.
+
+Al recargar la extensión, la candidata retira los hosts DOM residuales antes de montar los propios, reduciendo el riesgo de paneles duplicados que cubran el dialpad. La versión es candidata; la aceptación real en Windows/PC-8 sigue pendiente.
+
+
+
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
 ## Uso portable — Windows + Chrome

@@ -1,9 +1,12 @@
-[CmdletBinding()]
-param([Parameter(Mandatory=$true)][string]$ExtensionRoot)
+﻿[CmdletBinding()]
+param(
+  [Parameter(Mandatory=$true)][string]$ExtensionRoot,
+  [string]$ExecutablePath
+)
 $ErrorActionPreference='Stop'
 $runtime=if(Test-Path -LiteralPath (Join-Path $ExtensionRoot 'extension\native')){Join-Path $ExtensionRoot 'extension'}else{$ExtensionRoot}
-$exe=Join-Path $runtime 'native\SignalInterpreter.CaptionHost.exe'
-if(-not(Test-Path -LiteralPath $exe)){throw 'Native executable missing.'}
+$exe=if(-not [string]::IsNullOrWhiteSpace($ExecutablePath)){[IO.Path]::GetFullPath($ExecutablePath)}else{Join-Path $runtime 'native\SignalInterpreter.CaptionHost.exe'}
+if(-not(Test-Path -LiteralPath $exe -PathType Leaf)){throw "Native executable missing: $exe"}
 $registration=Get-Content -Raw -LiteralPath (Join-Path $runtime 'native\register-caption-host.ps1')
 $expected=[regex]::Match($registration,'ExpectedSha256\s*=\s*"([A-Fa-f0-9]{64})"').Groups[1].Value
 if($expected.Length -ne 64 -or (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash -ne $expected){throw 'Native executable hash mismatch.'}
@@ -57,7 +60,7 @@ try{
   $stdin.Write($frame,0,$frame.Length);$stdin.Write($payload,0,$payload.Length);$stdin.Flush();$stdin.Close()
   if(-not $process.WaitForExit(5000)){throw 'Native probe did not stop in time.'}
   if(-not $ready -or $process.ExitCode -ne 0){throw 'Native protocol probe not verified.'}
-  [pscustomobject]@{Protocol='PASS';Frames=$frames;CaptionEvents=$captions;NativeActiveObserved=$active;CaptionWindowVisibleObserved=$visible;RawTextExported=$false;CallOrChromeRestarted=$false} | ConvertTo-Json -Compress
+  [pscustomobject]@{Protocol='PASS';Frames=$frames;CaptionEvents=$captions;NativeActiveObserved=$active;CaptionWindowVisibleObserved=$visible;RawTextExported=$false;CallOrChromeRestarted=$false;ExecutablePath=$exe} | ConvertTo-Json -Compress
 }finally{
   # Only terminate the process started by this probe, never Chrome or other host instances.
   if($started -and -not $process.HasExited){$process.Kill()}

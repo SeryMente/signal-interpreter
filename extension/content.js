@@ -6,7 +6,25 @@
   var CALL_BEEP_MARKER = "__SIGNAL_INTERPRETER_CALL_BEEP__";
   var existingRuntimeMarker = window[SIGNAL_RUNTIME_MARKER];
   if (existingRuntimeMarker && existingRuntimeMarker.extensionId === chrome.runtime.id && existingRuntimeMarker.version === RUNTIME_VERSION && existingRuntimeMarker.active) return;
-  window[SIGNAL_RUNTIME_MARKER] = { extensionId: chrome.runtime.id, version: RUNTIME_VERSION, active: true, startedAt: new Date().toISOString() };
+  if (existingRuntimeMarker && existingRuntimeMarker.extensionId === chrome.runtime.id) {
+    try { if (typeof existingRuntimeMarker.dispose === "function") existingRuntimeMarker.dispose("runtime-replaced"); } catch (_) {}
+  }
+  // Chrome can invalidate the previous isolated world while leaving its DOM host attached.
+  try {
+    Array.prototype.forEach.call(document.querySelectorAll("#signal-interpreter-earnings-overlay"), function (node) {
+      try { node.remove(); } catch (_) {}
+    });
+  } catch (_) {}
+  window[SIGNAL_RUNTIME_MARKER] = {
+    extensionId: chrome.runtime.id,
+    version: RUNTIME_VERSION,
+    active: true,
+    startedAt: new Date().toISOString(),
+    dispose: function (reason) {
+      try { deactivateForHotload(reason || "runtime-replaced"); }
+      catch (_) { try { var stale = document.getElementById("signal-interpreter-earnings-overlay"); if (stale) stale.remove(); } catch (_) {} }
+    }
+  };
   try { delete window.__SIGNAL_INTERPRETER_CLOUD_V0913__; } catch (_) {}
 
   var DIALOG = '[role="dialog"]';
@@ -27,6 +45,7 @@
     telemetryHeartbeatSeconds: 30,
     transcriptionEnabled: true,
     overlayEnabled: true,
+    overlaysVisible: true,
     overlayCompact: true,
     opiRatePerMinute: 0.20,
     vriRatePerMinute: 0.25,
@@ -1703,8 +1722,8 @@
   }
 
   function startOverlayActivationWatchdog(reason) {
-    if (!isTarget() || config.overlayEnabled === false) {
-      stopOverlayActivationWatchdog(config.overlayEnabled === false ? "preference-disabled" : "host-mismatch");
+    if (!isTarget() || config.overlayEnabled === false || config.overlaysVisible === false) {
+      stopOverlayActivationWatchdog(config.overlaysVisible === false ? "global-overlays-hidden" : (config.overlayEnabled === false ? "preference-disabled" : "host-mismatch"));
       return;
     }
     if (overlayActivationWatchdog) return;
@@ -1715,7 +1734,10 @@
       observationEnabled: config.observationEnabled !== false
     }, "info", "watchdog-started:" + String(reason || "extension-config-ready"));
     overlayActivationWatchdog = setInterval(function () {
-      if (!isTarget() || config.overlayEnabled === false) return;
+      if (!isTarget() || config.overlayEnabled === false || config.overlaysVisible === false) {
+        if (config.overlaysVisible === false && (overlayHost || overlayLifecycleActive)) stopOverlay("global-overlays-hidden");
+        return;
+      }
       var pathname = location.pathname;
       if (pathname !== overlayLastRoute || pathname !== route) {
         var previousPath = String(overlayLastRoute || route || "/")
@@ -1775,7 +1797,22 @@
     }, "info", "activation-requested:" + String(callId));
     renderOverlay();
   }
+  function pruneDuplicateEarningsOverlays() {
+    try {
+      var keep = overlayHost && overlayHost.isConnected ? overlayHost : null;
+      Array.prototype.forEach.call(document.querySelectorAll("#signal-interpreter-earnings-overlay"), function (node) {
+        if (keep && node === keep) return;
+        try { node.remove(); } catch (_) {}
+      });
+    } catch (_) {}
+  }
+
   function ensureOverlay() {
+    pruneDuplicateEarningsOverlays();
+    if (config.overlaysVisible === false) {
+      if (overlayHost || overlayLifecycleActive) stopOverlay("global-overlays-hidden");
+      return;
+    }
     if (!config.overlayEnabled || !document.documentElement || !overlayLifecycleActive) {
       var reasonCode = config.overlayEnabled === false ? "preference-disabled" :
         (!document.documentElement ? "document-element-not-ready" : "call-lifecycle-inactive");
@@ -1861,6 +1898,11 @@
     }
   }
   function renderOverlay() {
+    pruneDuplicateEarningsOverlays();
+    if (config.overlaysVisible === false) {
+      if (overlayHost || overlayLifecycleActive) stopOverlay("global-overlays-hidden");
+      return;
+    }
     var routeCallId = currentCallId();
     if (!routeCallId) {
       if (overlayLifecycleActive) stopOverlay(isRatingRoute() ? "rating-route" : "route-not-call");
@@ -2043,8 +2085,8 @@
   }
   function apply(next) {
     config = Object.assign({}, config, next || {});
-    if (isTarget() && config.overlayEnabled !== false) startOverlayActivationWatchdog("config-applied");
-    else stopOverlayActivationWatchdog(config.overlayEnabled === false ? "preference-disabled" : "host-mismatch");
+    if (isTarget() && config.overlayEnabled !== false && config.overlaysVisible !== false) startOverlayActivationWatchdog("config-applied");
+    else stopOverlayActivationWatchdog(config.overlaysVisible === false ? "global-overlays-hidden" : (config.overlayEnabled === false ? "preference-disabled" : "host-mismatch"));
     if (isTarget() && (config.autoAnswerEnabled || config.observationEnabled)) start();
     else stop("disabled-or-host-mismatch");
     detectAvailability();

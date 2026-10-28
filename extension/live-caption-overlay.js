@@ -22,7 +22,15 @@
   }
 
   var previousOverlayRuntime = globalThis.__SIGNAL_CAPTION_OVERLAY_RUNTIME__;
-  if (previousOverlayRuntime && typeof previousOverlayRuntime.dispose === "function") previousOverlayRuntime.dispose("runtime-reinjected");
+  if (previousOverlayRuntime && typeof previousOverlayRuntime.dispose === "function") {
+    try { previousOverlayRuntime.dispose("runtime-reinjected"); } catch (_) {}
+  }
+  // Remove an orphaned host even if Chrome invalidated its old extension execution context.
+  try {
+    Array.prototype.forEach.call(document.querySelectorAll("#signal-interpreter-live-caption-overlay"), function (node) {
+      try { node.remove(); } catch (_) {}
+    });
+  } catch (_) {}
   var runtimeDisposed = false, runtimeStorageReady = false, runtimeEventBindings = [];
   var runtimeVersion = String(chrome.runtime.getManifest().version || "unknown");
   var runtimeApi = { version: runtimeVersion, dispose: disposeOverlay, snapshot: function(){ return {ready:runtimeStorageReady,hostMounted:!!(host && host.isConnected && root),rowCount:rows.length,active:active,contextReady:contextReady}; } };
@@ -52,7 +60,7 @@
   var rows = [];
   var host = null;
   var root = null;
-  var config = { liveCaptionOverlayEnabled: true, liveCaptionOverlayScope: "source-only" };
+  var config = { liveCaptionOverlayEnabled: true, liveCaptionOverlayScope: "source-only", overlaysVisible: true };
   var layout = { left: null, top: null, width: 560, height: 400, manual: false };
   var sourceTabId = null;
   var isSourceTab = false;
@@ -157,6 +165,7 @@
   }
 
   function currentBlockReason() {
+    if (!isLabPage && config.overlaysVisible === false) return "global-overlays-hidden";
     if (config.liveCaptionOverlayEnabled === false) return "preference-disabled";
     if (!contextReady) return "context-not-ready";
     if (!pageAllowed) return isCloudCallRoute() ? "call-route-not-authorized" : "page-not-allowed";
@@ -174,7 +183,7 @@
   }
 
   function canShowOnThisPage() {
-    if (config.liveCaptionOverlayEnabled === false || !contextReady || !pageAllowed) return false;
+    if ((!isLabPage && config.overlaysVisible === false) || config.liveCaptionOverlayEnabled === false || !contextReady || !pageAllowed) return false;
     if (youtubeTarget) return true;
     // La ruta activa es evidencia local suficiente para mostrar el panel mientras el
     // estado de llamada del service worker termina de reconciliarse.
@@ -1044,16 +1053,24 @@
     config = Object.assign({}, config, next || {});
     if (isLabPage) {config.liveCaptionOverlayEnabled=true;config.liveCaptionOverlayScope="source-only";}
     youtubeTarget = isYoutubeTargetPage();
-    if (config.liveCaptionOverlayEnabled === false) {
+    var globalOverlaysHidden = !isLabPage && config.overlaysVisible === false;
+    if (globalOverlaysHidden || config.liveCaptionOverlayEnabled === false) {
       active = false;
       cancelContextRetry();
-      if (host) host.style.display = "none";
+      var disabledReason = globalOverlaysHidden ? "global-overlays-hidden" : "preference-disabled";
+      if (globalOverlaysHidden) {
+        if (host) host.remove();
+        host = null;
+        root = null;
+      } else if (host) {
+        host.style.display = "none";
+      }
       updateAriaVisibility();
       reportLifecycle("LIVE_CAPTION_OVERLAY_ACTIVATION_BLOCKED", {
-        reasonCode: "preference-disabled", contextReady: contextReady,
+        reasonCode: disabledReason, contextReady: contextReady,
         hostConnected: !!(host && host.isConnected)
-      }, "warn", "preference-disabled");
-      reportVisibility("preference-disabled");
+      }, "warn", disabledReason);
+      reportVisibility(disabledReason);
       return;
     }
     if (isCloudCallRoute() && !contextReady) activateLocalCallFallback("preference-enabled-on-call-route");

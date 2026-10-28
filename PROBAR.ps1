@@ -1,10 +1,10 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param()
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath($PSScriptRoot).TrimEnd('\')
 $id='ldpbjhobnfgmhdoehehdmnbhhjckebmj'
 $manifest=Get-Content -Raw -LiteralPath (Join-Path $root 'manifest.json') | ConvertFrom-Json
-if($manifest.version -ne '0.10.36'){throw 'Manifiesto esperado no encontrado en esta carpeta.'}
+if($manifest.version -ne '0.10.38'){throw 'Manifiesto esperado no encontrado en esta carpeta.'}
 $profiles=@()
 $userData=Join-Path $env:LOCALAPPDATA 'Google\Chrome\User Data'
 if(Test-Path -LiteralPath $userData){foreach($dir in Get-ChildItem -LiteralPath $userData -Directory){foreach($name in @('Secure Preferences','Preferences')){$file=Join-Path $dir.FullName $name;if(-not(Test-Path -LiteralPath $file)){continue};try{$prefs=Get-Content -Raw -LiteralPath $file|ConvertFrom-Json;$entry=$prefs.extensions.settings.PSObject.Properties[$id];if($entry -and $entry.Value.path -and [IO.Path]::GetFullPath([string]$entry.Value.path).TrimEnd('\') -eq $root){$profiles+=$dir.Name;break}}catch{}}}}

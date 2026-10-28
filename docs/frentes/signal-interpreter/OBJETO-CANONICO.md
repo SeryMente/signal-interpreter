@@ -79,6 +79,14 @@ Sandbox Linux: lógica real y DOM Chromium con eventos sintéticos para candidat
 
 ## Estado vivo
 
+### Candidata 0.10.38 — no liberada ni aceptada
+
+Error reproducido por el operador en Windows PowerShell 5.1: \`INSTALAR.ps1\` trató todos los paths del inventario SHA-256 como una sola entrada (\`Missing payload file\`). La candidata actualiza el parser para aplanar/validar cada objeto, usa una ubicación estable del host nativo y prueba el ejecutable registrado.
+
+También propone limpieza al reinjectar ambos overlays y el switch global \`overlaysVisible\` con atajo \`Ctrl+Shift+Y\`. No modifica Auto-Answer, el lector C# ni captura de audio. Ver \`docs/versions/0.10.38-candidate.md\`.
+
+Estado de evidencia: solo candidata de código y pruebas automáticas. CI exacta, Windows PowerShell 5.1, Chrome/PC-8, llamada real y persistencia después de Deep Freeze siguen pendientes. No confundir paquete construido con aceptación de transcripción.
+
 ### 🔄 Estado vivo
 
 ```text

@@ -24,6 +24,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     transcriptionAvailable: true,
     transcriptionEnabled: true,
     liveCaptionOverlayEnabled: true,
+    overlaysVisible: true,
     liveCaptionInterpreterEnabled: false,
     liveCaptionBilingualTabEnabled: false,
     instantPreviewEnabled: false,
@@ -3408,6 +3409,20 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   chrome.commands.onCommand.addListener(function (command) {
     if (command === "toggle-extension-microphone") {
       requestKeyboardMicrophoneToggle("keyboard-command");
+      return;
+    }
+    if (command === "toggle-call-overlays") {
+      chrome.storage.local.get(["effectifConfig"], function (stored) {
+        var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+        config.overlaysVisible = config.overlaysVisible === false;
+        chrome.storage.local.set({ effectifConfig: config }, function () {
+          var hidden = config.overlaysVisible === false;
+          var lastError = chrome.runtime.lastError;
+          record(lastError ? "CALL_OVERLAYS_TOGGLE_FAILED" : (hidden ? "CALL_OVERLAYS_HIDDEN" : "CALL_OVERLAYS_SHOWN"), {
+            source: "keyboard-command", shortcut: "Ctrl+Shift+Y", verified: !lastError
+          }, lastError ? "error" : "info", "overlay");
+        });
+      });
       return;
     }
     if (command !== "toggle-auto-answer") return;
