@@ -7,7 +7,7 @@ $native = Join-Path $root 'extension\native'
 $manifestFile = Join-Path $root 'manifest.json'
 $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestFile | ConvertFrom-Json
 
-if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.36') {
+if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.37') {
     throw 'Unexpected Signal Interpreter package version; nothing was registered.'
 }
 if (-not $env:LOCALAPPDATA) { throw 'LOCALAPPDATA is undefined; no host was installed.' }
@@ -18,14 +18,23 @@ $id = -join ($digest[0..15] | ForEach-Object { [char](97 + ($_ -shr 4)); [char](
 if ($id -ne 'ldpbjhobnfgmhdoehehdmnbhhjckebmj') { throw 'Extension identity mismatch; no host was registered.' }
 
 # Verify every payload file before materializing the native executable or touching the registry.
-$entries = @(Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $root 'payload-sha256.json') | ConvertFrom-Json)
+$inventoryPath = Join-Path $root 'payload-sha256.json'
+$inventoryText = Get-Content -Raw -Encoding UTF8 -LiteralPath $inventoryPath
+try { $inventory = ConvertFrom-Json -InputObject $inventoryText } catch { throw "Invalid payload-sha256.json: $($_.Exception.Message)" }
+if ($inventory.schema -ne 'signal-interpreter-payload-sha256/v1' -or $null -eq $inventory.files) {
+    throw 'Payload inventory schema is invalid; no native host or registry values were changed.'
+}
+$entries = @($inventory.files)
+if ($entries.Count -lt 1) { throw 'Payload inventory is empty; no native host or registry values were changed.' }
 foreach ($entry in $entries) {
     $relative = [string]$entry.path
+    $expectedHash = [string]$entry.sha256
+    if ([string]::IsNullOrWhiteSpace($relative) -or $expectedHash -notmatch '^[A-Fa-f0-9]{64}$') { throw 'Payload inventory entry is malformed.' }
     if ([IO.Path]::IsPathRooted($relative) -or $relative -match '(^|[/\\])\.\.([/\\]|$)') { throw "Unsafe payload path: $relative" }
     $file = Join-Path $root $relative
     if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "Missing payload file: $relative" }
     $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash
-    if ($actual -ine [string]$entry.sha256) { throw "Payload SHA-256 mismatch: $relative" }
+    if ($actual -ine $expectedHash) { throw "Payload SHA-256 mismatch: $relative" }
 }
 
 $sampleOutput = @(& (Join-Path $root 'tools\materialize-lab-sample.ps1') -Root $root)
