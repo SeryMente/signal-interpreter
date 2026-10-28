@@ -13,5 +13,5 @@ assert.match(installer, /\$inventoryJson\s*=\s*\[IO\.File\]::ReadAllText/);
 assert.match(installer, /function Add-PayloadInventoryItems/);
 assert.match(installer, /\$script:payloadEntries\.Add\(\$Value\)/);
 assert.match(installer, /Payload SHA-256 inventory is incomplete/);
-assert.match(installer, /Malformed payload SHA-256 inventory entry/);
+assert.match(installer, /Payload SHA-256 inventory entry is malformed/);
 console.log("INSTALLER_PAYLOAD_INVENTORY_SHAPE=PASS");
