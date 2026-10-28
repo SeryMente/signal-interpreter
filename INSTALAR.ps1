@@ -7,7 +7,7 @@ $native = Join-Path $root 'extension\native'
 $manifestFile = Join-Path $root 'manifest.json'
 $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestFile | ConvertFrom-Json
 
-if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.37) {
+if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.37') {
     throw 'Unexpected Signal Interpreter package version; nothing was registered.'
 }
 if (-not $env:LOCALAPPDATA) { throw 'LOCALAPPDATA is undefined; no host was installed.' }
