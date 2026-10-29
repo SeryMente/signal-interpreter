@@ -3,7 +3,7 @@ import fs from "node:fs";
 const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
 const background = fs.readFileSync("extension/background.js", "utf8");
 const offscreen = fs.readFileSync("extension/offscreen.js", "utf8");
-assert.equal(manifest.version, "0.10.37");
+assert.equal(manifest.version, "0.10.38");
 const scheduler = background.slice(background.indexOf("async function scheduleSafeRuntimeReload"), background.indexOf("async function coordinateUpdateAvailability"));
 assert.ok(scheduler.includes("allowActiveCall"));
 assert.ok(scheduler.includes("HOTLOAD_RELOAD_BLOCKED_ACTIVE_CALL"));
