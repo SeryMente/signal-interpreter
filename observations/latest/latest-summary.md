@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-2f2408ac-e34a-4a95-98a9-c487d68bece2
-- Creado: 2026-10-29T20:37:51.244Z
-- Trigger: alarm
+- Batch: batch-aff254ac-358b-4ce2-8f4f-66badb23ad53
+- Creado: 2026-10-29T20:41:50.507Z
+- Trigger: critical
 - Extensión: 0.10.37
-- Eventos: 1
+- Eventos: 3
 - Errores: 0
-- Warnings: 0
-- Secuencia: 7068 → 7068
+- Warnings: 2
+- Secuencia: 7069 → 7071
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 1807
 - Deltas de plataforma: 1787
@@ -15,11 +15,13 @@
 ## Categorías
 
 {
-  "RUNTIME": 1
+  "RUNTIME": 3
 }
 
 ## Acciones
 
 {
-  "TELEMETRY_MAINTENANCE": 1
+  "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
+  "EARNINGS_SYNC_QUEUE_ERROR": 1,
+  "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
 }
