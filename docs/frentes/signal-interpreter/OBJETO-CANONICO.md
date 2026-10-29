@@ -8,7 +8,7 @@
 - Revisión documental: **SI-OBJ-v1.10-seguridad-idiomas-01**; ancla: **C-SIGNAL-SEGURIDAD-IDIOMAS-20261020-01**, encargo directo del operador del 2026-10-20. Naturaleza: permanente, actualización del objeto existente expresamente solicitada; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
-- Producto instalado/preparado: `0.10.36`. El operador confirma texto de Live Caption en una llamada real y aporta salida con mezcla de idiomas. Recepción nativa corroborada por metadatos; atribución a tres participantes y aceptación integral NO DEMOSTRADAS. Candidata `0.10.37` separada, sin merge ni aceptación Windows. No confundir revisión documental, prueba sintética y release.
+- Estado de versiones al 2026-10-29: main declara `0.10.37`; la PR [#67](https://github.com/SeryMente/signal-interpreter/pull/67) mantiene la candidata no liberada `0.10.38` en `fix/pipeline-e2e-20261029`. Los tres workflows de CI fueron `success` para el SHA anterior `65828e2b5c4cf6d4cdc947355d3adbd2b48acb50` ([integridad](https://github.com/SeryMente/signal-interpreter/actions/runs/40956715163), [auditoría](https://github.com/SeryMente/signal-interpreter/actions/runs/40956715181), [host nativo](https://github.com/SeryMente/signal-interpreter/actions/runs/40956715164)); cambios posteriores en la rama corrigen una regresión de ejecución desde ZIP, etiquetan la guía y actualizan el checksum, pero **CI para la revisión actual NO VERIFICADO**. En PC-4 se validó el inventario inicial de 58 archivos y pasaron 32/33 pruebas; la única falla fue una prueba que leía `.github/workflows/observability-audit.yml`, excluido intencionadamente de los ZIP por `.gitattributes`. Se corrigió el test para que compruebe el workflow en un checkout completo y lo omita solo cuando el archivo esté ausente en el archivo distribuible. La re-descarga y prueba de la revisión actual se lanzaron en RDC, pero la conexión dejó de devolver resultados; resultado local final **NO VERIFICADO**, no presumir aprobación ni fallo. En este ciclo no se ejecutó instalador, no se cambió registro ni perfil de Chrome y no se probó una llamada real. La observación operacional sigue siendo de `0.10.37`.
 - Persistencia verificable: identificar la revisión Git que contiene este archivo y el [recibo de migración](evidencias/C-SIGNAL-METACANON-20261020-01.json); el recibo identifica la base y los contenidos, no autocertifica publicación o conformidad semántica.
 
 ## LEER PRIMERO
@@ -42,7 +42,7 @@ Samantha continúa como **constructor**, Claudia como **asistente**. El nombre d
 
 **De dónde viene:** mejorar calidad de vida en interpretación telefónica, apoyada en texto de Live Caption nativo; dictados y ratificaciones originales conservados en el [antecedente íntegro](antecedentes/TRANSCRIPTION-SPRINT-CANONICAL.pre-1.9.md), §§13–17 y SI-D001–008.
 
-**Dónde está:** 0.10.36 preparada y registrada; el operador confirma transcripción visible en una llamada, con asignación errónea de idiomas y buffers repetidos. **A dónde va:** contestación segura por presencia, texto nativo conservado y tramos de idioma correctos, sin fingir identificación de voces. **Qué cambió:** método 1.10/control; preparación real; evidencia nativa; candidata 0.10.37 de presencia y segmentación, aún no liberada.
+**Dónde está:** `main` publica `0.10.37`; la candidata `0.10.38` sigue en la PR [#67](https://github.com/SeryMente/signal-interpreter/pull/67), en borrador y sin merge. La corrección de la prueba para ZIP y la guía de candidata están comprometidas en la rama; CI en la cabeza más reciente y las compuertas de Windows/Chrome aún no están verificadas. Se conserva la separación entre código candidato, preparación del puente y aceptación en llamada real.
 
 Incluido: Windows + Chrome; Live Caption → Windows UI Automation → Native Messaging → overlay; carriles por idioma, historial, copiar/buscar, hotloading, controles existentes; instalación portable desde raíz y laboratorio aislado con muestra incluida. MacOS/Linux son entornos de desarrollo, no plataformas de producto acreditadas.
 
@@ -82,9 +82,13 @@ Sandbox Linux: lógica real y DOM Chromium con eventos sintéticos para candidat
 ### 🔄 Estado vivo
 
 ```text
-Acción en curso: candidata 0.10.37 publicada en #60, pruebas locales y comprobaciones de integración continua aprobadas; sin merge ni activación verificada. Preparación remota candidata con resultado incierto tras timeout, no repetir a ciegas.
-Estado real: operador confirma Live Caption visible en una llamada de 0.10.36; metadatos nativos recibidos. Problema vigente: buffers mixtos rotulados como un idioma/participante; recepción nativa no equivale a diarización ni aceptación integral.
-Siguiente paso atómico: validar la revisión exacta candidata en Windows, fuera de llamada y con respaldo/registro/rollback; probar presencia y tramos visibles con fuente nativa real. No sustituir carpeta ni reproducir muestra mientras la ausencia de llamada sea desconocida.
+Acción en curso: PR #67 concentra la candidata 0.10.38 y sigue abierta, en borrador y sin merge. El último conjunto de tres workflows verde corresponde al SHA previo 65828e2b5c4cf6d4cdc947355d3adbd2b48acb50; no equivale a CI verde en la revisión más reciente de la rama.
+
+Validación local en PC-4: la primera extracción confirmó 58 entradas de inventario y 32 de 33 pruebas automatizadas. La única falla fue un supuesto incorrecto del test que requería .github/workflows/observability-audit.yml dentro de un ZIP que lo excluye por diseño. El test se corrigió. Se descargó/ejecutó una nueva ronda para verificar la rama actual, pero las llamadas RDC de lectura terminaron en timeout; la salida final de esa ronda y el estado exacto de la carpeta r3 quedan NO VERIFICADOS. No repetir descarga o preparación sin inspeccionar los efectos.
+
+En esta sesión no se ejecutó INSTALAR.ps1/INSTALAR.cmd, no se registró el host, no se modificó el perfil/estado de Chrome y no se hizo una llamada real. PC-4 se listaba Online, pero las operaciones remotas dejaron de responder; no se debe suponer que la prueba terminó ni que falló.
+
+Siguiente paso atómico: restablecer RDC y leer primero el log y el resultado de verificación de la candidata descargada; confirmar una ventana segura sin llamada, revisar hashes y Native Messaging; luego probar la extensión en un perfil aislado, sin tocar la sesión activa. La aceptación de Live Caption real, presencia/bloqueo/suspensión y nueva observación operacional siguen pendientes. No fusionar ni liberar hasta CI en la cabeza exacta y aceptación física documentada.
 ```
 
 ### ⚗️ En prueba / recién fallido
@@ -122,7 +126,7 @@ Resultado: actualización permanente autorizada del mismo objeto a método 1.10 
 | Requisito | Estado implementado / evidencia | Aceptación y pendiente |
 |---|---|---|
 | Preparación desde raíz 0.10.36 | Integridad, muestra, protocolo y registro verificados en Windows; ruta registrada por Chrome | Operador confirma transcripción en una llamada; no aceptación integral |
-| Disponibilidad segura | Candidata 0.10.37, permiso idle, armado efímero, autorización previa al clic, vídeo manual, reserva entre pestañas | Pruebas locales/DOM y compilación/protocolo Windows CI PASS; idle del operador y suspensión corta no aceptados |
+| Disponibilidad segura | Candidata consolidada 0.10.38, permiso `idle`, autorización efímera previa al clic, vídeo manual, sin rearme automático | CI exacta PASS; idle/bloqueo/suspensión y llamada real del equipo objetivo siguen pendientes; sin aceptación Windows |
 | Separación de idiomas | Candidata segmenta tramos locales; conserva íntegro el texto normalizado; ambigüedad neutra; buffer bruto no recibe identidad falsa | Regresión y DOM sintéticos; nueva llamada/repetibilidad aún pendientes; heurística no es garantía lingüística universal |
 | Tres participantes | Modelo semántico corregido: yo = intérprete, no LEP; no se habilitó captura | Identidad de fuente remota y canal del micrófono no demostrados/activados |
 | Observabilidad | Recepción actual de metadatos nativos corroborada; candidata añade contadores de tramos sin contenido | Informe reciente completo corroborado después del primer corte; no reconoce automáticamente las frases mal asignadas ni acredita los contadores nuevos de la candidata |
@@ -139,7 +143,7 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 ## Crónica y fuentes
 
-- [Candidata #60](https://github.com/SeryMente/signal-interpreter/pull/60), [pruebas publicadas de candidata](https://github.com/SeryMente/signal-interpreter/blob/314d38e3a8adaea783e8f63023a0bbd874ab6d65/docs/versions/0.10.37-candidata-evidencia.json) y [recibo saneado del ciclo](evidencias/C-SIGNAL-SEGURIDAD-IDIOMAS-20261020-01.json).
+- [Candidata consolidada #67](https://github.com/SeryMente/signal-interpreter/pull/67), [compuertas de versión 0.10.38](https://github.com/SeryMente/signal-interpreter/blob/fix/pipeline-e2e-20261029/docs/versions/0.10.38-candidate.md), SHA CI `65828e2b5c4cf6d4cdc947355d3adbd2b48acb50`; entradas heredadas cerradas como supersedidas, no fusionadas: [PR #60](https://github.com/SeryMente/signal-interpreter/pull/60) y [PR #63](https://github.com/SeryMente/signal-interpreter/pull/63). La aprobación de CI no sustituye aceptación Windows. [Pruebas previas de #60](https://github.com/SeryMente/signal-interpreter/blob/314d38e3a8adaea783e8f63023a0bbd874ab6d65/docs/versions/0.10.37-candidata-evidencia.json) y [recibo saneado](evidencias/C-SIGNAL-SEGURIDAD-IDIOMAS-20261020-01.json).
 - [Informe consolidado recibido](https://github.com/SeryMente/signal-interpreter/blob/c21c2e861ac6b52acefd12fc876d19c810855127/observations/latest/latest-call-report.json); no texto clínico. [Windows CI](https://github.com/SeryMente/signal-interpreter/actions/runs/39528993131/job/118990266837) y [auditoría CI](https://github.com/SeryMente/signal-interpreter/actions/runs/39528993110/job/118990266881).
 
 - [Crónica del corte actual](cronica/C-SIGNAL-SEGURIDAD-IDIOMAS-20261020-01.md); [corte anterior preservado](cronica/C-SIGNAL-METACANON-20261020-01.md).
