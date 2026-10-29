@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-ee871a0a-c06c-4526-ad3f-18c4f968e6eb",
-  "createdAt": "2026-10-29T21:37:26.539Z",
-  "trigger": "event-window",
+  "batchId": "batch-4b6ac43d-8327-42be-80e8-428d8ee03163",
+  "createdAt": "2026-10-29T21:38:07.927Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.37",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "31c322bb-9d6f-4bd1-aaef-211e131e2151",
-      "sequence": 7072,
-      "timestamp": "2026-10-29T21:36:56.431Z",
-      "ingestedAt": "2026-10-29T21:36:56.431Z",
+      "id": "2f743f34-750c-4d4c-8833-2ae20f2b270d",
+      "sequence": 7073,
+      "timestamp": "2026-10-29T21:37:50.311Z",
+      "ingestedAt": "2026-10-29T21:37:50.311Z",
       "level": "info",
-      "category": "BILLING",
+      "category": "RUNTIME",
       "component": "background",
       "extensionVersion": "0.10.37",
       "host": "",
       "url": "",
-      "phase": "completed",
-      "action": "EXCHANGE_RATE_UPDATED",
-      "outcome": "success",
-      "traceId": "4bc54477-db53-4a0a-aec2-23b11fdabc59",
+      "phase": "event",
+      "action": "TELEMETRY_MAINTENANCE",
+      "outcome": "observed",
+      "traceId": "ec9e1b44-a848-4dad-b29d-bd82fe14522b",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -34,7 +34,7 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": "alarm",
+      "reasonCode": null,
       "error": null,
       "metrics": {},
       "context": {},
@@ -44,31 +44,89 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "pair": "USD/MXN",
-        "rate": 18.862849,
-        "rateDate": "[PHONE]",
-        "source": "ExchangeRate.fun / hourly snapshot",
-        "reason": "alarm"
+        "pruned": {
+          "cutoff": "[PHONE]T21:37:50.238Z",
+          "expiredEvents": 0,
+          "expiredSnapshots": 0,
+          "expiredSignalSegments": 0,
+          "excessEvents": 0,
+          "excessSignalSegments": 0
+        },
+        "stats": {
+          "database": "signal-interpreter-telemetry",
+          "events": 7072,
+          "snapshots": 13,
+          "signalSegments": 0,
+          "oldestEventAt": "[PHONE]T17:05:33.453Z",
+          "newestEventAt": "[PHONE]T21:36:56.431Z",
+          "usageBytes": 8256116,
+          "quotaBytes": 14142741108
+        }
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "b60ad783-21bd-447a-b858-0c36d9893807",
+      "sequence": 7074,
+      "timestamp": "2026-10-29T21:37:52.930Z",
+      "ingestedAt": "2026-10-29T21:37:52.930Z",
+      "level": "warn",
+      "category": "RUNTIME",
+      "component": "background",
+      "extensionVersion": "0.10.37",
+      "host": "",
+      "url": "",
+      "phase": "event",
+      "action": "OBSERVATION_SYNC_RETRY_SCHEDULED",
+      "outcome": "observed",
+      "traceId": "51a0a73d-52cd-4435-b0cb-8c1c2d64ff69",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.37",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": "Error: Relay HTTP 409",
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "retryMs": 15000,
+        "error": "Error: Relay HTTP 409",
+        "sequence": null
       }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
-    "warnings": 0,
+    "warnings": 1,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 7072,
-    "lastSequence": 7072,
-    "firstTimestamp": "2026-10-29T21:36:56.431Z",
-    "lastTimestamp": "2026-10-29T21:36:56.431Z",
+    "firstSequence": 7073,
+    "lastSequence": 7074,
+    "firstTimestamp": "2026-10-29T21:37:50.311Z",
+    "lastTimestamp": "2026-10-29T21:37:52.930Z",
     "actions": {
-      "EXCHANGE_RATE_UPDATED": 1
+      "TELEMETRY_MAINTENANCE": 1,
+      "OBSERVATION_SYNC_RETRY_SCHEDULED": 1
     },
     "categories": {
-      "BILLING": 1
+      "RUNTIME": 2
     }
   }
 }
