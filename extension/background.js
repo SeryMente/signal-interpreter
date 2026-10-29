@@ -2427,6 +2427,19 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   function syncOfficialPlatformData(){
     return enqueueEarningsSync("official-today", syncOfficialPlatformDataUnsafe);
   }
+  // Scheduled polling is opportunistic: a missing authenticated tab is a skip,
+  // not a queue failure. Manual requests keep the explicit error.
+  function syncOfficialPlatformDataScheduled(){
+    return enqueueEarningsSync("official-today:scheduled", function(){
+      return syncOfficialPlatformDataUnsafe().catch(function(error){
+        var message=String(error && error.message || error);
+        if(message.indexOf("abre Cloud Interpreter primero")!==-1){
+          return {ok:true,skipped:"no-authenticated-cloud-tab",reasonCode:"CLOUD_TAB_UNAVAILABLE"};
+        }
+        throw error;
+      });
+    });
+  }
   function syncOfficialEarningsRange(period){
     return enqueueEarningsSync("official-range:" + String(period || "today"), function () {
       return syncOfficialEarningsRangeUnsafe(period);
@@ -3206,7 +3219,14 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     if(alarm.name==="effectif-exchange-rate"){refreshExchangeRate("alarm").catch(function(){});return;}
     if(alarm.name==="effectif-official-sync"){
       record("PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",{trigger:"hourly"}, "info","background");
-      syncOfficialPlatformData().then(function(result){
+      syncOfficialPlatformDataScheduled().then(function(result){
+        if(result && result.skipped==="no-authenticated-cloud-tab"){
+          record("PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED",{
+            trigger:"hourly",reasonCode:"CLOUD_TAB_UNAVAILABLE",
+            policy:"no-tab-create-no-navigation-no-reload; retry-next-hour"
+          },"info","background");
+          return;
+        }
         var summary=result&&result.snapshot&&result.snapshot.summary||{};
         record("PLATFORM_OFFICIAL_HOURLY_SYNC_COMPLETED",{
           trigger:"hourly",method:result&&result.method||null,earned:summary.earned||null,callCount:summary.callCount||null,callLength:summary.callLength||null
