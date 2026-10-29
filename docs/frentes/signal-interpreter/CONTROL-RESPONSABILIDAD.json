@@ -2,50 +2,120 @@
   "schema": "responsabilidad-frente/v1",
   "frente": "Signal Interpreter",
   "hilo": null,
-  "instancia": "chatgpt-signal-interpreter-SES-20261021-6E9A3C7D",
+  "instancia": "chatgpt-signal-interpreter-SES-20261028-G3-1d3cdb20",
   "tipo_identidad": "alias_operativo_no_id_nativo",
-  "folio_sesion": "SES-20261021-6E9A3C7D",
-  "generacion": 2,
+  "folio_sesion": "SES-20261028-G3-1d3cdb20",
+  "generacion": 3,
   "condicion": "ACTIVO",
   "rol": "constructor",
   "autorizacion": {
-    "procedencia": "respuesta explícita del operador en esta conversación; el ID nativo de conversación no fue expuesto por las herramientas",
-    "literal": "Sí, autorizo.",
-    "fecha_registro_utc": "2026-10-22T01:57:19.888Z",
-    "alcance": "Transferencia exclusiva de la titularidad de Signal Interpreter a esta conversación y continuación del encargo ya autorizado de preparar la carpeta de la extensión en el Escritorio del equipo correcto. No autoriza actuar sobre otra identidad de equipo, tocar una llamada real, exponer datos de llamadas, modificar arquitectura no aprobada ni declarar aceptada la candidata 0.10.37.",
-    "acceso_remoto": "Excepción acotada por la petición explícita del operador de usar RDC para preparar la carpeta en el Escritorio. Requiere verificar cuenta, device_id, conectividad y destino físico antes de toda escritura remota."
+    "procedencia": "autorización explícita del operador en esta conversación; no se expuso un ID nativo de hilo",
+    "literal": "Sí.",
+    "fecha_registro_utc": "2026-10-29T01:40:24.559Z",
+    "alcance": "Transferencia de la titularidad del único frente Signal Interpreter a esta conversación para continuar el mismo frente. No altera las decisiones técnicas vigentes ni autoriza fusionar candidatas, afirmar aceptación Windows sin evidencia, exponer datos privados o modificar arquitectura vetada.",
+    "acceso_remoto": "La transferencia por sí sola no concede ni hereda acceso remoto. Toda operación remota requiere autorización específica vigente y verificar cuenta, device_id, conectividad y destino físico antes de escribir; no operar ni manipular una llamada real."
   },
   "propietario_anterior": {
-    "hilo": "3ffa4187-8241-8048-ad5b-00a9f28a5673",
-    "instancia": "samanthal-signal-3ffa5673",
-    "generacion": 1,
+    "hilo": null,
+    "instancia": "chatgpt-signal-interpreter-SES-20261021-6E9A3C7D",
+    "tipo_identidad": "alias_operativo_no_id_nativo",
+    "folio_sesion": "SES-20261021-6E9A3C7D",
+    "generacion": 2,
     "condicion": "ACTIVO",
     "rol": "constructor",
     "autorizacion_anterior": {
-      "procedencia": "instrucciones directas del operador en este hilo, identidad de hilo suministrada por contexto nativo",
-      "literal": "OK, dame la carpeta para instalarla como este y sigue resolviendo de extremo a extremo lo que te pide.",
-      "alcance": "continuar seguridad de contestacion y transcripcion de Signal Interpreter; preparacion local y pruebas aisladas conforme a instrucciones actuales; no llamadas reales, gasto, exposicion de datos o cambios arquitectonicos no aprobados",
-      "acceso_remoto": "excepcion acotada por solicitud directa previa de usar conexion local y orden actual de continuar; no cambia la prohibicion general del constructor fuera de este encargo"
-    }
+      "procedencia": "respuesta explícita del operador en esta conversación; el ID nativo de conversación no fue expuesto por las herramientas",
+      "literal": "Sí, autorizo.",
+      "fecha_registro_utc": "2026-10-22T01:57:19.888Z",
+      "alcance": "Transferencia exclusiva de la titularidad de Signal Interpreter a esta conversación y continuación del encargo ya autorizado de preparar la carpeta de la extensión en el Escritorio del equipo correcto. No autoriza actuar sobre otra identidad de equipo, tocar una llamada real, exponer datos de llamadas, modificar arquitectura no aprobada ni declarar aceptada la candidata 0.10.37.",
+      "acceso_remoto": "Excepción acotada por la petición explícita del operador de usar RDC para preparar la carpeta en el Escritorio. Requiere verificar cuenta, device_id, conectividad y destino físico antes de toda escritura remota."
+    },
+    "control_sha_pretransferencia": "1d3cdb2045dae6e9999dac90f33ebfc68d998854"
   },
   "transaccion_transferencia": {
-    "evento": "SIGNAL-INTERPRETER-TRANSFER-SES-20261021-6E9A3C7D",
+    "evento": "SIGNAL-INTERPRETER-TRANSFER-20261028-G3-1d3cdb2045",
     "autorizacion_explicita": true,
-    "metodo": "GitHub Contents API update_file con SHA de blob y precondiciones de generación; lectura de vuelta obligatoria.",
+    "literal_autorizacion": "Sí.",
+    "metodo": "GitHub Contents API update_file con SHA del blob vigente; comprobación de precondiciones antes de escritura y lectura de vuelta obligatoria. El SHA sirve como precondición del recurso; no ofrece fencing frente a escritores que lo eludan.",
     "precondiciones": {
-      "blob_sha": "d24748d2425ff4b6d85b74f960a1f0936f9ad10a",
-      "generacion": 1,
-      "instancia": "samanthal-signal-3ffa5673",
+      "blob_sha": "1d3cdb2045dae6e9999dac90f33ebfc68d998854",
+      "generacion": 2,
+      "instancia": "chatgpt-signal-interpreter-SES-20261021-6E9A3C7D",
       "condicion": "ACTIVO"
     },
     "folio_collision_check": {
-      "folio": "SES-20261021-6E9A3C7D",
-      "buscado_en": "Búsqueda exacta en los repositorios expuestos por el conector GitHub bajo SeryMente; inventario observado de 9 repositorios accesibles y búsqueda específica en signal-interpreter",
+      "folio": "SIGNAL-INTERPRETER-TRANSFER-20261028-G3-1d3cdb2045",
+      "alias": "chatgpt-signal-interpreter-SES-20261028-G3-1d3cdb20",
+      "buscado_en": "Consultas exactas mediante el conector GitHub para el evento y el alias; ambas devolvieron cero resultados. El alcance global de búsqueda no queda garantizado por la herramienta.",
       "coincidencias": 0,
       "unicidad_global": "NO VERIFICADA"
     },
-    "registrada_utc": "2026-10-22T01:57:19.888Z"
+    "propietario_anterior": {
+      "hilo": null,
+      "instancia": "chatgpt-signal-interpreter-SES-20261021-6E9A3C7D",
+      "tipo_identidad": "alias_operativo_no_id_nativo",
+      "folio_sesion": "SES-20261021-6E9A3C7D",
+      "generacion": 2,
+      "condicion": "ACTIVO",
+      "rol": "constructor",
+      "autorizacion_anterior": {
+        "procedencia": "respuesta explícita del operador en esta conversación; el ID nativo de conversación no fue expuesto por las herramientas",
+        "literal": "Sí, autorizo.",
+        "fecha_registro_utc": "2026-10-22T01:57:19.888Z",
+        "alcance": "Transferencia exclusiva de la titularidad de Signal Interpreter a esta conversación y continuación del encargo ya autorizado de preparar la carpeta de la extensión en el Escritorio del equipo correcto. No autoriza actuar sobre otra identidad de equipo, tocar una llamada real, exponer datos de llamadas, modificar arquitectura no aprobada ni declarar aceptada la candidata 0.10.37.",
+        "acceso_remoto": "Excepción acotada por la petición explícita del operador de usar RDC para preparar la carpeta en el Escritorio. Requiere verificar cuenta, device_id, conectividad y destino físico antes de toda escritura remota."
+      },
+      "control_sha_pretransferencia": "1d3cdb2045dae6e9999dac90f33ebfc68d998854"
+    },
+    "propietario_nuevo": {
+      "hilo": null,
+      "instancia": "chatgpt-signal-interpreter-SES-20261028-G3-1d3cdb20",
+      "tipo_identidad": "alias_operativo_no_id_nativo",
+      "generacion": 3,
+      "condicion": "ACTIVO",
+      "rol": "constructor"
+    },
+    "revision_objeto_observada": "SI-OBJ-v1.10-seguridad-idiomas-01; blob 54d2cd452df500b689665bcb6c17968568dbe0ad",
+    "registrada_utc": "2026-10-29T01:40:24.559Z"
   },
-  "limites": "Control cooperativo; no ofrece fencing de escritores que lo eludan. El folio es operativo, no ID nativo. La conectividad RDC y el equipo destino se verifican por ciclo; no se heredan de la transferencia.",
-  "enforcement": "cooperative registry; no server fencing of arbitrary writes"
+  "limites": "Control cooperativo; no ofrece fencing de escritores que lo eludan. El folio y la instancia son alias operativos, no IDs nativos. La transferencia no crea conectividad, permisos remotos ni autorización para intervenir en llamadas reales.",
+  "enforcement": "cooperative registry; no server fencing of arbitrary writes",
+  "historial_propietarios": [
+    {
+      "hilo": "3ffa4187-8241-8048-ad5b-00a9f28a5673",
+      "instancia": "samanthal-signal-3ffa5673",
+      "generacion": 1,
+      "condicion": "ACTIVO",
+      "rol": "constructor",
+      "autorizacion_anterior": {
+        "procedencia": "instrucciones directas del operador en este hilo, identidad de hilo suministrada por contexto nativo",
+        "literal": "OK, dame la carpeta para instalarla como este y sigue resolviendo de extremo a extremo lo que te pide.",
+        "alcance": "continuar seguridad de contestacion y transcripcion de Signal Interpreter; preparacion local y pruebas aisladas conforme a instrucciones actuales; no llamadas reales, gasto, exposicion de datos o cambios arquitectonicos no aprobados",
+        "acceso_remoto": "excepcion acotada por solicitud directa previa de usar conexion local y orden actual de continuar; no cambia la prohibicion general del constructor fuera de este encargo"
+      }
+    }
+  ],
+  "transferencias_anteriores": [
+    {
+      "evento": "SIGNAL-INTERPRETER-TRANSFER-SES-20261021-6E9A3C7D",
+      "autorizacion_explicita": true,
+      "metodo": "GitHub Contents API update_file con SHA de blob y precondiciones de generación; lectura de vuelta obligatoria.",
+      "precondiciones": {
+        "blob_sha": "d24748d2425ff4b6d85b74f960a1f0936f9ad10a",
+        "generacion": 1,
+        "instancia": "samanthal-signal-3ffa5673",
+        "condicion": "ACTIVO"
+      },
+      "folio_collision_check": {
+        "folio": "SES-20261021-6E9A3C7D",
+        "buscado_en": "Búsqueda exacta en los repositorios expuestos por el conector GitHub bajo SeryMente; inventario observado de 9 repositorios accesibles y búsqueda específica en signal-interpreter",
+        "coincidencias": 0,
+        "unicidad_global": "NO VERIFICADA"
+      },
+      "registrada_utc": "2026-10-22T01:57:19.888Z",
+      "sha_control_pretransferencia": "1d3cdb2045dae6e9999dac90f33ebfc68d998854",
+      "propietario_receptor": "chatgpt-signal-interpreter-SES-20261021-6E9A3C7D",
+      "generacion_receptora": 2
+    }
+  ]
 }
