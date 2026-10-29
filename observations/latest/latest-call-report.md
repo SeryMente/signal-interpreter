@@ -1,13 +1,13 @@
 # Signal Interpreter — informe de cierre de llamada
 
 - Estado de recolección: **complete**
-- Referencia opaca: d6b7954e31282b3e6fcd3f8b
-- Versión runtime: 0.10.36
+- Referencia opaca: ee5b2df05fa82e48c1c3ae39
+- Versión runtime: 0.10.37
 - Modalidad/estado: OPI / completed
-- Inicio: 2026-10-28T21:48:42.061Z
-- Fin: 2026-10-28T21:49:08.878Z
-- Duración observada / plataforma / facturable asumida (s): 26.817 / 25 / 25
-- Ingreso estimado: 0.0833 USD
+- Inicio: 2026-10-29T16:42:41.340Z
+- Fin: 2026-10-29T16:47:40.729Z
+- Duración observada / plataforma / facturable asumida (s): 299.389 / 297 / 297
+- Ingreso estimado: 0.99 USD
 - Fin por: rating-route
 
 ## Confirmación de calificación
@@ -23,23 +23,23 @@
 - Checkpoint recibido: true
 - Disparador del lote: call-ended
 - Envío automático: true
-- Publicación del lote: 2026-10-28T21:50:59.671Z
+- Publicación del lote: 2026-10-29T17:00:17.198Z
 
 ## Diagnóstico de subtítulos
-- Máximo de filas observado: 0
-- Fragmentos nativos encaminados: 0
-- Texto nativo fresco observado: false
+- Máximo de filas observado: 21
+- Fragmentos nativos encaminados: 145
+- Texto nativo fresco observado: true
 - Preview de audio histórico (no permitido en 0.10.36): false
 - Resultados de preview / con texto: 0 / 0
-- Motivos registrados: ["spa-call-route-observed","target-changed","native-host-not-registered"]
+- Motivos registrados: ["spa-call-route-observed","target-changed","native-connected","native-text-not-exposed","native-caption-stale","native-caption"]
 - Montaje visible o ausencia de errores no prueban reconocimiento de voz.
 
 ## Cobertura y señales
 
-- Eventos correlacionados: 170
-- Warnings / errores / eventos fallidos-bloqueados: 5 / 0 / 3
-- Muestras de rendimiento / media: 3 / 30
-- Conteo por grupos: {"answerFlow":73,"other":12,"overlayActivation":15,"platformAndUi":14,"mediaAndCapture":31,"performanceAndNetwork":3,"ratingAndClose":6,"transcriptionAndCaptions":10,"billingAndEarnings":1,"observabilityPipeline":3,"microphoneAndSafety":1,"runtimeAndRecovery":1}
+- Eventos correlacionados: 3956
+- Warnings / errores / eventos fallidos-bloqueados: 4 / 0 / 2
+- Muestras de rendimiento / media: 21 / 603
+- Conteo por grupos: {"answerFlow":2899,"other":87,"overlayActivation":46,"platformAndUi":89,"mediaAndCapture":604,"performanceAndNetwork":21,"transcriptionAndCaptions":169,"ratingAndClose":10,"billingAndEarnings":2,"observabilityPipeline":5,"microphoneAndSafety":12,"runtimeAndRecovery":12}
 
 ## Señales ausentes o incompletas
 
@@ -48,11 +48,10 @@
 
 | Momento | Acción | Nivel | Categoría | Motivo |
 |---|---|---|---|---|
-| 2026-10-28T21:48:42.230Z | LIVE_CAPTION_OVERLAY_LOCAL_ROUTE_FALLBACK | warn | CAPTION | spa-call-route-observed |
-| 2026-10-28T21:48:48.279Z | EARNINGS_OVERLAY_CHART_SYNC_ERROR | warn | RUNTIME |  |
-| 2026-10-28T21:49:27.285Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
-| 2026-10-28T21:50:27.736Z | EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFY_DEFERRED | warn | RUNTIME |  |
-| 2026-10-28T21:50:33.512Z | SIGNAL_CAPTION_NATIVE_BRIDGE_ERROR | warn | LIVE_CAPTION | native-host-not-registered |
+| 2026-10-29T16:42:41.898Z | LIVE_CAPTION_OVERLAY_LOCAL_ROUTE_FALLBACK | warn | CAPTION | spa-call-route-observed |
+| 2026-10-29T16:42:44.513Z | EARNINGS_OVERLAY_CHART_SYNC_ERROR | warn | RUNTIME |  |
+| 2026-10-29T16:42:47.014Z | EARNINGS_OVERLAY_CHART_SYNC_ERROR | warn | RUNTIME |  |
+| 2026-10-29T16:42:53.017Z | EARNINGS_OVERLAY_RECOVERY_ATTEMPTED | warn | RUNTIME | call-lifecycle-not-active |
 
 ## Privacidad
 
