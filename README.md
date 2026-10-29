@@ -19,7 +19,7 @@ Muestra de voz generada localmente al instalar, o archivo local autorizado; no s
 
 En cada computadora registra/carga la carpeta para su usuario Windows. Sin rutas fijas, servicios ni runtime de desarrollo; las preferencias locales no se sincronizan automáticamente entre equipos. Canon completo y límites: [antecedente del sprint](docs/frentes/signal-interpreter/antecedentes/TRANSCRIPTION-SPRINT-CANONICAL.pre-1.9.md), §16.
 
-## Arquitectura vigente 0.10.36 — exclusivamente texto nativo
+## Arquitectura vigente en main: 0.10.37; candidata 0.10.38 pendiente de aceptación — exclusivamente texto nativo
 
 **Live Caption nativo de Chrome → Windows UI Automation → puente Native Messaging → overlay de llamada**
 
