@@ -31,7 +31,7 @@ La extensión no captura audio de pestaña ni micrófono, no transcribe con Groq
 - Observabilidad automática al cierre con retry persistente e informes actualizables por eventos tardíos, sin texto hablado/audio. La descarga manual de diagnóstico contiene únicamente metadatos.
 - No necesita llave Groq. La consola conserva historial/notas anteriores y no es un capturador nuevo.
 
-La carpeta distribuida contiene **manifest.json en su raíz**, y `INSTALAR.cmd` prepara el host para el mismo usuario Windows que Chrome. Preparación, activación y prueba en vivo son compuertas diferentes. La prueba real en PC-8 permanece **NO VERIFICADA** mientras el dispositivo no responda al conector.
+La carpeta distribuida contiene **manifest.json en su raíz**, y `INSTALAR.cmd` prepara el host para el mismo usuario Windows que Chrome. Preparación, activación y prueba en vivo son compuertas diferentes. La prueba real en Windows/Chrome permanece **NO VERIFICADA** hasta completar las compuertas de aceptación en el dispositivo vigente.
 
 ## Funciones Cloud
 
