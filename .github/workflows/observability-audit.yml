@@ -40,6 +40,7 @@ jobs:
           node --check tools/live-caption-offscreen-tests.mjs
           node --check tools/live-caption-static-audit.mjs
           node --check tools/earnings-overlay-tests.mjs
+          node --check tools/official-sync-scheduled-no-tab-test.mjs
           node --check tools/call-earnings-baseline-tests.mjs
           node --check extension/live-caption-core.js
           node --check extension/live-caption-bridge.js
@@ -95,6 +96,8 @@ jobs:
         run: node tools/call-earnings-baseline-tests.mjs
       - name: Earnings overlay regression test
         run: node tools/earnings-overlay-tests.mjs
+      - name: Scheduled official sync no-tab safety regression
+        run: node tools/official-sync-scheduled-no-tab-test.mjs
       - name: Groq transcriber unit test
         run: node tools/groq-transcriber-tests.mjs
       - name: Independent call preview runtime regression
