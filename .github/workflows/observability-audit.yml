@@ -43,6 +43,7 @@ jobs:
           node --check tools/official-sync-scheduled-no-tab-test.mjs
           node --check tools/installer-inventory-shape-test.mjs
           node --check tools/pipeline-hotkey-consistency-test.mjs
+          node --check tools/overlay-global-toggle-regression-test.mjs
           node --check tools/call-earnings-baseline-tests.mjs
           node --check extension/live-caption-core.js
           node --check extension/live-caption-bridge.js
@@ -110,6 +111,8 @@ jobs:
         run: node tools/installer-inventory-shape-test.mjs
       - name: Global overlay hotkey consistency
         run: node tools/pipeline-hotkey-consistency-test.mjs
+      - name: Global overlay toggle and hotload lifecycle regression
+        run: node tools/overlay-global-toggle-regression-test.mjs
       - name: Groq transcriber unit test
         run: node tools/groq-transcriber-tests.mjs
       - name: Independent call preview runtime regression
