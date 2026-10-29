@@ -22,7 +22,7 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.37");
+assert.equal(manifest.version,"0.10.38");
 assert.ok(background.includes('liveCaptionInterpreterEnabled: false'), "el micrófono está fuera del alcance actual");
 assert.equal(background.includes('if (language === "es") source = "yo"'), false, "el historial del service worker no debe convertir idioma en identidad del hablante");
 assert.ok(overlay.includes('core.roleForSource(item.source, language)'), "el render respeta la fuente del hablante");
@@ -46,7 +46,7 @@ assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://app.cloudinterpreter.com/*")&&Array.isArray(e.js)&&e.js.includes("extension/live-caption-core.js")&&e.js.includes("extension/live-caption-overlay.js")&&e.js.includes("extension/content.js")));
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 
-assert.ok(background.includes('importScripts("live-caption-core.js","live-caption-bridge.js"'));
+assert.ok(background.includes('importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js"'));
 assert.ok(background.includes("SignalCaptionBridge.start(state.callSourceTabId, callId)"));
 assert.ok(background.includes("SignalCaptionBridge.stop()"));
 assert.ok(background.includes("handleGroqCaptionPreviewChunk"));
