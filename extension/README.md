@@ -7,7 +7,7 @@ Asistente independiente para interpretación médica en tiempo real sobre Cloud 
 El **ZIP del repositorio** contiene la extensión cargable: `manifest.json` está en la **raíz** de la carpeta extraída, no dentro de `extension/`.
 
 1. Extrae el ZIP en una carpeta estable y escribible. Finaliza cualquier llamada/prueba antes de instalar.
-2. Haz doble clic en **INSTALAR.cmd**, en esa raíz. Verifica huellas/identidad y registra el puente incluido para tu usuario; no requiere Node/Python/compilador ni privilegios de administrador. No reinicia Chrome. `INSTALACION-RESULTADO.json` confirma preparación, no captions en vivo.
+2. Ejecuta **PREPARAR-Y-CARGAR.cmd** en esa raíz. Verifica el inventario SHA-256, prepara y comprueba el puente Native Messaging, y abre `chrome://extensions`; no requiere Node/Python/compilador ni privilegios de administrador. No reinicia Chrome. `INSTALACION-RESULTADO.json` confirma la preparación del puente, no una transcripción real.
 3. En Chrome, activa modo desarrollador y **Cargar descomprimida**: selecciona esa **misma raíz**. Desactiva otra copia anterior; no muevas la carpeta cargada.
 4. Enciende Live Caption, cierra las pestañas Cloud Interpreter y pausa otros audios. Abre **Probar** en el popup; pulsa **Iniciar prueba** y luego reproducir. También puedes usar **PROBAR.cmd** si el perfil cargado se identifica sin ambigüedad.
 5. Comprueba texto nativo y filas del panel, prueba abrir/cerrar la burbuja, y **Finalizar y exportar**. El fin del audio también solicita la descarga. Si cierras abruptamente la página, recupera **Descargar último informe** al reabrir.
@@ -16,7 +16,7 @@ Muestra de voz generada localmente al instalar, o archivo local autorizado; no s
 
 En cada computadora registra/carga la carpeta para su usuario Windows. Sin rutas fijas, servicios ni runtime de desarrollo; las preferencias locales no se sincronizan automáticamente entre equipos. Canon completo y límites: [TRANSCRIPTION-SPRINT-CANONICAL.md](../docs/TRANSCRIPTION-SPRINT-CANONICAL.md), §16.
 
-## Arquitectura vigente 0.10.35 — solo texto nativo
+## Arquitectura vigente 0.10.37 — solo texto nativo
 
 **Chrome Live Caption → Windows UI Automation → Native Messaging → overlay de la llamada**
 
@@ -33,6 +33,10 @@ Documento canónico único: `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`, sección 1
 ## Funciones Cloud
 
 Auto-Answer, OPI/VRI, Online/Offline, llamadas perdidas, cronómetros, ingresos, USD/MXN, overlay, espejo de pantallas, telemetría persistente/exportable y sonido continúan siendo específicos de app.cloudinterpreter.com.
+
+## Control global de overlays (0.10.37)
+
+El popup incluye **Mostrar ambos overlays**, que oculta o vuelve a mostrar tanto el resumen de ganancias como el panel de subtítulos sin cambiar sus preferencias individuales y sin detener la llamada, Auto-Answer, el micrófono o el puente de transcripción. El atajo predeterminado es **Ctrl+Shift+8**; puede consultarse o cambiarse en `chrome://extensions/shortcuts`. Los interruptores específicos de ganancias y subtítulos siguen funcionando como controles independientes.
 
 ## Carga local
 
