@@ -1878,6 +1878,12 @@
     }
   }
   function renderOverlay() {
+    // A disposed runtime must never remount an overlay after an extension reload.
+    if (!runtimeMarker.active) return;
+    if (!earningsOverlayEnabled()) {
+      stopOverlay(config.overlaysGlobalEnabled === false ? "global-overlays-hidden" : "preference-disabled");
+      return;
+    }
     var routeCallId = currentCallId();
     if (!routeCallId) {
       if (overlayLifecycleActive) stopOverlay(isRatingRoute() ? "rating-route" : "route-not-call");
