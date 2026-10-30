@@ -55,6 +55,17 @@ Excluido/vetado: captura de micrófono o pestaña para el overlay, Groq/fallback
 - Salida del constructor recibida por Claudia: atender primero en punto seguro, contrastar evidencia, resumir delta/viabilidad/tiempo y entregar prompt completo de continuación sin reiniciar ni duplicar trabajo. Emitir prompt no demuestra ejecución.
 - Un escritor por recurso; consolidación documental secuencial. El alcance actual incluye la candidata técnica expresamente encargada; no instancia ni contacta otro agente. Antes de escribir revalidar revisión/contenido; si hay otro delta, conciliar o detener esa publicación, no sobrescribir.
 
+
+### Regla permanente: pruebas locales y responsabilidad técnica
+
+**La prueba local de uso real la realiza el operador humano: el operador eres tú y la ejecutas usando Signal Interpreter en el equipo y entorno de destino.** No debo sustituir esa validación, simularla ni declarar que la realicé. Tampoco debo operar tu equipo, GUI, navegador o llamadas reales desde el rol constructor.
+
+**Yo me encargo de todo el trabajo restante del frente**, dentro de las autorizaciones y compuertas metodológicas vigentes: análisis y diagnóstico; revisión y modificación del código; diseño de casos y criterios de aceptación; pruebas unitarias, de integración, regresión, sandbox y harnesses automatizados; análisis estático y de seguridad; revisión de dependencias y empaquetado; CI y workflows; inspección de resultados, logs y telemetría saneados; gestión técnica de ramas/PR; documentación, trazabilidad, control de versiones y preparación de entregas. No limitar esta responsabilidad a recomendar pasos: debo ejecutar directamente todo lo que pueda realizarse de forma autorizada sin la presencia física del operador.
+
+Cuando una conclusión dependa de uso real en Windows/Chrome o de interacción humana, debo preparar una instrucción de prueba concreta y breve con precondiciones, pasos observables, resultado esperado, criterio PASS/FAIL y evidencia mínima segura que se debe devolver. **Tú ejecutas la prueba usando el sistema y me compartes el resultado; yo analizo la evidencia, localizo la causa, implemento las correcciones que correspondan, repito las pruebas automatizables y actualizo el estado canónico.** No pedir texto, audio, capturas ni datos sensibles de llamadas cuando basten estados, errores, contadores o logs saneados.
+
+Esta división es permanente para Signal Interpreter y prevalece en futuras retomas: **operador = uso y prueba local real; constructor = todo el trabajo técnico y de entrega que no requiera esa interacción local**. No crea permisos remotos, no modifica la prohibición RDC del rol constructor y no convierte una prueba del operador en aceptación hasta revisar la evidencia y los criterios definidos.
+
 ## Autoridad
 
 El encargo original [SI-D009](originales/C-SIGNAL-METACANON-20261020-01.md) autoriza actualizar este objeto para ajustarlo al metacanon actual, incluida su reorganización documental como directorio. Sustituye únicamente el estado anterior «migración pendiente de autorización» para esta migración; se conserva literalmente como antecedente. Ese encargo documental por sí solo no autorizaba código, instalación o merge. Órdenes posteriores autorizaron protección de disponibilidad y corrección de la mezcla de idiomas de extremo a extremo. La orden histórica de preparación local no anula Metacanon 1.24 §§6/24: el constructor no opera RDC. No se autoriza exposición de datos privados, arquitectura de captura nueva, gasto ni aprobación de pruebas inexistentes.
