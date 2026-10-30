@@ -26,10 +26,10 @@ Resultado: **RDC no utilizado por este ciclo**. No se intentó conectar, listar 
 ## Revisión actual de GitHub y CI
 
 - PR #67, candidata 0.10.38: abierta, borrador, sin fusionar.
-- Cabeza: `a5d6d4ab0b119da8cc8a3c6950edc0f0f236cf5c`.
-- Base de la candidata: `cb2a2e35e3a2ef33901a75e3483470fcf8dfad3f`.
-- `main` observado: `44aabbec68ad5fb7f540a1fc3b383bf53282a00b`.
-- Comparación vigente `main...a5d6d4a`: divergente; candidata 64 commits por delante y 10 por detrás. No rebase, actualización de rama, fusión ni cambio de base ejecutados.
+- Cabeza de PR: `a5d6d4ab0b119da8cc8a3c6950edc0f0f236cf5c`.
+- Base vigente de PR: `fb5dcf9b06c4714f9992bfa0e843718ebe1e8a19`.
+- `main` observado y verificado al cierre de esta crónica: `fb5dcf9b06c4714f9992bfa0e843718ebe1e8a19`.
+- Comparación vigente `main...a5d6d4a`: diverged; candidata 64 commits por delante y 11 por detrás. Merge base `cb2a2e35e3a2ef33901a75e3483470fcf8dfad3f`. No rebase, actualización de rama, fusión ni cambio de base ejecutados.
 - Tres workflows asociados a la cabeza candidata continúan en `success`: Package integrity (`40986509054`), signal-observability-audit (`40986508942`) y native-caption-host-build (`40986509019`). Se inspeccionaron jobs y pasos; no hubo fallos en esos runs. Estos runs no validan el `main` posterior ni eliminan la compuerta de reconciliación.
 
 ## Repetición aislada de regresores Node
@@ -56,7 +56,7 @@ Los cuatro scripts terminaron con código cero en el sandbox. Estas ejecuciones 
 ## Próximo paso y titularidad de la acción
 
 1. El rol asistente (Claudia), con su propia conexión MCP autorizada y compuertas vigentes, u operador autorizado debe ejecutar las pruebas Windows locales en PC-8, exclusivamente en una ventana confirmada sin llamada y con backup/rollback. No reutilizar ni asumir credenciales de esta conexión a partir del texto compartido.
-2. Antes de probar una rama actualizada, reconciliar los 10 commits ausentes de `main` con la candidata y revalidar CI en la cabeza resultante. No fusionar #67 por el mero hecho de que sus runs anteriores estén verdes.
+2. Antes de probar una rama actualizada, reconciliar los 11 commits ausentes de `main` con la candidata y revalidar CI en la cabeza resultante. No fusionar #67 por el mero hecho de que sus runs anteriores estén verdes.
 3. Conservar PR #67 en borrador y 0.10.38 como candidata, no release.
 
 ## Persistencia y evidencia
