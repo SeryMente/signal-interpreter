@@ -73,7 +73,7 @@ assert.equal(fourth.health.lastAutomaticPublishAt,"2026-10-07T20:01:00.000Z");
 assert.equal(fourth.health.lastManualPublishAt,"2026-10-07T20:02:00.000Z");
 assert.equal(fourth.health.lastManualBatchId,"manual-1");
 \
-const incomingNow=Date.now();
+const incomingNow=Date.now()-1500;
 const incomingEvent=(action,offset,payload,level="info")=>({
   schema:"khora-effectif-event/v4",id:"incoming-"+action+"-"+offset,
   sequence:100+offset,timestamp:new Date(incomingNow+offset).toISOString(),
@@ -107,7 +107,11 @@ const missedAttempt=incomingReport.attempts.find(item=>item.incomingAttemptId===
 assert.equal(missedAttempt.outcome,"missed");
 assert(missedAttempt.ringSignalIds.includes("ring-confirmed"),"ring and dialog are correlated");
 assert(missedAttempt.events.some(item=>item.action==="AUTO_ANSWER_BLOCKED"&&item.details.blockReasons[0].startsWith("PRESENCE_NOT_ARMED")));
-assert.ok(incomingReport.freshness.maxRelayAcceptanceDelayMs>=0);
+assert.ok(incomingReport.freshness.maxEventToBatchCreatedMs>=0);
+assert.ok(incomingReport.freshness.maxBatchCreatedToProcessingMs>=0);
+assert.ok(incomingReport.freshness.maxEventToProcessingMs>=incomingReport.freshness.maxEventToBatchCreatedMs);
+assert.ok(incomingReport.freshness.latestBatchProcessedAt,"pipeline records the first processing timestamp");
+assert.ok(JSON.parse(fs.readFileSync(path.join(root,"observations","batches","incoming-window.json"),"utf8")).pipelineProcessedAt,"archive persists processing time once");
 assert.equal(fifth.health.incomingCallWindowMissed,1);
 assert.equal(fifth.manifest.incomingCalls.unresolved,1);
 assert.equal(fs.existsSync(path.join(root,"observations","latest","latest-incoming-call-report.json")),true);
