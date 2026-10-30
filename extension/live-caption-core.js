@@ -22,7 +22,7 @@
       " gracias ", " dónde ", " cómo ", " qué "
     ];
     var englishMarkers = [
-      " the ", " a ", " an ", " of ", " to ", " for ", " with ", " is ", " are ",
+      " the ", " an ", " of ", " to ", " for ", " with ", " is ", " are ",
       " was ", " were ", " and ", " or ", " this ", " that ", " can ", " need ",
       " have ", " has ", " you ", " your ", " we ", " thank ", " where ", " how ",
       " what "
@@ -42,6 +42,57 @@
 
     if (es === en) return "unknown";
     return es > en ? "es" : "en";
+  }
+
+  // Local conservative language spans, NOT speaker diarization. No text leaves Chrome.
+  var spanEnglish = new Set(("the you your we with and for is are was were this that can need have please thank thanks where how what yes hello goodbye appointment patient tomorrow today pickup pick up before beforehand return time times hour hours driver address help happy research members member date birth first last name repeat question questions calling waiting provide not do does did cannot know much than on file they their arrive arrival send text message my assistance medical transportation number area code from at of to ask may me would will then all right going scheduled am pm enjoy afternoon evening morning anything else welcome logged searching found showing makes soon says as it be being been assistance offer options self service sorry i english eight ten four one two three five six seven nine forty thirty fifteen twenty eight no wonderful available available" ).split(/\s+/));
+  var spanSpanish = new Set(("el la los las que para por del es está esto este esta estas estos porque puedo necesito tiene usted ustedes nosotros gracias dónde cómo qué mire solo sólo quería quiero confirmar viaje pedí mañana siempre mandan correo ahí ahi horario todo pero no he recibido nada eso tengo duda si sí hizo hecho nombre mamá mama fecha nacimiento número numero área ocho diez cuatro dos tres uno una cinco seis siete nueve cuarenta treinta quince veinte cita creo verificar venida venir traer acuerdo dijeron muchacho dijo iban más mas cuarto entonces me pueden decirle algo tenemos estar listas desde digamos enseguida esperar gustaría gustaria mandaran dígale digale haga favor electrónico electronico también tambien tampoco mensaje pudiera mandar importante atender atenderme atendernos noche hasta luego bueno buenas buenos disculpe perdón perdon muchas muy bien mi mis su sus se al era en lo le y hay hacer favor español espanol ahora antes después despues minutos minuto horario hora horas quiero solicitud tengo pregunta preguntas ayuda ayudar transporte transporte" ).split(/\s+/));
+  function wordLanguage(word) {
+    var value = String(word || "").toLowerCase();
+    var en = spanEnglish.has(value), es = spanSpanish.has(value);
+    // Ambiguous words (a/no/me/...) must not be English evidence by themselves.
+    if (en && es) return "unknown";
+    if (es || /[áéíóúüñ¿¡]/i.test(value)) return "es";
+    if (en) return "en";
+    return "unknown";
+  }
+  function segmentCaptionText(value) {
+    var text = normalizeText(value);
+    if (!text) return [];
+    var parts = text.match(/[\p{L}\p{M}]+(?:['’][\p{L}\p{M}]+)*|\d+(?:[.,:]\d+)*|[^\s]|\s+/gu) || [];
+    var hints = parts.map(function (part) { return wordLanguage(part); });
+    var present = new Set(hints.filter(function (hint) { return hint !== "unknown"; }));
+    var labels = hints.slice();
+    for (var i = 0; i < parts.length; i++) {
+      if (hints[i] !== "unknown") continue;
+      var left = i - 1, right = i + 1;
+      while (left >= 0 && hints[left] === "unknown") left--;
+      while (right < parts.length && hints[right] === "unknown") right++;
+      var before = left >= 0 ? hints[left] : null;
+      var after = right < parts.length ? hints[right] : null;
+      if (before && before === after) labels[i] = before;
+      else if (present.size === 1) labels[i] = before || after || "unknown";
+      else if (/^[\s\p{P}]+$/u.test(parts[i])) labels[i] = before || after || "unknown";
+      // Unknown words/numbers between different languages remain unassigned;
+      // never erase or translate them just to make two apparently pure lanes.
+    }
+    // Resolve separators against final neighboring word labels, including unknown.
+    for (var j = 0; j < parts.length; j++) {
+      if (/[\p{L}\p{M}\p{N}]/u.test(parts[j])) continue;
+      var prior = j - 1, following = j + 1;
+      while (prior >= 0 && !/[\p{L}\p{M}\p{N}]/u.test(parts[prior])) prior--;
+      while (following < parts.length && !/[\p{L}\p{M}\p{N}]/u.test(parts[following])) following++;
+      var previousLabel = prior >= 0 ? labels[prior] : null;
+      var nextLabel = following < parts.length ? labels[following] : null;
+      labels[j] = previousLabel === nextLabel ? previousLabel || "unknown" : previousLabel || nextLabel || "unknown";
+    }
+    var result = [];
+    parts.forEach(function (part, index) {
+      var language = labels[index] || "unknown", previous = result[result.length - 1];
+      if (previous && previous.language === language) previous.text += part;
+      else result.push({ text: part, language: language, speakerVerified: false });
+    });
+    return result;
   }
 
   function normalizeLanguage(value) {
@@ -158,7 +209,7 @@
   }
 
   function roleForSource(source, language) {
-    if (source === "yo") return "LEP";
+    if (source === "yo") return "INTÉRPRETE";
     if (source === "cliente" || source === "chrome-live-caption") return roleForLanguage(language); // Tab mix: language lane, not physical microphone or speaker verification.
     return roleForLanguage(language);
   }
@@ -252,6 +303,7 @@
 
   root.SignalCaptionCore = {
     normalizeText: normalizeText,
+    segmentCaptionText: segmentCaptionText,
     detectLanguage: detectLanguage,
     normalizeLanguage: normalizeLanguage,
     resolveLanguage: resolveLanguage,
