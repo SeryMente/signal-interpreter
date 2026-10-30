@@ -23,7 +23,7 @@ Samantha continúa como **constructor**, Claudia como **asistente**. El nombre d
 
 - **Metacanon adquirido: 1.24**; DUG Samantha **v362 · NX-362m**; GOW **2.11**.
 - Fuente autenticada y releída en este ciclo: `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, blob `b7593409c428e209d35f53a5f13501652208d949`; `INICIO.md`, blob `3557bfe0ebd69e8520b11ec7733ed9f7e61daae5`. Metacanon 1.24 y GOW 2.11 están integrados en el DUG. Revalidar en cada retoma; la lectura de estas huellas no acredita frescura futura.
-- Control de responsabilidad vigente: [CONTROL-RESPONSABILIDAD.json](CONTROL-RESPONSABILIDAD.json), blob `c0b091a257167fd7ec83733a9ada1df055fead6b` (commit `6f1a49de18244b688924c937cd5ab02652a6c74c`). **Generación 4 · ACTIVO · constructor**; folio `SES-20261029-F4026F60`, alias operativo `chatgpt-signal-interpreter-SES-20261029-F4026F60`, UUIDv7 local del registro `01a18a81-23ef-7211-8c50-49d8b36802bf`; no son IDs nativos. Transferencia explícita conforme a P037, evento `SIGNAL-INTERPRETER-TRANSFER-20261029-G4-F4026F60`, con lectura de vuelta. Titular anterior G3 preservado. El control es cooperativo, sin fencing frente a escritores que lo eludan.
+- Control de responsabilidad vigente: [CONTROL-RESPONSABILIDAD.json](CONTROL-RESPONSABILIDAD.json), blob `d057a5db249939c381892f831d76a81103190074` (commit `2beb165cb792f072a6b5448d47a6e0a74b5c853f`). **Generación 5 · ACTIVA · constructor**; folio `SES-20261030-3B3868DF`, alias operativo `chatgpt-signal-interpreter-SES-20261030-3B3868DF`, UUIDv7 local `01a18d7d-1369-7059-b029-8a9104b94647`; no son IDs nativos. Transferencia explícita conforme a P037/Metacanon §42, evento `SIGNAL-INTERPRETER-TRANSFER-20261030-G5-3B3868DF`, commit `2beb165cb792f072a6b5448d47a6e0a74b5c853f`, lectura de vuelta confirmada. Titular anterior G4 preservado en el control y en el historial; unicidad global del folio NO VERIFICADA. El control es cooperativo, sin fencing frente a escritores que lo eludan.
 - Gobierno adquirido desde `main`: DUG Samantha v362 · NX-362m; Metacanon 1.24; GOW 2.11 (122 términos definidos/indexados). Revisión manual de la cascada y principios relevantes P001, P004, P005, P037–P040; Metacanon §§3–7, 14–16, 24, 28, 43, 46–48 y 51. **MCP-NORMATIVO: DESACTIVADO**. No se modificó Metodología ni se presume sincronización con Notion u otras superficies.
 
 ### Constancia de adquisición y aplicación
@@ -93,57 +93,62 @@ Sandbox Linux: lógica real y DOM Chromium con eventos sintéticos para candidat
 ### 🔄 Estado vivo
 
 ```text
-Acción en curso: candidata 0.10.38 en [PR #67](https://github.com/SeryMente/signal-interpreter/pull/67), abierta/borrador/no fusionada; `main` permanece en 0.10.37. La rama se reconcilió con `main` en `6756dcde7811f9b7ac9502499f7890359f20de02` mediante merge commit `a9e235bedd188c289db56369bcbb62df16aedd4d`, conservando ambos padres y el núcleo canónico vigente de main e incorporando 40 rutas de la candidata. Ficha versionada 0.10.38 actualizada en el commit `b4945afeb1e1b03a712860b7442825385504dad0`.
-Los tres workflows sobre esa ficha/head concluyeron success: Package integrity (40993477067), signal-observability-audit (40993477076) y native-caption-host-build (40993477194). La comparación previa a esta actualización documental fue 66 commits por delante y 0 por detrás; revalidar compare y checks sobre el HEAD vivo tras sincronizar el OCP.
-CI cubre integridad SHA-256 e invariantes del paquete; auditoría con pruebas de disponibilidad fail-closed, hotload, exportación, observabilidad, overlays, presencia, segmentos lingüísticos, sondeo horario y laboratorio; build Windows con ZIP raíz, PowerShell 5.1, muestra, compilación UI Automation, artefacto y protocolo Native Messaging.
-En sandbox Linux/Node 22.16.0: presence-guard 29/29 PASS; presence-connect 22/22 PASS; caption-language-spans 46/46 PASS; scheduled-no-tab PASS. Son harnesses sintéticos y no aceptación local.
-La observabilidad de main 0.10.37 confirmó un fallo del sondeo horario por ausencia de pestaña autenticada Cloud Interpreter. La candidata trata ese escenario como omisión controlada sin crear/navegar/recargar pestañas; los errores reales de red/API siguen siendo visibles.
-El constructor no utilizó RDC ni realizó acciones en PC-8, GUI, perfil Chrome, instalación o llamadas reales. Por la regla permanente de este OCP, la prueba de uso real la realiza el operador utilizando SI; el constructor hace todo el trabajo técnico restante. Mantener PR #67 en borrador: no fusionar ni liberar antes de la aceptación local.
+Corte vigente 2026-10-30 · generación 5. Titularidad ACTIVA y releída: folio SES-20261030-3B3868DF; commit de transferencia 2beb165cb792f072a6b5448d47a6e0a74b5c853f; blob del control d057a5db249939c381892f831d76a81103190074. La generación 4 y su folio anterior quedaron preservados en historial.
+main continúa en 0.10.37. Cabeza observada al registrar la transferencia: 2beb165cb792f072a6b5448d47a6e0a74b5c853f. La observabilidad más reciente de main es del 2026-10-30 y confirma que el sondeo horario en 0.10.37 aún produjo EARNINGS_SYNC_QUEUE_ERROR y PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR al faltar la pestaña autenticada de Cloud Interpreter.
+La candidata 0.10.38 permanece en PR #67, abierta, borrador y sin merge; rama fix/pipeline-e2e-20261029, HEAD 058fbe65cdbc1be2901320442f1416ae586988c4. Comparación frente al main actual observada tras transferir: 67 commits por delante, 79 por detrás; merge base 0c4834a7583c26ba78c201636e1bd171ac8d3867.
+El delta de main desde el merge base se auditó con árboles Git completos: 48 rutas, compuestas por 38 batches observacionales nuevos, 8 índices/health observacionales modificados y CONTROL-RESPONSABILIDAD.json. No aparecen rutas de runtime/producto en ese delta. Aún no se ha aplicado la reconciliación a la rama candidata.
+Los tres workflows de la cabeza candidata actual 058fbe65 siguen en success: Package integrity (40994026819), signal-observability-audit (40994026781) y native-caption-host-build (40994026809). Esos resultados corresponden a la cabeza anterior a la reconciliación pendiente; deben repetirse después del merge con main.
+En sandbox Linux/Node 22.16.0 se habían reportado presence-guard 29/29, presence-connect 22/22, caption-language-spans 46/46 y scheduled-no-tab PASS. Son harnesses sintéticos; no equivalen a aceptación Windows.
+Por regla permanente, el operador realiza la prueba de uso real utilizando Signal Interpreter en Windows/Chrome. El constructor realiza el análisis, cambios de código, pruebas automatizadas, seguridad, CI, documentación, gestión de PR y preparación de entrega. El constructor no opera el equipo, GUI, navegador o llamadas reales y no utiliza RDC (§§6/24).
+Mantener PR #67 en borrador. No fusionar ni liberar 0.10.38 hasta reconciliarla, repetir CI en la cabeza exacta, revisar resultados y completar las compuertas de aceptación del operador.
 ```
 
 ### ⚗️ En prueba / recién fallido
 
 ```text
-Sandbox Linux/Node, harnesses sintéticos de este ciclo: presencia 29/29 y Connect 22/22 PASS; segmentación 46/46 y sondeo sin pestaña PASS, con fixtures parciales. PC-8 no se probó en esta sesión; Windows idle/bloqueo/suspensión corta, Live Caption nativo y upgrade/rollback siguen NO VERIFICADOS.
+Baseline de main 0.10.37, batch batch-10ae7bc3-7bb8-4e48-90d6-db951509f69c, 2026-10-30T15:41:50.501Z: tres eventos en secuencias 7165–7167; 0 errores agregados y 2 warnings. Se observó inicio del sondeo horario, EARNINGS_SYNC_QUEUE_ERROR y PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR con el mensaje «No se pudo sincronizar sin afectar la llamada: abre Cloud Interpreter primero». El health del build observacional está ok y el inbox queda en cero.
+La candidata agrega una omisión controlada para la ausencia de pestaña autenticada y un harness sintético que comprueba que la cola no se envenena en ese caso y que los errores genuinos de red siguen visibles. Esto no prueba todavía el comportamiento de la revisión en PC-8 ni su aceptación local.
+Windows idle/bloqueo/desbloqueo/suspensión, Live Caption nativo real, segmentación visible, múltiples pestañas y upgrade/rollback siguen NO VERIFICADOS en la revisión exacta de 0.10.38.
 Micrófono del intérprete no se captura; identidad de tres voces y pureza universal de idioma no están demostradas. Desconocido se conserva sin inventar atribución.
 ```
 
 ### Pendientes en secuencia
 
-1. **SI-P01:** compuerta local pendiente a cargo del operador: usando SI en el equipo autorizado comprueba Live Caption nativo y tramos visibles, ausencia de pérdidas/duplicados, idle/bloqueo/desbloqueo/suspensión, error/API/reinicio, pestañas múltiples y upgrade/rollback sin interrumpir una llamada real. Devuelve PASS/FAIL por punto, versión/revisión y telemetría saneada. El constructor analiza, corrige y automatiza todo lo restante; no usa RDC (§§6/24).
-2. **SI-P02:** reconciliación técnica completada mediante merge commit `a9e235b…`: se conservaron los dos padres, el núcleo canónico de main y 40 rutas de la candidata. Tres workflows success sobre `b4945af…`. Tras sincronizar este corte canónico, verificar nuevamente compare y CI en la cabeza actual; no forzar ni fusionar por estado mergeable.
-3. **SI-P03:** Windows/Chrome: elegir límite expresamente; probar idle/bloqueo/retorno, error de API, reinicio, pestañas múltiples, llamada actual intacta y suspensión corta sin bloqueo. Si no hay señal suficiente de suspensión/presencia, decisión material sobre confirmación por llamada; no prometer garantía absoluta de presencia física.
-4. **SI-P04:** laboratorio nativo aislado de revisión exacta: tramos inglés/español sin pérdida ni duplicación, buffers progresivos, neutros conservados y repetibilidad; luego aceptación real independiente. Ya no partir de que el lector jamás funciona ni cambiar C# a ciegas.
-5. **SI-P05:** consolidación de la llamada reciente ya corroborada por informe completo y build ok. Verificar en producción solo los nuevos contadores lingüísticos de la candidata tras instalación/aceptación, sin texto/audio.
-6. **SI-P06:** resolver canal del intérprete si se exige transcripción de tres participantes. No capturar micrófono, identificar voces por idioma o activar audio alternativo por inferencia.
-7. **SI-P07:** custodia privada de chats/adjuntos previos si necesaria; no volver a pedir JSON histórico ya recibido. Contenido clínico nuevo permanece en su canal privado, no en este repo público.
-8. **SI-P08:** ensayo independiente de retoma y pendientes metodológicos centrales (sincronización/cifrado/PRIUS) siguen diferidos; no activarlos por el encargo del producto.
+1. **SI-P01 — Reconciliación de #67:** integrar en la candidata las 48 rutas del delta de main, preservando los 38 batches observacionales, los índices actualizados y el control G5. Mantener todos los cambios de producto/prueba exclusivos de la candidata. Crear merge commit con ambos padres y mover la rama solo con SHA esperado; si hay delta concurrente, releer y reconciliar.
+2. **SI-P02 — CI de la cabeza reconciliada:** ejecutar de nuevo Package integrity, signal-observability-audit y native-caption-host-build; verificar los tres resultados asociados al SHA exacto. Inspeccionar logs si cualquier job falla.
+3. **SI-P03 — Regresión del sondeo:** ejecutar el harness no-tab en la rama reconciliada y revisar que la ausencia de pestaña autenticada se omita sin error de cola; comprobar que errores reales de red/API continúen visibles. Relacionar con el batch de baseline 0.10.37 sin confundirlo con una prueba de 0.10.38.
+4. **SI-P04 — Revisión de producto y paquete:** volver a revisar guard de presencia, Connect, segmentación lingüística, inventario SHA-256, raíz portable, instalador y actualización/rollback; verificar que los vetos de audio/Groq/replay continúen respetados.
+5. **SI-P05 — Aceptación local del operador:** sobre el SHA exacto preparado, comprobar Live Caption real y tramos visibles inglés/español, pérdida/duplicación, buffers ambiguos, idle/bloqueo/desbloqueo/suspensión corta, error API, reinicio, pestañas múltiples, integridad de llamada, upgrade y rollback. Devolver PASS/FAIL, versión/SHA y telemetría saneada; no compartir texto ni audio de llamadas.
+6. **SI-P06 — Liberación:** solo después de CI exacta, revisión del operador y criterios completos, evaluar elevar PR #67 a ready y fusionar. El estado mergeable por sí solo no equivale a aceptación.
+7. **SI-P07 — Tercer canal:** si persiste el requerimiento de transcribir al intérprete, resolver de forma explícita fuente, privacidad y autorización; no capturar micrófono, identificar voces por idioma o activar audio alternativo por inferencia.
+8. **SI-P08 — Custodia y diferidos:** preservar originales disponibles, no volver a solicitar el JSON histórico, y mantener fuera de alcance los pendientes metodológicos de sincronización/cifrado/PRIUS.
 
 ### 🔔 Recordatorios latentes
 
-- Mantener historial íntegro y #59 separada: diagnóstico, no reparación nativa. No pedir otra vez el JSON histórico ni sonda perdida por hash.
-- 150 segundos revocados; no reactivar plazos iniciales como aprobaciones actuales. Vídeo nunca automático en esta candidata. No colgar llamada por idle.
-- Teclado/ratón no prueban presencia física; suspensión corta sin bloqueo requiere evidencia específica. Ausencia de señal = bloqueo, no garantía inventada.
-- Cliente/LEP son convenciones lingüísticas, no diarización. Nombres, números, anglicismos y fragmentos desconocidos no se borran para fabricar carriles puros.
-- Preservar exportación automática, fuente nativa, privacidad y funciones existentes. Nada de micrófono/pestaña/Groq/replay como arreglo encubierto.
-- No publicar texto de la llamada, direcciones, nombres, teléfonos, cuentas ni identificadores de equipo. Los ejemplos públicos de prueba son sintéticos no clínicos.
+- Mantener #59 separada como diagnóstico; #60/#63 y sus antecedentes no se reabren ni se convierten en estado vigente.
+- 150 segundos revocados; no reactivar plazos antiguos. Vídeo manual. Idle/ausencia revoca autorización pero no debe colgar la llamada actual; retorno no rearma.
+- Teclado/ratón no prueban presencia física. Suspensión corta sin bloqueo requiere evidencia específica; ausencia de señal = bloquear, no inventar garantía.
+- Cliente/LEP son convenciones lingüísticas, no diarización. Nombres, números, anglicismos y fragmentos ambiguos no se borran para fabricar carriles puros.
+- Preservar fuente nativa exclusiva, privacidad, exportación y funciones existentes. Nada de micrófono/pestaña/Groq/replay como arreglo encubierto.
+- No publicar texto hablado, audio, nombres, teléfonos, cuentas, identificadores de equipo ni secretos.
 - Copia puntual no es sincronización automática; no portar permisos, identidades ni decisiones de otro frente.
 
 ## Aceptación y viabilidad
 
-Resultado: retoma del mismo FT, transferencia de responsabilidad a generación 4 y actualización del OCP a la metodología vigente Metacanon 1.24/DUG v362/GOW 2.11. La evidencia de candidata 0.10.38 queda documentada; PR #67 continúa como borrador, no release ni aceptación Windows.
+Resultado vigente: retoma del mismo FT y transferencia de responsabilidad a generación 5, ACTIVA y verificada por lectura de vuelta. Metodología adquirida: Metacanon 1.24 / DUG v362 · NX-362m / GOW 2.11. La candidata 0.10.38 sigue en PR #67, abierta y en borrador; main conserva 0.10.37. La candidata no está fusionada, liberada ni aceptada en Windows.
 
 | Requisito | Estado implementado / evidencia | Aceptación y pendiente |
 |---|---|---|
-| Preparación desde raíz 0.10.36 | Integridad, muestra, protocolo y registro verificados en Windows; ruta registrada por Chrome | Operador confirma transcripción en una llamada; no aceptación integral |
-| Disponibilidad segura | Candidata consolidada 0.10.38, permiso `idle`, autorización efímera previa al clic, vídeo manual, sin rearme automático | CI exacta PASS; idle/bloqueo/suspensión y llamada real del equipo objetivo siguen pendientes; sin aceptación Windows |
-| Separación de idiomas | Candidata segmenta tramos locales; conserva íntegro el texto normalizado; ambigüedad neutra; buffer bruto no recibe identidad falsa | Regresión y DOM sintéticos; nueva llamada/repetibilidad aún pendientes; heurística no es garantía lingüística universal |
-| Tres participantes | Modelo semántico corregido: yo = intérprete, no LEP; no se habilitó captura | Identidad de fuente remota y canal del micrófono no demostrados/activados |
-| Observabilidad | Recepción actual de metadatos nativos corroborada; candidata añade contadores de tramos sin contenido | Informe reciente completo corroborado después del primer corte; no reconoce automáticamente las frases mal asignadas ni acredita los contadores nuevos de la candidata |
+| Disponibilidad segura | Candidata 0.10.38 incorpora guard de presencia, autorización efímera previa a Connect, no rearme automático y comportamiento fail-closed | CI histórica PASS sobre 058fbe65; debe repetirse en cabeza reconciliada. Idle/bloqueo/suspensión y llamada real siguen pendientes |
+| Separación de idiomas | Candidata segmenta tramos locales y conserva ambigüedad neutra; los tests sintéticos reportados fueron 46/46 | Repetibilidad y segmentación visible en Live Caption real siguen pendientes; heurística no es garantía lingüística universal |
+| Sondeo horario | Baseline 0.10.37 registró error de cola y sondeo sin pestaña; candidata incluye omisión controlada y test sintético | Falta repetir harness y confirmar en Windows/Chrome después de instalar la revisión exacta |
+| Integridad y host | Inventario/hash, build del host, ZIP raíz y Native Messaging tuvieron CI PASS en la cabeza anterior | Repetir los tres workflows después de integrar el delta actual de main; operador valida upgrade y rollback reales |
+| Tres participantes | Modelo semántico corregido: idioma no implica identidad; no se habilitó captura de micrófono | Identidad de fuente remota y canal del micrófono no están demostrados ni autorizados |
+| Observabilidad | Main tiene evidencia fresca del sondeo fallido en 0.10.37; paquete observacional health=ok | Los contadores nuevos de la candidata y el comportamiento 0.10.38 aún no están verificados en entorno real |
 
-Cono terminal de liberación: revisión exacta + integridad + Windows seguro + fuente nativa real + segmentación visible + protección de presencia + repetibilidad + aceptación del operador. Pruebas fixture no sustituyen ninguna compuerta. No declarar «todo terminado».
+Cono terminal de liberación: revisión exacta reconciliada + integridad + CI 3/3 + Windows seguro + fuente nativa real + segmentación visible + protección de presencia + sondeo sin pestaña autenticada + errores reales observables + upgrade/rollback + aceptación expresa del operador. Tests fixture, CI y Chromium headless no sustituyen aceptación integral Windows. No declarar «todo terminado».
 
-Pronóstico: análisis/revisión documental y CI de la candidata ya verificables. Cierre de aceptación Windows NO ESTIMABLE desde el rol constructor: depende de pruebas físicas de una llamada real, presencia/lock/suspend, perfil autorizado, operador y aceptación. No usar una estimación previa basada en disponibilidad RDC; Metacanon 1.24 §§6/24 prohíbe al constructor usarlo.
+Pronóstico: reconciliación de ramas y re-ejecución CI son ejecutables por el constructor; se completarán antes de cualquier solicitud de aceptación. El cierre Windows no es estimable desde el rol constructor: depende de la prueba local física del operador sobre la revisión exacta y de su aceptación. No asignar fecha inventada ni basarse en una sesión RDC; Metacanon 1.24 §§6/24 prohíbe al constructor utilizarla.
 
 ## Formato de ciclo
 
@@ -157,6 +162,7 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 - [Informe consolidado recibido](https://github.com/SeryMente/signal-interpreter/blob/c21c2e861ac6b52acefd12fc876d19c810855127/observations/latest/latest-call-report.json); no texto clínico. [Windows CI](https://github.com/SeryMente/signal-interpreter/actions/runs/39528993131/job/118990266837) y [auditoría CI](https://github.com/SeryMente/signal-interpreter/actions/runs/39528993110/job/118990266881).
 
 - [Crónica de retoma y evidencia del 2026-10-29 · generación 4](cronica/C-SIGNAL-RETOMA-20261029-G4.md); entrada literal del operador, procedencia del adjunto, transferencia/read-back, fuentes vigentes, evidencia r3 y límites.
+- [Crónica de retoma y transferencia del 2026-10-30 · generación 5](cronica/C-SIGNAL-RETOMA-20261030-G5.md); autorización literal, control G5/read-back, delta de ramas, batch observacional del baseline 0.10.37, límites y siguiente secuencia.
 - [Crónica del ciclo de nueva sesión RDC y regresores aislados](cronica/C-SIGNAL-RDC-TESTS-20261029-G4.md): instrucción, compuerta de rol, runs CI, cuatro resultados de Node y límites explícitos; no contiene identificadores de dispositivo ni tokens.
 - [Crónica del cierre técnico 0.10.38 y reconciliación de ramas](cronica/C-SIGNAL-CIERRE-TECNICO-20261029-G4.md): análisis de árboles, merge con ambos padres, regresores aislados, tres workflows verdes y validación local reservada al operador.
 - [Crónica del corte actual](cronica/C-SIGNAL-SEGURIDAD-IDIOMAS-20261020-01.md); [corte anterior preservado](cronica/C-SIGNAL-METACANON-20261020-01.md).
@@ -172,7 +178,7 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 ## Persistencia y revisión
 
-Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Separar actualización del núcleo en main de candidata técnica en rama revisable, sin declarar el código candidato como desplegado. Revalidar control de responsabilidad antes de escribir; transferencia solo condicional y autorizada. La herramienta de escritura múltiple no expone condición de blob: no afirmar exclusión mutua técnica. Si se detecta otro escritor o delta, detener publicación y conservar payload local para conciliación.
+Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Separar actualización del núcleo en main de candidata técnica en rama revisable, sin declarar el código candidato como desplegado. Revalidar control de responsabilidad antes de escribir. La transferencia a generación 5 quedó ejecutada y verificada en `main`; control blob `d057a5db249939c381892f831d76a81103190074`, commit `2beb165cb792f072a6b5448d47a6e0a74b5c853f`, con generación 4 preservada. La reconciliación de la candidata con los commits de observabilidad sigue pendiente y debe usar ambos padres/lectura de vuelta. La herramienta de escritura múltiple no instala fencing global: no afirmar exclusión mutua técnica. Si se detecta otro escritor o delta, detener publicación y conservar payload local para conciliación.
 
 Dos pasadas: fidelidad (historia/hash, alcance, vetos, roles, pendientes y originales) y resultado guardado (estructura/semántica, enlaces, prompts, versiones, estado y prueba de vuelta). Comprobar también casos negativos: fuente privada inaccesible, operación incierta, excepción remota acotada no general, histórico no actual y cambio de base. Las comprobaciones mecánicas no prueban comprensión de otro modelo.
 
