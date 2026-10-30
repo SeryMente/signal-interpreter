@@ -943,13 +943,13 @@
           buttonFound: !!button,
           buttonDisabled: button ? !!button.disabled : null
         }, "warn");
+        if (modality !== "OPI" && blockReasons.includes("MODALITY_NOT_VERIFIED_OPI")) {
+          emit("AUTO_ANSWER_SKIPPED_UNVERIFIED_MODALITY", {
+            attemptId: incomingAttemptId,
+            modality: modality, decision: "blocked", reason: "only-verified-OPI"
+          }, "warn");
+        }
         lastIncomingBlockedSignature = blockedSignature;
-      }
-      if (modality !== "OPI" && blockReasons.includes("MODALITY_NOT_VERIFIED_OPI")) {
-        emit("AUTO_ANSWER_SKIPPED_UNVERIFIED_MODALITY", {
-          attemptId: incomingAttemptId,
-          modality: modality, decision: "blocked", reason: "only-verified-OPI"
-        }, "warn");
       }
       return;
     }
