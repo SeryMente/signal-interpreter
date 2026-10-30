@@ -2273,7 +2273,15 @@
   });
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
      if (message && message.type === "SIGNAL_INCOMING_RING") {
-       if (message.incomingAttemptId) incomingAttemptId = String(message.incomingAttemptId).slice(0, 80);
+       var previousAttemptId = incomingAttemptId;
+       var nextAttemptId = message.incomingAttemptId ? String(message.incomingAttemptId).slice(0, 80) : null;
+       if (previousAttemptId && nextAttemptId && previousAttemptId !== nextAttemptId && lastIncomingSignature) {
+         emit("INCOMING_ATTEMPT_CORRELATED", {
+           incomingAttemptId: nextAttemptId, previousAttemptId: previousAttemptId,
+           correlationSource: "ring-request-to-dialog"
+         });
+       }
+       if (nextAttemptId) incomingAttemptId = nextAttemptId;
        emit("INCOMING_RING_CONTEXT_LINKED", {
          incomingAttemptId: incomingAttemptId,
          trigger: String(message.trigger || "background-ring-signal").slice(0, 60)

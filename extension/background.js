@@ -3392,7 +3392,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   chrome.webRequest.onBeforeRequest.addListener(function (details) {
     try {
       var ringPath = new URL(details.url).pathname;
-      if (!/\\/ring\\.mp3$/i.test(ringPath)) return;
+      if (!/\/ring\.mp3$/i.test(ringPath)) return;
       var tabId = Number(details.tabId);
       var now = Date.now();
       var existing = incomingRingByTab.get(tabId);

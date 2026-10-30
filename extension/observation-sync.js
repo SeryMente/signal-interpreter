@@ -4,7 +4,8 @@
 var MAX_BATCH=200;
 var EVENT_THRESHOLD=50;
 var MIN_GAP_MS=10000;
-var timer=null,lastTriggerAt=0,pendingEvents=0,alarmScheduled=false,flushQueue=Promise.resolve();
+var timer=null,callLifecycleTimer=null,lastTriggerAt=0,pendingEvents=0,alarmScheduled=false,flushQueue=Promise.resolve();
+var CALL_LIFECYCLE_ACTIONS=/^(?:INCOMING_RING_REQUEST_STARTED|INCOMING_RING_SIGNAL|INCOMING_RING_REQUEST_FAILED|INCOMING_RING_CONTEXT_LINKED|INCOMING_RING_CONTEXT_NOTIFY_ERROR|INCOMING_DIALOG_DETECTED|INCOMING_DIALOG_CLOSED|INCOMING_ATTEMPT_CORRELATED|CONNECT_BUTTON_FOUND|CONNECT_BUTTON_NOT_FOUND|CONNECT_BUTTON_DISABLED|AUTO_ANSWER_BLOCKED|AUTO_ANSWER_ELIGIBLE|CONNECT_CLICKED|CONNECT_ACCEPTED_PENDING|CALL_ROUTE_ENTERED|ANSWER_FLOW_ROUTE_CONFIRMED|CALL_TIMER_STARTED|MISSED_CALL_CLASSIFIED|CONNECT_FLOW_FAILED_NO_CALL_ROUTE|CONNECT_ROUTE_TIMEOUT|CONNECT_ERROR)$/;
 var PERIODIC_ALARM="signal-observation-sync";
 var RETRY_ALARM="signal-observation-sync-retry";
 
@@ -101,7 +102,7 @@ async function collect(){
 async function flushInternal(reason){
   var now=Date.now();
   var checkpointReason = reason === "call-answered" || reason === "call-ended";
-  if(now-lastTriggerAt<MIN_GAP_MS&&reason!=="manual"&&reason!=="critical"&&reason!=="startup"&&!checkpointReason)return{ok:true,skipped:"rate-limited"};
+  if(now-lastTriggerAt<MIN_GAP_MS&&reason!=="manual"&&reason!=="critical"&&reason!=="startup"&&reason!=="call-lifecycle"&&!checkpointReason)return{ok:true,skipped:"rate-limited"};
   lastTriggerAt=now;
   var data=await collect();
   if(!data.events.length){
@@ -233,6 +234,11 @@ function noteEvent(event){
   var action=String(event&&event.action||"");
   var critical=!!(event&&(event.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(action)||action==="CALL_RATING_STARS_CONFIRMED"));
   if(critical){flush("critical").catch(function(){});return;}
+  if(CALL_LIFECYCLE_ACTIONS.test(action)){
+    if(callLifecycleTimer)clearTimeout(callLifecycleTimer);
+    callLifecycleTimer=setTimeout(function(){callLifecycleTimer=null;flush("call-lifecycle").catch(function(){});},1200);
+    return;
+  }
   if(pendingEvents>=EVENT_THRESHOLD){flush("event-threshold").catch(function(){});return;}
   if(!timer)timer=setTimeout(function(){timer=null;flush("event-window").catch(function(){});},30000);
 }
