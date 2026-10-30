@@ -70,7 +70,7 @@ assert.match(background, /source: "fetchInterpreterLogs"/);
 assert.match(background, /successfulCompletion = source === "rating-route"/);
 assert.match(background, /state\.unfinishedCalls/);
 assert.match(background, /endSignal === "rating-stars-confirmed"/);
-assert.match(background, /state\.missedCalls=.*state\.totalCalls/);
+assert.match(background, /state\.missedCalls\s*=\s*Number\(state\.missedCalls\s*\|\|\s*0\)\s*\+\s*1;[\s\S]*?state\.totalCalls\s*=\s*Number\(state\.totalCalls\s*\|\|\s*0\)\s*\+\s*1;/);
 assert.match(content, /scheduleRatingCompletionConfirmation/);
 assert.match(content, /rating-stars-visible/);
 assert.match(content, /rating-stars-timeout/);
