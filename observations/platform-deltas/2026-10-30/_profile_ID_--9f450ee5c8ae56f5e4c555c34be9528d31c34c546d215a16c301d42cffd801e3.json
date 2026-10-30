@@ -2,26 +2,27 @@
   "schema": "signal-interpreter-platform-delta/v1",
   "type": "changed",
   "identityKey": "https://app.cloudinterpreter.com|/profile/<ID>|",
-  "fromSnapshotId": "snap-23c2045e-b23e-44b9-9df4-9b598b6165aa",
-  "toSnapshotId": "snap-4812e116-944d-430f-9272-5646027d51b7",
-  "fromHash": "293a8fe6491b56444e49a646be077bd555ce5a7fbc07c9ede4252cc8bbcdc3fe",
+  "fromSnapshotId": "snap-e75d09fd-05a3-4482-84b0-b5888d4a7e9b",
+  "toSnapshotId": "snap-e6b4876f-b41d-4933-af3d-ab78ff0e5d0f",
+  "fromHash": "b106fe0e53e7404013163372b9b9afd06e033294f8f64bdb1d8a8ea5edc0b0ed",
   "toHash": "9f450ee5c8ae56f5e4c555c34be9528d31c34c546d215a16c301d42cffd801e3",
-  "capturedAt": "2026-10-30T17:18:25.913Z",
+  "capturedAt": "2026-10-30T17:56:03.974Z",
   "summary": {
     "added": 9,
-    "removed": 3,
-    "changed": 9,
+    "removed": 10,
+    "changed": 16,
     "sections": [
       "page",
       "dom",
-      "controls"
+      "controls",
+      "resources"
     ]
   },
   "changes": [
     {
       "kind": "changed",
       "path": "page.nodeCount",
-      "before": 522,
+      "before": 548,
       "after": 550
     },
     {
@@ -32,9 +33,21 @@
     },
     {
       "kind": "changed",
+      "path": "dom.tagCounts.button",
+      "before": 6,
+      "after": 4
+    },
+    {
+      "kind": "changed",
       "path": "dom.tagCounts.div",
-      "before": 203,
+      "before": 216,
       "after": 213
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.h5",
+      "before": 2,
+      "after": 1
     },
     {
       "kind": "changed",
@@ -49,20 +62,26 @@
     },
     {
       "kind": "changed",
+      "path": "dom.tagCounts.p",
+      "before": 6,
+      "after": 5
+    },
+    {
+      "kind": "changed",
       "path": "dom.tagCounts.path",
-      "before": 9,
+      "before": 10,
       "after": 13
     },
     {
       "kind": "changed",
       "path": "dom.tagCounts.span",
-      "before": 74,
+      "before": 81,
       "after": 76
     },
     {
       "kind": "changed",
       "path": "dom.tagCounts.svg",
-      "before": 8,
+      "before": 9,
       "after": 12
     },
     {
@@ -294,33 +313,231 @@
       }
     },
     {
+      "kind": "removed",
+      "path": "dom.elements[div#pr_id_35>div:nth-child(4)>div:nth-child(1)>button:nth-child(1)|button]",
+      "value": {
+        "selector": "div#pr_id_35>div:nth-child(4)>div:nth-child(1)>button:nth-child(1)",
+        "tag": "button",
+        "attributes": {
+          "aria-label": "Decline"
+        },
+        "classes": [
+          "w-full",
+          "p-button",
+          "p-component",
+          "p-button-outlined"
+        ],
+        "text": "[TEXT:7:58eaef39]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 1,
+        "textLength": 7,
+        "textFingerprint": "58eaef39",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "209px",
+          "height": "44px",
+          "padding": "12px 20px",
+          "margin": "0px 8px 0px 0px",
+          "color": "rgb(111, 56, 183)",
+          "border": "1px solid rgb(243, 234, 255)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 167,
+          "height": 35
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div#pr_id_35>div:nth-child(4)>div:nth-child(1)>button:nth-child(2)|button]",
+      "value": {
+        "selector": "div#pr_id_35>div:nth-child(4)>div:nth-child(1)>button:nth-child(2)",
+        "tag": "button",
+        "attributes": {
+          "aria-label": "Connect"
+        },
+        "classes": [
+          "w-full",
+          "p-button",
+          "p-component",
+          "p-button-success"
+        ],
+        "text": "[TEXT:7:db89a899]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 1,
+        "textLength": 7,
+        "textFingerprint": "db89a899",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "209px",
+          "height": "44px",
+          "padding": "12px 20px",
+          "margin": "0px 8px 0px 0px",
+          "color": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(19, 187, 126)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 167,
+          "height": 35
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div#pr_id_35>span:nth-child(1)|span]",
+      "value": {
+        "selector": "div#pr_id_35>span:nth-child(1)",
+        "tag": "span",
+        "attributes": {
+          "role": "presentation"
+        },
+        "classes": [
+          "p-hidden-accessible",
+          "p-hidden-focusable"
+        ],
+        "text": "",
+        "visible": true,
+        "disabled": false,
+        "childCount": 0,
+        "textLength": 0,
+        "textFingerprint": "811c9dc5",
+        "computedStyle": {
+          "display": "block",
+          "position": "absolute",
+          "overflow": "hidden",
+          "width": "1px",
+          "height": "1px",
+          "padding": "0px",
+          "margin": "-1px",
+          "color": "rgb(21, 0, 48)",
+          "border": "0px none rgb(21, 0, 48)",
+          "opacity": "0"
+        },
+        "bbox": {
+          "width": 1,
+          "height": 1
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div#pr_id_35>span:nth-child(5)|span]",
+      "value": {
+        "selector": "div#pr_id_35>span:nth-child(5)",
+        "tag": "span",
+        "attributes": {
+          "role": "presentation"
+        },
+        "classes": [
+          "p-hidden-accessible",
+          "p-hidden-focusable"
+        ],
+        "text": "",
+        "visible": true,
+        "disabled": false,
+        "childCount": 0,
+        "textLength": 0,
+        "textFingerprint": "811c9dc5",
+        "computedStyle": {
+          "display": "block",
+          "position": "absolute",
+          "overflow": "hidden",
+          "width": "1px",
+          "height": "1px",
+          "padding": "0px",
+          "margin": "-1px",
+          "color": "rgb(21, 0, 48)",
+          "border": "0px none rgb(21, 0, 48)",
+          "opacity": "0"
+        },
+        "bbox": {
+          "width": 1,
+          "height": 1
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div#pr_id_35|div]",
+      "value": {
+        "selector": "div#pr_id_35",
+        "tag": "div",
+        "attributes": {
+          "id": "pr_id_35",
+          "role": "dialog",
+          "aria-labelledby": "pr_id_35_header",
+          "aria-describedby": "pr_id_35_content"
+        },
+        "classes": [
+          "p-dialog",
+          "p-component",
+          "p-dialog-default",
+          "p-ripple-disabled",
+          "p-dialog-enter",
+          "p-dialog-enter-active"
+        ],
+        "text": "[TEXT:18:d4928a24]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 5,
+        "textLength": 18,
+        "textFingerprint": "d4928a24",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "visible",
+          "width": "530px",
+          "height": "356px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(21, 0, 48)",
+          "border": "0px none rgb(21, 0, 48)",
+          "opacity": "0.329086"
+        },
+        "bbox": {
+          "width": 423,
+          "height": 284
+        }
+      }
+    },
+    {
       "kind": "changed",
       "path": "dom.elements[html:nth-child(1)>body:nth-child(2)|body]",
       "before": {
         "selector": "html:nth-child(1)>body:nth-child(2)",
         "tag": "body",
         "attributes": {},
-        "classes": [],
+        "classes": [
+          "p-overflow-hidden"
+        ],
         "text": "[TEXT:19:d9e5c6bf]",
         "visible": true,
         "disabled": false,
-        "childCount": 19,
+        "childCount": 20,
         "textLength": 19,
         "textFingerprint": "d9e5c6bf",
         "computedStyle": {
           "display": "block",
           "position": "static",
-          "overflow": "visible",
-          "width": "1905px",
+          "overflow": "hidden",
+          "width": "1920px",
           "height": "1671.62px",
-          "padding": "0px",
+          "padding": "0px 15px 0px 0px",
           "margin": "0px",
           "color": "rgb(21, 0, 48)",
           "border": "0px none rgb(21, 0, 48)",
           "opacity": "1"
         },
         "bbox": {
-          "width": 1905,
+          "width": 1920,
           "height": 1672
         }
       },
@@ -345,6 +562,66 @@
           "margin": "0px",
           "color": "rgb(21, 0, 48)",
           "border": "0px none rgb(21, 0, 48)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 1905,
+          "height": 1672
+        }
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "dom.elements[html:nth-child(1)|html]",
+      "before": {
+        "selector": "html:nth-child(1)",
+        "tag": "html",
+        "attributes": {},
+        "classes": [],
+        "text": "[TEXT:19:e0ad59d9]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 2,
+        "textLength": 19,
+        "textFingerprint": "e0ad59d9",
+        "computedStyle": {
+          "display": "block",
+          "position": "static",
+          "overflow": "visible",
+          "width": "1920px",
+          "height": "1671.62px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(0, 0, 0)",
+          "border": "0px none rgb(0, 0, 0)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 1920,
+          "height": 1672
+        }
+      },
+      "after": {
+        "selector": "html:nth-child(1)",
+        "tag": "html",
+        "attributes": {},
+        "classes": [],
+        "text": "[TEXT:19:e0ad59d9]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 2,
+        "textLength": 19,
+        "textFingerprint": "e0ad59d9",
+        "computedStyle": {
+          "display": "block",
+          "position": "static",
+          "overflow": "visible",
+          "width": "1905px",
+          "height": "1671.62px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(0, 0, 0)",
+          "border": "0px none rgb(0, 0, 0)",
           "opacity": "1"
         },
         "bbox": {
@@ -522,6 +799,26 @@
       }
     },
     {
+      "kind": "removed",
+      "path": "controls.buttons[button||Connect]",
+      "value": {
+        "tag": "button",
+        "role": "",
+        "label": "Connect",
+        "disabled": false
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "controls.buttons[button||Decline]",
+      "value": {
+        "tag": "button",
+        "role": "",
+        "label": "Decline",
+        "disabled": false
+      }
+    },
+    {
       "kind": "added",
       "path": "controls.fields[{\"tag\":\"input\",\"type\":\"checkbox\",\"name\":\"\",\"aria\":\"\"}]",
       "value": {
@@ -529,6 +826,72 @@
         "type": "checkbox",
         "name": "",
         "aria": ""
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>|fetch]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 263,
+        "transferBytes": 727,
+        "encodedBytes": 427,
+        "decodedBytes": 781,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 563,
+        "transferBytes": 350,
+        "encodedBytes": 50,
+        "decodedBytes": 33,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/utils.heartbeat|fetch]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
+        "initiatorType": "fetch",
+        "durationMs": 129,
+        "transferBytes": 384,
+        "encodedBytes": 84,
+        "decodedBytes": 71,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
+        "initiatorType": "fetch",
+        "durationMs": 478,
+        "transferBytes": 384,
+        "encodedBytes": 84,
+        "decodedBytes": 71,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://sdk.twilio.com|xmlhttprequest]",
+      "before": {
+        "url": "https://sdk.twilio.com",
+        "initiatorType": "xmlhttprequest",
+        "durationMs": 116,
+        "transferBytes": 0,
+        "encodedBytes": 0,
+        "decodedBytes": 0,
+        "protocol": ""
+      },
+      "after": {
+        "url": "https://sdk.twilio.com",
+        "initiatorType": "xmlhttprequest",
+        "durationMs": 115,
+        "transferBytes": 0,
+        "encodedBytes": 0,
+        "decodedBytes": 0,
+        "protocol": ""
       }
     }
   ],
