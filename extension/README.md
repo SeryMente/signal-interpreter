@@ -2,9 +2,9 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
-## Candidata consolidada 0.10.38 — NO liberada
+## Candidata consolidada 0.10.39 — NO liberada
 
-Integra la protección de presencia explícita y segmentación conservadora de subtítulos nativos, junto con las correcciones verificadas de instalación/recarga de main. El manifiesto y las pruebas de la candidata usan 0.10.38; main continúa en 0.10.37 hasta superar las compuertas. El atajo global existente permanece en Ctrl+Shift+8. No activa captura de micrófono, audio de pestaña ni fallback Groq. La aceptación en Windows/Chrome real sigue siendo obligatoria.
+Integra la protección de presencia explícita, segmentación conservadora de subtítulos nativos y el ciclo de observabilidad de llamadas entrantes: timbrado, diálogo, botón, compuertas, clic y desenlace con informe móvil de diez minutos y estado de frescura. La contestación automática sigue siendo fail-closed: el guard de presencia requiere confirmación explícita y el laboratorio bloquea el clic. La candidata usa 0.10.39; la aceptación automática y la observabilidad en Chrome real siguen pendientes de validación del operador.
 
 
 ## Uso portable — Windows + Chrome

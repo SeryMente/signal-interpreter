@@ -5,7 +5,7 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const expectedVersion = "0.10.38";
+const expectedVersion = "0.10.39";
 const readText = (p) => readFileSync(resolve(root, p), "utf8");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex").toUpperCase();
 const manifest = JSON.parse(readText("manifest.json"));
