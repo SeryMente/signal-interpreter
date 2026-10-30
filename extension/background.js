@@ -1526,21 +1526,57 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   function markIncoming(event) {
     mutateState(async function (state) {
       if (state.callId) return;
+      var payload = event.payload || {};
+      var attemptId = String(payload.attemptId || "");
       var pendingAge = state.pendingCall && Date.parse(event.timestamp) - Date.parse(state.pendingCall.detectedAt);
-      if (!state.pendingCall || !Number.isFinite(pendingAge) || pendingAge > 60000) {
+      var sameAttempt = state.pendingCall && attemptId && state.pendingCall.attemptId === attemptId;
+      if (!sameAttempt && (!state.pendingCall || !Number.isFinite(pendingAge) || pendingAge > 60000)) {
         state.pendingCall = {
-          id: uid(), detectedAt: event.timestamp,
-          modality: event.payload && event.payload.modality || event.modality || "OPI",
-          clickedAt: null
+          id: uid(), attemptId: attemptId || null,
+          detectedAt: event.timestamp, lastObservedAt: event.timestamp,
+          tabId: event.tabId != null ? Number(event.tabId) : null,
+          modality: payload.modality || event.modality || "OPI",
+          connectFound: payload.connectFound === true,
+          connectDisabled: payload.connectDisabled === true,
+          clickedAt: null, closedAt: null
         };
+      } else if (sameAttempt) {
+        state.pendingCall.lastObservedAt = event.timestamp;
+        state.pendingCall.connectFound = payload.connectFound === true;
+        state.pendingCall.connectDisabled = payload.connectDisabled === true;
       }
       state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
-      state.autoAnswerTelemetry.detections = Number(state.autoAnswerTelemetry.detections || 0) + 1;
-      state.autoAnswerTelemetry.connectFound = Number(state.autoAnswerTelemetry.connectFound || 0) + (event.payload && event.payload.connectFound ? 1 : 0);
-      state.autoAnswerTelemetry.disabled = Number(state.autoAnswerTelemetry.disabled || 0) + (event.payload && event.payload.connectDisabled ? 1 : 0);
+      state.autoAnswerTelemetry.detections = Number(state.autoAnswerTelemetry.detections || 0) + (sameAttempt ? 0 : 1);
+      state.autoAnswerTelemetry.connectFound = Number(state.autoAnswerTelemetry.connectFound || 0) + (payload.connectFound ? 1 : 0);
+      state.autoAnswerTelemetry.disabled = Number(state.autoAnswerTelemetry.disabled || 0) + (payload.connectDisabled ? 1 : 0);
       state.autoAnswerTelemetry.lastDetectedAt = event.timestamp;
+      if (!state.pendingCall || (attemptId && state.pendingCall.attemptId !== attemptId)) return;
+      record("INCOMING_ATTEMPT_REGISTERED", {
+        attemptId: state.pendingCall.attemptId || null, pendingId: state.pendingCall.id,
+        tabId: state.pendingCall.tabId, modality: state.pendingCall.modality,
+        connectFound: state.pendingCall.connectFound,
+        connectDisabled: state.pendingCall.connectDisabled
+      }, "info", "background");
       chrome.alarms.create("effectif-pending-call", { when: Date.now() + 15000 });
     });
+  }
+  function markIncomingDialogClosed(event) {
+    mutateState(async function (state) {
+      if (!state.pendingCall || state.callId) return;
+      var payload = event && event.payload || {};
+      var attemptId = String(payload.attemptId || "");
+      if (attemptId && state.pendingCall.attemptId && attemptId !== state.pendingCall.attemptId) return;
+      state.pendingCall.closedAt = event.timestamp || iso();
+      record("INCOMING_DIALOG_CLOSED_OBSERVED", {
+        attemptId: state.pendingCall.attemptId || attemptId || null,
+        pendingId: state.pendingCall.id || null,
+        detectedAt: state.pendingCall.detectedAt || null,
+        closedAt: state.pendingCall.closedAt,
+        clickedAt: state.pendingCall.clickedAt || null,
+        reason: payload.reason || "dialog-removed"
+      }, "info", "background");
+      chrome.alarms.create("effectif-pending-call", { when: Date.now() + 2500 });
+    }, "incoming-dialog-closed");
   }
   async function applyPendingHotloadAfterCall(trigger) {
     var stored = await chrome.storage.local.get(["effectifState"]);
@@ -1719,22 +1755,30 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
 
   function alertOnConnect(event) {
     mutateState(async function (state) {
+      var payload = event.payload || {};
+      var attemptId = String(payload.attemptId || "");
       state.lastConnectAt = event.timestamp;
       state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
       state.autoAnswerTelemetry.clicks = Number(state.autoAnswerTelemetry.clicks || 0) + 1;
       state.autoAnswerTelemetry.lastClickedAt = event.timestamp;
       if (state.pendingCall) {
-        state.pendingCall.clickedAt = event.timestamp;
+        if (!attemptId || !state.pendingCall.attemptId || state.pendingCall.attemptId === attemptId) {
+          state.pendingCall.clickedAt = event.timestamp;
+          state.pendingCall.attemptId = state.pendingCall.attemptId || attemptId || null;
+        }
       } else if (!state.callId) {
         state.pendingCall = {
-          id: uid(), detectedAt: event.timestamp, clickedAt: event.timestamp,
-          modality: event.payload && event.payload.modality || "OPI"
+          id: uid(), attemptId: attemptId || null,
+          detectedAt: event.timestamp, clickedAt: event.timestamp,
+          modality: payload.modality || "OPI",
+          tabId: event.tabId != null ? Number(event.tabId) : null
         };
       }
       chrome.alarms.create("effectif-pending-call", { when: Date.now() + 15000 });
       record("CONNECT_ACCEPTED_PENDING", {
-        modality: event.payload && event.payload.modality || "OPI",
-        flowId: event.payload && event.payload.flowId || null,
+        attemptId: attemptId || null,
+        modality: payload.modality || "OPI",
+        flowId: payload.flowId || null,
         reason: "await-call-route"
       }, "info", "background");
     });
@@ -2940,7 +2984,18 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         }
       }
       if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event);
+      if (event.action === "INCOMING_DIALOG_CLOSED") markIncomingDialogClosed(event);
       if (event.action === "CONNECT_CLICKED") alertOnConnect(event);
+      if (event.action === "AUTO_ANSWER_BLOCKED" || event.action === "AUTO_ANSWER_AUTHORIZATION_BLOCKED") {
+        mutateState(async function (state) {
+          state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
+          state.autoAnswerTelemetry.blocked = Number(state.autoAnswerTelemetry.blocked || 0) + 1;
+          state.autoAnswerTelemetry.lastBlockedAt = event.timestamp;
+          state.autoAnswerTelemetry.lastBlockedReasons = Array.isArray(event.payload && event.payload.blockedReasons)
+            ? event.payload.blockedReasons.slice(0, 8)
+            : [String(event.payload && (event.payload.reasonCode || event.payload.reason) || event.action)];
+        }, "auto-answer-blocked").catch(function () {});
+      }
       if (event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
         mutateState(async function (state) {
           state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
@@ -2985,14 +3040,10 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       return true;
     }
     if(message.type==="INCOMING_DIALOG_CLOSED"){
-      mutateState(async function(state){
-        if(!state.pendingCall||state.callId)return;
-        state.pendingCall.closedAt=message.timestamp||iso();
-        if(!state.pendingCall.clickedAt){
-          record("INCOMING_DIALOG_CLOSED_OBSERVED",{pendingId:state.pendingCall.id||null,detectedAt:state.pendingCall.detectedAt||null,closedAt:state.pendingCall.closedAt},"info","content");
-        }
-        chrome.alarms.create("effectif-pending-call",{when:Date.now()+2500});
-      },"incoming-dialog-closed");
+      markIncomingDialogClosed({
+        timestamp: message.timestamp || iso(),
+        payload: { attemptId: message.attemptId || null, reason: message.reason || "dialog-removed" }
+      });
       return false;
     }
     if(message.type==="RECONCILE_PLATFORM_TELEMETRY"){
@@ -3253,13 +3304,18 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     if(alarm.name!=="effectif-pending-call")return;
     mutateState(async function(state){
       if(!state.pendingCall||state.callId)return;      var clickedAt=state.pendingCall.clickedAt||(state.lastConnectAt&&Math.abs(Date.parse(state.lastConnectAt)-Date.parse(state.pendingCall.detectedAt))<=2000?state.lastConnectAt:null);
-      if (state.pendingCall.clickedAt) {
-        var failedConnect=state.pendingCall;
-        state.pendingCall=null;
+      if (clickedAt) {
+        var failedConnect = state.pendingCall;
+        state.pendingCall = null;
         record("CONNECT_FLOW_FAILED_NO_CALL_ROUTE", {
-          pendingId:failedConnect.id||null, detectedAt:failedConnect.detectedAt||null,
-          clickedAt:failedConnect.clickedAt||null, classifiedAt:iso(),
-          reason:"connect_clicked_no_call_route"
+          attemptId: failedConnect.attemptId || null,
+          pendingId: failedConnect.id || null,
+          tabId: failedConnect.tabId || null,
+          detectedAt: failedConnect.detectedAt || null,
+          clickedAt: failedConnect.clickedAt || clickedAt,
+          dialogClosedAt: failedConnect.closedAt || null,
+          classifiedAt: iso(),
+          reason: "connect_clicked_no_call_route"
         }, "warn", "alarm");
         return;
       }
@@ -3267,8 +3323,28 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         chrome.alarms.create("effectif-pending-call", { when: Date.now() + 5000 });
         return;
       }
-      var missed={id:state.pendingCall.id||uid(),detectedAt:state.pendingCall.detectedAt,clickedAt:null,classifiedAt:iso(),modality:state.pendingCall.modality||"OPI",status:"missed",reason:state.pendingCall.closedAt?"dialog_closed_without_connect":"dialog_timeout"};
-      state.missedCalls=Number(state.missedCalls||0)+1;state.totalCalls=Number(state.totalCalls||0)+1;state.dailyMissedCalls=Object.assign({},state.dailyMissedCalls||{});var day=localDay(missed.detectedAt||iso());state.dailyMissedCalls[day]=Number(state.dailyMissedCalls[day]||0)+1;state.missedCallRecords=(state.missedCallRecords||[]).concat(missed).slice(-1000);state.pendingCall=null;record("MISSED_CALL_CLASSIFIED",missed,"warn","alarm");
+      var missed = {
+        id: state.pendingCall.id || uid(),
+        attemptId: state.pendingCall.attemptId || null,
+        tabId: state.pendingCall.tabId || null,
+        detectedAt: state.pendingCall.detectedAt,
+        clickedAt: null,
+        closedAt: state.pendingCall.closedAt || null,
+        classifiedAt: iso(),
+        modality: state.pendingCall.modality || "OPI",
+        connectFound: state.pendingCall.connectFound === true,
+        connectDisabled: state.pendingCall.connectDisabled === true,
+        status: "missed",
+        reason: state.pendingCall.closedAt ? "dialog_closed_without_connect" : "dialog_timeout"
+      };
+      state.missedCalls = Number(state.missedCalls || 0) + 1;
+      state.totalCalls = Number(state.totalCalls || 0) + 1;
+      state.dailyMissedCalls = Object.assign({}, state.dailyMissedCalls || {});
+      var day = localDay(missed.detectedAt || iso());
+      state.dailyMissedCalls[day] = Number(state.dailyMissedCalls[day] || 0) + 1;
+      state.missedCallRecords = (state.missedCallRecords || []).concat(missed).slice(-1000);
+      state.pendingCall = null;
+      record("MISSED_CALL_CLASSIFIED", missed, "warn", "alarm");
     });
   });
   function sanitizedRequestUrl(raw) {
