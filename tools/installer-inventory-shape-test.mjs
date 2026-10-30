@@ -4,7 +4,7 @@ import fs from "node:fs";
 const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
 const installer = fs.readFileSync("INSTALAR.ps1", "utf8");
 const inventory = JSON.parse(fs.readFileSync("payload-sha256.json", "utf8"));
-assert.equal(manifest.version, "0.10.38");
+assert.equal(manifest.version, "0.10.39");
 assert.equal(inventory.schema, "signal-interpreter-payload-sha256/v1");
 assert.ok(Array.isArray(inventory.files) && inventory.files.length >= 50,
   "payload inventory must expose the full files[] list");
