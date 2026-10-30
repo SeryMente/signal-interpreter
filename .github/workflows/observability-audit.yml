@@ -40,6 +40,10 @@ jobs:
           node --check tools/live-caption-offscreen-tests.mjs
           node --check tools/live-caption-static-audit.mjs
           node --check tools/earnings-overlay-tests.mjs
+          node --check tools/official-sync-scheduled-no-tab-test.mjs
+          node --check tools/installer-inventory-shape-test.mjs
+          node --check tools/pipeline-hotkey-consistency-test.mjs
+          node --check tools/overlay-global-toggle-regression-test.mjs
           node --check tools/call-earnings-baseline-tests.mjs
           node --check extension/live-caption-core.js
           node --check extension/live-caption-bridge.js
@@ -59,6 +63,12 @@ jobs:
           node --check tools/observability-cycle-delta-test.mjs
           node --check tools/call-observability-report-test.mjs
           node --check tools/overlay-activation-regression-test.mjs
+      - name: Explicit availability and fail-closed answer regression
+        run: |
+          node --check extension/presence-guard.js
+          node tools/presence-guard-test.mjs
+          node tools/presence-connect-test.mjs
+          node tools/caption-language-spans-test.mjs
       - name: Platform learning unit test
         run: node tools/observability/platform-learning-test.mjs
       - name: Screenshot relay unit test
@@ -95,6 +105,14 @@ jobs:
         run: node tools/call-earnings-baseline-tests.mjs
       - name: Earnings overlay regression test
         run: node tools/earnings-overlay-tests.mjs
+      - name: Scheduled official sync no-tab safety regression
+        run: node tools/official-sync-scheduled-no-tab-test.mjs
+      - name: Installer payload inventory shape regression
+        run: node tools/installer-inventory-shape-test.mjs
+      - name: Global overlay hotkey consistency
+        run: node tools/pipeline-hotkey-consistency-test.mjs
+      - name: Global overlay toggle and hotload lifecycle regression
+        run: node tools/overlay-global-toggle-regression-test.mjs
       - name: Groq transcriber unit test
         run: node tools/groq-transcriber-tests.mjs
       - name: Independent call preview runtime regression
