@@ -33,6 +33,8 @@ const context={
     }
   }
 };
+context.self=context;
+context.window=context;
 vm.createContext(context);
 vm.runInContext(source,context,{filename:"extension/observation-sync.js"});
 function makeEvent(sequence,action){
