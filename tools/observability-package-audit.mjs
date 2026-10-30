@@ -67,8 +67,11 @@ export function auditObservabilityPackage(observationsRoot){
       for(const callRef of attempt.callRefs||[])assert(/^[a-f0-9]{24}$/.test(callRef),"incoming call reference must be opaque SHA-256 prefix");
     }
     assert(Number(manifest.calls.incomingCallWindowSummary&&manifest.calls.incomingCallWindowSummary.attempts||0)===Number(incoming.summary.attempts||0),"manifest incoming call attempt count mismatch");
+    assert(incoming.privacy.rawAudioIncluded===false&&incoming.privacy.rawTranscriptIncluded===false&&incoming.privacy.rawDialogTextIncluded===false,
+      "incoming call report must explicitly declare raw call content excluded");
     const serialized=fs.readFileSync(incomingCallWindowFile,"utf8");
-    assert(!serialized.includes("rawAudio")&&!serialized.includes("rawTranscript")&&!serialized.includes("dialogText"),"incoming call report contains prohibited raw call content");
+    assert(!/"(?:rawAudio|audio|rawTranscript|transcriptText|dialogText|innerText|textContent|outerHTML|innerHTML)"\s*:/.test(serialized),
+      "incoming call report contains a raw content field");
     incomingCallWindowSummary=incoming.summary;
   }
   if(fs.existsSync(healthFile)){
