@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {sha256,fileToken,semanticPlatformDelta} from "./observability/platform-learning.mjs";
+import {buildIncomingCallWindowReport,renderIncomingCallWindowMarkdown} from "./incoming-call-window-report.mjs";
 
 const HERE=path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT=path.resolve(HERE,"..");
@@ -662,6 +663,9 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
 
   const latestReal=lastInput&&isRealBatch(lastInput)?lastInput:findLatestRealBatch(obs);
   const generatedAt=now();
+  const incomingCallWindow=buildIncomingCallWindowReport(obs,generatedAt);
+  writeJson(path.join(obs,"latest","incoming-calls-10m.json"),incomingCallWindow);
+  fs.writeFileSync(path.join(obs,"latest","incoming-calls-10m.md"),renderIncomingCallWindowMarkdown(incomingCallWindow),"utf8");
   const callReportIndex=updateCallReports(obs,Array.from(terminalCallIds),generatedAt);
   const latestCallReport=callReportIndex.latestReportPath
     ?readJson(path.join(obs,callReportIndex.latestReportPath),null):null;
@@ -697,6 +701,14 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
       latestReportAt:callReportIndex.latestReportGeneratedAt||null,
       latestReportStatus:callReportIndex.latestStatus||null,
       latestRatingStarsObserved:callReportIndex.latestRatingStarsObserved===true
+    },
+    incomingCalls:{
+      reportPath:"latest/incoming-calls-10m.json",
+      freshness:incomingCallWindow.freshness,
+      latestObservedAt:incomingCallWindow.coverage.latestObservedAt,
+      attemptCount:incomingCallWindow.attempts.total,
+      missedCount:incomingCallWindow.attempts.missed,
+      unresolvedCount:incomingCallWindow.attempts.unresolved
     },
     platform:{
       observations:Number(index.observations||0),
@@ -742,10 +754,16 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     latestCallRatingStarsObserved:callReportIndex.latestRatingStarsObserved===true,
     callReportCheckpointObserved:!!(latestCallReport&&latestCallReport.endConfirmation&&latestCallReport.endConfirmation.finalCheckpointObserved),
     inboxRemaining:listJson(inbox).length,
+    observationFreshness:incomingCallWindow.freshness,
+    latestObservedAt:incomingCallWindow.coverage.latestObservedAt,
+    latestObservedAgeSeconds:incomingCallWindow.coverage.latestObservedAgeSeconds,
+    incomingAttemptCount:incomingCallWindow.attempts.total,
+    incomingMissedCount:incomingCallWindow.attempts.missed,
+    incomingUnresolvedCount:incomingCallWindow.attempts.unresolved,
     status:"ok"
   };
   writeJson(path.join(obs,"health","github-build.json"),health);
-  return{manifest,index,health,callReports:callReportIndex,latestCallReport:latestCallReport};
+  return{manifest,index,health,callReports:callReportIndex,latestCallReport:latestCallReport,incomingCallWindow:incomingCallWindow};
 }
 
 if(import.meta.url===`file://${process.argv[1]?.replaceAll("\\\\","/")}`){
