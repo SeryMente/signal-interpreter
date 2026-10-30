@@ -132,7 +132,21 @@
   function render() {
     $("enabled").checked = presenceState.armed === true;
     $("presenceIdleSeconds").value = String(config.presenceIdleSeconds || "");
-    $("presenceStatus").textContent = presenceState.armed ? "Disponible · solo teléfono; vídeo manual" : "Pausado · ¿sigues disponible? Confirma para reactivar";
+    var presenceReason = String(presenceState.reason || "confirmation-required");
+    var presenceReasonLabels = {
+      "worker-start-confirm-again": "Chrome se reinició o el worker arrancó; confirma de nuevo",
+      "observation-gap-confirm-again": "Se perdió continuidad de presencia; confirma de nuevo",
+      "presence-unavailable-confirm-again": "No se pudo verificar presencia activa",
+      "idle-or-locked-confirm-again": "Equipo inactivo o bloqueado; confirma al volver",
+      "manual-pause": "Pausado manualmente",
+      "settings-changed-confirm-again": "Cambió la configuración; confirma de nuevo",
+      "laboratory": "Bloqueado por el laboratorio aislado",
+      "verification-error-confirm-again": "Falló la verificación de presencia",
+      "confirmation-required": "Requiere confirmación explícita"
+    };
+    $("presenceStatus").textContent = presenceState.armed
+      ? "Disponible · solo teléfono; vídeo manual"
+      : "Pausado · " + (presenceReasonLabels[presenceReason] || presenceReason.replace(/-/g, " "));
     $("observation").checked = !!config.observationEnabled;
     $("networkTelemetryEnabled").checked = !!config.networkTelemetryEnabled;
     $("performanceTelemetryEnabled").checked = !!config.performanceTelemetryEnabled;
