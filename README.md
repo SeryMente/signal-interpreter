@@ -49,6 +49,21 @@ La observabilidad de Signal Interpreter cubre dos planos: telemetría de la prop
 - El paquete derivado alimenta obligatoriamente el siguiente ciclo de desarrollo mediante un delta semántico.
 - No se requieren Node.js residente, Native Messaging, Scheduled Tasks, watchdogs, supervisores, hosts nativos ni servidores `localhost` en Windows.
 
+### Diagnóstico de llamadas entrantes y autocontestador · 0.10.39
+
+La captura del diálogo y del botón `Connect` funciona aunque la acción automática esté bloqueada. Cada intento registra un `attemptId`, modalidad, estado del botón, readiness desglosado, motivo de bloqueo, autorización, clic, ruta de llamada y desenlace. El guard de presencia continúa siendo fail-closed: tras reinicio del worker, pérdida de continuidad, inactividad/bloqueo o cambio de configuración, hay que re-confirmar disponibilidad desde el popup. No se desactiva ni se rearma automáticamente.
+
+El informe móvil de los últimos diez minutos se publica en:
+
+- `observations/latest/incoming-calls-10m.md`: resumen humano por intento.
+- `observations/latest/incoming-calls-10m.json`: timeline, latencias, estado de botón/readiness y señales ausentes.
+
+Solo cuenta una llamada como perdida con `MISSED_CALL_CLASSIFIED`. Timbrado sin diálogo se etiqueta `ring_unmatched`; clic sin ruta es `connect_failed_no_route`; los intentos sin evidencia terminal permanecen inconclusos. No se confunde la señal de timbrado con una llamada perdida.
+
+Cada batch incluye `relayReceivedAt` estampado por el servidor para medir la recepción y corregir el desfase del reloj del equipo. Health usa límites de 2 minutos (fresh), 5 minutos (stale), señala lotes pendientes y divergencia de versión. El workflow `observability-freshness` comprueba la frescura cada dos minutos.
+
+La aceptación de producción exige además la prueba del operador en Chrome con la versión 0.10.39, presencia rearmada, estado online, candado de laboratorio apagado y una llamada OPI controlada. CI con DOM sintético no prueba una llamada real ni reemplaza esa aceptación.
+
 La arquitectura canónica está documentada en `docs/OBSERVABILITY-ARCHITECTURE-BROWSER-GITHUB-v2.md`.
 
 
