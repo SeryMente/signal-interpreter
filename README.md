@@ -5,36 +5,23 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
-## Uso portable — Windows + Chrome
+## Uso portable — Windows + Chrome · 0.10.38
 
-El **ZIP del repositorio** contiene la extensión cargable: `manifest.json` está en la **raíz** de la carpeta extraída, no dentro de `extension/`.
+El ZIP de `main` contiene la extensión cargable: `manifest.json` está en la **raíz** de la carpeta extraída, no dentro de `extension/`.
 
-1. Extrae el ZIP en una carpeta estable y escribible. Finaliza cualquier llamada/prueba antes de instalar.
-2. Haz doble clic en **INSTALAR.cmd**, en esa raíz. Verifica huellas/identidad y registra el puente incluido para tu usuario; no requiere Node/Python/compilador ni privilegios de administrador. No reinicia Chrome. `INSTALACION-RESULTADO.json` confirma preparación, no captions en vivo.
-3. En Chrome, activa modo desarrollador y **Cargar descomprimida**: selecciona esa **misma raíz**. Desactiva otra copia anterior; no muevas la carpeta cargada.
-4. Enciende Live Caption, cierra las pestañas Cloud Interpreter y pausa otros audios. Abre **Probar** en el popup; pulsa **Iniciar prueba** y luego reproducir. También puedes usar **PROBAR.cmd** si el perfil cargado se identifica sin ambigüedad.
-5. Comprueba texto nativo y filas del panel, prueba abrir/cerrar la burbuja, y **Finalizar y exportar**. El fin del audio también solicita la descarga. Si cierras abruptamente la página, recupera **Descargar último informe** al reabrir.
+1. Descarga el ZIP de `main` y extráelo en una carpeta estable y escribible. No lo extraigas encima de una versión anterior ni mezcles carpetas.
+2. Fuera de una llamada activa y con la misma cuenta de Windows que ejecuta Chrome, ejecuta **`PREPARAR-Y-CARGAR.cmd`**. Este ejecuta `INSTALAR.ps1`, valida la identidad y los SHA-256, prepara y prueba el ejecutable Native Messaging, lo instala en `%LOCALAPPDATA%\SignalInterpreter\NativeMessagingHost` y registra el manifiesto en HKCU. No requiere una instalación separada del puente, Node.js, Python, compilador ni privilegios de administrador. No reinicia Chrome.
+3. En `chrome://extensions`, activa el modo desarrollador y elige **Cargar descomprimida**. Selecciona la **raíz extraída** que contiene `manifest.json`; no selecciones `extension/` ni muevas la carpeta después de cargarla. Desactiva una copia anterior de Signal Interpreter para evitar duplicados.
+4. Comprueba que Chrome muestra la versión `0.10.38`. El atajo global es `Ctrl+Shift+8`; no se incorpora `Ctrl+Shift+Y`.
+5. La prueba en vivo corresponde al operador: confirma que Live Caption nativo de Windows/Chrome está activo y verifica los segmentos inglés/español, la continuidad del overlay y el comportamiento de presencia en una sesión controlada. La prueba del protocolo Native Messaging y el recibo `INSTALACION-RESULTADO.json` **no prueban** captions reales ni aceptación de una llamada.
 
-Muestra de voz generada localmente al instalar, o archivo local autorizado; no se sube audio/texto. El laboratorio no toma llamadas ni produce ingresos/exportación de producción. Una prueba local no certifica Cloud Interpreter; si Chrome destruye el árbol accesible al cerrar la burbuja, no se fabrica texto ni se captura audio como alternativa. Windows/Chrome deben tener Live Caption disponible; puede requerir sus propios modelos. MacOS y Linux no pertenecen al alcance del producto.
+### Puente Native Messaging
 
-En cada computadora registra/carga la carpeta para su usuario Windows. Sin rutas fijas, servicios ni runtime de desarrollo; las preferencias locales no se sincronizan automáticamente entre equipos. Canon completo y límites: [antecedente del sprint](docs/frentes/signal-interpreter/antecedentes/TRANSCRIPTION-SPRINT-CANONICAL.pre-1.9.md), §16.
+No ejecutes por separado `extension/native/register-caption-host.ps1` en la versión 0.10.38. El instalador raíz ya materializa el ejecutable, genera el manifiesto estable, registra HKCU y hace el probe del host instalado. La preparación es por usuario de Windows: debe ser la misma cuenta que utiliza Chrome. Después de preparar el puente, todavía debes cargar la carpeta raíz en Chrome; esa carga no la realiza el instalador.
 
-## Arquitectura vigente 0.10.37 — exclusivamente texto nativo
+La extensión utiliza texto nativo de Live Caption → Windows UI Automation → puente Native Messaging → overlay de llamada. No captura audio de pestaña ni del micrófono, no usa Groq como fallback y no reproduce conversación. La segmentación lingüística no identifica hablantes; los fragmentos ambiguos permanecen sin asignar. Windows/Chrome deben exponer el texto nativo para que SI pueda mostrarlo.
 
-La candidata consolidada **0.10.38** se revisa en [PR #67](https://github.com/SeryMente/signal-interpreter/pull/67). Sigue en borrador: no forma parte de `main`, no es un release aceptado y requiere validación en Windows/Chrome real antes de integrarse.
-
-
-**Live Caption nativo de Chrome → Windows UI Automation → puente Native Messaging → overlay de llamada**
-
-La extensión no captura audio de pestaña ni micrófono, no transcribe con Groq y no reproduce conversación. Mensajes/configuración antiguos no reactivan esas rutas. Solo se preservan tonos breves preexistentes de los controles de mute; no son audio de llamada.
-
-- Carriles **CLIENTE · ENGLISH / LEP · ESPAÑOL** por idioma del texto, no identificación de hablantes. No se inventa traducción si Chrome no produce texto en un idioma.
-- Historial local de sesión, copiar/buscar, posición/tamaño, hotloading y controles de mute/ingresos conservados.
-- El host lee texto oculto únicamente cuando Windows/Chrome aún lo exponen. Si al cerrar la burbuja Chrome destruye su árbol accesible, el panel lo informa; no sustituye la fuente por captura de audio.
-- Observabilidad automática al cierre con retry persistente e informes actualizables por eventos tardíos, sin texto hablado/audio. La descarga manual de diagnóstico contiene únicamente metadatos.
-- No necesita llave Groq. La consola conserva historial/notas anteriores y no es un capturador nuevo.
-
-La carpeta distribuida contiene **manifest.json en su raíz**, y `INSTALAR.cmd` prepara el host para el mismo usuario Windows que Chrome. Preparación, activación y prueba en vivo son compuertas diferentes. La prueba real en Windows/Chrome permanece **NO VERIFICADA** hasta completar las compuertas de aceptación en el dispositivo vigente.
+La prueba real en Windows/Chrome permanece **NO VERIFICADA** hasta que el operador la ejecute y reporte PASS/FAIL, versión/SHA y telemetría saneada. No compartir texto ni audio de llamadas.
 
 ## Funciones Cloud
 
@@ -42,9 +29,7 @@ Auto-Answer, OPI/VRI, Online/Offline, llamadas perdidas, cronómetros, ingresos,
 
 ## Carga local
 
-En chrome://extensions activa Developer mode y usa Load unpacked sobre la carpeta extension/.
-
-Para el overlay de Live Caption, los artefactos adicionales viven íntegramente en extension/native/. El registro del host se realiza una vez por usuario con extension/native/register-caption-host.ps1.
+En 0.10.38, usa **Cargar descomprimida** sobre la carpeta raíz que contiene `manifest.json`. Ejecuta primero `PREPARAR-Y-CARGAR.cmd` (o `INSTALAR.cmd`) para que `INSTALAR.ps1` prepare y registre automáticamente el puente incluido. No ejecutes manualmente `extension/native/register-caption-host.ps1` en este flujo.
 
 No se instala un servicio de Windows, Scheduled Task, watchdog ni servidor localhost.
 
