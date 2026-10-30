@@ -24,6 +24,7 @@ const extensionId = Array.from(keyDigest, (byte) =>
 assert.equal(extensionId, "ldpbjhobnfgmhdoehehdmnbhhjckebmj", "Chrome extension identity changed");
 
 const seen = new Set();
+const digestMismatches = [];
 for (const entry of entries) {
   assert.ok(entry && typeof entry.path === "string" && typeof entry.sha256 === "string", "malformed inventory entry");
   assert.match(entry.sha256, /^[A-F0-9]{64}$/i, "malformed SHA-256: " + entry.path);
@@ -34,8 +35,13 @@ for (const entry of entries) {
   assert.ok(!seen.has(entry.path.toLowerCase()), "duplicate inventory path: " + entry.path);
   seen.add(entry.path.toLowerCase());
   assert.ok(existsSync(full), "missing payload file: " + entry.path);
-  assert.equal(sha256(readFileSync(full)), entry.sha256.toUpperCase(), "SHA-256 mismatch: " + entry.path);
+  const actualDigest = sha256(readFileSync(full));
+  console.log("PAYLOAD_SHA256 " + entry.path + " actual=" + actualDigest + " expected=" + entry.sha256.toUpperCase());
+  if (actualDigest !== entry.sha256.toUpperCase()) {
+    digestMismatches.push({ path: entry.path, actual: actualDigest, expected: entry.sha256.toUpperCase() });
+  }
 }
+assert.deepEqual(digestMismatches, [], "payload SHA-256 mismatches: " + JSON.stringify(digestMismatches));
 
 const commands = manifest.commands || {};
 assert.ok(commands["toggle-global-overlays"], "global overlays keyboard command is absent");
