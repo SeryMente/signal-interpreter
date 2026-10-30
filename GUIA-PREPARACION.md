@@ -1,22 +1,32 @@
-# Preparar Signal Interpreter 0.10.36 — paquete con puente estable
+# Preparación de la candidata Signal Interpreter 0.10.38
 
-Este ZIP contiene una carpeta cargable como extension descomprimida y un preparador de un solo paso.
+**Estado: CANDIDATA — NO LIBERADA.** No usar para sustituir una instalación activa ni ejecutar durante una llamada. Esperar aprobación de la revisión exacta y abrir una ventana de mantenimiento confirmada sin llamada.
 
-## Instalacion
+## Preparación e instalación
 
-1. Extrae el ZIP a la carpeta donde se mantendra la extension. No cambies la carpeta despues de cargarla en Chrome.
-2. Ejecuta \`PREPARAR-Y-CARGAR.cmd\`. Debe terminar con \`BRIDGE_PREPARADO=VERIFICADO\`, \`HASHES=PASS\` y \`NATIVE_MESSAGING_PROTOCOL=PASS\`. Si muestra un error, no cargues la extension ni dependas de la transcripcion en una llamada.
-3. En Chrome abre \`chrome://extensions\`, activa el modo desarrollador y selecciona **Cargar descomprimida**. Selecciona la raiz extraida donde esta \`manifest.json\`; no selecciones \`extension\\\`.
-4. Antes de una llamada operativa, usa la prueba local de la extension y confirma que los subtitulos nativos llegan al panel.
+1. Descarga/extrae el paquete en una carpeta estable para esta candidata. Conserva copia de seguridad de la instalación y de la ruta activa actual; no mezcles archivos entre versiones.
+2. Abre PowerShell con el usuario de Windows que ejecuta Chrome. Desde la raíz del paquete, ejecuta `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\INSTALAR.ps1` o `PREPARAR-Y-CARGAR.cmd`. El instalador debe validar manifiesto, identidad, inventario SHA-256, host nativo, registro Native Messaging y protocolo antes de informar éxito. Si cualquier compuerta falla, detén la instalación y conserva la versión anterior.
+3. En Chrome abre `chrome://extensions`, activa el modo desarrollador y usa **Cargar descomprimida**. Selecciona la raíz que contiene `manifest.json`, no la subcarpeta `extension\`.
+4. Comprueba en el manifiesto que la versión es `0.10.38` y el atajo global único es `Ctrl+Shift+8`. No existe un segundo atajo `Ctrl+Shift+Y`.
+5. Antes de una llamada operativa, verifica por separado la recepción de Live Caption nativo y el estado del panel. La prueba del host nativo comprueba protocolo, pero no demuestra que los subtítulos reales aparezcan o estén clasificados correctamente.
 
-## Que automatiza y que no
+## Qué cambia y qué no
 
-El preparador verifica los hashes del paquete, reconstruye el ejecutable nativo incluido, comprueba su protocolo, lo instala en \`%LOCALAPPDATA%\\SignalInterpreter\\NativeMessagingHost\` y registra el manifiesto en HKCU para el mismo usuario de Windows que ejecuta Chrome. De este modo, mover el paquete de extension ya no deja el registro apuntando al ejecutable dentro de la carpeta extraida.
+- La contestación automática exige autorización de presencia efímera. Ausencia o incertidumbre bloquea; no rearma automáticamente.
+- Live Caption nativo se conserva y se segmenta de forma conservadora por idioma. Los tramos ambiguos permanecen sin etiqueta; el idioma no identifica al hablante.
+- El sondeo horario de estadísticas omite de forma controlada la ausencia de una pestaña autenticada de Cloud Interpreter. No abre, navega ni recarga pestañas; una sincronización manual fallida y errores reales de red/API siguen siendo visibles.
+- No se añade captura de audio del micrófono o de pestaña, Groq fallback, reproducción ni inferencia de identidad de voz.
 
-**Limite de Chrome:** el boton **Cargar descomprimida** no puede instalar ni registrar por si solo un host nativo de Windows. Esa operacion requiere un proceso de instalacion de Windows. En este paquete se realiza con un unico comando \`PREPARAR-Y-CARGAR.cmd\`; no necesitas editar el registro manualmente ni ejecutar a mano el script interno del puente.
+## Persistencia y rollback
 
-**Deep Freeze:** si el equipo revierte cambios de \`%LOCALAPPDATA%\` o del registro HKCU al reiniciar, la preparacion tambien puede revertirse. Ejecuta el preparador en la ventana de mantenimiento/Thawed y confirma que la ruta y el registro sobrevivan el reinicio, o configura persistencia/ThawSpace para ambos. El ZIP por si solo no puede impedir que Deep Freeze restaure un estado anterior.
+El instalador raíz administra el puente nativo en `%LOCALAPPDATA%\SignalInterpreter\NativeMessagingHost` y el registro HKCU del usuario de Windows. En equipos administrados por Deep Freeze, confirma con TI que la carpeta local y el registro sobrevivan al reinicio antes de considerar aceptada la candidata. Si falla cualquier verificación, no uses el puente en una llamada; restaura la raíz anterior siguiendo el respaldo y registra los resultados.
 
-La salida \`INSTALACION-RESULTADO.json\` registra el resultado de preparacion. \`ChromeLoaded\` y \`RealCall\` permanecen NO VERIFICADO hasta una comprobacion separada; pasar el probe nativo no garantiza la transcripcion real en una llamada.
+## Compuertas de aceptación pendientes
 
-Version de extension: 0.10.36. La rama de paquete no modifica \`main\`.
+1. CI verde en el SHA exacto de la candidata.
+2. Pruebas en Windows PowerShell 5.1: instalación limpia/actualización, hashes, Native Messaging y ausencia de scripts antiguos.
+3. Windows/Chrome: idle, bloqueo/desbloqueo, suspensión corta, reinicio y pestañas múltiples; verificar que no se interrumpa una llamada activa.
+4. Subtítulos Live Caption nativos reales en inglés/español: texto sin pérdida ni duplicación, tramos ambiguos sin clasificación forzada y repetibilidad.
+5. Observación operacional nueva sin errores de sondeo por pestaña ausente y aceptación explícita del operador de la revisión instalada.
+
+CI sintética y build del host no sustituyen pruebas en el equipo Windows objetivo.

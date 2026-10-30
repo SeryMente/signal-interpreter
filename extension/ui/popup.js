@@ -2,7 +2,7 @@
   "use strict";
   var DEFAULT_CONFIG = {
     targetHost: "app.cloudinterpreter.com",
-    autoAnswerEnabled: true,
+    autoAnswerEnabled: false,
     observationEnabled: true,
     networkTelemetryEnabled: true,
     performanceTelemetryEnabled: true,
@@ -33,6 +33,7 @@
   var config = Object.assign({}, DEFAULT_CONFIG);
   var DEFAULT_CLOUD_INTERPRETER_LOGIN_USERNAME = "victor.hugo.queretaro@proton.me";
   var cloudInterpreterLoginUsername = DEFAULT_CLOUD_INTERPRETER_LOGIN_USERNAME;
+  var presenceState = { armed: false };
   var state = {};
   var mirror = {};
   var relayMomentState = { automatic: null, manual: null, model: null };
@@ -129,7 +130,9 @@
   }
 
   function render() {
-    $("enabled").checked = !!config.autoAnswerEnabled;
+    $("enabled").checked = presenceState.armed === true;
+    $("presenceIdleSeconds").value = String(config.presenceIdleSeconds || "");
+    $("presenceStatus").textContent = presenceState.armed ? "Disponible · solo teléfono; vídeo manual" : "Pausado · ¿sigues disponible? Confirma para reactivar";
     $("observation").checked = !!config.observationEnabled;
     $("networkTelemetryEnabled").checked = !!config.networkTelemetryEnabled;
     $("performanceTelemetryEnabled").checked = !!config.performanceTelemetryEnabled;
@@ -269,8 +272,27 @@
       status("Usuario guardado localmente en Chrome");
     });
   });
-  $("enabled").addEventListener("change", function () {
-    save({ autoAnswerEnabled: this.checked });
+  $("enabled").addEventListener("change", async function () {
+    var enabled = this.checked;
+    this.disabled = true;
+    try {
+      var seconds = Number($("presenceIdleSeconds").value);
+      // Preferences are not authorization; the worker grants an ephemeral arm.
+      var result = await chrome.runtime.sendMessage({ type: enabled ? "SIGNAL_PRESENCE_ARM" : "SIGNAL_PRESENCE_PAUSE", idleSeconds: seconds });
+      if (!result || !result.ok) { status("Elige un límite y confirma con el equipo activo. No se habilitó el contestador.", true); return; }
+      presenceState = result.state;
+      save({ autoAnswerEnabled: enabled, presenceIdleSeconds: seconds });
+    } catch (_) { presenceState = { armed: false }; status("No se verificó presencia; automático bloqueado", true); }
+    finally { this.disabled = false; render(); }
+  });
+  $("presenceIdleSeconds").addEventListener("change", async function () {
+    await chrome.runtime.sendMessage({ type: "SIGNAL_PRESENCE_PAUSE" });
+    presenceState = { armed: false };
+    save({ autoAnswerEnabled: false, presenceIdleSeconds: Number(this.value) || null });
+  });
+  chrome.runtime.sendMessage({ type: "SIGNAL_PRESENCE_STATUS" }).then(function (result) { presenceState = result && result.state || { armed: false }; render(); }).catch(function () {});
+  chrome.storage.onChanged.addListener(function (changes, area) {
+    if (area === "local" && changes.signalPresenceGuard) { presenceState = changes.signalPresenceGuard.newValue || { armed: false }; render(); }
   });
   $("observation").addEventListener("change", function () { save({ observationEnabled: this.checked }); });
   $("networkTelemetryEnabled").addEventListener("change", function () { save({ networkTelemetryEnabled: this.checked }); });
