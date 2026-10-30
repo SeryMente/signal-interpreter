@@ -882,7 +882,7 @@
     var modality = "UNKNOWN";
     for (var i = 0; i < dialogs.length; i += 1) {
       var candidateText = normalized(dialogs[i].innerText || dialogs[i].textContent);
-      if (!/(?:is\\s+requesting\\s+interpretation|requesting\\s+interpretation)/i.test(candidateText)) continue;
+      if (!/(?:is\s+requesting\s+interpretation|requesting\s+interpretation)/i.test(candidateText)) continue;
       dialog = dialogs[i];
       text = candidateText;
       modality = /Audio interpreting/i.test(text) ? "OPI" :
