@@ -173,7 +173,10 @@ La frecuencia base del runtime Chrome es:
 - flush periódico: ~1 minuto;
 - flush por umbral de eventos;
 - flush inmediato para eventos críticos;
+- flush inmediato para transiciones del ciclo de llamada entrante (ring, diálogo, botón, readiness/bloqueo, clic, ruta, timeout, clasificación missed);
 - retry con backoff.
+
+Los eventos del ciclo entrante no esperan la ventana de 30 segundos: activan un flush prioritario, conservando el ACK y la secuencia durable. El relay añade `relayReceivedAt` en servidor a cada batch para medir recepción sin confiar en el reloj del PC.
 
 El límite temporal ya no depende de un reporter local.
 
@@ -268,3 +271,41 @@ No se incluyen audio, transcripciones crudas, valores escritos, cuerpos HTTP, c�
 La infraestructura previa basada en reporter local, watchdog, supervisor, Scheduled Tasks y Native Messaging queda descontinuada y debe permanecer fuera del árbol de producción de Signal Interpreter.
 
 La nueva arquitectura es la única arquitectura canónica para la observabilidad del sprint.
+
+
+## 17. Observabilidad correlacionada de llamadas entrantes — 0.10.39
+
+El flujo de observación de una llamada entrante está desacoplado del permiso para contestar. El content script inspecciona el diálogo y el botón aunque el autocontestador esté bloqueado por presencia, disponibilidad, configuración o laboratorio. La observación pasiva nunca otorga permiso de clic.
+
+Cada intento crea un `attemptId` opaco y registra, cuando están disponibles:
+
+- señal de timbrado `INCOMING_RING_SIGNAL` y bootstrap/inyección del content script;
+- detección del diálogo `INCOMING_DIALOG_DETECTED`;
+- presencia, habilitación y modalidad del botón Connect;
+- muestras `AUTO_ANSWER_READINESS` con estado desglosado: `labSafetyLock`, `presenceArmed`, `presenceReason`, `authorizedProfile`, `configEnabled`, disponibilidad y `blockedReasons`;
+- decisión `AUTO_ANSWER_BLOCKED`, grant de autorización, elegibilidad y clic;
+- cierre del diálogo, entrada efectiva a `/call/<ID>`, confirmación del flujo, fallo sin ruta o clasificación explícita de llamada perdida.
+
+El guard de presencia permanece fail-closed: el arranque/reinicio del service worker, pérdida de continuidad, inactividad/bloqueo, pausa o cambio de configuración exigen confirmación explícita. La extensión no rearma automáticamente ni elimina estas compuertas. El popup expone el motivo de pausa; el registro distingue el candado del laboratorio, presencia desarmada, configuración deshabilitada y estado offline.
+
+### Informe móvil de diez minutos
+
+GitHub Actions genera:
+
+- `observations/latest/incoming-calls-10m.json`: evidencia estructurada por intento;
+- `observations/latest/incoming-calls-10m.md`: lectura humana del mismo intervalo.
+
+El informe corrige el reloj del cliente con el desfase observado entre `createdAt` y `relayReceivedAt` estampado por Vercel. Los batches anteriores a ese campo se identifican como reloj cliente no verificado. Los desenlaces se mantienen separados: `missed` solo si existe `MISSED_CALL_CLASSIFIED`; `answered` si aparece la ruta/confirmación; `connect_failed_no_route` si hubo clic sin ruta; `ring_unmatched` si existe timbrado sin diálogo correlacionable; el resto permanece sin desenlace concluyente. El informe expone latencia detección→clic/contestación, bloqueo, botón, timeline y `missingSignals`. No exporta audio, transcripción, texto crudo del diálogo ni IDs de llamada completos; las referencias de llamada son hashes opacos.
+
+### Frescura, cola y alertas
+
+`observations/health/github-build.json` declara el último recibo del relay, edad de fuente, desfase de reloj, versión runtime observada y frescura:
+
+- `fresh`: hasta 2 minutos desde el recibo;
+- `delayed`: más de 2 y hasta 5 minutos;
+- `stale`: más de 5 minutos;
+- `receipt-unavailable`: no existe hora de recepción confiable;
+- `backlogged`: hay batches pendientes de procesar;
+- `runtime-version-mismatch`: la última extensión observada no coincide con el paquete publicado.
+
+El workflow `.github/workflows/observability-freshness.yml` audita el health cada 2 minutos y falla con error visible ante ausencia de recibo, retraso, obsolescencia, backlog o desajuste de versión. Un resultado de build exitoso no equivale a una fuente de eventos fresca.
