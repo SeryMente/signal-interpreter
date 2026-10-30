@@ -72,5 +72,31 @@ const fourth=buildObservabilityPackage(root);
 assert.equal(fourth.health.lastAutomaticPublishAt,"2026-10-07T20:01:00.000Z");
 assert.equal(fourth.health.lastManualPublishAt,"2026-10-07T20:02:00.000Z");
 assert.equal(fourth.health.lastManualBatchId,"manual-1");
+
+const nowMs=Date.now();
+const createdAt=new Date(nowMs-3000).toISOString();
+const relayReceivedAt=new Date(nowMs-2000).toISOString();
+const attemptId="incoming-attempt-pipeline-fixture";
+const incoming=batch("incoming-window","call-lifecycle");
+incoming.createdAt=createdAt;
+incoming.relayReceivedAt=relayReceivedAt;
+incoming.extensionVersion="0.10.39";
+incoming.events=[
+  {schema:"khora-effectif-event/v4",id:"incoming-detected",sequence:10,timestamp:new Date(nowMs-9000).toISOString(),tabId:77,action:"INCOMING_DIALOG_DETECTED",level:"info",payload:{attemptId,modality:"OPI",connectFound:true}},
+  {schema:"khora-effectif-event/v4",id:"incoming-blocked",sequence:11,timestamp:new Date(nowMs-8900).toISOString(),tabId:77,action:"AUTO_ANSWER_BLOCKED",level:"warn",payload:{attemptId,blockedReasons:["WORKER_START_CONFIRM_AGAIN"]}},
+  {schema:"khora-effectif-event/v4",id:"incoming-closed",sequence:12,timestamp:new Date(nowMs-5000).toISOString(),tabId:77,action:"INCOMING_DIALOG_CLOSED",level:"info",payload:{attemptId,reason:"dialog-removed"}},
+  {schema:"khora-effectif-event/v4",id:"incoming-missed",sequence:13,timestamp:new Date(nowMs-2500).toISOString(),tabId:77,action:"MISSED_CALL_CLASSIFIED",level:"warn",payload:{attemptId,status:"missed",reason:"dialog_closed_without_connect"}}
+];
+incoming.summary={eventsTotal:4,errors:0,warnings:2,firstSequence:10,lastSequence:13,categories:{SESSION:4},actions:{INCOMING_DIALOG_DETECTED:1,AUTO_ANSWER_BLOCKED:1,INCOMING_DIALOG_CLOSED:1,MISSED_CALL_CLASSIFIED:1}};
+fs.writeFileSync(path.join(inbox,"incoming-window.json"),JSON.stringify(incoming));
+const fifth=buildObservabilityPackage(root);
+assert.equal(fifth.health.freshness.status,"fresh");
+assert.equal(fifth.health.status,"ok");
+assert.equal(fifth.health.incomingCallWindow.missed,1);
+const incomingReport=JSON.parse(fs.readFileSync(path.join(root,"observations","latest","incoming-calls-10m.json"),"utf8"));
+assert.equal(incomingReport.schema,"signal-interpreter-incoming-call-window/v1");
+assert.equal(incomingReport.summary.missed,1);
+assert.equal(incomingReport.attempts[0].status,"missed");
+assert.equal(fs.existsSync(path.join(root,"observations","latest","incoming-calls-10m.md")),true);
 fs.rmSync(root,{recursive:true,force:true});
 console.log("OBSERVABILITY_GITHUB_PIPELINE_TEST=PASS");
