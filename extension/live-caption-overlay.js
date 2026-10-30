@@ -60,6 +60,7 @@
   var pageAllowed = false;
   var youtubeTarget = false;
   var active = false;
+  var lastLanguageRoutingKey = "";
   var nativeStatus = { reasonCode: "native-bridge-connecting", connected: false, captionFresh: false };
   var sessionEnded = false;
   var collapsed = false;
@@ -789,7 +790,24 @@
     if (!container) return;
 
     var wasNearBottom = nearBottom(container);
-    var data = rows.slice(-MAX_HISTORY);
+    var data = [];
+    rows.slice(-MAX_HISTORY).forEach(function (item) {
+      var spans = item.source === "chrome-live-caption" && typeof core.segmentCaptionText === "function"
+        ? core.segmentCaptionText(item.text) : [{ text: item.text, language: item.language || "unknown" }];
+      spans.forEach(function (span) { if (span.text.trim()) data.push(Object.assign({}, item, span)); });
+    });
+    data = data.slice(-MAX_HISTORY);
+    var routingKey = rows.length + ":" + data.map(function (item) { return item.language + ":" + item.text.length; }).join("|");
+    if (routingKey !== lastLanguageRoutingKey) {
+      lastLanguageRoutingKey = routingKey;
+      reportLifecycle("LIVE_CAPTION_LANGUAGE_ROUTING", {
+        rawRows: rows.length, renderedLanguageSpans: data.length,
+        englishSpans: data.filter(function (item) { return item.language === "en"; }).length,
+        spanishSpans: data.filter(function (item) { return item.language === "es"; }).length,
+        unassignedSpans: data.filter(function (item) { return item.language !== "en" && item.language !== "es"; }).length,
+        speakerIdentityVerified: false, microphoneCaptured: false, captionTextStored: false
+      });
+    }
     var rendered = container.querySelectorAll(".row");
     while (rendered.length > data.length) {
       rendered[rendered.length - 1].remove();
@@ -1188,7 +1206,7 @@
     if (message && message.type === "SIGNAL_CAPTION_OVERLAY_PROBE") {
       if (typeof sendResponse === "function") sendResponse({ ok: true, ready: runtimeStorageReady, runtimeVersion: runtimeVersion,
         enabled: overlayPreferenceEnabled(), hostMounted: !!(host && host.isConnected && root),
-        contextReady: contextReady, rowCount: rows.length, callActive: callActive });
+        contextReady: contextReady, rowCount: rows.length, renderedDomRows: root ? root.querySelectorAll(".row").length : 0, callActive: callActive });
       return false;
     }
     if (!message) return;
