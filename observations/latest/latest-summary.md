@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-201d710e-16b2-4249-b2b6-af07fcfe4cfe
-- Creado: 2026-10-30T17:13:16.279Z
+- Batch: batch-ee06f51c-e605-481f-b61d-881dc2010bfa
+- Creado: 2026-10-30T17:14:29.711Z
 - Trigger: alarm
 - Extensión: 0.10.38
-- Eventos: 39
+- Eventos: 1
 - Errores: 0
 - Warnings: 0
-- Secuencia: 2328 → 2366
+- Secuencia: 2374 → 2374
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 1859
 - Deltas de plataforma: 1839
@@ -15,12 +15,11 @@
 ## Categorías
 
 {
-  "RUNTIME": 39
+  "PORTAL": 1
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 36,
-  "PERFORMANCE_HEARTBEAT": 3
+  "NETWORK_ACTIVITY_WINDOW": 1
 }
