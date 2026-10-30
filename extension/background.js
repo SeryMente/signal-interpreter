@@ -432,6 +432,8 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   var hotloadLastExistingTabScanAt = 0;
   var tabAvailability = new Map();
   var tabReadiness = new Map();
+  var recentIncomingRingByTab = new Map();
+  var INCOMING_RING_CORRELATION_MS = 15000;
   var actionIconCache = new Map();
   var READINESS_MAX_AGE_MS = 5000;
 
@@ -1523,24 +1525,80 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       record("PLATFORM_ONLINE_RECONCILE_ERROR", { trigger: event.payload && event.payload.state || null, error: String(error) }, "warn", "background");
     });
   }
+  function attachIncomingRingCorrelation(event, tabId) {
+    if (!event || !event.action || !/^(INCOMING_DIALOG_|CONNECT_BUTTON_|AUTO_ANSWER_|CONNECT_|ANSWER_FLOW_)/.test(String(event.action))) return;
+    var key = Number(tabId);
+    if (!Number.isInteger(key) || key < 0) return;
+    var ring = recentIncomingRingByTab.get(key);
+    if (!ring) return;
+    var eventAt = Date.parse(event.timestamp || "") || Date.now();
+    var age = eventAt - Number(ring.at || 0);
+    if (age < 0 || age > INCOMING_RING_CORRELATION_MS) {
+      if (age > INCOMING_RING_CORRELATION_MS) recentIncomingRingByTab.delete(key);
+      return;
+    }
+    event.payload = Object.assign({}, event.payload || {});
+    if (!event.payload.ringSignalId) {
+      event.payload.ringSignalId = ring.ringSignalId;
+      event.payload.ringObservedAt = ring.timestamp;
+      event.payload.ringToEventMs = age;
+    }
+  }
   function markIncoming(event) {
     mutateState(async function (state) {
       if (state.callId) return;
+      var payload = event.payload || {};
+      var incomingAttemptId = String(payload.incomingAttemptId || "");
       var pendingAge = state.pendingCall && Date.parse(event.timestamp) - Date.parse(state.pendingCall.detectedAt);
-      if (!state.pendingCall || !Number.isFinite(pendingAge) || pendingAge > 60000) {
+      var sameAttempt = state.pendingCall && (!incomingAttemptId ||
+        state.pendingCall.incomingAttemptId === incomingAttemptId || state.pendingCall.id === incomingAttemptId);
+      if (!state.pendingCall || !sameAttempt || !Number.isFinite(pendingAge) || pendingAge > 60000) {
+        var pendingId = incomingAttemptId || uid();
         state.pendingCall = {
-          id: uid(), detectedAt: event.timestamp,
-          modality: event.payload && event.payload.modality || event.modality || "OPI",
+          id: pendingId,
+          incomingAttemptId: incomingAttemptId || pendingId,
+          ringSignalId: payload.ringSignalId || null,
+          detectedAt: event.timestamp,
+          modality: payload.modality || event.modality || "OPI",
           clickedAt: null
         };
+      } else {
+        state.pendingCall.incomingAttemptId = state.pendingCall.incomingAttemptId || incomingAttemptId || state.pendingCall.id;
+        state.pendingCall.ringSignalId = state.pendingCall.ringSignalId || payload.ringSignalId || null;
       }
       state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
       state.autoAnswerTelemetry.detections = Number(state.autoAnswerTelemetry.detections || 0) + 1;
-      state.autoAnswerTelemetry.connectFound = Number(state.autoAnswerTelemetry.connectFound || 0) + (event.payload && event.payload.connectFound ? 1 : 0);
-      state.autoAnswerTelemetry.disabled = Number(state.autoAnswerTelemetry.disabled || 0) + (event.payload && event.payload.connectDisabled ? 1 : 0);
+      state.autoAnswerTelemetry.connectFound = Number(state.autoAnswerTelemetry.connectFound || 0) + (payload.connectFound ? 1 : 0);
+      state.autoAnswerTelemetry.disabled = Number(state.autoAnswerTelemetry.disabled || 0) + (payload.connectDisabled ? 1 : 0);
       state.autoAnswerTelemetry.lastDetectedAt = event.timestamp;
+      record("INCOMING_ATTEMPT_REGISTERED", {
+        incomingAttemptId: state.pendingCall.incomingAttemptId || state.pendingCall.id,
+        ringSignalId: state.pendingCall.ringSignalId || null,
+        pendingId: state.pendingCall.id || null,
+        modality: state.pendingCall.modality,
+        detectedAt: state.pendingCall.detectedAt
+      }, "info", "background");
       chrome.alarms.create("effectif-pending-call", { when: Date.now() + 15000 });
     });
+  }
+  function closeIncomingDialog(event) {
+    mutateState(async function (state) {
+      var payload = event && event.payload || {};
+      if (!state.pendingCall || state.callId) return;
+      var incomingAttemptId = payload.incomingAttemptId || null;
+      if (incomingAttemptId && state.pendingCall.incomingAttemptId &&
+          String(incomingAttemptId) !== String(state.pendingCall.incomingAttemptId)) return;
+      state.pendingCall.closedAt = event.timestamp || iso();
+      state.pendingCall.ringSignalId = state.pendingCall.ringSignalId || payload.ringSignalId || null;
+      record("INCOMING_DIALOG_CLOSED_OBSERVED", {
+        incomingAttemptId: state.pendingCall.incomingAttemptId || state.pendingCall.id || null,
+        ringSignalId: state.pendingCall.ringSignalId || null,
+        pendingId: state.pendingCall.id || null,
+        detectedAt: state.pendingCall.detectedAt || null,
+        closedAt: state.pendingCall.closedAt
+      }, "info", "content");
+      chrome.alarms.create("effectif-pending-call", { when: Date.now() + 2500 });
+    }, "incoming-dialog-closed");
   }
   async function applyPendingHotloadAfterCall(trigger) {
     var stored = await chrome.storage.local.get(["effectifState"]);
@@ -1723,11 +1781,17 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
       state.autoAnswerTelemetry.clicks = Number(state.autoAnswerTelemetry.clicks || 0) + 1;
       state.autoAnswerTelemetry.lastClickedAt = event.timestamp;
+      var incomingAttemptId = String(event.payload && event.payload.incomingAttemptId || "");
+      var ringSignalId = event.payload && event.payload.ringSignalId || null;
       if (state.pendingCall) {
         state.pendingCall.clickedAt = event.timestamp;
+        state.pendingCall.incomingAttemptId = state.pendingCall.incomingAttemptId || incomingAttemptId || state.pendingCall.id;
+        state.pendingCall.ringSignalId = state.pendingCall.ringSignalId || ringSignalId;
       } else if (!state.callId) {
+        var pendingId = incomingAttemptId || uid();
         state.pendingCall = {
-          id: uid(), detectedAt: event.timestamp, clickedAt: event.timestamp,
+          id: pendingId, incomingAttemptId: incomingAttemptId || pendingId,
+          ringSignalId: ringSignalId, detectedAt: event.timestamp, clickedAt: event.timestamp,
           modality: event.payload && event.payload.modality || "OPI"
         };
       }
@@ -2915,6 +2979,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
           observedTabUrl: String(sender.tab.url || "").replace(/\?.*$/, "").slice(0, 500)
         });
       }
+      if (sender.tab) attachIncomingRingCorrelation(event, sender.tab.id);
       appendEvent(event, function () { sendResponse({ ok: true }); });
       if (event.action === "PLATFORM_SESSION_STARTED" || event.action === "PLATFORM_SESSION_ENDED") handleSession(event);
       if (event.action === "AVAILABILITY_STATE") {
@@ -2940,6 +3005,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         }
       }
       if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event);
+      if (event.action === "INCOMING_DIALOG_CLOSED") closeIncomingDialog(event);
       if (event.action === "CONNECT_CLICKED") alertOnConnect(event);
       if (event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
         mutateState(async function (state) {
@@ -2985,14 +3051,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       return true;
     }
     if(message.type==="INCOMING_DIALOG_CLOSED"){
-      mutateState(async function(state){
-        if(!state.pendingCall||state.callId)return;
-        state.pendingCall.closedAt=message.timestamp||iso();
-        if(!state.pendingCall.clickedAt){
-          record("INCOMING_DIALOG_CLOSED_OBSERVED",{pendingId:state.pendingCall.id||null,detectedAt:state.pendingCall.detectedAt||null,closedAt:state.pendingCall.closedAt},"info","content");
-        }
-        chrome.alarms.create("effectif-pending-call",{when:Date.now()+2500});
-      },"incoming-dialog-closed");
+      closeIncomingDialog({timestamp:message.timestamp||iso(),payload:message.payload||message});
       return false;
     }
     if(message.type==="RECONCILE_PLATFORM_TELEMETRY"){
@@ -3257,7 +3316,10 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         var failedConnect=state.pendingCall;
         state.pendingCall=null;
         record("CONNECT_FLOW_FAILED_NO_CALL_ROUTE", {
-          pendingId:failedConnect.id||null, detectedAt:failedConnect.detectedAt||null,
+          pendingId:failedConnect.id||null,
+          incomingAttemptId:failedConnect.incomingAttemptId||failedConnect.id||null,
+          ringSignalId:failedConnect.ringSignalId||null,
+          detectedAt:failedConnect.detectedAt||null,
           clickedAt:failedConnect.clickedAt||null, classifiedAt:iso(),
           reason:"connect_clicked_no_call_route"
         }, "warn", "alarm");
@@ -3267,7 +3329,14 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         chrome.alarms.create("effectif-pending-call", { when: Date.now() + 5000 });
         return;
       }
-      var missed={id:state.pendingCall.id||uid(),detectedAt:state.pendingCall.detectedAt,clickedAt:null,classifiedAt:iso(),modality:state.pendingCall.modality||"OPI",status:"missed",reason:state.pendingCall.closedAt?"dialog_closed_without_connect":"dialog_timeout"};
+      var missed={
+        id:state.pendingCall.id||uid(),
+        incomingAttemptId:state.pendingCall.incomingAttemptId||state.pendingCall.id||null,
+        ringSignalId:state.pendingCall.ringSignalId||null,
+        detectedAt:state.pendingCall.detectedAt,clickedAt:null,classifiedAt:iso(),
+        modality:state.pendingCall.modality||"OPI",status:"missed",
+        reason:state.pendingCall.closedAt?"dialog_closed_without_connect":"dialog_timeout"
+      };
       state.missedCalls=Number(state.missedCalls||0)+1;state.totalCalls=Number(state.totalCalls||0)+1;state.dailyMissedCalls=Object.assign({},state.dailyMissedCalls||{});var day=localDay(missed.detectedAt||iso());state.dailyMissedCalls[day]=Number(state.dailyMissedCalls[day]||0)+1;state.missedCallRecords=(state.missedCallRecords||[]).concat(missed).slice(-1000);state.pendingCall=null;record("MISSED_CALL_CLASSIFIED",missed,"warn","alarm");
     });
   });
@@ -3331,7 +3400,18 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     try {
       var requestPath = new URL(details.url).pathname;
       if (/\/ring\.mp3$/i.test(requestPath) && (details.statusCode === 200 || details.statusCode === 206)) {
-        record("INCOMING_RING_SIGNAL", { tabId: started.tabId, statusCode: details.statusCode, durationMs: durationMs, signal: "ring.mp3" }, "info", "webRequest");
+        var ringSignalId = uid();
+        var ringTabId = Number(started.tabId);
+        recentIncomingRingByTab.set(ringTabId, { ringSignalId: ringSignalId, at: Date.now(), timestamp: iso() });
+        if (recentIncomingRingByTab.size > 100) {
+          recentIncomingRingByTab.forEach(function (item, key) {
+            if (Date.now() - Number(item.at || 0) > INCOMING_RING_CORRELATION_MS) recentIncomingRingByTab.delete(key);
+          });
+        }
+        record("INCOMING_RING_SIGNAL", {
+          ringSignalId: ringSignalId, tabId: started.tabId,
+          statusCode: details.statusCode, durationMs: durationMs, signal: "ring.mp3"
+        }, "info", "webRequest");
         bootstrapAutoAnswerForTab(Number(started.tabId), "ring.mp3-completed");
       }
     } catch (error) {
