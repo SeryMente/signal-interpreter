@@ -231,8 +231,9 @@ function flush(reason){
 function noteEvent(event){
   mark();
   var action=String(event&&event.action||"");
-  var critical=!!(event&&(event.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(action)||action==="CALL_RATING_STARS_CONFIRMED"));
-  if(critical){flush("critical").catch(function(){});return;}
+  var callLifecycleCritical=/^(?:INCOMING_RING_SIGNAL|INCOMING_DIALOG_DETECTED|INCOMING_DIALOG_CLOSED|CONNECT_BUTTON_FOUND|CONNECT_BUTTON_NOT_FOUND|CONNECT_BUTTON_DISABLED|AUTO_ANSWER_BLOCKED|AUTO_ANSWER_AUTHORIZATION_BLOCKED|AUTO_ANSWER_ELIGIBLE|CONNECT_CLICKED|CONNECT_ACCEPTED_PENDING|ANSWER_FLOW_ROUTE_CONFIRMED|CALL_ROUTE_ENTERED|INCOMING_ATTEMPT_ANSWERED|MISSED_CALL_CLASSIFIED|CONNECT_FLOW_FAILED_NO_CALL_ROUTE|CONNECT_ROUTE_TIMEOUT|CONNECT_ERROR)$/.test(action);
+  var critical=!!(event&&(event.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(action)||action==="CALL_RATING_STARS_CONFIRMED"||callLifecycleCritical));
+  if(critical){flush(callLifecycleCritical?"call-lifecycle":"critical").catch(function(){});return;}
   if(pendingEvents>=EVENT_THRESHOLD){flush("event-threshold").catch(function(){});return;}
   if(!timer)timer=setTimeout(function(){timer=null;flush("event-window").catch(function(){});},30000);
 }
