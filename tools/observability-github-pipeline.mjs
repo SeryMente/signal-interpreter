@@ -587,7 +587,7 @@ function updateCallReports(obs,candidateCallIds,generatedAt){
   return index;
 }
 
-\function buildIncomingCallWindowReport(obs,generatedAt){
+function buildIncomingCallWindowReport(obs,generatedAt){
   const endMs=Date.parse(generatedAt)||Date.now();
   const startMs=endMs-600000;
   const rows=[];
