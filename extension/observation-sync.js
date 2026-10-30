@@ -4,7 +4,7 @@
 var MAX_BATCH=200;
 var EVENT_THRESHOLD=50;
 var MIN_GAP_MS=10000;
-var timer=null,lastTriggerAt=0,pendingEvents=0,alarmScheduled=false,flushQueue=Promise.resolve();
+var timer=null,callEventTimer=null,lastTriggerAt=0,pendingEvents=0,alarmScheduled=false,flushQueue=Promise.resolve();
 var PERIODIC_ALARM="signal-observation-sync";
 var RETRY_ALARM="signal-observation-sync-retry";
 
@@ -100,7 +100,7 @@ async function collect(){
 }
 async function flushInternal(reason){
   var now=Date.now();
-  var checkpointReason = reason === "call-answered" || reason === "call-ended";
+  var checkpointReason = reason === "call-answered" || reason === "call-ended" || reason === "call-event";
   if(now-lastTriggerAt<MIN_GAP_MS&&reason!=="manual"&&reason!=="critical"&&reason!=="startup"&&!checkpointReason)return{ok:true,skipped:"rate-limited"};
   lastTriggerAt=now;
   var data=await collect();
@@ -233,6 +233,13 @@ function noteEvent(event){
   var action=String(event&&event.action||"");
   var critical=!!(event&&(event.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(action)||action==="CALL_RATING_STARS_CONFIRMED"));
   if(critical){flush("critical").catch(function(){});return;}
+  var callLifecycle=/^(INCOMING_RING_SIGNAL|INCOMING_RING_SIGNAL_ERROR|INCOMING_DIALOG_DETECTED|INCOMING_DIALOG_CLOSED|INCOMING_DIALOG_CLOSED_OBSERVED|INCOMING_ATTEMPT_REGISTERED|CONNECT_BUTTON_FOUND|CONNECT_BUTTON_NOT_FOUND|CONNECT_BUTTON_DISABLED|AUTO_ANSWER_BLOCKED|AUTO_ANSWER_ELIGIBLE|AUTO_ANSWER_SKIPPED_UNVERIFIED_MODALITY|CONNECT_CLICKED|CONNECT_ERROR|CONNECT_ROUTE_TIMEOUT|CONNECT_FLOW_FAILED_NO_CALL_ROUTE|MISSED_CALL_CLASSIFIED|ANSWER_FLOW_ROUTE_CONFIRMED)$/.test(action);
+  var stateTransition=action==="AUTO_ANSWER_READINESS" && String(event&&event.payload&&event.payload.reason||"")!=="heartbeat";
+  if(callLifecycle||stateTransition){
+    if(callEventTimer)clearTimeout(callEventTimer);
+    callEventTimer=setTimeout(function(){callEventTimer=null;flush("call-event").catch(function(){});},300);
+    return;
+  }
   if(pendingEvents>=EVENT_THRESHOLD){flush("event-threshold").catch(function(){});return;}
   if(!timer)timer=setTimeout(function(){timer=null;flush("event-window").catch(function(){});},30000);
 }
