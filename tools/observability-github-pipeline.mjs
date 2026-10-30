@@ -690,9 +690,10 @@ function buildIncomingCallWindowReport(obs,generatedAt){
       for(const key of [
         "incomingAttemptId","ringSignalId","modality","connectFound","connectDisabled","disabled",
         "label","decision","blockReasons","reason","ready","availability","authorizedProfile",
-        "labSafetyLockActive","presenceArmed","presenceReason","autoAnswerEnabled","statusCode",
+        "labSafetyLockActive","presenceArmed","presenceReason","presenceGeneration","autoAnswerEnabled","statusCode",
         "durationMs","trigger","tabId","pendingId","detectedAt","clickedAt","classifiedAt",
-        "expectedRoute","clickLatencyMs","elapsedMs","grantError","requestId"
+        "ringObservedAt","ringToEventMs","incomingAttemptToEventMs","expectedRoute","clickLatencyMs",
+        "elapsedMs","grantError","requestId","callId","status","reasonCode"
       ])if(p[key]!==undefined)details[key]=p[key];
       const at=Date.parse(e.timestamp)||0;
       const relayDelay=row.batchCreatedMs!==null?Math.max(0,row.batchCreatedMs-at):null;
