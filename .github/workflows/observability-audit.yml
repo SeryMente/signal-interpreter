@@ -58,6 +58,7 @@ jobs:
           node --check tools/observability-freshness-audit.mjs
           node --check tools/observability-freshness-audit-test.mjs
           node --check tools/observability-relay-batch-test.mjs
+          node --check tools/observability-call-lifecycle-sync-test.mjs
           node --check tools/observability/platform-learning.mjs
           node --check tools/observability/platform-learning-test.mjs
           node --check tools/observability-github-pipeline.mjs
@@ -100,6 +101,8 @@ jobs:
         run: node tools/observability/incoming-call-window-test.mjs
       - name: Relay receive timestamp test
         run: node tools/observability-relay-batch-test.mjs
+      - name: Immediate call lifecycle sync regression test
+        run: node tools/observability-call-lifecycle-sync-test.mjs
       - name: Observability freshness audit regression test
         run: node tools/observability-freshness-audit-test.mjs
       - name: Per-call observability report regression test
