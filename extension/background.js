@@ -1,4 +1,4 @@
-importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js");
+importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js");
 (function () {
   "use strict";
 
@@ -11,7 +11,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   var GROQ_USD_PER_AUDIO_HOUR = 0.04;
   var DEFAULT_CONFIG = {
     targetHost: "app.cloudinterpreter.com",
-    autoAnswerEnabled: true,
+    autoAnswerEnabled: false,
     observationEnabled: true,
     networkTelemetryEnabled: true,
     performanceTelemetryEnabled: true,
@@ -43,6 +43,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     groqEstimatedUsdPerAudioHour: GROQ_USD_PER_AUDIO_HOUR
   };
   var offscreenCreation = null;
+  var captionCaptureBlock = null;
   var eventQueue = Promise.resolve();
   var stateQueue = Promise.resolve();
   var cachedConfig = Object.assign({}, DEFAULT_CONFIG);
@@ -1932,7 +1933,7 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       var readiness = tabReadiness.get(Number(tabId));
       var availability = tabAvailability.get(Number(tabId)) || "unknown";
       var stored = await chrome.storage.local.get(["effectifConfig"]);
-      var enabled = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}).autoAnswerEnabled !== false;
+      var enabled = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}).autoAnswerEnabled === true && SignalPresenceGuard.snapshot().armed;
       var fresh = readiness && Number.isFinite(Number(readiness.at)) && Date.now() - Number(readiness.at) <= READINESS_MAX_AGE_MS;
       var exactReady = !!(readiness && readiness.ready === true &&
         readiness.authorizedProfile === true &&
@@ -2426,6 +2427,19 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
   }
   function syncOfficialPlatformData(){
     return enqueueEarningsSync("official-today", syncOfficialPlatformDataUnsafe);
+  }
+  // Scheduled polling is opportunistic: a missing authenticated tab is a skip,
+  // not a queue failure. Manual requests keep the explicit error.
+  function syncOfficialPlatformDataScheduled(){
+    return enqueueEarningsSync("official-today:scheduled", function(){
+      return syncOfficialPlatformDataUnsafe().catch(function(error){
+        var message=String(error && error.message || error);
+        if(message.indexOf("abre Cloud Interpreter primero")!==-1){
+          return {ok:true,skipped:"no-authenticated-cloud-tab",reasonCode:"CLOUD_TAB_UNAVAILABLE"};
+        }
+        throw error;
+      });
+    });
   }
   function syncOfficialEarningsRange(period){
     return enqueueEarningsSync("official-range:" + String(period || "today"), function () {
@@ -3206,7 +3220,14 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
     if(alarm.name==="effectif-exchange-rate"){refreshExchangeRate("alarm").catch(function(){});return;}
     if(alarm.name==="effectif-official-sync"){
       record("PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",{trigger:"hourly"}, "info","background");
-      syncOfficialPlatformData().then(function(result){
+      syncOfficialPlatformDataScheduled().then(function(result){
+        if(result && result.skipped==="no-authenticated-cloud-tab"){
+          record("PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED",{
+            trigger:"hourly",reasonCode:"CLOUD_TAB_UNAVAILABLE",
+            policy:"no-tab-create-no-navigation-no-reload; retry-next-hour"
+          },"info","background");
+          return;
+        }
         var summary=result&&result.snapshot&&result.snapshot.summary||{};
         record("PLATFORM_OFFICIAL_HOURLY_SYNC_COMPLETED",{
           trigger:"hourly",method:result&&result.method||null,earned:summary.earned||null,callCount:summary.callCount||null,callLength:summary.callLength||null
@@ -3423,11 +3444,8 @@ importScripts("live-caption-core.js","live-caption-bridge.js","dialogue-engine.j
       return;
     }
     if (command !== "toggle-auto-answer") return;
-    chrome.storage.local.get(["effectifConfig"], function (stored) {
-      var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-      config.autoAnswerEnabled = !config.autoAnswerEnabled;
-      chrome.storage.local.set({ effectifConfig: config });
-      record(config.autoAnswerEnabled ? "AUTO_ANSWER_ENABLED" : "AUTO_ANSWER_DISABLED", {}, "info", "keyboard");
+    SignalPresenceGuard.toggleFromKeyboard().then(function (result) {
+      record(result.ok && result.state && result.state.armed ? "AUTO_ANSWER_ENABLED" : "AUTO_ANSWER_PAUSED", { reason: result.error || result.state && result.state.reason || "manual" }, "info", "keyboard");
     });
   });
   function routeShape(url) {

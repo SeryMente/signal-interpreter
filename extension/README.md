@@ -2,6 +2,11 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
+## Candidata consolidada 0.10.38 — NO liberada
+
+Integra la protección de presencia explícita y segmentación conservadora de subtítulos nativos, junto con las correcciones verificadas de instalación/recarga de main. El manifiesto y las pruebas de la candidata usan 0.10.38; main continúa en 0.10.37 hasta superar las compuertas. El atajo global existente permanece en Ctrl+Shift+8. No activa captura de micrófono, audio de pestaña ni fallback Groq. La aceptación en Windows/Chrome real sigue siendo obligatoria.
+
+
 ## Uso portable — Windows + Chrome
 
 El **ZIP del repositorio** contiene la extensión cargable: `manifest.json` está en la **raíz** de la carpeta extraída, no dentro de `extension/`.
