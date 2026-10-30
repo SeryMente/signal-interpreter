@@ -907,9 +907,10 @@
       return /^Connect$/i.test(label);
     }) || null;
     var signature = modality + "|" + !!button + "|" + (button ? !!button.disabled : "none");
-    var newIncoming = !incomingAttemptId || signature !== lastIncomingSignature;
+    var newIncoming = !lastIncomingSignature || signature !== lastIncomingSignature;
     if (newIncoming) {
-      incomingAttemptId = crypto.randomUUID();
+      // Preserve a ring correlation ID delivered before the dialog scan; create a local ID only when no ring ID exists.
+      if (!incomingAttemptId) incomingAttemptId = crypto.randomUUID();
       lastIncomingSignature = signature;
       lastIncomingBlockerSignature = "";
       emit("INCOMING_DIALOG_DETECTED", {

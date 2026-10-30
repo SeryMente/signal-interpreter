@@ -6,6 +6,7 @@ const SCHEMA="signal-interpreter-incoming-call-window/v1";
 const WINDOW_MS=10*60*1000;
 const FRESH_MS=90*1000;
 const DELAYED_MS=5*60*1000;
+const OBSERVER_HEARTBEAT_ACTIONS=new Set(["AUTO_ANSWER_READINESS","INCOMING_CALL_OBSERVER_HEARTBEAT"]);
 const CALL_ACTIONS=new Set([
   "INCOMING_RING_REQUEST_STARTED","INCOMING_RING_SIGNAL","INCOMING_RING_REQUEST_FAILED",
   "INCOMING_RING_CONTEXT_LINKED","INCOMING_RING_CONTEXT_NOTIFIED","INCOMING_RING_CONTEXT_NOTIFY_ERROR",
@@ -174,7 +175,7 @@ export function buildIncomingCallWindowReport(observationsRoot,generatedAt=new D
     :[];
   const recentAttemptIds=new Set();
   const recentUnlinked=[];
-  let eventsInWindow=0,callEventsInWindow=0,latestObservedMs=0,latestBatchMs=0;
+  let eventsInWindow=0,callEventsInWindow=0,latestObservedMs=0,latestCallLifecycleMs=0,latestObserverHeartbeatMs=0,latestBatchMs=0;
   let latestBatchCreatedAt=null,latestBatchId=null,batchCount=0,maxPersistDelayMs=0,maxBatchDelayMs=0;
   for(const file of files){
     const batch=readJson(file);
@@ -184,10 +185,15 @@ export function buildIncomingCallWindowReport(observationsRoot,generatedAt=new D
     if(Number.isFinite(batchMs)&&batchMs>latestBatchMs){latestBatchMs=batchMs;latestBatchCreatedAt=batch.createdAt;latestBatchId=batch.batchId;}
     for(const event of batch.events){
       const t=eventTime(event);
+      const action=String(event.action||"");
+      const payload=event&&event.payload||{};
       if(t<=endMs&&t>latestObservedMs)latestObservedMs=t;
+      if(t<=endMs&&CALL_ACTIONS.has(action)&&t>latestCallLifecycleMs)latestCallLifecycleMs=t;
+      if(t<=endMs&&OBSERVER_HEARTBEAT_ACTIONS.has(action)&&
+         (action!=="AUTO_ANSWER_READINESS"||payload.reason==="heartbeat")&&t>latestObserverHeartbeatMs)latestObserverHeartbeatMs=t;
       if(t<startMs||t>endMs||!t)continue;
       eventsInWindow++;
-      if(CALL_ACTIONS.has(String(event.action||"")))callEventsInWindow++;
+      if(CALL_ACTIONS.has(action))callEventsInWindow++;
       const id=attemptIdOf(event);
       if(id)recentAttemptIds.add(id);
       else if(CALL_ACTIONS.has(String(event.action||""))){
@@ -221,8 +227,10 @@ export function buildIncomingCallWindowReport(observationsRoot,generatedAt=new D
     return result;
   });
   const allAttempts=attempts.concat(unlinkedAttempts);
+  const latestCallObserverMs=Math.max(latestObserverHeartbeatMs,latestCallLifecycleMs);
+  const callObserverAgeMs=latestCallObserverMs?Math.max(0,endMs-latestCallObserverMs):null;
   const ageMs=latestObservedMs?Math.max(0,endMs-latestObservedMs):null;
-  const freshness=!latestObservedMs?"no-data":ageMs<=FRESH_MS?"fresh":ageMs<=DELAYED_MS?"delayed":"stale";
+  const freshness=!latestCallObserverMs?"no-data":callObserverAgeMs<=FRESH_MS?"fresh":callObserverAgeMs<=DELAYED_MS?"delayed":"stale";
   const count=(outcome)=>allAttempts.filter(x=>x.outcome===outcome).length;
   return{
     schema:SCHEMA,
@@ -232,6 +240,10 @@ export function buildIncomingCallWindowReport(observationsRoot,generatedAt=new D
     coverage:{
       latestObservedAt:latestObservedMs?new Date(latestObservedMs).toISOString():null,
       latestObservedAgeSeconds:ageMs===null?null:Math.round(ageMs/1000),
+      latestObserverHeartbeatAt:latestObserverHeartbeatMs?new Date(latestObserverHeartbeatMs).toISOString():null,
+      latestCallLifecycleAt:latestCallLifecycleMs?new Date(latestCallLifecycleMs).toISOString():null,
+      callObserverLastSeenAt:latestCallObserverMs?new Date(latestCallObserverMs).toISOString():null,
+      callObserverAgeSeconds:callObserverAgeMs===null?null:Math.round(callObserverAgeMs/1000),
       latestBatchCreatedAt:latestBatchCreatedAt,
       latestBatchId:latestBatchId,
       latestBatchAgeSeconds:latestBatchMs?Math.max(0,Math.round((endMs-latestBatchMs)/1000)):null,
@@ -262,7 +274,8 @@ export function renderIncomingCallWindowMarkdown(report){
     "- Ventana UTC: "+String(report.window&&report.window.start||"unknown")+" → "+String(report.window&&report.window.end||"unknown"),
     "- Frescura: **"+String(report.freshness||"unknown")+"**",
     "- Último evento observado: "+String(coverage.latestObservedAt||"sin datos"),
-    "- Antigüedad del último evento (s): "+String(coverage.latestObservedAgeSeconds==null?"unknown":coverage.latestObservedAgeSeconds),
+    "- Último latido de observabilidad de llamadas: "+String(coverage.latestObserverHeartbeatAt||"sin datos"),
+    "- Antigüedad del observador de llamadas (s): "+String(coverage.callObserverAgeSeconds==null?"unknown":coverage.callObserverAgeSeconds),
     "- Eventos totales de la ventana: "+String(coverage.eventsInWindow||0),
     "- Eventos del ciclo de llamadas: "+String(coverage.callLifecycleEventsInWindow||0),
     "- Intentos correlacionados / sin identificador correlacionable: "+String(counts.correlated||0)+" / "+String(counts.unlinked||0),

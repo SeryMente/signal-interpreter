@@ -58,7 +58,8 @@ writeBatch("batch-unlinked",[
   event("INCOMING_RING_SIGNAL","2026-10-30T17:07:00.000Z",{statusCode:206,signal:"ring.mp3"})
 ],"2026-10-30T17:07:00.100Z");
 writeBatch("batch-heartbeat",[
-  event("PERFORMANCE_HEARTBEAT","2026-10-30T17:09:59.000Z",{uptimeMs:1234})
+  event("PERFORMANCE_HEARTBEAT","2026-10-30T17:09:58.000Z",{uptimeMs:1234}),
+  event("AUTO_ANSWER_READINESS","2026-10-30T17:09:59.000Z",{reason:"heartbeat",ready:false,availability:"offline",authorizedProfile:true})
 ],"2026-10-30T17:10:00.000Z");
 
 const generatedAt="2026-10-30T17:10:00.000Z";
@@ -66,7 +67,7 @@ const report=buildIncomingCallWindowReport(root,generatedAt);
 assert.equal(report.schema,"signal-interpreter-incoming-call-window/v1");
 assert.equal(report.freshness,"fresh");
 assert.equal(report.window.durationSeconds,600);
-assert.equal(report.coverage.eventsInWindow,16);
+assert.equal(report.coverage.eventsInWindow,17);
 assert.equal(report.attempts.total,4);
 assert.equal(report.attempts.correlated,3);
 assert.equal(report.attempts.unlinked,1);
@@ -102,12 +103,13 @@ checks+=3;
 const quietRoot=fs.mkdtempSync(path.join(os.tmpdir(),"signal-incoming-quiet-"));
 fs.mkdirSync(path.join(quietRoot,"batches"),{recursive:true});
 writeBatchForRoot(path.join(quietRoot,"batches"),"heartbeat-only",[
-  event("PERFORMANCE_HEARTBEAT","2026-10-30T17:09:59.000Z",{uptimeMs:2000})
+  event("AUTO_ANSWER_READINESS","2026-10-30T17:09:59.000Z",{reason:"heartbeat",ready:true,availability:"online",authorizedProfile:true})
 ],"2026-10-30T17:10:00.000Z");
 const quiet=buildIncomingCallWindowReport(quietRoot,"2026-10-30T17:10:00.000Z");
 assert.equal(quiet.freshness,"fresh");
 assert.equal(quiet.attempts.total,0);
 assert.equal(quiet.coverage.noAttemptsObservedUnderFreshTelemetry,true);
+assert.equal(quiet.coverage.latestObserverHeartbeatAt,"2026-10-30T17:09:59.000Z");
 checks+=3;
 
 fs.rmSync(root,{recursive:true,force:true});
