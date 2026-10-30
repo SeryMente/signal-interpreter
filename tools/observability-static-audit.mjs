@@ -68,7 +68,7 @@ assert.ok(observationSync.includes('reason === "call-event"') && observationSync
 assert.ok(githubPipeline.includes("buildIncomingCallWindowReport"),"rolling ten-minute incoming-call report is built");
 assert.ok(githubPipeline.includes("latest-incoming-call-report.json"),"rolling incoming-call report is published");
 assert.ok(githubPipelineTest.includes("ring-unlinked") && githubPipelineTest.includes("unresolved"),"orphan ring signals remain unresolved, not falsely missed");
-assert.ok(presenceConnectTest.includes("passive detection remains active") && presenceConnectTest.includes("PRESENCE_GENERATION_CHANGED")===false,"presence regression proves fail-closed passive observation");
+assert.ok(presenceConnectTest.includes("passive detection remains active") && presenceConnectTest.includes("presenceState.generation=3"),"presence regression covers passive detection and stale grant generation");
 assert.ok(content.includes('portalStructureSnapshot("call-rating-stars-confirmed", true, callId)'), "rating-screen surface evidence stays correlated to the ended call");
 assert.ok(content.includes("callId: associatedCallId || currentCallId() || null"), "forced platform surface snapshots preserve call correlation");
 assert.ok(content.includes("PLATFORM_URL_CHANGED"));
