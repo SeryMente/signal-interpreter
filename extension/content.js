@@ -1062,6 +1062,7 @@
     var snapshot = autoAnswerReadiness();
     emit("AUTO_ANSWER_READINESS", {
       ready: snapshot.ready,
+      attemptId: incomingAttemptId || null,
       availability: snapshot.availability,
       authorizedProfile: snapshot.authorizedProfile,
       configEnabled: snapshot.configEnabled,
