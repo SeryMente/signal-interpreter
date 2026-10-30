@@ -600,7 +600,9 @@ function buildIncomingCallWindowReport(obs,generatedAt){
       rows.push({
         event:event,batchId:String(batch.batchId||"unknown"),
         batchCreatedAt:reportDate(batch.createdAt,null),
-        batchCreatedMs:Date.parse(batch.createdAt||"")||null
+        batchCreatedMs:Date.parse(batch.createdAt||"")||null,
+        batchProcessedAt:reportDate(batch.pipelineProcessedAt,null),
+        batchProcessedMs:Date.parse(batch.pipelineProcessedAt||"")||null
       });
     }
   }
@@ -648,8 +650,8 @@ function buildIncomingCallWindowReport(obs,generatedAt){
     .sort((a,b)=>a-b)[0]||null;
   const attempts=[];
   let answered=0,missed=0,failed=0,blocked=0,unresolved=0,missingStageCount=0;
-  let maxRelayAcceptanceDelayMs=0,maxProcessorDelayMs=0,maxIngestDelayMs=0;
-  let latestEventAt=null,latestBatchAt=null;
+  let maxEventToBatchCreatedMs=0,maxBatchCreatedToProcessingMs=0,maxEventToProcessingMs=0,maxIngestDelayMs=0;
+  let latestEventAt=null,latestBatchCreatedAt=null,latestBatchProcessedAt=null;
   for(const attempt of attemptById.values()){
     attempt.rows.sort((a,b)=>(Date.parse(a.event.timestamp)||0)-(Date.parse(b.event.timestamp)||0));
     const actions=new Set(attempt.rows.map(row=>String(row.event.action||"")));
@@ -696,20 +698,24 @@ function buildIncomingCallWindowReport(obs,generatedAt){
         "elapsedMs","grantError","requestId","callId","status","reasonCode"
       ])if(p[key]!==undefined)details[key]=p[key];
       const at=Date.parse(e.timestamp)||0;
-      const relayDelay=row.batchCreatedMs!==null?Math.max(0,row.batchCreatedMs-at):null;
-      const processorDelay=row.batchCreatedMs!==null?Math.max(0,endMs-row.batchCreatedMs):null;
+      const eventToBatchCreated=row.batchCreatedMs!==null?Math.max(0,row.batchCreatedMs-at):null;
+      const batchCreatedToProcessing=row.batchProcessedMs!==null&&row.batchCreatedMs!==null
+        ?Math.max(0,row.batchProcessedMs-row.batchCreatedMs):null;
+      const eventToProcessing=row.batchProcessedMs!==null?Math.max(0,row.batchProcessedMs-at):null;
       const ingestDelay=reportNumber(e.ingestDelayMs);
-      if(relayDelay!==null)maxRelayAcceptanceDelayMs=Math.max(maxRelayAcceptanceDelayMs,relayDelay);
-      if(processorDelay!==null)maxProcessorDelayMs=Math.max(maxProcessorDelayMs,processorDelay);
+      if(eventToBatchCreated!==null)maxEventToBatchCreatedMs=Math.max(maxEventToBatchCreatedMs,eventToBatchCreated);
+      if(batchCreatedToProcessing!==null)maxBatchCreatedToProcessingMs=Math.max(maxBatchCreatedToProcessingMs,batchCreatedToProcessing);
+      if(eventToProcessing!==null)maxEventToProcessingMs=Math.max(maxEventToProcessingMs,eventToProcessing);
       if(ingestDelay!==null)maxIngestDelayMs=Math.max(maxIngestDelayMs,ingestDelay);
       if(!latestEventAt||at>Date.parse(latestEventAt))latestEventAt=new Date(at).toISOString();
-      if(row.batchCreatedMs!==null&&(!latestBatchAt||row.batchCreatedMs>Date.parse(latestBatchAt)))latestBatchAt=new Date(row.batchCreatedMs).toISOString();
+      if(row.batchCreatedMs!==null&&(!latestBatchCreatedAt||row.batchCreatedMs>Date.parse(latestBatchCreatedAt)))latestBatchCreatedAt=new Date(row.batchCreatedMs).toISOString();
+      if(row.batchProcessedMs!==null&&(!latestBatchProcessedAt||row.batchProcessedMs>Date.parse(latestBatchProcessedAt)))latestBatchProcessedAt=new Date(row.batchProcessedMs).toISOString();
       return {
         at:reportDate(e.timestamp,null),action:e.action||"UNKNOWN",level:e.level||"info",
         component:e.component||e.source||null,sequence:reportNumber(e.sequence),
-        batchId:row.batchId,relayAcceptedAt:row.batchCreatedAt,
-        relayAcceptanceDelayMs:relayDelay,processorDelayMs:processorDelay,
-        ingestDelayMs:ingestDelay,details:details
+        batchId:row.batchId,batchCreatedAt:row.batchCreatedAt,batchProcessedAt:row.batchProcessedAt,
+        eventToBatchCreatedMs:eventToBatchCreated,batchCreatedToProcessingMs:batchCreatedToProcessing,
+        eventToProcessingMs:eventToProcessing,ingestDelayMs:ingestDelay,details:details
       };
     });
     attempts.push({
@@ -746,10 +752,12 @@ function buildIncomingCallWindowReport(obs,generatedAt){
     summary:summary,
     freshness:{
       latestEventAt:latestEventAt,
-      latestBatchAcceptedAt:latestBatchAt,
+      latestBatchCreatedAt:latestBatchCreatedAt,
+      latestBatchProcessedAt:latestBatchProcessedAt,
       latestEventAgeMs:latestEventAt?Math.max(0,endMs-Date.parse(latestEventAt)):null,
-      maxRelayAcceptanceDelayMs:maxRelayAcceptanceDelayMs,
-      maxProcessorDelayMs:maxProcessorDelayMs,
+      maxEventToBatchCreatedMs:maxEventToBatchCreatedMs,
+      maxBatchCreatedToProcessingMs:maxBatchCreatedToProcessingMs,
+      maxEventToProcessingMs:maxEventToProcessingMs,
       maxIngestDelayMs:maxIngestDelayMs
     },
     actionCounts:actionCounts,
@@ -775,8 +783,9 @@ function buildIncomingCallWindowReport(obs,generatedAt){
     ...attempts.map(item=>"| "+item.incomingAttemptId+" | "+item.outcome+" | "+(item.modality||"unknown")+" | "+item.eventCount+" | "+(item.missingSignals.join(", ")||"none")+" |"),
     "","## Freshness","",
     "- Latest event: "+(report.freshness.latestEventAt||"none"),
-    "- Maximum relay acceptance delay: "+report.freshness.maxRelayAcceptanceDelayMs+" ms",
-    "- Maximum processor delay: "+report.freshness.maxProcessorDelayMs+" ms",
+    "- Maximum event-to-batch creation delay: "+report.freshness.maxEventToBatchCreatedMs+" ms",
+    "- Maximum batch creation-to-processing delay: "+report.freshness.maxBatchCreatedToProcessingMs+" ms",
+    "- Maximum end-to-end event-to-processing delay: "+report.freshness.maxEventToProcessingMs+" ms",
     "- Maximum local ingest delay: "+report.freshness.maxIngestDelayMs+" ms",
     "","A ring signal alone is not treated as a confirmed missed call."
   ];
@@ -838,6 +847,11 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     if(!batch||batch.schema!==BATCH_SCHEMA||!batch.batchId)continue;
     const destination=path.join(batchesDir,fileToken(batch.batchId)+".json");
     if(!fs.existsSync(destination))fs.copyFileSync(inboxFile,destination);
+    const archivedBatch=readJson(destination,batch);
+    if(!archivedBatch.pipelineProcessedAt){
+      archivedBatch.pipelineProcessedAt=now();
+      writeJson(destination,archivedBatch);
+    }
     const result=applyBatchToIndex(obs,index,batch);
     index.observations=Number(index.observations||0)+result.changedObservations;
     index.deltas=Number(index.deltas||0)+result.changedDeltas;
@@ -897,7 +911,10 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
       blocked:incomingCallWindowReport.summary.blocked,
       unresolved:incomingCallWindowReport.summary.unresolved,
       latestEventAt:incomingCallWindowReport.freshness.latestEventAt,
-      maxRelayAcceptanceDelayMs:incomingCallWindowReport.freshness.maxRelayAcceptanceDelayMs
+      latestBatchProcessedAt:incomingCallWindowReport.freshness.latestBatchProcessedAt,
+      maxEventToBatchCreatedMs:incomingCallWindowReport.freshness.maxEventToBatchCreatedMs,
+      maxBatchCreatedToProcessingMs:incomingCallWindowReport.freshness.maxBatchCreatedToProcessingMs,
+      maxEventToProcessingMs:incomingCallWindowReport.freshness.maxEventToProcessingMs
     },
     calls:{
       reportCount:Number(callReportIndex.reportCount||0),
@@ -960,7 +977,10 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     incomingCallWindowUnresolved:incomingCallWindowReport.summary.unresolved,
     incomingCallWindowLatestEventAt:incomingCallWindowReport.freshness.latestEventAt,
     incomingCallWindowLatestEventAgeMs:incomingCallWindowReport.freshness.latestEventAgeMs,
-    incomingCallWindowMaxRelayAcceptanceDelayMs:incomingCallWindowReport.freshness.maxRelayAcceptanceDelayMs,
+    incomingCallWindowLatestBatchProcessedAt:incomingCallWindowReport.freshness.latestBatchProcessedAt,
+    incomingCallWindowMaxEventToBatchCreatedMs:incomingCallWindowReport.freshness.maxEventToBatchCreatedMs,
+    incomingCallWindowMaxBatchCreatedToProcessingMs:incomingCallWindowReport.freshness.maxBatchCreatedToProcessingMs,
+    incomingCallWindowMaxEventToProcessingMs:incomingCallWindowReport.freshness.maxEventToProcessingMs,
     inboxRemaining:listJson(inbox).length,
     status:"ok"
   };
