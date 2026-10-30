@@ -968,8 +968,11 @@
       var postGrantReasons = autoAnswerBlockReasons();
       if (!grant || grant.ok !== true) {
         postGrantReasons.push("PRESENCE_AUTHORIZATION_DENIED:" + String(grant && grant.error || "no-grant"));
-      } else if (Date.now() > Number(grant.expiresAt || 0)) {
-        postGrantReasons.push("PRESENCE_GRANT_EXPIRED");
+      } else {
+        if (Date.now() > Number(grant.expiresAt || 0)) postGrantReasons.push("PRESENCE_GRANT_EXPIRED");
+        if (Number(grant.generation) !== Number(presenceState && presenceState.generation)) {
+          postGrantReasons.push("PRESENCE_GENERATION_CHANGED");
+        }
       }
       if (!button.isConnected) postGrantReasons.push("CONNECT_BUTTON_DETACHED");
       if (button.disabled) postGrantReasons.push("CONNECT_BUTTON_DISABLED");
@@ -1021,12 +1024,16 @@
         };
         // Last-moment fail-closed check; no safety gate is bypassed.
         var finalBlockReasons = autoAnswerBlockReasons();
+        if (Number(grant.generation) !== Number(presenceState && presenceState.generation)) {
+          finalBlockReasons.push("PRESENCE_GENERATION_CHANGED");
+        }
+        if (Date.now() > Number(grant.expiresAt || 0)) finalBlockReasons.push("PRESENCE_GRANT_EXPIRED");
         if (finalBlockReasons.length) {
           emit("AUTO_ANSWER_BLOCKED", {
             incomingAttemptId: incomingAttemptId,
             modality: modality,
             decision: "no-click-final-check",
-            blockReasons: finalBlockReasons
+            blockReasons: Array.from(new Set(finalBlockReasons))
           }, "warn");
           return;
         }
