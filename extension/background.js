@@ -1526,18 +1526,29 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   function markIncoming(event) {
     mutateState(async function (state) {
       if (state.callId) return;
-      var pendingAge = state.pendingCall && Date.parse(event.timestamp) - Date.parse(state.pendingCall.detectedAt);
-      if (!state.pendingCall || !Number.isFinite(pendingAge) || pendingAge > 60000) {
+      var payload = event.payload || {};
+      var incomingAttemptId = String(event.incomingAttemptId || payload.incomingAttemptId || "");
+      if (!incomingAttemptId) incomingAttemptId = uid();
+      var pending = state.pendingCall && String(state.pendingCall.incomingAttemptId || state.pendingCall.id || "");
+      if (pending === incomingAttemptId) {
+        state.pendingCall.lastObservedAt = event.timestamp || iso();
+      } else {
+        if (pending) record("INCOMING_ATTEMPT_OVERLAP", {
+          previousAttemptId: pending, incomingAttemptId: incomingAttemptId,
+          previousDetectedAt: state.pendingCall.detectedAt || null,
+          nextDetectedAt: event.timestamp || iso()
+        }, "warn", "background");
         state.pendingCall = {
-          id: uid(), detectedAt: event.timestamp,
-          modality: event.payload && event.payload.modality || event.modality || "OPI",
-          clickedAt: null
+          id: incomingAttemptId, incomingAttemptId: incomingAttemptId,
+          detectedAt: event.timestamp || iso(), lastObservedAt: event.timestamp || iso(),
+          modality: payload.modality || event.modality || "OPI",
+          clickedAt: null, closedAt: null
         };
       }
       state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
       state.autoAnswerTelemetry.detections = Number(state.autoAnswerTelemetry.detections || 0) + 1;
-      state.autoAnswerTelemetry.connectFound = Number(state.autoAnswerTelemetry.connectFound || 0) + (event.payload && event.payload.connectFound ? 1 : 0);
-      state.autoAnswerTelemetry.disabled = Number(state.autoAnswerTelemetry.disabled || 0) + (event.payload && event.payload.connectDisabled ? 1 : 0);
+      state.autoAnswerTelemetry.connectFound = Number(state.autoAnswerTelemetry.connectFound || 0) + (payload.connectFound ? 1 : 0);
+      state.autoAnswerTelemetry.disabled = Number(state.autoAnswerTelemetry.disabled || 0) + (payload.connectDisabled ? 1 : 0);
       state.autoAnswerTelemetry.lastDetectedAt = event.timestamp;
       chrome.alarms.create("effectif-pending-call", { when: Date.now() + 15000 });
     });
@@ -1591,7 +1602,9 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       state.dailyCalls = Object.assign({}, state.dailyCalls || {});
       state.dailyCalls[day] = Number(state.dailyCalls[day] || 0) + 1;
       record("CALL_TIMER_STARTED", {
-        callId: callId, modality: state.callModality,
+        callId: callId,
+        incomingAttemptId: event.incomingAttemptId || event.payload && event.payload.incomingAttemptId || null,
+        modality: state.callModality,
         trigger: event.payload && event.payload.reconciliation ? "reconciliation" : "call-route-entered",
         route: event.payload && event.payload.route || "/call/<ID>",
         startMeasurement: Number.isFinite(measuredPlatformSeconds) ? "platform-timer-backdated" : "route-detection",
@@ -1719,22 +1732,27 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
 
   function alertOnConnect(event) {
     mutateState(async function (state) {
+      var payload = event.payload || {};
+      var incomingAttemptId = String(event.incomingAttemptId || payload.incomingAttemptId || state.pendingCall && (state.pendingCall.incomingAttemptId || state.pendingCall.id) || uid());
       state.lastConnectAt = event.timestamp;
       state.autoAnswerTelemetry = Object.assign({}, state.autoAnswerTelemetry || {});
       state.autoAnswerTelemetry.clicks = Number(state.autoAnswerTelemetry.clicks || 0) + 1;
       state.autoAnswerTelemetry.lastClickedAt = event.timestamp;
       if (state.pendingCall) {
+        state.pendingCall.incomingAttemptId = incomingAttemptId;
         state.pendingCall.clickedAt = event.timestamp;
       } else if (!state.callId) {
         state.pendingCall = {
-          id: uid(), detectedAt: event.timestamp, clickedAt: event.timestamp,
-          modality: event.payload && event.payload.modality || "OPI"
+          id: incomingAttemptId, incomingAttemptId: incomingAttemptId,
+          detectedAt: event.timestamp, clickedAt: event.timestamp,
+          modality: payload.modality || "OPI"
         };
       }
       chrome.alarms.create("effectif-pending-call", { when: Date.now() + 15000 });
       record("CONNECT_ACCEPTED_PENDING", {
-        modality: event.payload && event.payload.modality || "OPI",
-        flowId: event.payload && event.payload.flowId || null,
+        incomingAttemptId: incomingAttemptId,
+        modality: payload.modality || "OPI",
+        flowId: payload.flowId || null,
         reason: "await-call-route"
       }, "info", "background");
     });
@@ -2940,6 +2958,36 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         }
       }
       if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event);
+      if (event.action === "INCOMING_ATTEMPT_CORRELATED") {
+        mutateState(async function (state) {
+          var previousId = String(event.payload && event.payload.previousAttemptId || "");
+          var nextId = String(event.incomingAttemptId || event.payload && event.payload.incomingAttemptId || "");
+          if (!state.pendingCall || state.callId || !nextId) return;
+          var currentId = String(state.pendingCall.incomingAttemptId || state.pendingCall.id || "");
+          if (currentId !== previousId) return;
+          state.pendingCall.id = nextId;
+          state.pendingCall.incomingAttemptId = nextId;
+          record("INCOMING_ATTEMPT_CORRELATION_RECONCILED", { incomingAttemptId: nextId }, "info", "background");
+        }, "incoming-attempt-correlation");
+      }
+      if (event.action === "INCOMING_DIALOG_CLOSED") {
+        mutateState(async function (state) {
+          var payload = event.payload || {};
+          var attemptId = String(event.incomingAttemptId || payload.incomingAttemptId || "");
+          if (!state.pendingCall || state.callId) return;
+          var pendingId = String(state.pendingCall.incomingAttemptId || state.pendingCall.id || "");
+          if (attemptId && pendingId && attemptId !== pendingId) return;
+          state.pendingCall.closedAt = event.timestamp || iso();
+          if (!state.pendingCall.clickedAt) record("INCOMING_DIALOG_CLOSED_OBSERVED", {
+            incomingAttemptId: pendingId || attemptId || null,
+            detectedAt: state.pendingCall.detectedAt || null,
+            closedAt: state.pendingCall.closedAt,
+            reason: payload.reason || "dialog-removed"
+          }, "info", "content");
+          chrome.alarms.create("effectif-pending-call", { when: Date.now() + 2500 });
+        }, "incoming-dialog-closed");
+        if (sender.tab && Number.isInteger(sender.tab.id) && incomingRingByTab) incomingRingByTab.delete(sender.tab.id);
+      }
       if (event.action === "CONNECT_CLICKED") alertOnConnect(event);
       if (event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
         mutateState(async function (state) {
@@ -3257,6 +3305,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         var failedConnect=state.pendingCall;
         state.pendingCall=null;
         record("CONNECT_FLOW_FAILED_NO_CALL_ROUTE", {
+          incomingAttemptId: failedConnect.incomingAttemptId || failedConnect.id || null,
           pendingId:failedConnect.id||null, detectedAt:failedConnect.detectedAt||null,
           clickedAt:failedConnect.clickedAt||null, classifiedAt:iso(),
           reason:"connect_clicked_no_call_route"
@@ -3267,7 +3316,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         chrome.alarms.create("effectif-pending-call", { when: Date.now() + 5000 });
         return;
       }
-      var missed={id:state.pendingCall.id||uid(),detectedAt:state.pendingCall.detectedAt,clickedAt:null,classifiedAt:iso(),modality:state.pendingCall.modality||"OPI",status:"missed",reason:state.pendingCall.closedAt?"dialog_closed_without_connect":"dialog_timeout"};
+      var missed={id:state.pendingCall.id||uid(),incomingAttemptId:state.pendingCall.incomingAttemptId||state.pendingCall.id||null,detectedAt:state.pendingCall.detectedAt,clickedAt:null,classifiedAt:iso(),modality:state.pendingCall.modality||"OPI",status:"missed",reason:state.pendingCall.closedAt?"dialog_closed_without_connect":"dialog_timeout"};
       state.missedCalls=Number(state.missedCalls||0)+1;state.totalCalls=Number(state.totalCalls||0)+1;state.dailyMissedCalls=Object.assign({},state.dailyMissedCalls||{});var day=localDay(missed.detectedAt||iso());state.dailyMissedCalls[day]=Number(state.dailyMissedCalls[day]||0)+1;state.missedCallRecords=(state.missedCallRecords||[]).concat(missed).slice(-1000);state.pendingCall=null;record("MISSED_CALL_CLASSIFIED",missed,"warn","alarm");
     });
   });
@@ -3299,47 +3348,110 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     if (networkRequests.size > 5000) networkRequests.delete(networkRequests.keys().next().value);
   }, { urls: ["https://app.cloudinterpreter.com/*"] });
   var autoAnswerBootstrapAt = new Map();
-  function bootstrapAutoAnswerForTab(tabId, trigger) {
+  var incomingRingRequests = new Map();
+  var incomingRingByTab = new Map();
+  function notifyIncomingRingContext(tabId, incomingAttemptId, trigger) {
+    if (!Number.isInteger(tabId) || tabId < 0 || !incomingAttemptId) return;
+    chrome.tabs.sendMessage(tabId, {
+      type: "SIGNAL_INCOMING_RING", incomingAttemptId: incomingAttemptId,
+      trigger: trigger || "ring.mp3"
+    }).then(function () {
+      record("INCOMING_RING_CONTEXT_NOTIFIED", {
+        tabId: tabId, incomingAttemptId: incomingAttemptId, trigger: trigger || "ring.mp3"
+      }, "info", "background");
+    }).catch(function (error) {
+      record("INCOMING_RING_CONTEXT_NOTIFY_ERROR", {
+        tabId: tabId, incomingAttemptId: incomingAttemptId,
+        trigger: trigger || "ring.mp3", error: String(error)
+      }, "warn", "background");
+    });
+  }
+  function bootstrapAutoAnswerForTab(tabId, trigger, incomingAttemptId) {
     if (!cachedConfig.autoAnswerEnabled || !Number.isInteger(tabId) || tabId < 0) return;
     var now = Date.now();
     var previous = Number(autoAnswerBootstrapAt.get(tabId) || 0);
-    if (now - previous < 3000) return;
+    if (now - previous < 3000) {
+      notifyIncomingRingContext(tabId, incomingAttemptId, trigger);
+      return;
+    }
     autoAnswerBootstrapAt.set(tabId, now);
-    record("AUTO_ANSWER_BOOTSTRAP_REQUESTED", { tabId: tabId, trigger: trigger || "unknown" }, "info", "background");
+    record("AUTO_ANSWER_BOOTSTRAP_REQUESTED", {
+      tabId: tabId, trigger: trigger || "unknown", incomingAttemptId: incomingAttemptId || null
+    }, "info", "background");
     runExtensionScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED" }).then(function () {
-      record("AUTO_ANSWER_BOOTSTRAP_INJECTED", { tabId: tabId, trigger: trigger || "unknown" }, "info", "background");
+      record("AUTO_ANSWER_BOOTSTRAP_INJECTED", {
+        tabId: tabId, trigger: trigger || "unknown", incomingAttemptId: incomingAttemptId || null
+      }, "info", "background");
+      notifyIncomingRingContext(tabId, incomingAttemptId, trigger);
     }).catch(function (error) {
-      record("AUTO_ANSWER_BOOTSTRAP_INJECTION_ERROR", { tabId: tabId, trigger: trigger || "unknown", error: String(error) }, "warn", "background");
+      record("AUTO_ANSWER_BOOTSTRAP_INJECTION_ERROR", {
+        tabId: tabId, trigger: trigger || "unknown", incomingAttemptId: incomingAttemptId || null, error: String(error)
+      }, "warn", "background");
     });
   }
   chrome.webRequest.onBeforeRequest.addListener(function (details) {
     try {
       var ringPath = new URL(details.url).pathname;
-      if (/\/ring\.mp3$/i.test(ringPath) && cachedConfig.autoAnswerEnabled) {
-        bootstrapAutoAnswerForTab(Number(details.tabId), "ring.mp3-start");
+      if (!/\\/ring\\.mp3$/i.test(ringPath)) return;
+      var tabId = Number(details.tabId);
+      var now = Date.now();
+      var existing = incomingRingByTab.get(tabId);
+      var incomingAttemptId = existing && now - existing.at < 60000 ? existing.incomingAttemptId : crypto.randomUUID();
+      if (!existing || incomingAttemptId !== existing.incomingAttemptId) {
+        incomingRingByTab.set(tabId, { incomingAttemptId: incomingAttemptId, at: now });
+      } else {
+        existing.at = now;
       }
-    } catch (_) {}
+      incomingRingRequests.set(details.requestId, { incomingAttemptId: incomingAttemptId, tabId: tabId, at: now });
+      record("INCOMING_RING_REQUEST_STARTED", {
+        tabId: tabId, incomingAttemptId: incomingAttemptId, signal: "ring.mp3"
+      }, "info", "webRequest");
+      if (cachedConfig.autoAnswerEnabled) bootstrapAutoAnswerForTab(tabId, "ring.mp3-start", incomingAttemptId);
+      else notifyIncomingRingContext(tabId, incomingAttemptId, "ring.mp3-start");
+    } catch (error) {
+      record("INCOMING_RING_REQUEST_ERROR", { error: String(error) }, "warn", "background");
+    }
   }, { urls: ["https://app.cloudinterpreter.com/*"] });
   chrome.webRequest.onCompleted.addListener(function (details) {
+    var ring = incomingRingRequests.get(details.requestId);
+    if (ring) incomingRingRequests.delete(details.requestId);
     var started = networkRequests.get(details.requestId); networkRequests.delete(details.requestId);
-    if (!started) return;
-    var durationMs = Math.max(0, Date.now() - started.at);
-    noteNetworkActivity({
-      method:started.method,type:started.type,url:started.url,statusCode:details.statusCode,durationMs:durationMs,
-      frameId:started.frameId,parentFrameId:started.parentFrameId,initiator:started.initiator
-    });
-    try {
-      var requestPath = new URL(details.url).pathname;
-      if (/\/ring\.mp3$/i.test(requestPath) && (details.statusCode === 200 || details.statusCode === 206)) {
-        record("INCOMING_RING_SIGNAL", { tabId: started.tabId, statusCode: details.statusCode, durationMs: durationMs, signal: "ring.mp3" }, "info", "webRequest");
-        bootstrapAutoAnswerForTab(Number(started.tabId), "ring.mp3-completed");
-      }
-    } catch (error) {
-      record("INCOMING_RING_SIGNAL_ERROR", { error: String(error) }, "warn", "background");
+    if (started) {
+      var durationMs = Math.max(0, Date.now() - started.at);
+      noteNetworkActivity({
+        method:started.method,type:started.type,url:started.url,statusCode:details.statusCode,durationMs:durationMs,
+        frameId:started.frameId,parentFrameId:started.parentFrameId,initiator:started.initiator
+      });
     }
-    if(details.statusCode>=400)record("NETWORK_REQUEST_ERROR",{method:started.method,type:started.type,url:started.url,tabId:started.tabId,statusCode:details.statusCode,durationMs:Math.max(0,Date.now()-started.at)},"warn","webRequest");
+    if (ring && (details.statusCode === 200 || details.statusCode === 206)) {
+      record("INCOMING_RING_SIGNAL", {
+        tabId: ring.tabId, incomingAttemptId: ring.incomingAttemptId,
+        statusCode: details.statusCode,
+        durationMs: started ? Math.max(0, Date.now() - started.at) : Math.max(0, Date.now() - ring.at),
+        signal: "ring.mp3"
+      }, "info", "webRequest");
+      notifyIncomingRingContext(ring.tabId, ring.incomingAttemptId, "ring.mp3-completed");
+      if (cachedConfig.autoAnswerEnabled) bootstrapAutoAnswerForTab(ring.tabId, "ring.mp3-completed", ring.incomingAttemptId);
+    } else if (ring) {
+      record("INCOMING_RING_REQUEST_FAILED", {
+        tabId: ring.tabId, incomingAttemptId: ring.incomingAttemptId,
+        statusCode: Number(details.statusCode) || null, signal: "ring.mp3"
+      }, "warn", "webRequest");
+    }
+    if (started && details.statusCode >= 400) record("NETWORK_REQUEST_ERROR", {
+      method:started.method,type:started.type,url:started.url,tabId:started.tabId,
+      statusCode:details.statusCode,durationMs:Math.max(0,Date.now()-started.at)
+    }, "warn", "webRequest");
   }, { urls: ["https://app.cloudinterpreter.com/*"] });
   chrome.webRequest.onErrorOccurred.addListener(function (details) {
+    var ring = incomingRingRequests.get(details.requestId);
+    if (ring) {
+      incomingRingRequests.delete(details.requestId);
+      record("INCOMING_RING_REQUEST_FAILED", {
+        tabId: ring.tabId, incomingAttemptId: ring.incomingAttemptId,
+        error: details.error || "network-error", signal: "ring.mp3"
+      }, "warn", "webRequest");
+    }
     var started = networkRequests.get(details.requestId); networkRequests.delete(details.requestId);
     if (!started) return;
     record("NETWORK_REQUEST_ERROR",{
