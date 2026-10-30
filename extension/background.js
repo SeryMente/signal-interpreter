@@ -433,7 +433,9 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   var tabAvailability = new Map();
   var tabReadiness = new Map();
   var recentIncomingRingByTab = new Map();
+  var recentIncomingAttemptByTab = new Map();
   var INCOMING_RING_CORRELATION_MS = 15000;
+  var INCOMING_ATTEMPT_CORRELATION_MS = 60000;
   var actionIconCache = new Map();
   var READINESS_MAX_AGE_MS = 5000;
 
@@ -1526,29 +1528,55 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     });
   }
   function attachIncomingRingCorrelation(event, tabId) {
-    if (!event || !event.action || !/^(INCOMING_DIALOG_|CONNECT_BUTTON_|AUTO_ANSWER_|CONNECT_|ANSWER_FLOW_)/.test(String(event.action))) return;
+    if (!event || !event.action) return;
+    var action = String(event.action);
+    var isCallLifecycle = /^(INCOMING_DIALOG_|CONNECT_BUTTON_|AUTO_ANSWER_|CONNECT_|ANSWER_FLOW_)/.test(action) ||
+      action === "CALL_ROUTE_ENTERED" || action === "CALL_ROUTE_ENDED";
+    if (!isCallLifecycle) return;
     var key = Number(tabId);
     if (!Number.isInteger(key) || key < 0) return;
+    event.payload = Object.assign({}, event.payload || {});
+    var attempt = recentIncomingAttemptByTab.get(key);
+    var eventAt = Date.parse(event.timestamp || "") || Date.now();
+    if (attempt) {
+      var attemptAge = eventAt - Number(attempt.at || 0);
+      if (attemptAge >= 0 && attemptAge <= INCOMING_ATTEMPT_CORRELATION_MS) {
+        if (!event.payload.incomingAttemptId) event.payload.incomingAttemptId = attempt.incomingAttemptId;
+        if (!event.payload.ringSignalId && attempt.ringSignalId) event.payload.ringSignalId = attempt.ringSignalId;
+        event.payload.incomingAttemptToEventMs = attemptAge;
+        if (action === "CALL_ROUTE_ENTERED" || action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
+          recentIncomingAttemptByTab.delete(key);
+        }
+      } else if (attemptAge > INCOMING_ATTEMPT_CORRELATION_MS) {
+        recentIncomingAttemptByTab.delete(key);
+      }
+    }
     var ring = recentIncomingRingByTab.get(key);
     if (!ring) return;
-    var eventAt = Date.parse(event.timestamp || "") || Date.now();
-    var age = eventAt - Number(ring.at || 0);
-    if (age < 0 || age > INCOMING_RING_CORRELATION_MS) {
-      if (age > INCOMING_RING_CORRELATION_MS) recentIncomingRingByTab.delete(key);
+    var ringAge = eventAt - Number(ring.at || 0);
+    if (ringAge < 0 || ringAge > INCOMING_RING_CORRELATION_MS) {
+      if (ringAge > INCOMING_RING_CORRELATION_MS) recentIncomingRingByTab.delete(key);
       return;
     }
-    event.payload = Object.assign({}, event.payload || {});
     if (!event.payload.ringSignalId) {
       event.payload.ringSignalId = ring.ringSignalId;
       event.payload.ringObservedAt = ring.timestamp;
-      event.payload.ringToEventMs = age;
+      event.payload.ringToEventMs = ringAge;
     }
   }
-  function markIncoming(event) {
+  function markIncoming(event, tabId) {
     mutateState(async function (state) {
       if (state.callId) return;
       var payload = event.payload || {};
       var incomingAttemptId = String(payload.incomingAttemptId || "");
+      var incomingTabId = Number(tabId);
+      if (Number.isInteger(incomingTabId) && incomingTabId >= 0 && incomingAttemptId) {
+        recentIncomingAttemptByTab.set(incomingTabId, {
+          incomingAttemptId: incomingAttemptId,
+          ringSignalId: payload.ringSignalId || null,
+          at: Date.parse(event.timestamp) || Date.now()
+        });
+      }
       var pendingAge = state.pendingCall && Date.parse(event.timestamp) - Date.parse(state.pendingCall.detectedAt);
       var sameAttempt = state.pendingCall && (!incomingAttemptId ||
         state.pendingCall.incomingAttemptId === incomingAttemptId || state.pendingCall.id === incomingAttemptId);
@@ -3004,7 +3032,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
           refreshActionIndicator(Number(readinessTabId), sender.tab && sender.tab.url).catch(function () {});
         }
       }
-      if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event);
+      if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event, sender.tab && sender.tab.id);
       if (event.action === "INCOMING_DIALOG_CLOSED") closeIncomingDialog(event);
       if (event.action === "CONNECT_CLICKED") alertOnConnect(event);
       if (event.action === "ANSWER_FLOW_ROUTE_CONFIRMED") {
