@@ -43,6 +43,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     groqEstimatedUsdPerAudioHour: GROQ_USD_PER_AUDIO_HOUR
   };
   var offscreenCreation = null;
+  var captionCaptureBlock = null;
   var eventQueue = Promise.resolve();
   var stateQueue = Promise.resolve();
   var cachedConfig = Object.assign({}, DEFAULT_CONFIG);
