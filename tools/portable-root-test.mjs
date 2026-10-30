@@ -1,5 +1,5 @@
 import fs from "node:fs";import assert from "node:assert/strict";import crypto from "node:crypto";
-const m=JSON.parse(fs.readFileSync("manifest.json","utf8"));assert.equal(m.version,"0.10.38");assert.equal(fs.existsSync("extension/manifest.json"),false);assert.equal(m.background.service_worker,"extension/background.js");
+const m=JSON.parse(fs.readFileSync("manifest.json","utf8"));assert.equal(m.version,"0.10.39");assert.equal(fs.existsSync("extension/manifest.json"),false);assert.equal(m.background.service_worker,"extension/background.js");
 const paths=[m.background.service_worker,m.action.default_popup,...Object.values(m.icons),...Object.values(m.action.default_icon),...m.content_scripts.flatMap(x=>x.js)];for(const p of paths){assert.ok(fs.existsSync(p),p);assert.equal(p.includes(".."),false);}
 const d=crypto.createHash("sha256").update(Buffer.from(m.key,"base64")).digest().subarray(0,16);let id="";for(const b of d)id+=String.fromCharCode(97+(b>>4),97+(b&15));assert.equal(id,"ldpbjhobnfgmhdoehehdmnbhhjckebmj");
 for(const p of ["INSTALAR.cmd","INSTALAR.ps1","PROBAR.cmd","PROBAR.ps1","extension/ui/lab.html"])assert.ok(fs.existsSync(p));
