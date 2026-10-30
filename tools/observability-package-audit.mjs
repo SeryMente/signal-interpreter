@@ -16,6 +16,8 @@ export function auditObservabilityPackage(observationsRoot){
   const callReportsIndexFile=path.join(root,"call-reports","index.json");
   const latestCallReportFile=path.join(root,"latest","latest-call-report.json");
   const latestCallReportMarkdown=path.join(root,"latest","latest-call-report.md");
+  const incomingCallWindowFile=path.join(root,"latest","incoming-calls-10m.json");
+  const incomingCallWindowMarkdown=path.join(root,"latest","incoming-calls-10m.md");
   assert(fs.existsSync(root),"observations directory missing");
   const manifestExists=fs.existsSync(manifestFile),indexExists=fs.existsSync(indexFile),latestExists=fs.existsSync(latestFile);
   if(!manifestExists&&!indexExists&&!latestExists){
@@ -121,7 +123,38 @@ export function auditObservabilityPackage(observationsRoot){
     if(manifest.calls)assert(Number(manifest.calls.reportCount||0)===callReportCount,"manifest call report count mismatch");
   }
 
-  return {ok:true,manifest,identityCount:checked,observations:Number(index.observations||0),deltas:Number(index.deltas||0),routeCount:Number(index.routeCount||0),callReportCount:callReportCount,callReportCompleteCount:callReportCompleteCount,callReportPartialCount:callReportPartialCount};
+  let incomingCallWindowFreshness=null,incomingCallAttemptCount=0;
+  if(fs.existsSync(incomingCallWindowFile)){
+    const report=readJson(incomingCallWindowFile);
+    assert(report.schema==="signal-interpreter-incoming-call-window/v1","invalid incoming-call window schema");
+    assert(["fresh","delayed","stale","no-data"].includes(report.freshness),"invalid incoming-call window freshness");
+    assert(report.window&&Number(report.window.durationSeconds)===600,"incoming-call window must be ten minutes");
+    assert(report.coverage&&Number.isFinite(Number(report.coverage.eventsInWindow)),"incoming-call event coverage count missing");
+    assert(report.attempts&&Array.isArray(report.items),"incoming-call attempt collection missing");
+    incomingCallAttemptCount=Number(report.attempts.total);
+    assert(Number.isFinite(incomingCallAttemptCount)&&incomingCallAttemptCount===report.items.length,"incoming-call attempt count mismatch");
+    for(const item of report.items){
+      assert(item&&/^[a-f0-9]{24}$/.test(item.attemptRef),"incoming attempt reference must be an opaque SHA-256 prefix");
+      assert(["correlated","legacy-pending-id","unlinked"].includes(item.correlation),"incoming attempt correlation status invalid");
+      assert(["answered","missed","connect-failed","unresolved"].includes(item.outcome),"incoming attempt outcome invalid");
+      assert(Array.isArray(item.timeline)&&item.timeline.length<=80,"incoming attempt timeline invalid");
+    }
+    const serialized=JSON.stringify(report);
+    assert(!/"incomingAttemptId"|"callId"|"fullCallId"|"dialogText"|"rawTranscript"|"rawAudio"|"audioBlob"|"credential"/i.test(serialized),"incoming-call window leaks an identifier or private payload");
+    assert(fs.existsSync(incomingCallWindowMarkdown),"incoming-call window Markdown missing");
+    const markdown=fs.readFileSync(incomingCallWindowMarkdown,"utf8");
+    assert(markdown.includes("últimos 10 minutos"),"incoming-call Markdown window title missing");
+    if(manifest.incomingCalls){
+      assert(manifest.incomingCalls.reportPath==="latest/incoming-calls-10m.json","manifest incoming-call report pointer mismatch");
+      assert(manifest.incomingCalls.freshness===report.freshness,"manifest incoming-call freshness mismatch");
+      assert(Number(manifest.incomingCalls.attemptCount)===incomingCallAttemptCount,"manifest incoming-call attempt count mismatch");
+    }
+    incomingCallWindowFreshness=report.freshness;
+  }else{
+    assert(!manifest.incomingCalls,"manifest points to a missing incoming-call window report");
+  }
+
+  return {ok:true,manifest,identityCount:checked,observations:Number(index.observations||0),deltas:Number(index.deltas||0),routeCount:Number(index.routeCount||0),callReportCount:callReportCount,callReportCompleteCount:callReportCompleteCount,callReportPartialCount:callReportPartialCount,incomingCallWindowFreshness:incomingCallWindowFreshness,incomingCallAttemptCount:incomingCallAttemptCount};
 }
 
 if(import.meta.url==="file://"+process.argv[1].replace(/\\\\/g,"/")){

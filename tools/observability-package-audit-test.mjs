@@ -27,11 +27,15 @@ const deltaObj={schema:"signal-interpreter-platform-delta/v1",type:"initial",ide
 fs.writeFileSync(path.join(obs,snap),JSON.stringify(snapshot));
 fs.writeFileSync(path.join(obs,delta),JSON.stringify(deltaObj));
 const index={schema:"signal-interpreter-platform-index/v1",generatedAt:"2026-10-07T15:00:00.000Z",observations:1,deltas:1,identityCount:1,routeCount:1,routes:["/profile/<ID>"],latestByIdentity:{[identity]:{snapshotId:"snap-1",capturedAt:snapshot.capturedAt,route:snapshot.route,url:snapshot.url,snapshotHash:"hash-1",snapshotPath:snap,lastDeltaPath:delta,observations:1}}};
-const manifest={schema:"signal-interpreter-observability-package/v1",generatedAt:"2026-10-07T15:00:00.000Z",lastBatchId:"batch-1",lastSequence:1,extensionVersion:"0.10.0",eventCount:1,platform:{observations:1,deltas:1,identities:1}};
+const incomingReport={schema:"signal-interpreter-incoming-call-window/v1",generatedAt:"2026-10-07T15:00:00.000Z",window:{start:"2026-10-07T14:50:00.000Z",end:"2026-10-07T15:00:00.000Z",durationSeconds:600},freshness:"fresh",coverage:{latestObservedAt:"2026-10-07T15:00:00.000Z",latestObservedAgeSeconds:0,eventsInWindow:1,callLifecycleEventsInWindow:0,noAttemptsObservedUnderFreshTelemetry:true},attempts:{total:0,correlated:0,unlinked:0,answered:0,missed:0,connectFailed:0,unresolved:0},items:[]};
+const manifest={schema:"signal-interpreter-observability-package/v1",generatedAt:"2026-10-07T15:00:00.000Z",lastBatchId:"batch-1",lastSequence:1,extensionVersion:"0.10.0",eventCount:1,platform:{observations:1,deltas:1,identities:1},incomingCalls:{reportPath:"latest/incoming-calls-10m.json",freshness:"fresh",latestObservedAt:"2026-10-07T15:00:00.000Z",attemptCount:0,missedCount:0,unresolvedCount:0}};
 fs.writeFileSync(path.join(obs,"platform-index.json"),JSON.stringify(index));
 fs.writeFileSync(path.join(obs,"platform-latest.json"),JSON.stringify(index));
 fs.writeFileSync(path.join(obs,"manifest.json"),JSON.stringify(manifest));
 fs.writeFileSync(path.join(obs,"screenshots-index.json"),JSON.stringify({schema:"signal-interpreter-platform-screenshot-index/v1",generatedAt:manifest.generatedAt,totalEvents:0,changed:0,unchanged:0,errors:0,routeCount:0,latestByRoute:{}}));
+fs.mkdirSync(path.join(obs,"latest"),{recursive:true});
+fs.writeFileSync(path.join(obs,"latest","incoming-calls-10m.json"),JSON.stringify(incomingReport));
+fs.writeFileSync(path.join(obs,"latest","incoming-calls-10m.md"),"# Signal Interpreter — llamadas entrantes · últimos 10 minutos\n");
 const result=auditObservabilityPackage(obs);
 assert.equal(result.ok,true);
 assert.equal(result.identityCount,1);
