@@ -72,5 +72,45 @@ const fourth=buildObservabilityPackage(root);
 assert.equal(fourth.health.lastAutomaticPublishAt,"2026-10-07T20:01:00.000Z");
 assert.equal(fourth.health.lastManualPublishAt,"2026-10-07T20:02:00.000Z");
 assert.equal(fourth.health.lastManualBatchId,"manual-1");
+\
+const incomingNow=Date.now();
+const incomingEvent=(action,offset,payload,level="info")=>({
+  schema:"khora-effectif-event/v4",id:"incoming-"+action+"-"+offset,
+  sequence:100+offset,timestamp:new Date(incomingNow+offset).toISOString(),
+  level:level,category:"RUNTIME",component:"content",action,
+  tabId:42,ingestDelayMs:12,
+  payload:payload
+});
+const incomingBatch=batch("incoming-window");
+incomingBatch.createdAt=new Date(incomingNow+450).toISOString();
+incomingBatch.trigger="call-event";
+incomingBatch.extensionVersion="0.10.39";
+incomingBatch.events=[
+  incomingEvent("INCOMING_RING_SIGNAL",0,{ringSignalId:"ring-confirmed",tabId:42,statusCode:206,durationMs:45,signal:"ring.mp3"}),
+  incomingEvent("INCOMING_DIALOG_DETECTED",80,{incomingAttemptId:"attempt-missed-1",ringSignalId:"ring-confirmed",modality:"OPI",connectFound:true,connectDisabled:false}),
+  incomingEvent("CONNECT_BUTTON_FOUND",110,{incomingAttemptId:"attempt-missed-1",ringSignalId:"ring-confirmed",modality:"OPI",disabled:false,label:"Connect"}),
+  incomingEvent("AUTO_ANSWER_BLOCKED",140,{incomingAttemptId:"attempt-missed-1",ringSignalId:"ring-confirmed",modality:"OPI",decision:"no-click",blockReasons:["PRESENCE_NOT_ARMED:worker-start-confirm-again"]},"warn"),
+  incomingEvent("MISSED_CALL_CLASSIFIED",320,{id:"attempt-missed-1",incomingAttemptId:"attempt-missed-1",ringSignalId:"ring-confirmed",detectedAt:new Date(incomingNow+80).toISOString(),classifiedAt:new Date(incomingNow+320).toISOString(),modality:"OPI",status:"missed",reason:"dialog_closed_without_connect"},"warn"),
+  incomingEvent("INCOMING_RING_SIGNAL",400,{ringSignalId:"ring-unlinked",tabId:42,statusCode:206,durationMs:38,signal:"ring.mp3"})
+];
+incomingBatch.summary={eventsTotal:incomingBatch.events.length,errors:0,warnings:2,firstSequence:100,lastSequence:500,categories:{RUNTIME:incomingBatch.events.length},actions:{}};
+for(const item of incomingBatch.events)incomingBatch.summary.actions[item.action]=(incomingBatch.summary.actions[item.action]||0)+1;
+fs.writeFileSync(path.join(inbox,"incoming-window.json"),JSON.stringify(incomingBatch));
+const fifth=buildObservabilityPackage(root);
+const incomingReport=fifth.incomingCallWindowReport;
+assert.ok(incomingReport,"rolling incoming-call report is returned");
+assert.equal(incomingReport.summary.ringSignals,2);
+assert.equal(incomingReport.summary.missed,1,"only explicit MISSED_CALL_CLASSIFIED is counted as missed");
+assert.equal(incomingReport.summary.unresolved,1,"unlinked ring signal remains unresolved, not a missed call");
+assert.equal(incomingReport.attempts.length,2);
+const missedAttempt=incomingReport.attempts.find(item=>item.incomingAttemptId==="attempt-missed-1");
+assert.equal(missedAttempt.outcome,"missed");
+assert(missedAttempt.ringSignalIds.includes("ring-confirmed"),"ring and dialog are correlated");
+assert(missedAttempt.events.some(item=>item.action==="AUTO_ANSWER_BLOCKED"&&item.details.blockReasons[0].startsWith("PRESENCE_NOT_ARMED")));
+assert.ok(incomingReport.freshness.maxRelayAcceptanceDelayMs>=0);
+assert.equal(fifth.health.incomingCallWindowMissed,1);
+assert.equal(fifth.manifest.incomingCalls.unresolved,1);
+assert.equal(fs.existsSync(path.join(root,"observations","latest","latest-incoming-call-report.json")),true);
+assert.equal(fs.existsSync(path.join(root,"observations","latest","latest-incoming-call-report.md")),true);
 fs.rmSync(root,{recursive:true,force:true});
 console.log("OBSERVABILITY_GITHUB_PIPELINE_TEST=PASS");
