@@ -6,15 +6,17 @@ const PROFILE='https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djf
 let checks=0;
 function eq(a,b,label){assert.equal(a,b,label);checks++;}
 function harness(seed={}){
- let now=100000,idle='active',hold=null;
+ let now=100000,idle=seed.initialIdle||'active',hold=null;
  const events=()=>({listeners:[],addListener(f){this.listeners.push(f)},emit(...args){this.listeners.forEach(f=>f(...args))}});
+ const sessionData=Object.assign({},seed.sessionData||{});
  const data={effectifConfig:{autoAnswerEnabled:true,presenceIdleSeconds:60},...seed};
+ delete data.sessionData; delete data.initialIdle;
  const changed=events(),stateChanged=events(),messages=events(),intervals=[];
- const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},storage:{onChanged:changed,local:{get:async keys=>Object.fromEntries(keys.map(k=>[k,data[k]])),set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}}},tabs:{get:async()=>({url:PROFILE}),query:async()=>[]}};
+ const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},storage:{onChanged:changed,local:{get:async keys=>Object.fromEntries(keys.map(k=>[k,data[k]])),set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}},session:{get:async keys=>Object.fromEntries(keys.map(k=>[k,sessionData[k]])),set:async patch=>Object.assign(sessionData,patch),remove:async keys=>{for(const k of Array.isArray(keys)?keys:[keys])delete sessionData[k]} }},tabs:{get:async()=>({url:PROFILE}),query:async()=>[]}};
  const ctx={chrome,Date:class extends Date{static now(){return now}},setInterval:f=>intervals.push(f),setTimeout,clearTimeout,self:{}};
  ctx.self=ctx;vm.createContext(ctx);vm.runInContext(code,ctx);
  const sender={id:'id',frameId:0,url:PROFILE,tab:{id:7,url:PROFILE}};
- return {guard:ctx.SignalPresenceGuard,chrome,data,sender,stateChanged,intervals,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
+ return {guard:ctx.SignalPresenceGuard,chrome,data,sessionData,sender,stateChanged,intervals,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
 }
 const h=harness();
 eq(h.guard.snapshot().armed,false,'upgraded stored enabled does not arm');
@@ -44,7 +46,16 @@ h.chrome.tabs.get=async()=>{throw Error('closed')};eq((await h.guard.authorize({
 eq(h.guard.snapshot().armed,false,'verification error revokes');
 const missing=harness();delete missing.chrome.idle;eq((await missing.guard.arm(60)).ok,false,'missing permission/API blocks');
 const err=harness();err.chrome.runtime.lastError={message:'not allowed'};eq((await err.guard.arm(60)).ok,false,'API error blocks');
-const restart=harness({signalPresenceGuard:{armed:true,generation:8}});eq(restart.guard.snapshot().armed,false,'stored arm never survives worker restart');
+const restart=harness({signalPresenceGuard:{armed:true,generation:8}});eq(restart.guard.snapshot().armed,false,'stored arm never survives worker restart without an explicit session grant');
+const grantSource=harness();eq((await grantSource.guard.arm(60)).ok,true,'explicit arm creates a browser-session grant');
+const sessionGrant=grantSource.sessionData.signalPresenceGrant;
+const restored=harness({sessionData:{signalPresenceGrant:sessionGrant}});await new Promise(resolve=>setImmediate(resolve));
+eq(restored.guard.snapshot().armed,true,'active explicit session grant survives MV3 worker restart');eq(restored.guard.snapshot().reason,"explicit-availability-restored",'restored grant remains distinguishable from a new popup confirmation');
+restored.setIdle('idle');restored.stateChanged.emit('idle');eq(restored.guard.snapshot().armed,false,'idle revokes restored grant');await new Promise(resolve=>setImmediate(resolve));eq(restored.sessionData.signalPresenceGrant,undefined,'idle also removes the browser-session grant');
+restored.setIdle('active');restored.stateChanged.emit('active');eq(restored.guard.snapshot().armed,false,'return never restores a revoked grant');
+const labRestore=harness({signalLabLock:true,sessionData:{signalPresenceGrant:sessionGrant}});await new Promise(resolve=>setImmediate(resolve));eq(labRestore.guard.snapshot().armed,false,'lab lock prevents session grant restore');
+const idleRestore=harness({initialIdle:'idle',sessionData:{signalPresenceGrant:sessionGrant}});await new Promise(resolve=>setImmediate(resolve));eq(idleRestore.guard.snapshot().armed,false,'worker restart while OS idle cannot restore session grant');
+const noSession=harness();delete noSession.chrome.storage.session;eq((await noSession.guard.arm(60)).ok,false,'missing session storage fails closed');
 const duringCall=harness();await duringCall.guard.arm(60);duringCall.chrome.tabs.query=async()=>[{id:9}];eq((await duringCall.guard.authorize({modality:'OPI',requestId:'during-call'},duringCall.sender)).ok,false,'a call in another tab blocks new automatic answer');
 const end=harness();await end.guard.arm(60);await end.message({type:'SIGNAL_PRESENCE_END'},end.sender);eq(end.guard.snapshot().armed,false,'ending work session revokes');
 // Current media is untouched: the module has no call/hangup/audio mutation surface.

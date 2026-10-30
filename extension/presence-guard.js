@@ -5,6 +5,8 @@
   var consumed = new Set(), busy = false, leaseUntil = 0;
   var PROFILE = "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz";
   var KEY = "signalPresenceGuard";
+  var SESSION_GRANT_KEY = "signalPresenceGrant";
+  var SESSION_GRANT_SCHEMA = "signal-presence-session-grant/v1";
   var reason = "confirmation-required";
   var allowedSeconds = [60, 180, 300, 600];
   function snapshot() { return { armed: armed, generation: generation, idleSeconds: threshold, reason: reason }; }
@@ -12,9 +14,15 @@
     // Only arm state, never input, captions or desktop content, is persisted.
     return chrome.storage.local.set({ signalPresenceGuard: snapshot() }).catch(function () {});
   }
-  function disarm(why) {
+  function clearSessionGrant() {
+    if (!chrome.storage.session || typeof chrome.storage.session.remove !== "function") return Promise.resolve();
+    return chrome.storage.session.remove(SESSION_GRANT_KEY).catch(function () {});
+  }
+  function disarm(why, preserveSessionGrant) {
     armed = false; generation++; reason = why || "confirmation-required";
-    consumed.clear(); leaseUntil = 0; publish(); return snapshot();
+    consumed.clear(); leaseUntil = 0;
+    if (!preserveSessionGrant) clearSessionGrant();
+    publish(); return snapshot();
   }
   function continuity() {
     var now = Date.now(), gap = now - lastCheck; lastCheck = now;
@@ -42,9 +50,24 @@
     if (await idleState(seconds) !== "active" || epoch !== generation) {
       disarm("presence-unavailable-confirm-again"); return { ok: false, error: reason, state: snapshot() };
     }
-    var stored = await chrome.storage.local.get(["signalLabLock"]);
+    var stored = await chrome.storage.local.get(["signalLabLock", "effectifConfig"]);
     if (stored.signalLabLock === true || epoch !== generation) return { ok: false, error: "lab-or-state-changed", state: snapshot() };
-    try { chrome.idle.setDetectionInterval(seconds); } catch (_) { return { ok: false, error: "idle-unavailable", state: snapshot() }; }
+    if (!chrome.storage.session || typeof chrome.storage.session.set !== "function") {
+      disarm("presence-session-storage-unavailable");
+      return { ok: false, error: reason, state: snapshot() };
+    }
+    try {
+      await chrome.storage.session.set({[SESSION_GRANT_KEY]:{
+        schema:SESSION_GRANT_SCHEMA,idleSeconds:seconds,grantedAt:Date.now()
+      }});
+    } catch (_) {
+      disarm("presence-session-storage-unavailable");
+      return { ok: false, error: reason, state: snapshot() };
+    }
+    if (epoch !== generation) { await clearSessionGrant(); return { ok: false, error: "state-changed", state: snapshot() }; }
+    try { chrome.idle.setDetectionInterval(seconds); } catch (_) {
+      disarm("idle-unavailable"); return { ok: false, error: reason, state: snapshot() };
+    }
     threshold = seconds; lastCheck = Date.now(); armed = true; reason = "explicit-availability";
     await publish(); return { ok: true, state: snapshot() };
   }
@@ -84,8 +107,44 @@
     if (result.ok) await chrome.storage.local.set({ effectifConfig: Object.assign({}, cfg, { autoAnswerEnabled: true }) });
     return result;
   }
+  async function restoreSessionAuthorization() {
+    // MV3 may suspend and restart this worker while the operator remains active.
+    // Restore only an explicit grant made in this browser session; never restore from preferences alone.
+    disarm("worker-start-confirm-again", true);
+    if (!chrome.storage.session || typeof chrome.storage.session.get !== "function") return snapshot();
+    try {
+      var storedGrant = await chrome.storage.session.get([SESSION_GRANT_KEY]);
+      var grant = storedGrant && storedGrant[SESSION_GRANT_KEY];
+      if (!grant || grant.schema !== SESSION_GRANT_SCHEMA || !allowedSeconds.includes(Number(grant.idleSeconds)) ||
+          !Number.isFinite(Number(grant.grantedAt))) return snapshot();
+      var epoch = generation, seconds = Number(grant.idleSeconds);
+      var presence = await idleState(seconds);
+      if (epoch !== generation) return snapshot();
+      if (presence !== "active") { disarm("idle-or-locked-confirm-again"); return snapshot(); }
+      var stored = await chrome.storage.local.get(["signalLabLock", "effectifConfig"]);
+      if (epoch !== generation) return snapshot();
+      if (stored.signalLabLock === true) { disarm("laboratory"); return snapshot(); }
+      if (!stored.effectifConfig || stored.effectifConfig.autoAnswerEnabled !== true) {
+        disarm("settings-changed-confirm-again"); return snapshot();
+      }
+      try { chrome.idle.setDetectionInterval(seconds); }
+      catch (_) { disarm("idle-unavailable"); return snapshot(); }
+      threshold = seconds;
+      lastCheck = Date.now();
+      armed = true;
+      generation++;
+      reason = "explicit-availability-restored";
+      consumed.clear();
+      leaseUntil = 0;
+      await publish();
+      return snapshot();
+    } catch (_) {
+      disarm("verification-error-confirm-again");
+      return snapshot();
+    }
+  }
   root.SignalPresenceGuard = { snapshot: snapshot, disarm: disarm, arm: arm, authorize: authorize, toggleFromKeyboard: toggleFromKeyboard };
-  disarm("worker-start-confirm-again");
+  disarm("worker-start-confirm-again", true);
   if (chrome.idle && chrome.idle.onStateChanged) chrome.idle.onStateChanged.addListener(function (state) {
     // Returning/unlocking never re-arms. A current call is deliberately untouched.
     if (state !== "active") disarm("idle-or-locked-confirm-again");
@@ -114,4 +173,5 @@
     work.then(respond).catch(function () { disarm("verification-error-confirm-again"); respond({ ok: false, error: reason }); });
     return true;
   });
+  restoreSessionAuthorization();
 })(typeof self !== "undefined" ? self : globalThis);
