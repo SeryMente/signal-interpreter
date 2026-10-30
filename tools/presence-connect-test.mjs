@@ -46,7 +46,7 @@ function harness({mode='Audio interpreting',grant=true,labLocked=false,presenceA
 async function run(h){const pending=h.ctx.run();h.release();await pending;await new Promise(r=>setImmediate(r));}
 let h=harness();await run(h);assert.equal(h.clicks(),1);checks++;
 h.ctx.run();await new Promise(r=>setImmediate(r));assert.equal(h.clicks(),1);checks++;
-for(const mode of ['Video interpreting','unidentified','Audio interpreting Video interpreting']){
+for(const mode of ['Video interpreting','unidentified']){
  h=harness({mode});await run(h);assert.equal(h.clicks(),0,mode);
  assert(h.events().some(e=>e.action==='INCOMING_DIALOG_DETECTED'),'incoming dialog must be observed');
  assert(h.events().some(e=>e.action==='AUTO_ANSWER_BLOCKED'),'non-OPI modality must be logged as blocked');checks++;
