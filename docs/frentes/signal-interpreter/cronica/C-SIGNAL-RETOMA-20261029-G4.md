@@ -53,3 +53,12 @@ Metacanon 1.24 §§6 y 24 reserva el uso de Remote Desktop Commander al rol asis
 ## Procedencia y estado
 
 Esta crónica consolida la instrucción literal del operador, la conversación adjunta, archivos del OCP, control de responsabilidad, DUG/Metacanon/GOW vigentes, metadatos y workflows actuales de GitHub, y los registros locales r3 leídos. No es una exportación nativa íntegra de la conversación. Los registros locales citados permanecen en el equipo; este repositorio conserva únicamente la síntesis no sensible. No se presume captura automática ni sincronización entre plataformas.
+
+
+## Última salida del modelo anterior — referencia protegida
+
+- Fuente: archivo adjunto del operador `Texto pegado(20261030-014433).txt`, bloque `Response`, fechado `29/10/2026, 7:08:02 p.m.`, con etiqueta de modelo `gpt-6-t-mini-mini` en el exportador.
+- El bloque fue leído íntegramente para recuperar el contexto. Documenta la candidata 0.10.38 r3, sus 59/59 hashes, 34/34 pruebas automatizadas, smoke de Chromium headless, CI 3/3 y las pruebas reales aún pendientes.
+- **No se reproduce literalmente aquí**: contiene identificadores de cuenta/dispositivo y rutas locales; el repositorio está confirmado como público. El original permanece en el adjunto de esta conversación; esta referencia no implica copia automática ni custodia persistente en GitHub.
+- El estado de combinabilidad/alineación mencionado en aquella salida es histórico. La comparación actual (2026-10-29) muestra la PR #67 divergida y 10 commits detrás de `main`; prevalece el estado vivo descrito en este núcleo.
+- Remediación de publicación: el commit que añadió una copia literal con esos datos se retiró de la referencia `main` mediante actualización de rama con `expected_sha` verificado, regresando a su padre. El commit retirado puede seguir siendo consultable directamente o permanecer en cachés hasta su depuración por GitHub; no se afirma purga completa de objetos/cachés.
