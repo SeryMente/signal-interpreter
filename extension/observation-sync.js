@@ -127,7 +127,7 @@ async function flushInternal(reason){
   try{
     var r=await SignalObservabilityRelay.uploadBatch(payload);
     state.ackedSequence=Math.max(Number(state.ackedSequence)||0,Number(data.summary.lastSequence)||0);
-    state.lastSuccessAt=iso();state.lastRelayAcceptedAt=state.lastSuccessAt;
+    state.lastSuccessAt=iso();state.lastRelayAcceptedAt=r&&r.relayReceivedAt||state.lastSuccessAt;
     if(reason==="manual"){state.lastManualPublishAt=state.lastRelayAcceptedAt;state.lastManualBatchId=batchId;}
     else{state.lastAutomaticPublishAt=state.lastRelayAcceptedAt;state.lastAutomaticBatchId=batchId;}
     state.lastError=null;state.consecutiveFailures=0;
