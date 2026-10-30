@@ -1530,7 +1530,17 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       var attemptId = String(payload.attemptId || "");
       var pendingAge = state.pendingCall && Date.parse(event.timestamp) - Date.parse(state.pendingCall.detectedAt);
       var sameAttempt = state.pendingCall && attemptId && state.pendingCall.attemptId === attemptId;
-      if (!sameAttempt && (!state.pendingCall || !Number.isFinite(pendingAge) || pendingAge > 60000)) {
+      var supersededAttempt = !sameAttempt && state.pendingCall && attemptId &&
+        state.pendingCall.attemptId && state.pendingCall.attemptId !== attemptId;
+      if (!sameAttempt && (!state.pendingCall || !Number.isFinite(pendingAge) || pendingAge > 60000 || supersededAttempt)) {
+        if (supersededAttempt) record("INCOMING_ATTEMPT_SUPERSEDED", {
+          attemptId: state.pendingCall.attemptId,
+          nextAttemptId: attemptId,
+          previousDetectedAt: state.pendingCall.detectedAt || null,
+          previousClickedAt: state.pendingCall.clickedAt || null,
+          previousClosedAt: state.pendingCall.closedAt || null,
+          reason: "new-incoming-dialog-before-previous-attempt-terminal"
+        }, "warn", "background");
         state.pendingCall = {
           id: uid(), attemptId: attemptId || null,
           detectedAt: event.timestamp, lastObservedAt: event.timestamp,
