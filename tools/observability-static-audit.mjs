@@ -35,6 +35,7 @@ const incomingCallWindowTest=read("tools/observability/incoming-call-window-test
 const freshnessAudit=read("tools/observability-freshness-audit.mjs");
 const freshnessAuditTest=read("tools/observability-freshness-audit-test.mjs");
 const relayBatchAuditTest=read("tools/observability-relay-batch-test.mjs");
+const callLifecycleSyncTest=read("tools/observability-call-lifecycle-sync-test.mjs");
 const relayBatchApi=read("tools/observability-relay/api/batch.js");
 const freshnessWorkflow=read(".github/workflows/observability-freshness.yml");
 
@@ -117,6 +118,9 @@ assert.ok(background.includes('event.action === "INCOMING_DIALOG_CLOSED") markIn
 assert.ok(background.includes('INCOMING_ATTEMPT_ANSWERED'));
 assert.ok(background.includes('record("MISSED_CALL_CLASSIFIED", missed'));
 assert.ok(observationSync.includes("callLifecycleCritical"));
+assert.ok(observationSync.includes("var callLifecycleReason = reason === \"call-lifecycle\""));
+assert.ok(observationSync.includes("!callLifecycleReason"));
+assert.ok(callLifecycleSyncTest.includes("OBSERVABILITY_CALL_LIFECYCLE_SYNC_TEST=PASS"));
 assert.ok(incomingCallWindow.includes("signal-interpreter-incoming-call-window/v1"));
 assert.ok(incomingCallWindow.includes("relay-receipt-corrected"));
 assert.ok(incomingCallWindowTest.includes("INCOMING_CALL_WINDOW_TEST=PASS"));
