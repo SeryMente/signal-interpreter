@@ -677,6 +677,14 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     ? latestClientCreatedMs-latestRelayReceivedMs:null;
   const freshnessStatus=sourceAgeMs===null?"receipt-unavailable":
     sourceAgeMs<=120000?"fresh":sourceAgeMs<=300000?"delayed":"stale";
+  const expectedExtensionVersion=String(readJson(path.join(root,"manifest.json"),{}).version||"unknown");
+  const observedExtensionVersion=String(latestReal&&latestReal.extensionVersion||"unknown");
+  const runtimeVersionMismatch=expectedExtensionVersion!=="unknown"&&observedExtensionVersion!=="unknown"&&
+    expectedExtensionVersion!==observedExtensionVersion;
+  const inboxRemaining=listJson(inbox).length;
+  const healthStatus=inboxRemaining>0?"backlogged":
+    freshnessStatus!=="fresh"?freshnessStatus:
+    runtimeVersionMismatch?"runtime-version-mismatch":"ok";
 
   const latestCallReport=callReportIndex.latestReportPath
     ?readJson(path.join(obs,callReportIndex.latestReportPath),null):null;
@@ -765,6 +773,9 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     latestBatchRelayReceivedAt:latestReal&&latestReal.relayReceivedAt||null,
     latestSourceAgeMs:sourceAgeMs,
     clientClockSkewMs:clientClockSkewMs,
+    extensionVersion:observedExtensionVersion,
+    expectedExtensionVersion:expectedExtensionVersion,
+    runtimeVersionMismatch:runtimeVersionMismatch,
     freshness:{
       status:freshnessStatus,
       latestRelayReceivedAt:latestReal&&latestReal.relayReceivedAt||null,
@@ -775,8 +786,8 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
       receiptVerified:sourceAgeMs!==null,
       thresholds:{freshMs:120000,delayedMs:300000,staleAfterMs:300000}
     },
-    inboxRemaining:listJson(inbox).length,
-    status:listJson(inbox).length>0?"backlogged":freshnessStatus==="fresh"?"ok":freshnessStatus==="delayed"?"delayed":"stale"
+    inboxRemaining:inboxRemaining,
+    status:healthStatus
   };
   writeJson(path.join(obs,"health","github-build.json"),health);
   return{manifest,index,health,callReports:callReportIndex,latestCallReport:latestCallReport};
