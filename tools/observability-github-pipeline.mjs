@@ -587,6 +587,207 @@ function updateCallReports(obs,candidateCallIds,generatedAt){
   return index;
 }
 
+\function buildIncomingCallWindowReport(obs,generatedAt){
+  const endMs=Date.parse(generatedAt)||Date.now();
+  const startMs=endMs-600000;
+  const rows=[];
+  for(const file of listJson(path.join(obs,"batches"))){
+    const batch=readJson(file,null);
+    if(!batch||batch.schema!==BATCH_SCHEMA||!Array.isArray(batch.events))continue;
+    for(const event of batch.events){
+      const at=Date.parse(event&&event.timestamp||"");
+      if(!Number.isFinite(at)||at<startMs||at>endMs)continue;
+      rows.push({
+        event:event,batchId:String(batch.batchId||"unknown"),
+        batchCreatedAt:reportDate(batch.createdAt,null),
+        batchCreatedMs:Date.parse(batch.createdAt||"")||null
+      });
+    }
+  }
+  rows.sort((a,b)=>(Date.parse(a.event.timestamp)||0)-(Date.parse(b.event.timestamp)||0));
+  const actionCounts={};
+  const batches=new Set();
+  const attemptById=new Map();
+  const ringRows=[];
+  const getAttempt=(id)=>{
+    const key=String(id);
+    if(!attemptById.has(key))attemptById.set(key,{incomingAttemptId:key,ringSignalIds:new Set(),rows:[]});
+    return attemptById.get(key);
+  };
+  for(const row of rows){
+    const event=row.event||{};
+    const action=String(event.action||"UNKNOWN");
+    const payload=event.payload&&typeof event.payload==="object"?event.payload:{};
+    actionCounts[action]=(actionCounts[action]||0)+1;
+    batches.add(row.batchId);
+    if(action==="INCOMING_RING_SIGNAL"){ringRows.push(row);continue;}
+    const attemptId=payload.incomingAttemptId||
+      ((action==="MISSED_CALL_CLASSIFIED"||action==="CONNECT_FLOW_FAILED_NO_CALL_ROUTE")?
+        (payload.id||payload.pendingId||null):null);
+    if(attemptId){
+      const attempt=getAttempt(attemptId);
+      if(payload.ringSignalId)attempt.ringSignalIds.add(String(payload.ringSignalId));
+      attempt.rows.push(row);
+    }
+  }
+  for(const row of ringRows){
+    const payload=row.event.payload&&typeof row.event.payload==="object"?row.event.payload:{};
+    const ringId=String(payload.ringSignalId||row.event.id||("ring-"+row.event.timestamp));
+    let target=null;
+    for(const attempt of attemptById.values()){
+      if(attempt.ringSignalIds.has(ringId)){target=attempt;break;}
+    }
+    if(!target){
+      const correlated=ringRows.length&&Array.from(attemptById.values()).find(attempt=>
+        attempt.rows.some(item=>Number(item.event.tabId)===Number(row.event.tabId)&&
+          Math.abs(Date.parse(item.event.timestamp)-Date.parse(row.event.timestamp))<=15000));
+      if(correlated)target=correlated;
+    }
+    if(!target)target=getAttempt("ring:"+ringId);
+    target.ringSignalIds.add(ringId);
+    target.rows.push(row);
+  }
+  const eventTime=(attempt,action)=>attempt.rows
+    .filter(row=>row.event.action===action)
+    .map(row=>Date.parse(row.event.timestamp))
+    .filter(Number.isFinite)
+    .sort((a,b)=>a-b)[0]||null;
+  const attempts=[];
+  let answered=0,missed=0,failed=0,blocked=0,unresolved=0,missingStageCount=0;
+  let maxRelayAcceptanceDelayMs=0,maxProcessorDelayMs=0,maxIngestDelayMs=0;
+  let latestEventAt=null,latestBatchAt=null;
+  for(const attempt of attemptById.values()){
+    attempt.rows.sort((a,b)=>(Date.parse(a.event.timestamp)||0)-(Date.parse(b.event.timestamp)||0));
+    const actions=new Set(attempt.rows.map(row=>String(row.event.action||"")));
+    const has=action=>actions.has(action);
+    const first=action=>eventTime(attempt,action);
+    const answeredOutcome=has("ANSWER_FLOW_ROUTE_CONFIRMED")||has("CALL_ROUTE_ENTERED");
+    const failedOutcome=has("CONNECT_FLOW_FAILED_NO_CALL_ROUTE")||has("CONNECT_ROUTE_TIMEOUT")||has("CONNECT_ERROR");
+    const missedOutcome=has("MISSED_CALL_CLASSIFIED");
+    let outcome="unresolved";
+    if(answeredOutcome)outcome="answered";
+    else if(missedOutcome)outcome="missed";
+    else if(failedOutcome)outcome="failed";
+    else if(has("AUTO_ANSWER_BLOCKED"))outcome="blocked";
+    if(outcome==="answered")answered++;
+    else if(outcome==="missed")missed++;
+    else if(outcome==="failed")failed++;
+    else if(outcome==="blocked")blocked++;
+    else unresolved++;
+    const missingSignals=[];
+    if(!has("INCOMING_DIALOG_DETECTED"))missingSignals.push("INCOMING_DIALOG_DETECTED");
+    if(!has("CONNECT_BUTTON_FOUND")&&!has("CONNECT_BUTTON_NOT_FOUND")&&!has("CONNECT_BUTTON_DISABLED"))missingSignals.push("CONNECT_BUTTON_STATE");
+    if(!has("AUTO_ANSWER_ELIGIBLE")&&!has("AUTO_ANSWER_BLOCKED")&&!has("AUTO_ANSWER_SKIPPED_UNVERIFIED_MODALITY"))missingSignals.push("AUTO_ANSWER_DECISION");
+    if(has("CONNECT_CLICKED")&&!answeredOutcome&&!failedOutcome&&!missedOutcome)missingSignals.push("CALL_ROUTE_OR_TERMINAL_RESULT");
+    if(!answeredOutcome&&!failedOutcome&&!missedOutcome&&!has("INCOMING_DIALOG_CLOSED"))missingSignals.push("DIALOG_CLOSE_OR_CLASSIFICATION");
+    missingStageCount+=missingSignals.length;
+    const firstAt=attempt.rows.length?Date.parse(attempt.rows[0].event.timestamp):null;
+    const lastAt=attempt.rows.length?Date.parse(attempt.rows[attempt.rows.length-1].event.timestamp):null;
+    const ringAt=first("INCOMING_RING_SIGNAL");
+    const dialogAt=first("INCOMING_DIALOG_DETECTED");
+    const buttonAt=first("CONNECT_BUTTON_FOUND")||first("CONNECT_BUTTON_NOT_FOUND")||first("CONNECT_BUTTON_DISABLED");
+    const eligibleAt=first("AUTO_ANSWER_ELIGIBLE");
+    const clickedAt=first("CONNECT_CLICKED");
+    const routeAt=first("ANSWER_FLOW_ROUTE_CONFIRMED")||first("CALL_ROUTE_ENTERED");
+    const latency=(from,to)=>from!==null&&to!==null?Math.max(0,to-from):null;
+    const eventTimeline=attempt.rows.map(row=>{
+      const e=row.event,p=e.payload&&typeof e.payload==="object"?e.payload:{};
+      const details={};
+      for(const key of [
+        "incomingAttemptId","ringSignalId","modality","connectFound","connectDisabled","disabled",
+        "label","decision","blockReasons","reason","ready","availability","authorizedProfile",
+        "labSafetyLockActive","presenceArmed","presenceReason","autoAnswerEnabled","statusCode",
+        "durationMs","trigger","tabId","pendingId","detectedAt","clickedAt","classifiedAt",
+        "expectedRoute","clickLatencyMs","elapsedMs","grantError","requestId"
+      ])if(p[key]!==undefined)details[key]=p[key];
+      const at=Date.parse(e.timestamp)||0;
+      const relayDelay=row.batchCreatedMs!==null?Math.max(0,row.batchCreatedMs-at):null;
+      const processorDelay=row.batchCreatedMs!==null?Math.max(0,endMs-row.batchCreatedMs):null;
+      const ingestDelay=reportNumber(e.ingestDelayMs);
+      if(relayDelay!==null)maxRelayAcceptanceDelayMs=Math.max(maxRelayAcceptanceDelayMs,relayDelay);
+      if(processorDelay!==null)maxProcessorDelayMs=Math.max(maxProcessorDelayMs,processorDelay);
+      if(ingestDelay!==null)maxIngestDelayMs=Math.max(maxIngestDelayMs,ingestDelay);
+      if(!latestEventAt||at>Date.parse(latestEventAt))latestEventAt=new Date(at).toISOString();
+      if(row.batchCreatedMs!==null&&(!latestBatchAt||row.batchCreatedMs>Date.parse(latestBatchAt)))latestBatchAt=new Date(row.batchCreatedMs).toISOString();
+      return {
+        at:reportDate(e.timestamp,null),action:e.action||"UNKNOWN",level:e.level||"info",
+        component:e.component||e.source||null,sequence:reportNumber(e.sequence),
+        batchId:row.batchId,relayAcceptedAt:row.batchCreatedAt,
+        relayAcceptanceDelayMs:relayDelay,processorDelayMs:processorDelay,
+        ingestDelayMs:ingestDelay,details:details
+      };
+    });
+    attempts.push({
+      incomingAttemptId:attempt.incomingAttemptId,
+      ringSignalIds:Array.from(attempt.ringSignalIds),
+      modality:(attempt.rows.find(row=>row.event.payload&&row.event.payload.modality)?.event.payload.modality)||null,
+      outcome:outcome,
+      firstObservedAt:firstAt!==null?new Date(firstAt).toISOString():null,
+      lastObservedAt:lastAt!==null?new Date(lastAt).toISOString():null,
+      latenciesMs:{
+        ringToDialog:latency(ringAt,dialogAt),
+        dialogToButton:latency(dialogAt,buttonAt),
+        eligibleToClick:latency(eligibleAt,clickedAt),
+        clickToRoute:latency(clickedAt,routeAt)
+      },
+      missingSignals:missingSignals,
+      eventCount:attempt.rows.length,
+      events:eventTimeline
+    });
+  }
+  attempts.sort((a,b)=>String(a.firstObservedAt||"").localeCompare(String(b.firstObservedAt||"")));
+  const ringSignalCount=ringRows.length;
+  const summary={
+    eventCount:rows.length,ringSignals:ringSignalCount,attempts:attempts.length,
+    answered:answered,missed:missed,failed:failed,blocked:blocked,unresolved:unresolved,
+    attemptsWithMissingStages:attempts.filter(item=>item.missingSignals.length>0).length,
+    missingStageCount:missingStageCount,
+    batchCount:batches.size
+  };
+  const report={
+    schema:"signal-interpreter-incoming-call-window/v1",
+    generatedAt:generatedAt,
+    window:{seconds:600,startAt:new Date(startMs).toISOString(),endAt:new Date(endMs).toISOString()},
+    summary:summary,
+    freshness:{
+      latestEventAt:latestEventAt,
+      latestBatchAcceptedAt:latestBatchAt,
+      latestEventAgeMs:latestEventAt?Math.max(0,endMs-Date.parse(latestEventAt)):null,
+      maxRelayAcceptanceDelayMs:maxRelayAcceptanceDelayMs,
+      maxProcessorDelayMs:maxProcessorDelayMs,
+      maxIngestDelayMs:maxIngestDelayMs
+    },
+    actionCounts:actionCounts,
+    attempts:attempts,
+    limitations:[
+      "A ring.mp3 network signal alone is not classified as a missed call.",
+      "A call is marked answered only when a call route is observed.",
+      "An absent event is reported as a missing stage, not inferred as a successful or failed action."
+    ]
+  };
+  const latestDir=path.join(obs,"latest");
+  writeJson(path.join(latestDir,"latest-incoming-call-report.json"),report);
+  const lines=[
+    "# Incoming call report — rolling 10-minute window","",
+    "- Generated: "+report.generatedAt,
+    "- Window: "+report.window.startAt+" → "+report.window.endAt,"",
+    "## Summary","",
+    "| Measure | Count |","|---|---:|",
+    ...Object.entries(summary).map(([key,value])=>"| "+key+" | "+value+" |"),
+    "","## Attempts","",
+    "| Attempt | Outcome | Modality | Events | Missing stages |",
+    "|---|---|---|---:|---|",
+    ...attempts.map(item=>"| "+item.incomingAttemptId+" | "+item.outcome+" | "+(item.modality||"unknown")+" | "+item.eventCount+" | "+(item.missingSignals.join(", ")||"none")+" |"),
+    "","## Freshness","",
+    "- Latest event: "+(report.freshness.latestEventAt||"none"),
+    "- Maximum relay acceptance delay: "+report.freshness.maxRelayAcceptanceDelayMs+" ms",
+    "- Maximum processor delay: "+report.freshness.maxProcessorDelayMs+" ms",
+    "- Maximum local ingest delay: "+report.freshness.maxIngestDelayMs+" ms",
+    "","A ring signal alone is not treated as a confirmed missed call."
+  ];
+  fs.writeFileSync(path.join(latestDir,"latest-incoming-call-report.md"),lines.join("\n")+"\n","utf8");
+  return report;
+}
 function batchTime(batch){
   const t=Date.parse(batch&&batch.createdAt||"");
   return Number.isFinite(t)?t:0;
@@ -662,6 +863,7 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
 
   const latestReal=lastInput&&isRealBatch(lastInput)?lastInput:findLatestRealBatch(obs);
   const generatedAt=now();
+  const incomingCallWindowReport=buildIncomingCallWindowReport(obs,generatedAt);
   const callReportIndex=updateCallReports(obs,Array.from(terminalCallIds),generatedAt);
   const latestCallReport=callReportIndex.latestReportPath
     ?readJson(path.join(obs,callReportIndex.latestReportPath),null):null;
@@ -688,6 +890,20 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     extensionVersion:String(latestReal&&latestReal.extensionVersion||"unknown"),
     eventCount:Number(latestReal&&latestReal.summary&&latestReal.summary.eventsTotal||0),
     totalBatchFiles:listJson(batchesDir).length,
+    incomingCalls:{
+      reportPath:"latest/latest-incoming-call-report.json",
+      generatedAt:incomingCallWindowReport.generatedAt,
+      windowSeconds:incomingCallWindowReport.window.seconds,
+      ringSignals:incomingCallWindowReport.summary.ringSignals,
+      attempts:incomingCallWindowReport.summary.attempts,
+      answered:incomingCallWindowReport.summary.answered,
+      missed:incomingCallWindowReport.summary.missed,
+      failed:incomingCallWindowReport.summary.failed,
+      blocked:incomingCallWindowReport.summary.blocked,
+      unresolved:incomingCallWindowReport.summary.unresolved,
+      latestEventAt:incomingCallWindowReport.freshness.latestEventAt,
+      maxRelayAcceptanceDelayMs:incomingCallWindowReport.freshness.maxRelayAcceptanceDelayMs
+    },
     calls:{
       reportCount:Number(callReportIndex.reportCount||0),
       completedReports:Number(callReportIndex.completedCount||0),
@@ -741,11 +957,20 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     latestCallReportStatus:callReportIndex.latestStatus||null,
     latestCallRatingStarsObserved:callReportIndex.latestRatingStarsObserved===true,
     callReportCheckpointObserved:!!(latestCallReport&&latestCallReport.endConfirmation&&latestCallReport.endConfirmation.finalCheckpointObserved),
+    incomingCallWindowReportPath:"observations/latest/latest-incoming-call-report.json",
+    incomingCallWindowGeneratedAt:incomingCallWindowReport.generatedAt,
+    incomingCallWindowRingSignals:incomingCallWindowReport.summary.ringSignals,
+    incomingCallWindowAttempts:incomingCallWindowReport.summary.attempts,
+    incomingCallWindowMissed:incomingCallWindowReport.summary.missed,
+    incomingCallWindowUnresolved:incomingCallWindowReport.summary.unresolved,
+    incomingCallWindowLatestEventAt:incomingCallWindowReport.freshness.latestEventAt,
+    incomingCallWindowLatestEventAgeMs:incomingCallWindowReport.freshness.latestEventAgeMs,
+    incomingCallWindowMaxRelayAcceptanceDelayMs:incomingCallWindowReport.freshness.maxRelayAcceptanceDelayMs,
     inboxRemaining:listJson(inbox).length,
     status:"ok"
   };
   writeJson(path.join(obs,"health","github-build.json"),health);
-  return{manifest,index,health,callReports:callReportIndex,latestCallReport:latestCallReport};
+  return{manifest,index,health,callReports:callReportIndex,latestCallReport:latestCallReport,incomingCallWindowReport:incomingCallWindowReport};
 }
 
 if(import.meta.url===`file://${process.argv[1]?.replaceAll("\\\\","/")}`){
