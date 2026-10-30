@@ -1598,6 +1598,8 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       if (!callId || state.callId === callId ||
           (state.completedCalls || []).some(function (call) { return call.callId === callId; })) return;
       state.callId = callId;
+      var incomingAttemptId = event.payload && event.payload.attemptId ||
+        state.pendingCall && state.pendingCall.attemptId || null;
       var measuredPlatformSeconds = Number(event.payload && event.payload.evidence && event.payload.evidence.platformTimerSeconds);
       var routeTimestampMs = Date.parse(event.timestamp);
       var measuredStartAt = Number.isFinite(measuredPlatformSeconds) && measuredPlatformSeconds >= 0 &&
@@ -1627,12 +1629,17 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       state.dailyCalls = Object.assign({}, state.dailyCalls || {});
       state.dailyCalls[day] = Number(state.dailyCalls[day] || 0) + 1;
       record("CALL_TIMER_STARTED", {
-        callId: callId, modality: state.callModality,
+        callId: callId, attemptId: incomingAttemptId, modality: state.callModality,
         trigger: event.payload && event.payload.reconciliation ? "reconciliation" : "call-route-entered",
         route: event.payload && event.payload.route || "/call/<ID>",
         startMeasurement: Number.isFinite(measuredPlatformSeconds) ? "platform-timer-backdated" : "route-detection",
         startOffsetSeconds: Number.isFinite(measuredPlatformSeconds) ? measuredPlatformSeconds : null,
         evidence: event.payload && event.payload.evidence || null
+      }, "info", "background");
+      if (incomingAttemptId) record("INCOMING_ATTEMPT_ANSWERED", {
+        attemptId: incomingAttemptId, callId: callId, detectedAt: state.pendingCall && state.pendingCall.detectedAt || null,
+        answeredAt: event.timestamp, modality: state.callModality,
+        routeConfirmation: event.action === "ANSWER_FLOW_ROUTE_CONFIRMED" ? "auto-answer-flow-confirmed" : "call-route-entered"
       }, "info", "background");
     }).then(function (state) {
       if (!state || state.callId !== callId) return;
