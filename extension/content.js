@@ -854,7 +854,7 @@
       if (at < cutoff) fingerprints.delete(key);
     });
   }
-  function autoAnswer() {
+  async function autoAnswer() {
     syncPageFavicon();
     if (currentCallId() || (!config.observationEnabled && !config.autoAnswerEnabled)) return;
     var dialogs = Array.from(document.querySelectorAll(DIALOG));
