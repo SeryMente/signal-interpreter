@@ -110,20 +110,30 @@
   async function restoreSessionAuthorization() {
     // MV3 may suspend and restart this worker while the operator remains active.
     // Restore only an explicit grant made in this browser session; never restore from preferences alone.
-    disarm("worker-start-confirm-again", true);
-    if (!chrome.storage.session || typeof chrome.storage.session.get !== "function") return snapshot();
+    disarm("worker-start-confirm-again", true, true);
+    var restoreEpoch = generation;
+    if (!chrome.storage.session || typeof chrome.storage.session.get !== "function") {
+      disarm("worker-start-confirm-again"); return snapshot();
+    }
     try {
       var storedGrant = await chrome.storage.session.get([SESSION_GRANT_KEY]);
+      if (restoreEpoch !== generation) return snapshot();
       var grant = storedGrant && storedGrant[SESSION_GRANT_KEY];
       if (!grant || grant.schema !== SESSION_GRANT_SCHEMA || !allowedSeconds.includes(Number(grant.idleSeconds)) ||
-          !Number.isFinite(Number(grant.grantedAt))) return snapshot();
+          !Number.isFinite(Number(grant.grantedAt))) { disarm("worker-start-confirm-again"); return snapshot(); }
       var epoch = generation, seconds = Number(grant.idleSeconds);
       var presence = await idleState(seconds);
       if (epoch !== generation) return snapshot();
       if (presence !== "active") { disarm("idle-or-locked-confirm-again"); return snapshot(); }
-      var stored = await chrome.storage.local.get(["signalLabLock", "effectifConfig"]);
+      var stored = await chrome.storage.local.get(["signalLabLock", "effectifConfig", KEY]);
       if (epoch !== generation) return snapshot();
       if (stored.signalLabLock === true) { disarm("laboratory"); return snapshot(); }
+      var priorGrantState = stored[KEY] || {};
+      if (priorGrantState.armed !== true ||
+          !["explicit-availability","explicit-availability-restored"].includes(priorGrantState.reason)) {
+        disarm(priorGrantState.reason === "idle-or-locked-confirm-again" ? "idle-or-locked-confirm-again" : "confirmation-required");
+        return snapshot();
+      }
       if (!stored.effectifConfig || stored.effectifConfig.autoAnswerEnabled !== true) {
         disarm("settings-changed-confirm-again"); return snapshot();
       }
@@ -139,12 +149,12 @@
       await publish();
       return snapshot();
     } catch (_) {
+      if (restoreEpoch !== generation) return snapshot();
       disarm("verification-error-confirm-again");
       return snapshot();
     }
   }
   root.SignalPresenceGuard = { snapshot: snapshot, disarm: disarm, arm: arm, authorize: authorize, toggleFromKeyboard: toggleFromKeyboard };
-  disarm("worker-start-confirm-again", true);
   if (chrome.idle && chrome.idle.onStateChanged) chrome.idle.onStateChanged.addListener(function (state) {
     // Returning/unlocking never re-arms. A current call is deliberately untouched.
     if (state !== "active") disarm("idle-or-locked-confirm-again");

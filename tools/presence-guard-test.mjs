@@ -49,12 +49,12 @@ const err=harness();err.chrome.runtime.lastError={message:'not allowed'};eq((awa
 const restart=harness({signalPresenceGuard:{armed:true,generation:8}});eq(restart.guard.snapshot().armed,false,'stored arm never survives worker restart without an explicit session grant');
 const grantSource=harness();eq((await grantSource.guard.arm(60)).ok,true,'explicit arm creates a browser-session grant');
 const sessionGrant=grantSource.sessionData.signalPresenceGrant;
-const restored=harness({sessionData:{signalPresenceGrant:sessionGrant}});await new Promise(resolve=>setImmediate(resolve));
+const restored=harness({signalPresenceGuard:{armed:true,reason:"explicit-availability"},sessionData:{signalPresenceGrant:sessionGrant}});await new Promise(resolve=>setImmediate(resolve));
 eq(restored.guard.snapshot().armed,true,'active explicit session grant survives MV3 worker restart');eq(restored.guard.snapshot().reason,"explicit-availability-restored",'restored grant remains distinguishable from a new popup confirmation');
 restored.setIdle('idle');restored.stateChanged.emit('idle');eq(restored.guard.snapshot().armed,false,'idle revokes restored grant');await new Promise(resolve=>setImmediate(resolve));eq(restored.sessionData.signalPresenceGrant,undefined,'idle also removes the browser-session grant');
 restored.setIdle('active');restored.stateChanged.emit('active');eq(restored.guard.snapshot().armed,false,'return never restores a revoked grant');
-const labRestore=harness({signalLabLock:true,sessionData:{signalPresenceGrant:sessionGrant}});await new Promise(resolve=>setImmediate(resolve));eq(labRestore.guard.snapshot().armed,false,'lab lock prevents session grant restore');
-const idleRestore=harness({initialIdle:'idle',sessionData:{signalPresenceGrant:sessionGrant}});await new Promise(resolve=>setImmediate(resolve));eq(idleRestore.guard.snapshot().armed,false,'worker restart while OS idle cannot restore session grant');
+const labRestore=harness({signalLabLock:true,signalPresenceGuard:{armed:true,reason:"explicit-availability"},sessionData:{signalPresenceGrant:sessionGrant}});await new Promise(resolve=>setImmediate(resolve));eq(labRestore.guard.snapshot().armed,false,'lab lock prevents session grant restore');
+const idleRestore=harness({initialIdle:'idle',signalPresenceGuard:{armed:true,reason:"explicit-availability"},sessionData:{signalPresenceGrant:sessionGrant}});await new Promise(resolve=>setImmediate(resolve));eq(idleRestore.guard.snapshot().armed,false,'worker restart while OS idle cannot restore session grant');
 const noSession=harness();delete noSession.chrome.storage.session;eq((await noSession.guard.arm(60)).ok,false,'missing session storage fails closed');
 const duringCall=harness();await duringCall.guard.arm(60);duringCall.chrome.tabs.query=async()=>[{id:9}];eq((await duringCall.guard.authorize({modality:'OPI',requestId:'during-call'},duringCall.sender)).ok,false,'a call in another tab blocks new automatic answer');
 const end=harness();await end.guard.arm(60);await end.message({type:'SIGNAL_PRESENCE_END'},end.sender);eq(end.guard.snapshot().armed,false,'ending work session revokes');
