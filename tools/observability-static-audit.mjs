@@ -67,6 +67,8 @@ assert.ok(background.includes('event.action === "INCOMING_DIALOG_CLOSED") closeI
 assert.ok(observationSync.includes('reason === "call-event"') && observationSync.includes("INCOMING_DIALOG_DETECTED"),"call lifecycle events publish on a priority path");
 assert.ok(githubPipeline.includes("buildIncomingCallWindowReport"),"rolling ten-minute incoming-call report is built");
 assert.ok(githubPipeline.includes("latest-incoming-call-report.json"),"rolling incoming-call report is published");
+assert.ok(githubPipeline.includes("pipelineProcessedAt"),"pipeline stores first accepted processing time for each batch");
+assert.ok(githubPipeline.includes("maxEventToProcessingMs"),"call report exposes end-to-end event-to-processing latency");
 assert.ok(githubPipelineTest.includes("ring-unlinked") && githubPipelineTest.includes("unresolved"),"orphan ring signals remain unresolved, not falsely missed");
 assert.ok(presenceConnectTest.includes("passive detection remains active") && presenceConnectTest.includes("presenceState.generation=3"),"presence regression covers passive detection and stale grant generation");
 assert.ok(content.includes('portalStructureSnapshot("call-rating-stars-confirmed", true, callId)'), "rating-screen surface evidence stays correlated to the ended call");
