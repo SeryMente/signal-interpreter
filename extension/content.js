@@ -862,7 +862,7 @@
     var incomingText = "";
     for (var i = 0; i < dialogs.length; i += 1) {
       var candidateText = normalized(dialogs[i].innerText || dialogs[i].textContent);
-      if (/(?:is\\s+requesting\\s+interpretation|requesting\\s+interpretation)/i.test(candidateText)) {
+      if (/(?:is\s+requesting\s+interpretation|requesting\s+interpretation)/i.test(candidateText)) {
         incomingDialog = dialogs[i];
         incomingText = candidateText;
         break;
