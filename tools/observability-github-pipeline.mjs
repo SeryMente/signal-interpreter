@@ -637,12 +637,6 @@ function buildIncomingCallWindowReport(obs,generatedAt){
     for(const attempt of attemptById.values()){
       if(attempt.ringSignalIds.has(ringId)){target=attempt;break;}
     }
-    if(!target){
-      const correlated=ringRows.length&&Array.from(attemptById.values()).find(attempt=>
-        attempt.rows.some(item=>Number(item.event.tabId)===Number(row.event.tabId)&&
-          Math.abs(Date.parse(item.event.timestamp)-Date.parse(row.event.timestamp))<=15000));
-      if(correlated)target=correlated;
-    }
     if(!target)target=getAttempt("ring:"+ringId);
     target.ringSignalIds.add(ringId);
     target.rows.push(row);
