@@ -797,7 +797,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
             rowCount: Number(captionProbe.rowCount || 0), policy: "extension-reinject-only-no-page-navigation"
           }, "info", "caption");
           if (hotloadStateReady) {
-            var activeCallTab=hasActiveCall(hotloadState)&&isCloudCallUrl(tab.url)&&Number(hotloadState.callSourceTabId)===tabId;
+            var activeCallTab=!!(hotloadState&&hotloadState.callId&&hotloadState.callStartedAt)&&isCloudCallUrl(tab.url)&&Number(hotloadState.callSourceTabId)===tabId;
             var hotloadMuted=!activeCallTab||hotloadState.microphoneMuted===true;
             try {
               var muteSync=await chrome.tabs.sendMessage(tabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:hotloadMuted,source:"hotload-lifecycle-sync"});
