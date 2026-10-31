@@ -19,11 +19,11 @@ Leer este núcleo y adquirir gobierno vigente antes de actuar. Consultar despué
 
 Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metacanon pertinentes → gobierno particular de este frente. [Entrada del gobierno distribuido](https://github.com/SeryMente/metodologia/blob/main/INICIO.md). El repositorio metodológico requiere acceso autorizado; no copiar su contenido privado a este repositorio público ni pedir credenciales en el chat. Revalidar fuente y revisiones desde `main`; una referencia histórica no prueba frescura, autorización o ejecución. Fuente indispensable ausente bloquea solo la acción dependiente.
 
-**Modo operativo vigente:** una instancia única tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva aprobaciones, decisiones humanas, pruebas de uso real, aceptación y liberación. Esta disposición no se propaga a otros proyectos. Adquisición metodológica no crea servicios, credenciales ni permisos adicionales; las excepciones de equipo deben estar documentadas y vigentes en el control y §24 M34.
+**Modo operativo vigente:** una instancia única tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva aprobaciones, decisiones humanas, pruebas de uso real, aceptación y liberación. Esta disposición no se propaga a otros proyectos. Adquisición metodológica no crea servicios, credenciales ni permisos adicionales; las excepciones de equipo deben estar documentadas en el control y §24. M34/M35 están consumidas y cerradas; no hay permiso RDC activo.
 
 ## Referencia metodológica
 
-- **Metacanon adquirido: 1.26**; DUG **v372 · NX-372m**; GOW **2.14**.
+- **Metacanon adquirido: 1.26**; DUG **v373 · NX-373m**; GOW **2.14**.
 - Fuente canónica autenticada y releída en este ciclo: `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, commit `c79ddf6f862f97cafa61955eb15a17ffaea463d0`, blob `cac4525de77d4f47a8a59c25201968ecf2056b90`. DUG v373/NX-373m integra Metacanon 1.26 y M34/M35.
 - Control vigente: [CONTROL-RESPONSABILIDAD.json](CONTROL-RESPONSABILIDAD.json), **G6 · ACTIVO · agente_unico**, folio `SES-20261030-A8F4C291`, alias `chatgpt-signal-interpreter-SES-20261030-A8F4C291`, UUIDv7 local `01a18f6d-79cd-7b7f-8138-083ae11becb4`. Blob de control `0a9cb8757a8e7610c57867a3d05ca26c8d4cca1c`; commit `aebcc75592510b0b9db21963f240b6f8144126dd`. Los identificadores son operativos, no IDs nativos. G6 se mantiene; no se abre una generación ni un folio nuevos.
 - Gobierno adquirido desde `main`: DUG v373 · NX-373m; Metacanon 1.26; GOW 2.14. P001/P005/P036 y compuertas pertinentes revisadas manualmente. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
@@ -89,7 +89,7 @@ Preflight y ejecución remota: el PC-14 y el perfil Windows autorizado por el op
 
 ```text
 Corte 2026-10-31 · generación 6 · instancia única ACTIVA. Control G6: folio `SES-20261030-A8F4C291`; UUIDv7 local `01a18f6d-79cd-7b7f-8138-083ae11becb4`; alias operativo `chatgpt-signal-interpreter-SES-20261030-A8F4C291`. Modo `agente_unico`. Blob de control `0a9cb8757a8e7610c57867a3d05ca26c8d4cca1c`; commit `aebcc75592510b0b9db21963f240b6f8144126dd`.
-DUG v373 · NX-373m; Metacanon 1.26; M34/M35 registrados y releídos en Metodología. M35 conserva P036 general y habilitó el perfil Windows actual de PC-14 solo para esta instalación. Commit DUG `c79ddf6f862f97cafa61955eb15a17ffaea463d0`; blob `cac4525de77d4f47a8a59c25201968ecf2056b90`.
+DUG v373 · NX-373m; Metacanon 1.26; M34/M35 registrados y releídos en Metodología. M35 conservó P036 general y autorizó el perfil Windows actual de PC-14 exclusivamente para esta instalación; la excepción quedó consumida y cerrada tras el read-back. Commit DUG `c79ddf6f862f97cafa61955eb15a17ffaea463d0`; blob `cac4525de77d4f47a8a59c25201968ecf2056b90`.
 `main` contiene Signal Interpreter 0.10.39, integrado por PR #68. CI post-merge de auditoría y host nativo terminó 2/2 SUCCESS en `8955c1cae996d150052483cdf0d5da37c4da41eb`. No hay release.
 La versión 0.10.39 instrumenta observación pasiva de diálogos, `attemptId`, readiness/blocked reasons, transición/clic/ruta/desenlace, flush prioritario, `relayReceivedAt`, informe móvil de diez minutos y auditoría de frescura. Los guards fail-closed permanecen.
 La persistencia provisional existe en GitHub: `observations/batches` conserva 10,384 batches; hay 19 informes de llamada (16 completos, 3 parciales), 1,878 snapshots y 1,858 deltas. Health registrado `status=ok`, `inboxRemaining=0`, un batch procesado automáticamente y fecha de último input `2026-10-31T00:41:50.519Z`. El batch más reciente visible declara extensión **0.10.37** y 3 eventos. La versión nueva aún no se ha demostrado en telemetría real. No se encontró `incoming-calls-10m.json/md` en la última lectura.
@@ -178,7 +178,7 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control G6 ACTIVO y modo `agente_unico` releídos; blob `0a9cb8757a8e7610c57867a3d05ca26c8d4cca1c`, commit `aebcc75592510b0b9db21963f240b6f8144126dd`. Modo único registrado como `SIGNAL-INTERPRETER-M34-AGENTE-UNICO-20261030-G6`; M34/M35 CERRADAS_VERIFICADAS. El DUG está en v373/NX-373m, commit `c79ddf6f862f97cafa61955eb15a17ffaea463d0`, blob `cac4525de77d4f47a8a59c25201968ecf2056b90`.
 
-El prompt único está en `PROMPT-SIGNAL-INTERPRETER.md`, blob `14e143c93baf293c738fa535e923bca76e16b358`. README releído y apunta a ese prompt. Los dos prompts anteriores fueron retirados del árbol activo; su historia permanece en Git y no se utiliza como instrucción activa.
+El prompt único está en `PROMPT-SIGNAL-INTERPRETER.md`, blob `996e35333de61b496a5091e9fd086888c7926b05`. README releído y apunta a ese prompt. Los dos prompts anteriores fueron retirados del árbol activo; su historia permanece en Git y no se utiliza como instrucción activa.
 
 Versión de producto: manifest 0.10.39. PR #68 integrada en merge commit `f9ddfade6fbdf1b04448906301c3d98de00930e5`. Auditoría y host build post-merge 2/2 SUCCESS en `8955c1cae996d150052483cdf0d5da37c4da41eb`. No hay release.
 
