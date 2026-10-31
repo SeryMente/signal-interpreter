@@ -2,7 +2,7 @@ import fs from "node:fs";import vm from "node:vm";import assert from "node:asser
 const core=fs.readFileSync("extension/live-caption-core.js","utf8"),source=fs.readFileSync("extension/transcript-assembler.js","utf8");
 const box={Date,Math,String,Number,Object,Promise};box.globalThis=box;vm.createContext(box);vm.runInContext(core,box);vm.runInContext(source,box);
 const a=box.SignalTranscriptAssembler,t="2026-10-31T16:00:00.000Z";let state=a.createState();
-let r=a.ingest(state,{text:"I need the",language:"unknown",source:"chrome-live-caption"},{timestamp:t,id:"s1",callId:"c1"});
+let r=a.ingest(state,{text:"I need",language:"unknown",source:"chrome-live-caption"},{timestamp:t,id:"s1",callId:"c1"});
 assert.equal(r.action,"new");assert.equal(r.segment.speaker,"HABLANTE NO IDENTIFICADO");assert.equal(r.segment.role,"unverified");assert.equal(r.segment.language,"unknown");state=r.state;
 r=a.ingest(state,{text:"I need the appointment tomorrow",language:"English",source:"chrome-live-caption"},{timestamp:"2026-10-31T16:00:00.600Z",id:"s2",callId:"c1"});
 assert.equal(r.action,"updated");assert.equal(r.segment.id,"s1");assert.equal(r.segment.text,"I need the appointment tomorrow");assert.equal(r.segment.language,"en");state=r.state;
