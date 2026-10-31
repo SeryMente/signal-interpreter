@@ -25,7 +25,7 @@ Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metac
 
 - **Metacanon adquirido: 1.26**; DUG **v373 · NX-373m**; GOW **2.14**.
 - Fuente canónica autenticada y releída en este ciclo: `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, commit `c79ddf6f862f97cafa61955eb15a17ffaea463d0`, blob `cac4525de77d4f47a8a59c25201968ecf2056b90`. DUG v373/NX-373m integra Metacanon 1.26 y M34/M35.
-- Control vigente: [CONTROL-RESPONSABILIDAD.json](CONTROL-RESPONSABILIDAD.json), **G6 · ACTIVO · agente_unico**, folio `SES-20261030-A8F4C291`, alias `chatgpt-signal-interpreter-SES-20261030-A8F4C291`, UUIDv7 local `01a18f6d-79cd-7b7f-8138-083ae11becb4`. Blob de control `0a9cb8757a8e7610c57867a3d05ca26c8d4cca1c`; commit `aebcc75592510b0b9db21963f240b6f8144126dd`. Los identificadores son operativos, no IDs nativos. G6 se mantiene; no se abre una generación ni un folio nuevos.
+- Control vigente: [CONTROL-RESPONSABILIDAD.json](CONTROL-RESPONSABILIDAD.json), **G6 · ACTIVO · agente_unico**, folio `SES-20261030-A8F4C291`, alias `chatgpt-signal-interpreter-SES-20261030-A8F4C291`, UUIDv7 local `01a18f6d-79cd-7b7f-8138-083ae11becb4`. Blob de control `b5fe40082ab8234865c56a1ba859d657dff037d7`; commit `c0ef30cde03d442475df9b6fc0d9e24b60de242c`. Los identificadores son operativos, no IDs nativos. G6 se mantiene; no se abre una generación ni un folio nuevos.
 - Gobierno adquirido desde `main`: DUG v373 · NX-373m; Metacanon 1.26; GOW 2.14. P001/P005/P036 y compuertas pertinentes revisadas manualmente. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
 
 ### Constancia de adquisición y aplicación
@@ -88,7 +88,7 @@ Preflight y ejecución remota: el PC-14 y el perfil Windows autorizado por el op
 ### 🔄 Estado vivo
 
 ```text
-Corte 2026-10-31 · generación 6 · instancia única ACTIVA. Control G6: folio `SES-20261030-A8F4C291`; UUIDv7 local `01a18f6d-79cd-7b7f-8138-083ae11becb4`; alias operativo `chatgpt-signal-interpreter-SES-20261030-A8F4C291`. Modo `agente_unico`. Blob de control `0a9cb8757a8e7610c57867a3d05ca26c8d4cca1c`; commit `aebcc75592510b0b9db21963f240b6f8144126dd`.
+Corte 2026-10-31 · generación 6 · instancia única ACTIVA. Control G6: folio `SES-20261030-A8F4C291`; UUIDv7 local `01a18f6d-79cd-7b7f-8138-083ae11becb4`; alias operativo `chatgpt-signal-interpreter-SES-20261030-A8F4C291`. Modo `agente_unico`. Blob de control `b5fe40082ab8234865c56a1ba859d657dff037d7`; commit `c0ef30cde03d442475df9b6fc0d9e24b60de242c`.
 DUG v373 · NX-373m; Metacanon 1.26; M34/M35 registrados y releídos en Metodología. M35 conservó P036 general y autorizó el perfil Windows actual de PC-14 exclusivamente para esta instalación; la excepción quedó consumida y cerrada tras el read-back. Commit DUG `c79ddf6f862f97cafa61955eb15a17ffaea463d0`; blob `cac4525de77d4f47a8a59c25201968ecf2056b90`.
 `main` contiene Signal Interpreter 0.10.39, integrado por PR #68. CI post-merge de auditoría y host nativo terminó 2/2 SUCCESS en `8955c1cae996d150052483cdf0d5da37c4da41eb`. No hay release.
 La versión 0.10.39 instrumenta observación pasiva de diálogos, `attemptId`, readiness/blocked reasons, transición/clic/ruta/desenlace, flush prioritario, `relayReceivedAt`, informe móvil de diez minutos y auditoría de frescura. Los guards fail-closed permanecen.
@@ -176,9 +176,9 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 ## Persistencia y revisión
 
-Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control G6 ACTIVO y modo `agente_unico` releídos; blob `0a9cb8757a8e7610c57867a3d05ca26c8d4cca1c`, commit `aebcc75592510b0b9db21963f240b6f8144126dd`. Modo único registrado como `SIGNAL-INTERPRETER-M34-AGENTE-UNICO-20261030-G6`; M34/M35 CERRADAS_VERIFICADAS. El DUG está en v373/NX-373m, commit `c79ddf6f862f97cafa61955eb15a17ffaea463d0`, blob `cac4525de77d4f47a8a59c25201968ecf2056b90`.
+Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control G6 ACTIVO y modo `agente_unico` releídos; blob `b5fe40082ab8234865c56a1ba859d657dff037d7`, commit `c0ef30cde03d442475df9b6fc0d9e24b60de242c`. Modo único registrado como `SIGNAL-INTERPRETER-M34-AGENTE-UNICO-20261030-G6`; M34/M35 CERRADAS_VERIFICADAS. El DUG está en v373/NX-373m, commit `c79ddf6f862f97cafa61955eb15a17ffaea463d0`, blob `cac4525de77d4f47a8a59c25201968ecf2056b90`.
 
-El prompt único está en `PROMPT-SIGNAL-INTERPRETER.md`, blob `996e35333de61b496a5091e9fd086888c7926b05`. README releído y apunta a ese prompt. Los dos prompts anteriores fueron retirados del árbol activo; su historia permanece en Git y no se utiliza como instrucción activa.
+El prompt único está en `PROMPT-SIGNAL-INTERPRETER.md`, blob `4bede3b3950f4f45d15fbcb44a129521af43704b`. README releído y apunta a ese prompt. Los dos prompts anteriores fueron retirados del árbol activo; su historia permanece en Git y no se utiliza como instrucción activa.
 
 Versión de producto: manifest 0.10.39. PR #68 integrada en merge commit `f9ddfade6fbdf1b04448906301c3d98de00930e5`. Auditoría y host build post-merge 2/2 SUCCESS en `8955c1cae996d150052483cdf0d5da37c4da41eb`. No hay release.
 
