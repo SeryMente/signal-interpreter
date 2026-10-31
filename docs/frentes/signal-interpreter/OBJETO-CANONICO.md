@@ -8,7 +8,7 @@
 - Revisión documental: **SI-OBJ-v1.10-seguridad-idiomas-01**; ancla: **C-SIGNAL-SEGURIDAD-IDIOMAS-20261020-01**, encargo directo del operador del 2026-10-20. Naturaleza: permanente, actualización del objeto existente expresamente solicitada; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
-- Estado de versiones al 2026-10-30: `main` contiene Signal Interpreter **0.10.38**, integrado desde PR [#67](https://github.com/SeryMente/signal-interpreter/pull/67) mediante merge commit `a61eb7e7c1bba98d42fad31e0af5e3a6e861c968`. La cabeza integrada fue `6057c1709341f1cd10b175c901765ea7017fff79`; la fusión fue autorizada expresamente para preparar la prueba controlada, no como aceptación ni release. PR #59 quedó cerrada sin merge por decisión del operador; la rama e historial permanecen. La búsqueda posterior `repo:SeryMente/signal-interpreter is:pr is:open` devolvió cero PR abiertas. No se creó release. Live Caption/Windows/Chrome real y aceptación del operador siguen pendientes.
+- Estado de versiones al 2026-10-30: `main` contiene Signal Interpreter **0.10.39**, integrado desde PR [#68](https://github.com/SeryMente/signal-interpreter/pull/68) mediante merge commit `f9ddfade6fbdf1b04448906301c3d98de00930e5`. PR #67 permanece fusionada y PR #59 cerrada sin merge. La consulta posterior de PR abiertas devuelve cero. No se creó release. La actualización técnica está en `main`; siguen pendientes despliegue en el nuevo PC-14 y aceptación real Windows/Chrome/llamada OPI.
 - Persistencia verificable: identificar la revisión Git que contiene este archivo y el [recibo de migración](evidencias/C-SIGNAL-METACANON-20261020-01.json); el recibo identifica la base y los contenidos, no autocertifica publicación o conformidad semántica.
 
 ## LEER PRIMERO
@@ -42,7 +42,7 @@ Samantha continúa como **constructor**, Claudia como **asistente**. El nombre d
 
 **De dónde viene:** mejorar calidad de vida en interpretación telefónica, apoyada en texto de Live Caption nativo; dictados y ratificaciones originales conservados en el [antecedente íntegro](antecedentes/TRANSCRIPTION-SPRINT-CANONICAL.pre-1.9.md), §§13–17 y SI-D001–008.
 
-**Dónde está:** `main` publica `0.10.38`, integrada por PR #67 y sin release. La candidata `0.10.39` está en la PR [#68](https://github.com/SeryMente/signal-interpreter/pull/68), todavía en CI y sin merge al corte documental. **A dónde va:** preservar presencia segura y texto nativo, además de instrumentar el ciclo de llamada entrante de forma que cada bloqueo y desenlace sea reconstruible. **Qué cambió en esta candidata:** observación pasiva independiente del permiso de clic, `attemptId` desde timbrado/diálogo hasta resultado, informe móvil de diez minutos, hora de recepción estampada por relay, health de frescura, flush prioritario de eventos de llamada y popup con motivos de desarme. La aceptación Windows/Chrome permanece pendiente.
+**Dónde está:** `main` publica **0.10.39**, integrada por PR #68 en `f9ddfade6fbdf1b04448906301c3d98de00930e5`; no hay PR abiertas ni release. **A dónde va:** mantener presencia segura y reconstruir cada intento entrante hasta su desenlace. **Qué se integró:** observación pasiva independiente del permiso de clic, correlación `attemptId`, informe móvil de diez minutos, hora de recepción estampada por relay, health de frescura, flush prioritario de eventos de llamada y popup con motivos de desarme. Falta desplegar 0.10.39 en el nuevo PC-14 y completar la aceptación Windows/Chrome.
 
 Incluido: Windows + Chrome; Live Caption → Windows UI Automation → Native Messaging → overlay; carriles por idioma, historial, copiar/buscar, hotloading, controles existentes; instalación portable desde raíz y laboratorio aislado con muestra incluida. MacOS/Linux son entornos de desarrollo, no plataformas de producto acreditadas.
 
@@ -93,14 +93,14 @@ Sandbox Linux: lógica real y DOM Chromium con eventos sintéticos para candidat
 ### 🔄 Estado vivo
 
 ```text
-Corte 2026-10-30 · generación 5. Titularidad ACTIVA, control G5 leído: folio SES-20261030-3B3868DF; UUIDv7 local 01a18d7d-1369-7059-b029-8a9104b94647; no son IDs nativos. La autorización de transferencia no hereda permisos RDC.
-main permanece en 0.10.38, base de la candidata: SHA 560b17cb14733c56d411f93ed544be4e76539e82. La candidata 0.10.39 está en PR #68, rama fix/incoming-call-e2e-observability-20261030; cabeza al abrir PR 8e56fcf93132d6bbc152c0459d12cf5ba0bf57cd, 39 commits ahead y 0 behind, 24 archivos modificados. No se ha fusionado ni creado release.
+Corte 2026-10-30 · generación 6. Titularidad ACTIVA, control releído: folio `SES-20261030-A8F4C291`; UUIDv7 local `01a18f28-049d-aebb-9fed-cc5264499f6a`; alias operativo `chatgpt-signal-interpreter-SES-20261030-A8F4C291` (no IDs nativos). Blob de control `4a3e7a9f0a7045d0603cbc55da39a60f73cc5e4d`; commit de transferencia `cd4a8bac7ddfcb1294671e398a0f1d408caa660b`. No se hereda permiso RDC.
+`main` integra 0.10.39 en merge commit `f9ddfade6fbdf1b04448906301c3d98de00930e5`; la cabeza probada de PR #68 fue `55416e125922c9e0d3ecad93bffe9edc74a27f85`. PR #68 está fusionada y main fue releída. No se creó release.
 La PR incorpora observación pasiva del diálogo incluso con respuesta bloqueada; readiness desglosado (labSafetyLock, presenceArmed, presenceReason, configuración, perfil y disponibilidad); attemptId correlacionado; cierre y clasificación missed corregidos; flush inmediato sin rate limit de 10s para eventos de llamada; relayReceivedAt; informe rolling de 10 minutos JSON/Markdown; freshness y alertas cada 2 minutos; popup con motivo de pausa; versión 0.10.39 e inventario SHA-256.
-CI sobre el SHA 8e56fcf93132d6bbc152c0459d12cf5ba0bf57cd inició tres workflows: signal-observability-audit (41138108394), Package integrity (41138108413) y native-caption-host-build (41138108421). En la última lectura estaban en curso/cola, no PASS. No fusionar hasta CI completo y compare actualizado.
+CI 3/3 success en la cabeza probada `55416e125922c9e0d3ecad93bffe9edc74a27f85`: Package integrity, signal-observability-audit y native-caption-host-build. Tras el merge, `signal-observability-audit` y `native-caption-host-build` en push a main aparecían IN_PROGRESS en la última lectura; no declarar CI post-merge completo hasta read-back final.
 Hallazgo causal del código: la rutina anterior retornaba antes de inspeccionar el diálogo cuando readiness era falso; además, el handler background atendía INCOMING_DIALOG_CLOSED por un canal distinto al que content.js realmente emitía. La muestra anterior tuvo 49/49 readiness false, pero no exponía la compuerta específica. El guard se mantiene fail-closed: service worker start/reinicio/continuidad/idle requieren confirmación explícita; no se elimina.
 Baseline de observabilidad antes del cambio: batch más reciente recibido con versión 0.10.37, solo tres eventos sin llamadas; sin relayReceivedAt, informe individual más reciente del 2026-10-29 y health decía ok aunque la fuente llevaba más de 25 minutos sin eventos. El pipeline previo omitía reconstruir frescura si el inbox estaba vacío.
-No se ha probado llamada real con esta versión. El DOM y fixtures CI son sintéticos. No se ha modificado el equipo Windows/Chrome ni se ha utilizado RDC para esta intervención; dos lecturas de inventario/configuración RDC ocurrieron antes de recuperar la prohibición, sin ejecutar comandos ni escribir en dispositivo. La conexión nueva del operador no cambia la prohibición del constructor en Metacanon 1.26 §§6/24.
-No release, no aceptación Windows/Chrome, no prueba Cloud Interpreter real, no confirmación de llamada contestada.
+No se ha probado llamada real con esta versión. El DOM y fixtures CI son sintéticos. El nuevo entorno local de PC-14 no se inspeccionó ni se modificó y RDC no se utilizó; esta intervención se cerró por GitHub. Metacanon 1.26 §24 reserva RDC al asistente y lo prohíbe al constructor.
+No release. No aceptación Windows/Chrome, no prueba Cloud Interpreter real y no confirmación de llamada contestada en 0.10.39.
 ```
 
 ### ⚗️ En prueba / recién fallido
@@ -115,8 +115,8 @@ No se captura audio de micrófono/pestaña ni texto del diálogo. No se elimina 
 
 ### Pendientes en secuencia
 
-1. **SI-P01 — Prueba real del operador:** después de integrar la PR #68, usar main 0.10.39; cargar la raíz en `chrome://extensions`, confirmar versión 0.10.39 y rearmar presencia explícitamente desde el popup. Verificar `signalLabLock=false`, perfil autorizado y disponibilidad online; luego ejecutar una llamada OPI controlada y revisar `observations/latest/incoming-calls-10m.md`, el JSON y `observations/health/github-build.json`. Registrar detección→botón→bloqueo/readiness→clic→ruta/desenlace, latencias y missingSignals. Devolver PASS/FAIL y evidencia saneada; no compartir texto/audio. Video permanece manual. Fuera de llamada activa, ejecutar `PREPARAR-Y-CARGAR.cmd` con la cuenta Windows de Chrome; comprobar recibo de hashes/Native Messaging; cargar la raíz del repositorio en `chrome://extensions`; después probar Live Caption real inglés/español, pérdidas/duplicados, fragmentos ambiguos, presencia/idle/bloqueo/desbloqueo/suspensión, sondeo sin pestaña, errores reales de API, reinicio, varias pestañas, llamada activa intacta, actualización y rollback. Devolver PASS/FAIL, versión/SHA y telemetría saneada; no compartir texto/audio.
-2. **SI-P02 — Entrega al Escritorio por RDC:** pendiente y bloqueada para Samantha/constructor por Metacanon §24. Requiere ejecución por Claudia/asistente en una sesión que verifique por separado autorización, cuenta, vínculo, conectividad y equipo destino; no inventar ni reutilizar un destino por etiqueta. No se instanció Claudia en este ciclo.
+1. **SI-P01 — Despliegue y prueba real del operador:** poner main 0.10.39 en el PC-14 nuevo; fuera de llamada activa, ejecutar `PREPARAR-Y-CARGAR.cmd` con la misma cuenta Windows de Chrome y verificar el recibo de hashes/Native Messaging. En `chrome://extensions`, cargar la raíz que contiene `manifest.json` y confirmar versión 0.10.39. En el popup, comprobar Auto-Answer habilitado, perfil autorizado, disponibilidad online, `signalLabLock=false` y presencia armada; rearmar presencia explícitamente después de reinicio/pérdida de continuidad. Ejecutar una llamada OPI controlada y revisar `observations/latest/incoming-calls-10m.md`, su JSON y `observations/health/github-build.json`: detección→botón→readiness/bloqueo→clic→ruta/desenlace, latencias y señales ausentes. Devolver PASS/FAIL y evidencia saneada; no compartir texto/audio. Video permanece manual. Después cubrir Live Caption inglés/español, pérdidas/duplicados, ambigüedad, presencia/idle/bloqueo/desbloqueo/suspensión, reinicio, varias pestañas, llamada activa intacta, actualización y rollback.
+2. **SI-P02 — Staging RDC:** no ejecutado en este ciclo. El objeto metodológico vigente reserva RDC al rol asistente; la nueva conexión local reportada por el operador no fue utilizada desde el rol constructor. No declarar el Escritorio preparado hasta que se materialice y verifique la carpeta.
 3. **SI-P03 — Liberación:** solo después de la prueba local, lectura de evidencia y aceptación expresa del operador. No crear release por el mero hecho del merge o CI.
 4. **SI-P04 — Tercer canal/diferidos:** si persiste la petición de transcribir al intérprete, resolver fuente, privacidad y autorización; no activar micrófono ni ruta alternativa por inferencia. Sincronización perpetua/cifrado/PRIUS siguen diferidos.
 
@@ -124,7 +124,7 @@ No se captura audio de micrófono/pestaña ni texto del diálogo. No se elimina 
 
 - PR #59 está cerrada sin merge; el laboratorio no es requisito de esta entrega y no debe reabrirse por defecto. #60/#63 y sus antecedentes permanecen históricos.
 - #67 ya está fusionada; no crear una nueva PR para repetir su contenido.
-- El puente se instala automáticamente mediante `INSTALAR.ps1`; no ejecutar manualmente `extension/native/register-caption-host.ps1` en el flujo 0.10.38. Cargar la raíz en Chrome sí es manual.
+- En 0.10.39, el puente Native Messaging se instala automáticamente mediante `PREPARAR-Y-CARGAR.cmd` / `INSTALAR.ps1`; no ejecutar manualmente `extension/native/register-caption-host.ps1`. Cargar la raíz de la extensión en Chrome sí es manual.
 - 150 segundos revocados; no reactivar plazos antiguos. Vídeo manual. Idle/ausencia revoca autorización pero no debe colgar la llamada actual; retorno no rearma.
 - Teclado/ratón no prueban presencia física; ausencia de señal = bloquear, no inventar garantía.
 - Cliente/LEP son convenciones lingüísticas, no diarización. Fragmentos ambiguos se conservan sin atribución forzada.
@@ -134,19 +134,19 @@ No se captura audio de micrófono/pestaña ni texto del diálogo. No se elimina 
 
 ## Aceptación y viabilidad
 
-Resultado del corte: PR #67 integrada, PR #59 cerrada sin merge, y nueva PR #68 abierta para 0.10.39. `main` sigue en 0.10.38; los tres workflows CI de #68 aún no concluían en la última lectura. No hay merge ni release de 0.10.39. La titularidad G5 permanece activa. La validación física en Windows/Chrome corresponde al operador; el constructor no utiliza RDC.
+Resultado del corte: PR #68 integrada; `main` contiene 0.10.39 y la consulta de PR abiertas devuelve cero. CI pre-merge de #68 3/3 success; los workflows de push post-merge de auditoría y host nativo aparecían en curso en la última lectura. No hay release. Titularidad G6 ACTIVA. Escritorio y aceptación física Windows/Chrome permanecen pendientes; el rol constructor no utiliza RDC.
 
 | Requisito | Estado implementado / evidencia | Aceptación y pendiente |
 |---|---|---|
-| Integración de desarrollo | PR #67 merged; PR #68 propone 0.10.39 sobre main 0.10.38; CI pendiente al corte | Candidata no integrada ni liberada |
-| Housekeeping PR | PR #59 closed/unmerged; PR #67 closed/merged; consulta de abiertas = 0 | No hay PR pendiente de merge/desecho en la consulta verificada |
+| Integración de desarrollo | PR #68 merged en `f9ddfade6fbdf1b04448906301c3d98de00930e5`; `main` 0.10.39; CI pre-merge 3/3 success | Desarrollo integrado; sin release ni aceptación real |
+| Housekeeping PR | PR #59 closed/unmerged; PR #67 y #68 closed/merged; consulta de abiertas = 0 | No hay PR pendiente de merge/desecho |
 | Disponibilidad segura | Guard de presencia y autorización efímera; regresores sintéticos aprobados en head 6057c170 | Falta prueba real idle/bloqueo/suspensión y llamada actual intacta |
 | Separación de idiomas | Segmentación conservadora de texto nativo; ambigüedad neutra; harness 46/46 en regresores reportados | Requiere repetibilidad y segmentos visibles en Live Caption real |
 | Sondeo horario | Omisión controlada sin pestaña autenticada; errores reales de red/API siguen visibles; CI no-tab success en head 6057c170 | Falta observación de uso en Windows/Chrome |
 | Integridad/host | CI Package integrity y host build success en head 6057c170; instalador raíz registra el puente automáticamente | Ejecutar instalación y rollback en el perfil Windows destino |
 | Puente Native Messaging | Script comprueba payload, identidad, protocolo, host estable y registro HKCU | Comportamiento del script inspeccionado; host no instalado/verificado en el equipo del operador |
-| Escritorio/RDC | No hay staging remoto de este ciclo; rol constructor no puede usar RDC | Bloqueado hasta actuación del rol asistente autorizado o instalación local del operador |
-| Aceptación real | No recibida para 0.10.39 | El operador carga 0.10.39 tras merge y devuelve PASS/FAIL del ciclo OPI y del informe de diez minutos |
+| Escritorio/RDC | No hay staging en el nuevo PC-14; no se usó RDC desde el rol constructor | Pendiente de staging por el rol autorizado o instalación local del operador |
+| Aceptación real | No recibida para 0.10.39 | El operador prueba llamada OPI controlada y devuelve PASS/FAIL con el informe de diez minutos y telemetría saneada |
 
 Cono terminal de liberación: revisión integrada + integridad/CI en el SHA candidato + Windows seguro + fuente nativa real + segmentación visible + protección de presencia + sondeo sin pestaña autenticada + errores reales observables + upgrade/rollback + aceptación expresa del operador. Pruebas fixture, CI y Chromium headless no sustituyen aceptación integral Windows. No declarar «todo terminado» ni «liberado».
 
@@ -159,7 +159,7 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 ## Crónica y fuentes
 
-- [PR #67 · Signal Interpreter 0.10.38](https://github.com/SeryMente/signal-interpreter/pull/67), fusionada en `a61eb7e7c1bba98d42fad31e0af5e3a6e861c968` para prueba controlada, no release. CI 3/3 success sobre el head exacto pre-merge `6057c1709341f1cd10b175c901765ea7017fff79` (runs 41086786306, 41086786317 y 41086786398). La aceptación Windows permanece pendiente.
+- [PR #68 · Signal Interpreter 0.10.39](https://github.com/SeryMente/signal-interpreter/pull/68), fusionada en `f9ddfade6fbdf1b04448906301c3d98de00930e5`. CI 3/3 success en el SHA probado `55416e125922c9e0d3ecad93bffe9edc74a27f85`; workflows push de main aún en curso en la última lectura. Sin release ni aceptación Windows/Chrome.
 - [Housekeeping 0.10.38, cierre de PRs y handoff de prueba del 2026-10-30 · generación 5](cronica/C-SIGNAL-HOUSEKEEPING-20261030-G5.md); merge #67, cierre sin merge de #59, consulta sin PR abiertas, read-back de manifest, conclusión del puente automático y bloqueo de staging RDC para el rol constructor.
 
 - [Informe consolidado recibido](https://github.com/SeryMente/signal-interpreter/blob/c21c2e861ac6b52acefd12fc876d19c810855127/observations/latest/latest-call-report.json); no texto clínico. [Windows CI](https://github.com/SeryMente/signal-interpreter/actions/runs/39528993131/job/118990266837) y [auditoría CI](https://github.com/SeryMente/signal-interpreter/actions/runs/39528993110/job/118990266881).
@@ -184,13 +184,13 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 ## Persistencia y revisión
 
-Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control de responsabilidad G5 ACTIVA releído: blob `d057a5db249939c381892f831d76a81103190074`; generación 4 preservada. Integración #67 verificada en merge commit `a61eb7e7c1bba98d42fad31e0af5e3a6e861c968`; PR #59 cerrada sin merge; consulta posterior de PR abiertas = 0. El manifiesto `0.10.38` fue releído en main, blob `e4ffa2056971f19ce8275fc30a8cb97cf00f7415`. La guía README fue alineada con el instalador automático del host. La crónica de este ciclo es `cronica/C-SIGNAL-HOUSEKEEPING-20261030-G5.md`.
+Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control de responsabilidad G6 ACTIVO releído: blob `4a3e7a9f0a7045d0603cbc55da39a60f73cc5e4d`; generación 5 preservada. PR #68 integrada en merge commit `f9ddfade6fbdf1b04448906301c3d98de00930e5`; PR #67 integrada y #59 cerrada sin merge; consulta posterior de PR abiertas = 0. `manifest.json` 0.10.39 releído en main, blob `0cb37ff90b79cd84cf0154c01b055e22485fc5d6`. Nueva crónica: `cronica/C-SIGNAL-RETOMA-0.10.39-G6-20261030.md`.
 
-CI 3/3 success corresponde al head de PR `6057c1709341f1cd10b175c901765ea7017fff79`, no se traslada automáticamente al merge commit. El conector no entregó checks ni runs nuevos asociados a `a61eb7e` en esta consulta; no afirmar CI 3/3 post-merge. No se creó release. La validación local de Windows/Chrome queda pendiente del operador.
+CI 3/3 success se verificó en el SHA de PR `55416e125922c9e0d3ecad93bffe9edc74a27f85`. No se extrapola ese resultado al merge commit: al último corte, `signal-observability-audit` y `native-caption-host-build` de push a main seguían IN_PROGRESS. No se creó release. La aceptación local Windows/Chrome queda pendiente.
 
-El puente Native Messaging se prepara desde la raíz con `PREPARAR-Y-CARGAR.cmd` / `INSTALAR.ps1`; registro HKCU y materialización del host son automáticos. Cargar la raíz en Chrome sigue siendo manual. No se ejecutó la preparación en el equipo destino.
+El puente Native Messaging se prepara desde la raíz 0.10.39 con `PREPARAR-Y-CARGAR.cmd` / `INSTALAR.ps1`; registro HKCU y materialización del host son automáticos. Cargar la raíz en Chrome sigue siendo manual. No se ejecutó la preparación en el nuevo entorno PC-14.
 
-RDC está prohibido al constructor por Metacanon 1.25 §24. Este ciclo no hizo staging en Escritorio; dos llamadas read-only de inventario/identidad RDC ocurrieron antes de detectar la prohibición, sin lectura/escritura de archivos remotos ni ejecución en dispositivos. No se creó una instancia Claudia ni se heredó permiso remoto. La entrega vía RDC queda pendiente del rol asistente autorizado o de la instalación local por el operador.
+RDC permanece reservado al asistente por Metacanon 1.26 §24. El operador reportó una nueva conexión PC-14; no se usó en este ciclo. No se inspeccionaron ni escribieron archivos remotos, ni se ejecutaron comandos en el dispositivo. El staging queda pendiente de una operación por el rol autorizado o de instalación local.
 
 Dos pasadas: fidelidad (historia/hash, alcance, vetos, roles, pendientes y originales) y resultado guardado (estructura/semántica, enlaces, prompts, versiones, estado y prueba de vuelta). Las comprobaciones mecánicas no prueban comprensión de otro modelo.
 
