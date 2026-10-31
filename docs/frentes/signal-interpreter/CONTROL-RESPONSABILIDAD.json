@@ -14,8 +14,8 @@
     "fecha_registro_local": "2026-10-30",
     "zona_horaria": "America/Mexico_City",
     "hora_exacta": "NO VERIFICADA",
-    "alcance": "Una sola instancia es responsable de todo Signal Interpreter: análisis, desarrollo, pruebas automatizadas, CI, observabilidad, persistencia provisional, documentación, continuidad y despliegue dentro de las compuertas vigentes. No hay división activa de roles ni prompts dobles. El operador conserva aprobación humana, uso real, prueba de llamada, aceptación y liberación. No declarar aceptación real sin evidencia.",
-    "acceso_remoto": "Autorización temporal M34 para esta sesión actual de PC-14: usar RDC únicamente por terminal/CLI/headless para verificar cuenta/perfil y preparar el repositorio canónico 0.10.39 en el Escritorio correcto, ejecutar INSTALAR.ps1 si precondiciones satisfechas y leer de vuelta INSTALACION-RESULTADO.json. Sin GUI, Chrome visible, llamadas reales, otros equipos/proyectos ni sesiones futuras. Caduca al verificar staging e informe del instalador."
+    "alcance": "Una sola instancia es responsable de todo Signal Interpreter: análisis, desarrollo, pruebas automatizadas, CI, observabilidad, persistencia provisional, documentación, continuidad y despliegue dentro de las compuertas vigentes. No hay división activa de roles ni prompts dobles. El operador conserva aprobación humana, uso real, prueba de llamada, aceptación y liberación. No declarar aceptación real sin evidencia. El operador confirmó expresamente la cuenta/perfil Windows identificados por el preflight CLI para PC-14, en esta sesión únicamente; la excepción de perfil M35 sustituye P036 solo para el staging/instalación de este acto, sin alterar P036 globalmente.",
+    "acceso_remoto": "Autorización temporal M34 para esta sesión actual de PC-14: usar RDC únicamente por terminal/CLI/headless para verificar cuenta/perfil y preparar el repositorio canónico 0.10.39 en el Escritorio correcto, ejecutar INSTALAR.ps1 si precondiciones satisfechas y leer de vuelta INSTALACION-RESULTADO.json. Sin GUI, Chrome visible, llamadas reales, otros equipos/proyectos ni sesiones futuras. Caduca al verificar staging e informe del instalador. M35: el operador autorizó el perfil Windows observado por CLI para este PC-14 y esta sesión solamente; revalidar cuenta→SID→perfil→Desktop antes de escribir. No guardar los valores identificadores en el repositorio público."
   },
   "propietario_anterior": {
     "hilo": null,
@@ -370,18 +370,25 @@
       "repositorio": "SeryMente/metodologia",
       "ruta": "gobernanza/METAPROMPT-CANONICO-SAMANTHA.html",
       "version": "1.26",
-      "dug": "v372",
-      "firma": "NX-372m",
-      "commit": "77fa4ecbbfcef3db3887545aa9eb581265d2772d",
-      "blob": "28d0f255cdb3371a60310b0da45ca049dea05fdb",
-      "seccion": "§24 M34"
+      "dug": "v373",
+      "firma": "NX-373m",
+      "commit": "c79ddf6f862f97cafa61955eb15a17ffaea463d0",
+      "blob": "cac4525de77d4f47a8a59c25201968ecf2056b90",
+      "seccion": "§24 M34 + M35"
     },
     "remota": {
       "autorizacion": "M34",
       "objetivo": "PC-14 actual, sesión aportada directamente por el operador",
       "alcance": "CLI/headless únicamente; staging 0.10.39 e instalación oficial limitada",
       "secreto_pii": "No persistir correo, device ID, código de emparejamiento o tokens en el repositorio público.",
-      "cierre": "Caduca con read-back exitoso de INSTALACION-RESULTADO.json; sin autorización para siguientes sesiones."
+      "cierre": "Caduca con read-back exitoso de INSTALACION-RESULTADO.json; sin autorización para siguientes sesiones.",
+      "aprobacion_perfil": {
+        "evento": "M35",
+        "autorizacion_explicita_operador": true,
+        "fecha": "2026-10-31",
+        "alcance": "Nueva asociación Windows observada en el preflight de PC-14, autorizada solo para staging/instalación de esta sesión. Los valores de cuenta/SID/ruta se conservan solo en el recibo privado de sesión, no en el repositorio público.",
+        "P036": "excepción puntual para PC-14; P036 general permanece inalterado."
+      }
     },
     "persistencia": "La historia de generaciones anteriores permanece como antecedente; la única regla activa del frente es agente_unico."
   }
