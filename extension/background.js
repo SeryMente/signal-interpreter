@@ -796,18 +796,16 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
             enabled: captionProbe.enabled !== false, contextReady: !!captionProbe.contextReady,
             rowCount: Number(captionProbe.rowCount || 0), policy: "extension-reinject-only-no-page-navigation"
           }, "info", "caption");
-          if (hotloadStateReady && isCloudCallUrl(tab.url) && hotloadState.microphoneMuted === true && Number(hotloadState.callSourceTabId) === tabId) {
+          if (hotloadStateReady && isCloudCallUrl(tab.url)) {
+            var activeCallTab=!!(hotloadState&&hotloadState.callId&&hotloadState.callStartedAt)&&isCloudCallUrl(tab.url)&&Number(hotloadState.callSourceTabId)===tabId;
+            var hotloadMuted=!activeCallTab||hotloadState.microphoneMuted===true;
             try {
-              var muteSync = await chrome.tabs.sendMessage(tabId, { type: "SIGNAL_MAIN_MICROPHONE_SET", muted: true, source: "hotload-sync" });
-              record(muteSync && muteSync.verified === true ? "HOTLOAD_MICROPHONE_OUTPUT_VERIFIED" : "HOTLOAD_MICROPHONE_OUTPUT_VERIFY_ERROR", {
-                tabId: tabId, callId: hotloadState.callId || null,
-                trackCount: Number(muteSync && muteSync.trackCount || 0),
-                senderCount: Number(muteSync && muteSync.senderCount || 0),
-                error: muteSync && muteSync.error || null
-              }, muteSync && muteSync.verified === true ? "info" : "error", "microphone");
-            } catch (muteError) {
-              record("HOTLOAD_MICROPHONE_OUTPUT_VERIFY_ERROR", { tabId: tabId, callId: hotloadState.callId || null, error: String(muteError) }, "error", "microphone");
-            }
+              var muteSync=await chrome.tabs.sendMessage(tabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:hotloadMuted,source:"hotload-lifecycle-sync"});
+              record(muteSync&&muteSync.verified===true?"HOTLOAD_MICROPHONE_OUTPUT_STATE_VERIFIED":"HOTLOAD_MICROPHONE_OUTPUT_VERIFY_ERROR",{
+                tabId:tabId,callId:activeCallTab?hotloadState.callId||null:null,muted:hotloadMuted,activeCallTab:activeCallTab,
+                trackCount:Number(muteSync&&muteSync.trackCount||0),senderCount:Number(muteSync&&muteSync.senderCount||0),error:muteSync&&muteSync.error||null
+              },muteSync&&muteSync.verified===true?"info":"error","microphone");
+            } catch(muteError) { record("HOTLOAD_MICROPHONE_OUTPUT_VERIFY_ERROR",{tabId:tabId,muted:hotloadMuted,error:String(muteError)},"error","runtime"); }
           }
           success = true;
           result.injected += 1;
@@ -981,13 +979,13 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         requests: 0, successes: 0, errors: 0, audioSeconds: 0,
         bytesSent: 0, charactersReturned: 0, totalLatencyMs: 0, estimatedUsd: 0
       },
-      microphoneMuted: false,
+      microphoneMuted: true,
       microphoneMuteStatus: "unapplied",
-      microphoneOutputMuted: false,
+      microphoneOutputMuted: true,
       microphoneOutputStatus: "unapplied",
       microphoneOutputTrackCount: 0,
       microphoneOutputSenderCount: 0,
-      groqCapture:{status:"idle",tabAudio:false,microphone:false,microphoneMuted:false,startedAt:null,lastChunkAt:null,error:null},
+      groqCapture:{status:"idle",tabAudio:false,microphone:false,microphoneMuted:true,startedAt:null,lastChunkAt:null,error:null},
       groqTranscript:{active:false,segments:0,lastTimestamp:null,model:GROQ_MODEL},
       eventSequence:0,
       telemetryHealth: { dbWrites: 0, dbErrors: 0, lastWriteAt: null, lastMaintenanceAt: null }
@@ -1017,7 +1015,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     if (!state.transcriptionMetrics || typeof state.transcriptionMetrics !== "object" || Array.isArray(state.transcriptionMetrics)) state.transcriptionMetrics = {segments:0,localSegments:0,groqSegments:0,queueDepth:0,averageLatencyMs:0,groqEstimatedUsd:0};
     if (!state.autoAnswerTelemetry || typeof state.autoAnswerTelemetry !== "object" || Array.isArray(state.autoAnswerTelemetry)) state.autoAnswerTelemetry = baseState().autoAnswerTelemetry;
     normalizeHotloadState(state);
-    if (typeof state.microphoneMuted !== "boolean") state.microphoneMuted = false;
+    if (typeof state.microphoneMuted !== "boolean") state.microphoneMuted = true;
     if (typeof state.microphoneMuteStatus !== "string") state.microphoneMuteStatus = "unapplied";
     if (typeof state.microphoneOutputMuted !== "boolean") state.microphoneOutputMuted = !!state.microphoneMuted;
     if (typeof state.microphoneOutputStatus !== "string") state.microphoneOutputStatus = "unapplied";
@@ -1025,6 +1023,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     if (!Number.isFinite(Number(state.microphoneOutputSenderCount))) state.microphoneOutputSenderCount = 0;
     if (!state.groqCapture || typeof state.groqCapture !== "object" || Array.isArray(state.groqCapture)) state.groqCapture = baseState().groqCapture;
     if (typeof state.groqCapture.microphoneMuted !== "boolean") state.groqCapture.microphoneMuted = !!state.microphoneMuted;
+    if (!hasActiveCall(state)) { state.microphoneMuted = true; state.microphoneOutputMuted = true; state.groqCapture.microphoneMuted = true; }
     if (!state.groqUsage || typeof state.groqUsage !== "object" || Array.isArray(state.groqUsage)) state.groqUsage = {requests:0,successes:0,errors:0,audioSeconds:0,bytesSent:0,charactersReturned:0,totalLatencyMs:0,estimatedUsd:0};
     return state;
   }
@@ -1651,8 +1650,10 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         answeredAt: event.timestamp, modality: state.callModality,
         routeConfirmation: event.action === "ANSWER_FLOW_ROUTE_CONFIRMED" ? "auto-answer-flow-confirmed" : "call-route-entered"
       }, "info", "background");
-    }).then(function (state) {
+    }).then(async function (state) {
       if (!state || state.callId !== callId) return;
+      var micResult = await setExtensionMicrophoneMuted(false, "call-accepted");
+      if (!micResult || micResult.verified !== true || micResult.muted !== false) record("CALL_ACCEPTED_MICROPHONE_UNMUTE_NOT_VERIFIED",{callId:callId,tabId:state.callSourceTabId,error:micResult&&micResult.error||"verification-failed"},"error","microphone");
       if (cachedConfig.liveCaptionOverlayEnabled !== false && state.callSourceTabId != null) {
         var nativeCaptionStarted = false;
         try { nativeCaptionStarted = SignalCaptionBridge.start(state.callSourceTabId, callId); } catch (_) {}
@@ -1878,6 +1879,12 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         state.transcriptionTabId = null;
         state.transcriptionStatus = { phase: "stopped", connected: false, engine: "groq" };
       }
+      var endMuteResult = state.callSourceTabId != null ? await setMainClientMicrophoneMuted(state.callSourceTabId,true,"call-ended") : {verified:false,error:"missing-call-source-tab"};
+      state.microphoneMuted=true; state.microphoneMuteRequested=true; state.microphoneMuteStatus=endMuteResult.verified===true?"applied":"error";
+      state.microphoneOutputMuted=true; state.microphoneOutputStatus=endMuteResult.verified===true?"applied":"error";
+      state.microphoneOutputTrackCount=Number(endMuteResult.trackCount||0); state.microphoneOutputSenderCount=Number(endMuteResult.senderCount||0);
+      state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
+      if(endMuteResult.verified!==true)record("CALL_ENDED_MICROPHONE_MUTE_NOT_VERIFIED",{callId:closedCallId,error:endMuteResult.error||"verification-failed"},"error","microphone");
       state.callStartedAt = null; state.callId = null; state.callModality = null; state.callSourceTabId = null; state.pendingCallEnd = null;
       record("CALL_TIMER_STOPPED", Object.assign({}, call, {
         confirmation: source === "rating-route" ? "rating-route" : "fallback-route",
@@ -2611,6 +2618,14 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var previousOutputStatus=String(state.microphoneOutputStatus||"unapplied");
     var captureActive=!!(state.groqCapture&&state.groqCapture.status==="connected");
     var outputRequired=hasActiveCall(state);
+    if (!desired && !outputRequired) {
+      state.microphoneMuted=true; state.microphoneMuteRequested=true; state.microphoneMuteStatus="blocked";
+      state.microphoneOutputMuted=true; state.microphoneOutputStatus="idle-safe";
+      state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
+      await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+      record("EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL",{source:source||"unknown",policy:"mute-required-until-call-accepted"},"warn","microphone");
+      return {ok:false,muted:true,requestedMuted:false,verified:false,reasonCode:"call-not-active",error:"El micrófono solo se habilita después de confirmar una llamada activa."};
+    }
     state.microphoneMuted=desired;
     state.microphoneMuteRequested=desired;
     state.microphoneMuteStatus="pending";
@@ -2647,10 +2662,8 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var allVerified=captureResult.verified&&(!outputRequired||outputResult.verified===true);
 
     if(!allVerified){
-      var recoveryMuted=desired ? true : false;
-      var recoveryPolicy=desired
-        ? "fail-closed-on-explicit-mute"
-        : "never-reapply-stale-mute-on-unmute-failure";
+      var recoveryMuted=true;
+      var recoveryPolicy=desired ? "fail-closed-on-explicit-mute" : "fail-closed-on-unmute-verification-error";
       if(captureActive){
         try{
           await ensureOffscreen();
@@ -2662,14 +2675,14 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
           await setMainClientMicrophoneMuted(
             state.callSourceTabId,
             recoveryMuted,
-            desired ? "fail-closed-explicit-mute" : "unmute-recovery-no-remute"
+            desired ? "fail-closed-explicit-mute" : "fail-closed-after-unmute-error"
           );
         }catch(_){}
       }
       state.microphoneMuted=recoveryMuted;
       state.microphoneMuteRequested=desired;
       state.microphoneMuteStatus="error";
-      state.microphoneOutputMuted=desired ? true : (outputResult.verified===true ? false : previousOutputMuted);
+      state.microphoneOutputMuted=true;
       state.microphoneOutputStatus="error";
       state.microphoneOutputTrackCount=Number(outputResult.trackCount||0);
       state.microphoneOutputSenderCount=Number(outputResult.senderCount||0);
@@ -2684,7 +2697,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         policy:recoveryPolicy,
         previousMuteStatus:previousMuteStatus,
         previousOutputStatus:previousOutputStatus,
-        invariant:"unmute-errors-never-send-a-follow-up-mute"
+        invariant:"unmute-errors-revert-to-mute-and-verify-again"
       },"error","microphone");
       return{
         ok:false,muted:recoveryMuted,requestedMuted:desired,
@@ -2729,7 +2742,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       var stored = await chrome.storage.local.get(["effectifState"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       var recovering = state.microphoneMuteStatus === "error" || state.microphoneOutputStatus === "error";
-      var desired = recovering ? false : !state.microphoneMuted;
+      var desired = hasActiveCall(state) ? (recovering ? false : !state.microphoneMuted) : true;
       if (recovering) record("EXTENSION_MICROPHONE_TOGGLE_RECOVERY_RETRY", {
         source: source || "toggle", desired: desired, previousMuted: !!state.microphoneMuted,
         policy: "error-state-prioritizes-unmute-to-avoid-stuck-muted"
@@ -2739,7 +2752,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       var stored = await chrome.storage.local.get(["effectifState"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       var recovering = state.microphoneMuteStatus === "error" || state.microphoneOutputStatus === "error";
-      var desired = recovering ? false : !state.microphoneMuted;
+      var desired = hasActiveCall(state) ? (recovering ? false : !state.microphoneMuted) : true;
       if (recovering) record("EXTENSION_MICROPHONE_TOGGLE_RECOVERY_RETRY", {
         source: source || "toggle", desired: desired, previousMuted: !!state.microphoneMuted,
         policy: "retry-last-request; legacy-error-defaults-to-unmute"
@@ -2818,7 +2831,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   function updateSignalSession(message,sendResponse){loadSignalSessions().then(function(data){var s=data.sessions.find(function(x){return x.id===message.sessionId});if(!s)throw new Error("Sesión no encontrada");var p=message.patch||{};if(["CLIENTE","YO"].indexOf(p.activeSpeaker)>=0)s.activeSpeaker=p.activeSpeaker;if(p.view==="timeline"||p.view==="triptych")s.view=p.view;if(p.fontSize!=null)s.fontSize=Math.max(14,Math.min(34,Number(p.fontSize)||20));if(typeof p.autoScroll==="boolean")s.autoScroll=p.autoScroll;if(typeof p.compactDensity==="boolean")s.compactDensity=p.compactDensity;return saveSignalSessions(data.sessions,data.activeSessionId).then(function(){return{ok:true,session:signalSessionCopy(s)}})}).then(function(r){broadcastSignalEvent({type:"signal.session.updated",sessionId:message.sessionId,session:r.session,timestamp:iso()});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})});}
   async function deleteSignalSession(message,sendResponse){try{var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId,idx=data.sessions.findIndex(function(x){return x.id===id}),session=idx>=0?data.sessions[idx]:null;if(!session)throw new Error("Sesión no encontrada");if(data.activeSessionId===id)await stopGroqCapture("session-delete");await KhoraTelemetryDB.clearSignalSession(id);data.sessions.splice(idx,1);var nextId=data.sessions.length?data.sessions[Math.max(0,Math.min(idx-1,data.sessions.length-1))].id:null;await saveSignalSessions(data.sessions,nextId);recordSignalDiagnostic("SIGNAL_SESSION_DELETED",{deletedSessionId:id,remainingSessions:data.sessions.length,activeSessionId:nextId});broadcastSignalEvent({type:"signal.session.deleted",sessionId:id,activeSessionId:nextId,session:nextId?signalSessionCopy(data.sessions.find(function(x){return x.id===nextId}),true):null,timestamp:iso()});sendResponse({ok:true,deletedSessionId:id,activeSessionId:nextId});}catch(error){recordSignalDiagnostic("SIGNAL_SESSION_DELETE_ERROR",{sessionId:message.sessionId||signalActiveSessionId,error:String(error)},"error");sendResponse({ok:false,error:String(error)})}}
   function addSignalSessionSegment(message,sendResponse){loadSignalSessions().then(function(data){var id=message.sessionId||data.activeSessionId,s=data.sessions.find(function(x){return x.id===id});if(!s)throw new Error("Sesión no encontrada");var text=String(message.text||"").trim();if(!text)throw new Error("Texto vacío");var seg={id:"manual-"+uid(),text:text.slice(0,12000),timestamp:iso(),reason:"manual",source:"manual",speaker:message.speaker==="YO"?"YO":"CLIENTE"};return persistSignalSegment(id,seg).then(function(x){if(!x.ok)throw new Error(x.dbError||x.cacheError||"No se pudo persistir");return{ok:true,session:x.session,segment:seg}})}).then(function(r){broadcastSignalEvent({type:"signal.transcript.segment",sessionId:r.session.id,manual:true,segment:r.segment,timestamp:r.segment.timestamp});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})});}
-  async function openSignalLiveWindow(audioStreamId,tabId,sourceUrl,sourceTitle){var targetUrl=chrome.runtime.getURL(extensionResource("ui/live.html"));try{var session=await ensureSignalSession({tabId:tabId,sourceUrl:sourceUrl,title:sourceTitle}),windows=await chrome.windows.getAll({populate:true,windowTypes:["popup"]}),existing=windows.find(function(w){return Array.isArray(w.tabs)&&w.tabs.some(function(t){return String(t.url||"").split("#")[0].split("?")[0]===targetUrl})}),windowId=null;if(existing&&existing.id!=null){windowId=existing.id;await chrome.windows.update(windowId,{focused:true,state:"normal"})}else{var stored=await chrome.storage.local.get(["signalLiveBounds"]),b=stored.signalLiveBounds||{},d={url:targetUrl,type:"popup",focused:true,width:Number.isFinite(b.width)?b.width:760,height:Number.isFinite(b.height)?b.height:760};if(Number.isFinite(b.left))d.left=b.left;if(Number.isFinite(b.top))d.top=b.top;var created=await chrome.windows.create(d);windowId=created&&created.id||null}var activation=await activateSignalSession(session.id,audioStreamId||null);return{ok:!!windowId,windowId:windowId,reused:!!existing,session:activation.session||signalSessionCopy(session,true),audio:null,capture:activation};}catch(error){return{ok:false,error:String(error)}}}
+  async function openSignalLiveWindow(audioStreamId,tabId,sourceUrl,sourceTitle){var targetUrl=chrome.runtime.getURL(extensionResource("ui/live.html"));try{var session=await ensureSignalSession({tabId:tabId,sourceUrl:sourceUrl,title:sourceTitle}),matches=await chrome.tabs.query({url:targetUrl+"*"}),existing=matches&&matches.length?matches[0]:null,tab=null;if(existing&&existing.id!=null){tab=existing;if(tab.windowId!=null)await chrome.windows.update(tab.windowId,{focused:true});await chrome.tabs.update(tab.id,{active:true})}else{tab=await chrome.tabs.create({url:targetUrl,active:true})}var activation=await activateSignalSession(session.id,null);return{ok:!!(tab&&tab.id!=null),tabId:tab&&tab.id||null,reused:!!existing,session:activation.session||signalSessionCopy(session,true),audio:null,capture:{ok:true,reasonCode:"reader-no-audio-capture"}};}catch(error){return{ok:false,error:String(error)}}}
   signalGroqQueue=Promise.resolve();
   chrome.tabs.onActivated.addListener(function (activeInfo) {
     refreshActionIndicator(activeInfo.tabId).catch(function () {});
