@@ -93,7 +93,7 @@ Sandbox Linux: lógica real y DOM Chromium con eventos sintéticos para candidat
 ### 🔄 Estado vivo
 
 ```text
-Corte 2026-10-30 · generación 6. Titularidad ACTIVA, control releído: folio `SES-20261030-A8F4C291`; UUIDv7 local `01a18f28-049d-aebb-9fed-cc5264499f6a`; alias operativo `chatgpt-signal-interpreter-SES-20261030-A8F4C291` (no IDs nativos). Blob de control `4a3e7a9f0a7045d0603cbc55da39a60f73cc5e4d`; commit de transferencia `cd4a8bac7ddfcb1294671e398a0f1d408caa660b`. No se hereda permiso RDC.
+Corte 2026-10-30 · generación 6. Titularidad ACTIVA, control releído: folio `SES-20261030-A8F4C291`; UUIDv7 local `01a18f6d-79cd-7b7f-8138-083ae11becb4`; alias operativo `chatgpt-signal-interpreter-SES-20261030-A8F4C291` (no IDs nativos). Blob de control `73cd791fb63a2c5f28faf96e53ea8912da2d30ab`; commit de transferencia `cd4a8bac7ddfcb1294671e398a0f1d408caa660b`. No se hereda permiso RDC.
 `main` integra 0.10.39 en merge commit `f9ddfade6fbdf1b04448906301c3d98de00930e5`; la cabeza probada de PR #68 fue `55416e125922c9e0d3ecad93bffe9edc74a27f85`. PR #68 está fusionada y main fue releída. No se creó release.
 La PR incorpora observación pasiva del diálogo incluso con respuesta bloqueada; readiness desglosado (labSafetyLock, presenceArmed, presenceReason, configuración, perfil y disponibilidad); attemptId correlacionado; cierre y clasificación missed corregidos; flush inmediato sin rate limit de 10s para eventos de llamada; relayReceivedAt; informe rolling de 10 minutos JSON/Markdown; freshness y alertas cada 2 minutos; popup con motivo de pausa; versión 0.10.39 e inventario SHA-256.
 CI 3/3 success en la cabeza probada `55416e125922c9e0d3ecad93bffe9edc74a27f85`: Package integrity, signal-observability-audit y native-caption-host-build. Tras el merge, `signal-observability-audit` y `native-caption-host-build` en push a main aparecían IN_PROGRESS en la última lectura; no declarar CI post-merge completo hasta read-back final.
@@ -184,7 +184,7 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 ## Persistencia y revisión
 
-Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control de responsabilidad G6 ACTIVO releído: blob `4a3e7a9f0a7045d0603cbc55da39a60f73cc5e4d`; generación 5 preservada. PR #68 integrada en merge commit `f9ddfade6fbdf1b04448906301c3d98de00930e5`; PR #67 integrada y #59 cerrada sin merge; consulta posterior de PR abiertas = 0. `manifest.json` 0.10.39 releído en main, blob `0cb37ff90b79cd84cf0154c01b055e22485fc5d6`. Nueva crónica: `cronica/C-SIGNAL-RETOMA-0.10.39-G6-20261030.md`.
+Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control de responsabilidad G6 ACTIVO releído: blob `73cd791fb63a2c5f28faf96e53ea8912da2d30ab`; generación 5 preservada. PR #68 integrada en merge commit `f9ddfade6fbdf1b04448906301c3d98de00930e5`; PR #67 integrada y #59 cerrada sin merge; consulta posterior de PR abiertas = 0. `manifest.json` 0.10.39 releído en main, blob `0cb37ff90b79cd84cf0154c01b055e22485fc5d6`. Nueva crónica: `cronica/C-SIGNAL-RETOMA-0.10.39-G6-20261030.md`.
 
 CI 3/3 success se verificó en el SHA de PR `55416e125922c9e0d3ecad93bffe9edc74a27f85`. No se extrapola ese resultado al merge commit: al último corte, `signal-observability-audit` y `native-caption-host-build` de push a main seguían IN_PROGRESS. No se creó release. La aceptación local Windows/Chrome queda pendiente.
 
