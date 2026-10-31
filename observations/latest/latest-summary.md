@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-aff95c94-5a05-4379-97fe-cec52356560a
-- Creado: 2026-10-31T02:37:28.233Z
-- Trigger: event-window
+- Batch: batch-7a034b70-ac73-41c0-b485-f88107bf5825
+- Creado: 2026-10-31T02:37:51.235Z
+- Trigger: alarm
 - Extensión: 0.10.37
 - Eventos: 1
 - Errores: 0
 - Warnings: 0
-- Secuencia: 7220 → 7220
+- Secuencia: 7221 → 7221
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 1907
 - Deltas de plataforma: 1887
@@ -15,11 +15,11 @@
 ## Categorías
 
 {
-  "BILLING": 1
+  "RUNTIME": 1
 }
 
 ## Acciones
 
 {
-  "EXCHANGE_RATE_UPDATED": 1
+  "TELEMETRY_MAINTENANCE": 1
 }
