@@ -7,13 +7,15 @@
   "folio_sesion": "SES-20261030-A8F4C291",
   "generacion": 6,
   "condicion": "ACTIVO",
-  "rol": "constructor",
+  "rol": "agente_unico",
   "autorizacion": {
-    "procedencia": "instrucción directa y expresa del operador en esta conversación",
-    "literal": "Toma responsabilidad del frente signal interpreter SI",
-    "fecha_registro_utc": "2026-10-30T23:32:47.904Z",
-    "alcance": "Transferencia exclusiva de Signal Interpreter a esta conversación para continuar y ejecutar el trabajo técnico del frente: diagnóstico, código, pruebas automatizadas, CI, PR, observabilidad y documentación. No autoriza declarar aceptación de llamadas reales o Windows/Chrome sin pruebas del operador; no autoriza liberar sin aceptación. No autoriza acceso RDC desde el rol constructor.",
-    "acceso_remoto": "No autorizado ni heredado. Metacanon vigente §24 reserva RDC al asistente y prohíbe su uso por constructor; continúo mediante GitHub y herramientas locales no remotas."
+    "procedencia": "instrucción directa y expresa del operador en esta conversación; modo de agente único y sesión RDC PC-14 aportada por el operador",
+    "literal": "Olvidate, y dejalo en el frente bien claro, borra todo rastro a metodo COnstructor Asistente, esta stu solo ok? ... Resuelve lo que tengas que resolver.",
+    "fecha_registro_local": "2026-10-30",
+    "zona_horaria": "America/Mexico_City",
+    "hora_exacta": "NO VERIFICADA",
+    "alcance": "Una sola instancia es responsable de todo Signal Interpreter: análisis, desarrollo, pruebas automatizadas, CI, observabilidad, persistencia provisional, documentación, continuidad y despliegue dentro de las compuertas vigentes. No hay división activa de roles ni prompts dobles. El operador conserva aprobación humana, uso real, prueba de llamada, aceptación y liberación. No declarar aceptación real sin evidencia.",
+    "acceso_remoto": "Autorización temporal M34 para esta sesión actual de PC-14: usar RDC únicamente por terminal/CLI/headless para verificar cuenta/perfil y preparar el repositorio canónico 0.10.39 en el Escritorio correcto, ejecutar INSTALAR.ps1 si precondiciones satisfechas y leer de vuelta INSTALACION-RESULTADO.json. Sin GUI, Chrome visible, llamadas reales, otros equipos/proyectos ni sesiones futuras. Caduca al verificar staging e informe del instalador."
   },
   "propietario_anterior": {
     "hilo": null,
@@ -80,9 +82,16 @@
       "generacion": 6,
       "condicion": "ACTIVO",
       "rol": "constructor",
-      "uuidv7_local": "01a18f6d-79cd-7b7f-8138-083ae11becb4"
+      "uuidv7_local": "01a18f6d-79cd-7b7f-8138-083ae11becb4",
+      "modo_operativo_actual": "AGENTE_UNICO"
     },
-    "revision_objeto_observada": "main: docs/frentes/signal-interpreter/OBJETO-CANONICO.md; blob 16eb0fbc95b7737c4e1905629de5e18a5acd980f"
+    "revision_objeto_observada": "main: docs/frentes/signal-interpreter/OBJETO-CANONICO.md; blob 16eb0fbc95b7737c4e1905629de5e18a5acd980f",
+    "modo_operativo_actual": {
+      "evento": "SIGNAL-INTERPRETER-M34-AGENTE-UNICO-20261030-G6",
+      "estado": "AGENTE_UNICO",
+      "fundamento": "M34 · Metacanon 1.26 §24 · DUG v372 NX-372m",
+      "alcance": "Signal Interpreter solamente; no se propaga a otros frentes."
+    }
   },
   "limites": "Control cooperativo; no ofrece fencing de escritores que lo eludan. El folio, UUIDv7 local y la instancia son identificadores operativos, no IDs nativos de plataforma. La transferencia no crea conectividad, permisos remotos ni autorización para intervenir en llamadas reales.",
   "enforcement": "cooperative registry; no server fencing of arbitrary writes",
@@ -166,6 +175,17 @@
       },
       "control_sha_pretransferencia": "d057a5db249939c381892f831d76a81103190074",
       "sustituido_por": "SIGNAL-INTERPRETER-TRANSFER-20261030-G6-A8F4C291"
+    },
+    {
+      "instancia": "chatgpt-signal-interpreter-SES-20261030-A8F4C291",
+      "tipo_identidad": "alias_operativo_no_id_nativo",
+      "folio_sesion": "SES-20261030-A8F4C291",
+      "generacion": 6,
+      "condicion": "ACTIVO",
+      "rol": "agente_unico",
+      "uuidv7_local": "01a18f6d-79cd-7b7f-8138-083ae11becb4",
+      "evento_actualizacion": "SIGNAL-INTERPRETER-M34-AGENTE-UNICO-20261030-G6",
+      "nota": "Una sola instancia responsable de todo Signal Interpreter conforme a instrucción directa del operador y Metacanon §24 M34. No crear un segundo agente."
     }
   ],
   "transferencias_anteriores": [
@@ -338,5 +358,31 @@
   ],
   "uuidv7_local": "01a18f6d-79cd-7b7f-8138-083ae11becb4",
   "revision_objeto_observada": "main: docs/frentes/signal-interpreter/OBJETO-CANONICO.md; blob 16eb0fbc95b7737c4e1905629de5e18a5acd980f",
-  "registrada_utc": "2026-10-30T23:32:47.904Z"
+  "registrada_utc": "2026-10-30T23:32:47.904Z",
+  "actualizacion_modo_operativo": {
+    "evento": "SIGNAL-INTERPRETER-M34-AGENTE-UNICO-20261030-G6",
+    "generacion": 6,
+    "instancia": "chatgpt-signal-interpreter-SES-20261030-A8F4C291",
+    "folio_sesion": "SES-20261030-A8F4C291",
+    "uuidv7_local": "01a18f6d-79cd-7b7f-8138-083ae11becb4",
+    "instruccion_operador": "Una sola instancia responsable; eliminar el reparto activo entre roles y sus prompts separados.",
+    "metodologia": {
+      "repositorio": "SeryMente/metodologia",
+      "ruta": "gobernanza/METAPROMPT-CANONICO-SAMANTHA.html",
+      "version": "1.26",
+      "dug": "v372",
+      "firma": "NX-372m",
+      "commit": "77fa4ecbbfcef3db3887545aa9eb581265d2772d",
+      "blob": "28d0f255cdb3371a60310b0da45ca049dea05fdb",
+      "seccion": "§24 M34"
+    },
+    "remota": {
+      "autorizacion": "M34",
+      "objetivo": "PC-14 actual, sesión aportada directamente por el operador",
+      "alcance": "CLI/headless únicamente; staging 0.10.39 e instalación oficial limitada",
+      "secreto_pii": "No persistir correo, device ID, código de emparejamiento o tokens en el repositorio público.",
+      "cierre": "Caduca con read-back exitoso de INSTALACION-RESULTADO.json; sin autorización para siguientes sesiones."
+    },
+    "persistencia": "La historia de generaciones anteriores permanece como antecedente; la única regla activa del frente es agente_unico."
+  }
 }
