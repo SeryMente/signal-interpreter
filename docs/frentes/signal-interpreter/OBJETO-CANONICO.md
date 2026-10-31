@@ -5,7 +5,7 @@
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
-- Revisión documental: **SI-OBJ-v1.13-retroalimentacion-llamada-01**; ancla: **C-SIGNAL-RETROALIMENTACION-LLAMADA-20261030-01**, encargo directo del operador del 2026-10-30. Naturaleza: permanente, actualización del objeto existente expresamente solicitada; no proyecto nuevo.
+- Revisión documental: **SI-OBJ-v1.14-retoma-G7-20261031-01**; ancla: **C-SIGNAL-RETOMA-20261031-G7-86FFBCFE**, transferencia de titularidad y reanudación del 2026-10-31. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
 - Estado de producto: `main` contiene Signal Interpreter **0.10.39**, integrado por PR [#68](https://github.com/SeryMente/signal-interpreter/pull/68). CI post-merge de auditoría y host nativo pasó 2/2 en `8955c1cae996d150052483cdf0d5da37c4da41eb`. No hay release. El paquete 0.10.39 quedó staged en el Escritorio autorizado y el puente Native Messaging terminó instalado/verificado; Chrome aún no ha cargado la extensión y la aceptación real Windows/Chrome/llamada OPI sigue pendiente.
@@ -13,19 +13,19 @@
 
 ## LEER PRIMERO
 
-Modo: continuar el mismo frente como **una sola instancia responsable**. No crear, asignar, invocar ni coordinar un segundo agente; no dividir trabajo por papeles; no generar prompts dobles ni transferencias internas.
+Modo: continuar el mismo frente como **una sola instancia responsable G7** (`SES-20261031-86FFBCFE`). No crear, asignar, invocar ni coordinar un segundo agente; no dividir trabajo por papeles; no generar prompts dobles ni transferencias internas.
 
 Leer este núcleo y adquirir gobierno vigente antes de actuar. Consultar después solo fuentes/evidencias necesarias para el objetivo actual; no recorrer toda la historia por rutina.
 
 Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metacanon pertinentes → gobierno particular de este frente. [Entrada del gobierno distribuido](https://github.com/SeryMente/metodologia/blob/main/INICIO.md). El repositorio metodológico requiere acceso autorizado; no copiar su contenido privado a este repositorio público ni pedir credenciales en el chat. Revalidar fuente y revisiones desde `main`; una referencia histórica no prueba frescura, autorización o ejecución. Fuente indispensable ausente bloquea solo la acción dependiente.
 
-**Modo operativo vigente:** una instancia única tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva aprobaciones, decisiones humanas, pruebas de uso real, aceptación y liberación. Esta disposición no se propaga a otros proyectos. Adquisición metodológica no crea servicios, credenciales ni permisos adicionales; las excepciones de equipo deben estar documentadas en el control y §24. M34/M35 están consumidas y cerradas; no hay permiso RDC activo.
+**Modo operativo vigente:** una instancia única G7 tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva aprobaciones, decisiones humanas, pruebas de uso real, aceptación y liberación. Esta disposición no se propaga a otros proyectos. La transferencia G6→G7 quedó registrada y releída; M34/M35 son antecedentes cerrados y no conceden acceso RDC a esta sesión.
 
 ## Referencia metodológica
 
 - **Metacanon adquirido: 1.26**; DUG **v373 · NX-373m**; GOW **2.14**.
-- Fuente canónica autenticada y releída en este ciclo: `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, commit `c79ddf6f862f97cafa61955eb15a17ffaea463d0`, blob `cac4525de77d4f47a8a59c25201968ecf2056b90`. DUG v373/NX-373m integra Metacanon 1.26 y M34/M35.
-- Control vigente: [CONTROL-RESPONSABILIDAD.json](CONTROL-RESPONSABILIDAD.json), **G6 · ACTIVO · agente_unico**, folio `SES-20261030-A8F4C291`, alias `chatgpt-signal-interpreter-SES-20261030-A8F4C291`, UUIDv7 local `01a18f6d-79cd-7b7f-8138-083ae11becb4`. Blob de control `b5fe40082ab8234865c56a1ba859d657dff037d7`; commit `c0ef30cde03d442475df9b6fc0d9e24b60de242c`. Los identificadores son operativos, no IDs nativos. G6 se mantiene; no se abre una generación ni un folio nuevos.
+- Fuente canónica autenticada y releída en este ciclo: `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, commit `f74082148d28b575c232e8fc291607bef8861794`, blob `cac4525de77d4f47a8a59c25201968ecf2056b90`. DUG v373/NX-373m; Metacanon 1.26; GOW 2.14.
+- Control vigente: [CONTROL-RESPONSABILIDAD.json](CONTROL-RESPONSABILIDAD.json), **G7 · ACTIVO · agente_unico**, folio `SES-20261031-86FFBCFE`, alias `chatgpt-signal-interpreter-SES-20261031-86FFBCFE`, UUIDv7 local `01a19293-52f8-770b-86ff-bcfe4751d0b1`. Blob de control `c1b4425fa91b5ac6acb90a52298ed9d07a62eaf5`; commit `20d4d02c581a9a2ed08357c49e267a07e566719e`. G6 quedó SUSTITUIDA y permanece en el historial; los identificadores nuevos son operativos, no IDs nativos.
 - Gobierno adquirido desde `main`: DUG v373 · NX-373m; Metacanon 1.26; GOW 2.14. P001/P005/P036 y compuertas pertinentes revisadas manualmente. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
 
 ### Constancia de adquisición y aplicación
@@ -109,6 +109,14 @@ La persistencia provisional se confirma como mecanismo repo-backed Chrome → In
 El paquete 0.10.39 está staged en `Desktop/Signal Interpreter/signal-interpreter`; el instalador Native Messaging está verificado y el permiso RDC M34/M35 cerrado. La carga de la extensión en Chrome y la llamada de aceptación siguen NO VERIFICADAS. No release.
 ```
 
+
+
+### Captura documental pendiente — exportación 2026-10-31
+
+Se identificó `ChatGPT-SI-20261031-0916.txt` (133.492 bytes; 2.794 líneas; SHA-256 `D906E3399F6F6763546351D0EFB09CB1FCBC1C28E4802BADCE1DA8E67C9B5195`). La carga del original al OCP está pendiente: el repositorio es público y la exportación contiene datos de contacto. No se ha escrito el original, no se ha creado el manifiesto y no se presenta ningún derivado como original. Estado: **NO DISPONIBLE / BLOQUEADO** hasta resolver autorización de exposición o destino privado autorizado.
+
+La última salida visible del modelo anterior no está localizada como registro recuperable en el OCP leído: **NO DISPONIBLE / NO VERIFICADA**. No reconstruirla desde fragmentos.
+
 ### ⚗️ En prueba / recién fallido
 
 ```text
@@ -145,7 +153,7 @@ Estado: **desarrollo 0.10.39 integrado; staging e instalación Native Messaging 
 | Requisito | Estado implementado / evidencia | Aceptación y pendiente |
 |---|---|---|
 | Integración de desarrollo | PR #68 integrada; `main` 0.10.39; CI post-merge de auditoría y host nativo 2/2 SUCCESS en SHA `8955c1cae996d150052483cdf0d5da37c4da41eb` | No hay release; aceptación real pendiente |
-| Modo de trabajo del frente | Control G6 ACTIVO como `agente_unico`; un prompt activo; README actualizado; prompts anteriores retirados del árbol activo | Read-back verificado; historial Git anterior permanece como historia |
+| Modo de trabajo del frente | Control G7 ACTIVO como `agente_unico`; un prompt activo; README actualizado; prompts anteriores retirados del árbol activo | Read-back verificado; historial Git anterior permanece como historia |
 | Persistencia provisional | 10,384 batches; 19 informes de llamada; 1,878 snapshots; 1,858 deltas; último health `ok`; inbox 0 | Operación histórica confirmada; runtime más reciente 0.10.37; falta E2E 0.10.39 |
 | Relay Vercel | Código server-side usa `GITHUB_TOKEN` y escribe `observations/inbox`; GitHub muestra procesamiento automático reciente | Recepción efectiva observada; Vercel management/logs API 403; no se inspeccionó secret ni deployment |
 | Informe incoming 10m | Código de pipeline genera JSON/Markdown y aplica corrección por `relayReceivedAt` | Los artefactos no aparecieron en última lectura; falta batch 0.10.39 con receipt timestamp |
@@ -185,11 +193,11 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 ## Reinstanciación
 
-[Prompt operativo único](PROMPT-SIGNAL-INTERPRETER.md), subordinado al objeto canónico y al gobierno vigente. Al retomar, adquiere fuente metodológica actual, relee OCP y control G6, confirma una sola titularidad y continúa desde el checkpoint. No instancies identidades adicionales ni emitas prompts paralelos. Un prompt no crea permiso, conectividad, persistencia ni aceptación.
+[Prompt operativo único](PROMPT-SIGNAL-INTERPRETER.md), subordinado al objeto canónico y al gobierno vigente. Al retomar, adquiere fuente metodológica actual, relee OCP y control G7 (`SES-20261031-86FFBCFE`), confirma una sola titularidad y continúa desde el checkpoint. No instancies identidades adicionales ni emitas prompts paralelos. Un prompt no crea permiso, conectividad, persistencia ni aceptación.
 
 ## Persistencia y revisión
 
-Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control G6 ACTIVO y modo `agente_unico` releídos; blob `b5fe40082ab8234865c56a1ba859d657dff037d7`, commit `c0ef30cde03d442475df9b6fc0d9e24b60de242c`. Modo único registrado como `SIGNAL-INTERPRETER-M34-AGENTE-UNICO-20261030-G6`; M34/M35 CERRADAS_VERIFICADAS. El DUG está en v373/NX-373m, commit `c79ddf6f862f97cafa61955eb15a17ffaea463d0`, blob `cac4525de77d4f47a8a59c25201968ecf2056b90`.
+Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control G7 ACTIVO y modo `agente_unico` releídos; blob `c1b4425fa91b5ac6acb90a52298ed9d07a62eaf5`, commit `20d4d02c581a9a2ed08357c49e267a07e566719e`. Modo único registrado como `SIGNAL-INTERPRETER-M34-AGENTE-UNICO-20261030-G6`; M34/M35 CERRADAS_VERIFICADAS. El DUG está en v373/NX-373m, commit `c79ddf6f862f97cafa61955eb15a17ffaea463d0`, blob `cac4525de77d4f47a8a59c25201968ecf2056b90`.
 
 El prompt único está en `PROMPT-SIGNAL-INTERPRETER.md`, blob `4bede3b3950f4f45d15fbcb44a129521af43704b`. README releído y apunta a ese prompt. Los dos prompts anteriores fueron retirados del árbol activo; su historia permanece en Git y no se utiliza como instrucción activa.
 
