@@ -1,7 +1,7 @@
 {
   "schema": "signal-interpreter-call-report/v1",
-  "generatedAt": "2026-10-31T01:31:09.391Z",
-  "updatedAt": "2026-10-31T01:31:09.391Z",
+  "generatedAt": "2026-10-31T01:36:56.972Z",
+  "updatedAt": "2026-10-31T01:36:56.972Z",
   "callRef": "44b6538f54726f21a3f41394",
   "status": "complete",
   "completeness": {
@@ -37,7 +37,7 @@
   },
   "time": {
     "firstObservedAt": "2026-10-31T01:22:15.539Z",
-    "lastObservedAt": "2026-10-31T01:30:23.998Z"
+    "lastObservedAt": "2026-10-31T01:35:21.766Z"
   },
   "call": {
     "callRef": "44b6538f54726f21a3f41394",
@@ -78,9 +78,9 @@
     "confirmationFallbacks": 0
   },
   "correlation": {
-    "eventCount": 1848,
+    "eventCount": 1849,
     "firstSequence": 511,
-    "lastSequence": 2644,
+    "lastSequence": 2799,
     "batches": [
       "batch-d6322581-2a37-48e3-b2f2-545211e876c0",
       "batch-65c4811a-2bd3-498f-86e8-616b1a5f3961",
@@ -123,7 +123,7 @@
       "batch-28425fac-be5a-4cc4-903d-2b58c0a85ca2",
       "batch-a30c5ef5-257b-42e0-819d-32698c2cea67"
     ],
-    "actionCount": 51,
+    "actionCount": 52,
     "categoryCount": 6,
     "sourceTabs": [
       396051007
@@ -131,7 +131,7 @@
   },
   "telemetry": {
     "eventLevels": {
-      "info": 1845,
+      "info": 1846,
       "warn": 3
     },
     "actions": {
@@ -185,10 +185,11 @@
       "CALL_ROUTE_ENDED": 2,
       "RATING_ROUTE_ENTERED": 2,
       "CALL_END_SIGNAL_PREPARED": 2,
-      "CALL_TIMER_STOPPED": 1
+      "CALL_TIMER_STOPPED": 1,
+      "EARNINGS_OVERLAY_WATCHDOG_STOPPED": 1
     },
     "categories": {
-      "RUNTIME": 1393,
+      "RUNTIME": 1394,
       "SESSION": 42,
       "PORTAL": 14,
       "CAPTION": 195,
@@ -196,7 +197,7 @@
       "TRANSCRIPT": 2
     },
     "components": {
-      "content": 1408,
+      "content": 1409,
       "live-caption-overlay": 195,
       "runtime": 13,
       "background": 19,
@@ -207,7 +208,7 @@
     "featureSignals": {
       "answerFlow": 977,
       "other": 52,
-      "overlayActivation": 36,
+      "overlayActivation": 37,
       "platformAndUi": 54,
       "mediaAndCapture": 304,
       "transcriptionAndCaptions": 378,
@@ -458,18 +459,6 @@
         "outcome": "observed",
         "durationMs": null,
         "reasonCode": "call-start"
-      },
-      {
-        "at": "2026-10-31T01:26:21.331Z",
-        "sequence": 2361,
-        "action": "LIVE_CAPTION_LANGUAGE_ROUTING",
-        "level": "info",
-        "category": "CAPTION",
-        "component": "live-caption-overlay",
-        "phase": "lifecycle",
-        "outcome": "observed",
-        "durationMs": null,
-        "reasonCode": null
       },
       {
         "at": "2026-10-31T01:26:21.335Z",
@@ -2138,23 +2127,21 @@
         "outcome": "success",
         "durationMs": null,
         "reasonCode": "remote-accepted"
-      }
-    ],
-    "keySignals": [
+      },
       {
-        "at": "2026-10-31T01:26:23.976Z",
-        "sequence": 2380,
-        "action": "AUTO_ANSWER_READINESS",
+        "at": "2026-10-31T01:35:21.766Z",
+        "sequence": 2799,
+        "action": "EARNINGS_OVERLAY_WATCHDOG_STOPPED",
         "level": "info",
         "category": "RUNTIME",
         "component": "content",
         "phase": "event",
         "outcome": "observed",
         "durationMs": null,
-        "reasonCode": "availability",
-        "ready": false,
-        "authorizedProfile": false
-      },
+        "reasonCode": "pagehide"
+      }
+    ],
+    "keySignals": [
       {
         "at": "2026-10-31T01:26:24.441Z",
         "sequence": 2388,
@@ -3510,10 +3497,27 @@
         "targetSequence": 2428,
         "ackedSequence": 2429,
         "batches": 1
+      },
+      {
+        "at": "2026-10-31T01:35:21.766Z",
+        "sequence": 2799,
+        "action": "EARNINGS_OVERLAY_WATCHDOG_STOPPED",
+        "level": "info",
+        "category": "RUNTIME",
+        "component": "content",
+        "phase": "event",
+        "outcome": "observed",
+        "durationMs": null,
+        "reasonCode": "pagehide",
+        "hostConnected": false,
+        "shadowRootReady": false,
+        "documentReadyState": "complete",
+        "hostWidth": 0,
+        "hostHeight": 0
       }
     ],
     "eventTimelineTruncated": true,
-    "sourceEventCount": 1848,
+    "sourceEventCount": 1849,
     "warnings": 3,
     "errors": 0,
     "failedOrBlockedEvents": 2,

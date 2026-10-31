@@ -36,10 +36,10 @@
 
 ## Cobertura y señales
 
-- Eventos correlacionados: 1848
+- Eventos correlacionados: 1849
 - Warnings / errores / eventos fallidos-bloqueados: 3 / 0 / 2
 - Muestras de rendimiento / media: 10 / 303
-- Conteo por grupos: {"answerFlow":977,"other":52,"overlayActivation":36,"platformAndUi":54,"mediaAndCapture":304,"transcriptionAndCaptions":378,"ratingAndClose":10,"performanceAndNetwork":10,"billingAndEarnings":2,"observabilityPipeline":5,"microphoneAndSafety":10,"runtimeAndRecovery":10}
+- Conteo por grupos: {"answerFlow":977,"other":52,"overlayActivation":37,"platformAndUi":54,"mediaAndCapture":304,"transcriptionAndCaptions":378,"ratingAndClose":10,"performanceAndNetwork":10,"billingAndEarnings":2,"observabilityPipeline":5,"microphoneAndSafety":10,"runtimeAndRecovery":10}
 
 ## Señales ausentes o incompletas
 
