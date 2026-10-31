@@ -179,10 +179,26 @@
       "modo_operativo_actual": "AGENTE_UNICO"
     },
     "revision_objeto_observada": "SeryMente/signal-interpreter/main: docs/frentes/signal-interpreter/OBJETO-CANONICO.md; blob 40e79817696f9bff7e3bcf068c99a53a280cdad8; main observado e12cf76e42c6810cca0d6565332e8de1979b9c0a",
-    "resultado_mutacion": "PENDIENTE_ESCRITURA_Y_LECTURA_DE_VUELTA",
+    "resultado_mutacion": "COMMITTED_AND_READBACK_VERIFIED",
     "verificacion": {
-      "estado": "PENDIENTE",
-      "metodo": "fetch_file desde main y cotejo literal de titularidad, generación, folio, evento y SHA"
+      "estado": "read_back_verified",
+      "initial_readback_blob_sha": "6bb435f8e2194e90e61febf463b0248f5f9009d1",
+      "initial_commit_sha": "74b5b6e4c7ea149a07464752d1505a334b556377",
+      "verified_at_utc": "2026-10-31T15:28:11Z",
+      "fields_verified": [
+        "front",
+        "status",
+        "instance alias",
+        "session folio",
+        "generation",
+        "uuidv7_local",
+        "previous owner",
+        "previous generation",
+        "explicit authorization",
+        "event",
+        "collision scope"
+      ],
+      "scope_limit": "Control cooperativo y API GitHub; no prueba identidad nativa ni fencing de escritores que eludan el control."
     }
   },
   "limites": "Control cooperativo; no ofrece fencing de escritores que lo eludan. El folio, UUIDv7 local y la instancia son identificadores operativos, no IDs nativos de plataforma. La transferencia no crea conectividad, permisos remotos ni autorización para intervenir en llamadas reales.",
