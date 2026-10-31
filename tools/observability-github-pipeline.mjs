@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {sha256,fileToken,semanticPlatformDelta} from "./observability/platform-learning.mjs";
+import {buildIncomingCallWindow,incomingCallWindowMarkdown} from "./observability/incoming-call-window.mjs";
 
 const HERE=path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT=path.resolve(HERE,"..");
@@ -588,8 +589,10 @@ function updateCallReports(obs,candidateCallIds,generatedAt){
 }
 
 function batchTime(batch){
-  const t=Date.parse(batch&&batch.createdAt||"");
-  return Number.isFinite(t)?t:0;
+  const received=Date.parse(batch&&batch.relayReceivedAt||"");
+  if(Number.isFinite(received))return received;
+  const created=Date.parse(batch&&batch.createdAt||"");
+  return Number.isFinite(created)?created:0;
 }
 function findLatestRealBatch(obs){
   const files=listJson(path.join(obs,"batches"));
@@ -663,6 +666,26 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
   const latestReal=lastInput&&isRealBatch(lastInput)?lastInput:findLatestRealBatch(obs);
   const generatedAt=now();
   const callReportIndex=updateCallReports(obs,Array.from(terminalCallIds),generatedAt);
+  const storedBatches=listJson(batchesDir).map(file=>readJson(file,null)).filter(batch=>batch&&batch.schema===BATCH_SCHEMA&&isRealBatch(batch));
+  const incomingCallWindow=buildIncomingCallWindow(storedBatches,generatedAt,10);
+  writeJson(path.join(obs,"latest","incoming-calls-10m.json"),incomingCallWindow);
+  fs.writeFileSync(path.join(obs,"latest","incoming-calls-10m.md"),incomingCallWindowMarkdown(incomingCallWindow),"utf8");
+  const latestRelayReceivedMs=Date.parse(latestReal&&latestReal.relayReceivedAt||"");
+  const latestClientCreatedMs=Date.parse(latestReal&&latestReal.createdAt||"");
+  const sourceAgeMs=Number.isFinite(latestRelayReceivedMs)?Math.max(0,Date.parse(generatedAt)-latestRelayReceivedMs):null;
+  const clientClockSkewMs=Number.isFinite(latestRelayReceivedMs)&&Number.isFinite(latestClientCreatedMs)
+    ? latestClientCreatedMs-latestRelayReceivedMs:null;
+  const freshnessStatus=sourceAgeMs===null?"receipt-unavailable":
+    sourceAgeMs<=120000?"fresh":sourceAgeMs<=300000?"delayed":"stale";
+  const expectedExtensionVersion=String(readJson(path.join(root,"manifest.json"),{}).version||"unknown");
+  const observedExtensionVersion=String(latestReal&&latestReal.extensionVersion||"unknown");
+  const runtimeVersionMismatch=expectedExtensionVersion!=="unknown"&&observedExtensionVersion!=="unknown"&&
+    expectedExtensionVersion!==observedExtensionVersion;
+  const inboxRemaining=listJson(inbox).length;
+  const healthStatus=inboxRemaining>0?"backlogged":
+    freshnessStatus!=="fresh"?freshnessStatus:
+    runtimeVersionMismatch?"runtime-version-mismatch":"ok";
+
   const latestCallReport=callReportIndex.latestReportPath
     ?readJson(path.join(obs,callReportIndex.latestReportPath),null):null;
   index.generatedAt=generatedAt;
@@ -696,7 +719,10 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
       latestReportPath:callReportIndex.latestReportPath||null,
       latestReportAt:callReportIndex.latestReportGeneratedAt||null,
       latestReportStatus:callReportIndex.latestStatus||null,
-      latestRatingStarsObserved:callReportIndex.latestRatingStarsObserved===true
+      latestRatingStarsObserved:callReportIndex.latestRatingStarsObserved===true,
+      incomingCallWindowPath:"latest/incoming-calls-10m.json",
+      incomingCallWindowGeneratedAt:incomingCallWindow.generatedAt,
+      incomingCallWindowSummary:incomingCallWindow.summary
     },
     platform:{
       observations:Number(index.observations||0),
@@ -741,8 +767,27 @@ export function buildObservabilityPackage(root=DEFAULT_ROOT){
     latestCallReportStatus:callReportIndex.latestStatus||null,
     latestCallRatingStarsObserved:callReportIndex.latestRatingStarsObserved===true,
     callReportCheckpointObserved:!!(latestCallReport&&latestCallReport.endConfirmation&&latestCallReport.endConfirmation.finalCheckpointObserved),
-    inboxRemaining:listJson(inbox).length,
-    status:"ok"
+    incomingCallWindowPath:"latest/incoming-calls-10m.json",
+    incomingCallWindowGeneratedAt:incomingCallWindow.generatedAt,
+    incomingCallWindow:incomingCallWindow.summary,
+    latestBatchRelayReceivedAt:latestReal&&latestReal.relayReceivedAt||null,
+    latestSourceAgeMs:sourceAgeMs,
+    clientClockSkewMs:clientClockSkewMs,
+    extensionVersion:observedExtensionVersion,
+    expectedExtensionVersion:expectedExtensionVersion,
+    runtimeVersionMismatch:runtimeVersionMismatch,
+    freshness:{
+      status:freshnessStatus,
+      latestRelayReceivedAt:latestReal&&latestReal.relayReceivedAt||null,
+      latestClientCreatedAt:latestReal&&latestReal.createdAt||null,
+      sourceAgeMs:sourceAgeMs,
+      processingLagMs:sourceAgeMs,
+      clientClockSkewMs:clientClockSkewMs,
+      receiptVerified:sourceAgeMs!==null,
+      thresholds:{freshMs:120000,delayedMs:300000,staleAfterMs:300000}
+    },
+    inboxRemaining:inboxRemaining,
+    status:healthStatus
   };
   writeJson(path.join(obs,"health","github-build.json"),health);
   return{manifest,index,health,callReports:callReportIndex,latestCallReport:latestCallReport};
@@ -756,6 +801,8 @@ if(import.meta.url===`file://${process.argv[1]?.replaceAll("\\\\","/")}`){
     batches:result.health.batchFiles,
     identities:result.health.identities,
     snapshots:result.health.platformSnapshots,
-    deltas:result.health.platformDeltas
+    deltas:result.health.platformDeltas,
+    incomingCallWindow:result.health.incomingCallWindow,
+    freshness:result.health.freshness
   }));
 }

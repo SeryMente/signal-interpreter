@@ -53,6 +53,12 @@ jobs:
           node --check extension/observability-relay.js
           node --check tools/observability-relay/api/batch.js
           node --check extension/observation-sync.js
+          node --check tools/observability/incoming-call-window.mjs
+          node --check tools/observability/incoming-call-window-test.mjs
+          node --check tools/observability-freshness-audit.mjs
+          node --check tools/observability-freshness-audit-test.mjs
+          node --check tools/observability-relay-batch-test.mjs
+          node --check tools/observability-call-lifecycle-sync-test.mjs
           node --check tools/observability/platform-learning.mjs
           node --check tools/observability/platform-learning-test.mjs
           node --check tools/observability-github-pipeline.mjs
@@ -91,6 +97,14 @@ jobs:
         run: node tools/platform-screenshot-test.mjs
       - name: GitHub package pipeline unit test
         run: node tools/observability-github-pipeline-test.mjs
+      - name: Ten-minute incoming call lifecycle report test
+        run: node tools/observability/incoming-call-window-test.mjs
+      - name: Relay receive timestamp test
+        run: node tools/observability-relay-batch-test.mjs
+      - name: Immediate call lifecycle sync regression test
+        run: node tools/observability-call-lifecycle-sync-test.mjs
+      - name: Observability freshness audit regression test
+        run: node tools/observability-freshness-audit-test.mjs
       - name: Per-call observability report regression test
         run: node tools/call-observability-report-test.mjs
       - name: Overlay activation and recovery regression test

@@ -1,0 +1,13 @@
+import assert from "node:assert/strict";
+import {auditObservabilityFreshness} from "./observability-freshness-audit.mjs";
+const now=Date.parse("2026-10-30T22:00:00.000Z");
+const health=received=>({inboxRemaining:0,expectedExtensionVersion:"0.10.39",extensionVersion:"0.10.39",runtimeVersionMismatch:false,freshness:{latestRelayReceivedAt:received}});
+assert.equal(auditObservabilityFreshness(health("2026-10-30T21:59:00.000Z"),now).ok,true);
+assert.equal(auditObservabilityFreshness(health("2026-10-30T21:57:30.000Z"),now).failures[0].code,"OBSERVABILITY_DELAYED");
+assert.equal(auditObservabilityFreshness(health("2026-10-30T21:54:00.000Z"),now).failures[0].code,"OBSERVABILITY_STALE");
+assert.equal(auditObservabilityFreshness(health(null),now).failures[0].code,"RELAY_RECEIPT_UNAVAILABLE");
+const backlog=health("2026-10-30T21:59:00.000Z");backlog.inboxRemaining=2;
+assert(auditObservabilityFreshness(backlog,now).failures.some(x=>x.code==="OBSERVABILITY_BACKLOG"));
+const mismatch=health("2026-10-30T21:59:00.000Z");mismatch.runtimeVersionMismatch=true;
+assert(auditObservabilityFreshness(mismatch,now).failures.some(x=>x.code==="EXTENSION_RUNTIME_VERSION_MISMATCH"));
+console.log("OBSERVABILITY_FRESHNESS_AUDIT_TEST=PASS");

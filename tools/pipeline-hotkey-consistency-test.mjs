@@ -4,7 +4,7 @@ import fs from "node:fs";
 const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
 const background = fs.readFileSync("extension/background.js", "utf8");
 const popup = fs.readFileSync("extension/ui/popup.js", "utf8");
-assert.equal(manifest.version, "0.10.38");
+assert.equal(manifest.version, "0.10.39");
 assert.equal(manifest.commands["toggle-global-overlays"].suggested_key.default, "Ctrl+Shift+8");
 assert.equal(Object.hasOwn(manifest.commands, "toggle-call-overlays"), false,
   "do not keep the stale duplicate command from the 0.10.38 branch");

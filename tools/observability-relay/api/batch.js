@@ -49,9 +49,11 @@ function validateBatch(batch) {
   const batchId=String(batch.batchId||"");
   if(!/^[A-Za-z0-9._-]{1,120}$/.test(batchId)) throw Object.assign(new Error("Invalid batchId"),{status:400});
   if(!Array.isArray(batch.events) || batch.events.length<1 || batch.events.length>MAX_EVENTS) throw Object.assign(new Error("Invalid events array"),{status:400});
-  const serialized=JSON.stringify(batch);
+  const relayReceivedAt=new Date().toISOString();
+  const storedBatch=Object.assign({},batch,{relayReceivedAt:relayReceivedAt});
+  const serialized=JSON.stringify(storedBatch);
   if(Buffer.byteLength(serialized,"utf8")>MAX_BODY_BYTES) throw Object.assign(new Error("Batch exceeds size limit"),{status:413});
-  return {batchId,serialized};
+  return {batchId,serialized,relayReceivedAt:relayReceivedAt};
 }
 async function getExisting(path){try{return await githubRequest(`/repos/${REPOSITORY}/contents/${encodePath(path)}?ref=${encodeURIComponent(BRANCH)}`);}catch(error){if(error.status===404)return null;throw error;}}
 export default async function handler(req,res){
@@ -97,6 +99,6 @@ export default async function handler(req,res){
     const payload={message:`diagnostic: enqueue observation batch ${batch.batchId}`,content:Buffer.from(batch.serialized+"\n","utf8").toString("base64"),branch:BRANCH};
     let created;
     try{created=await githubRequest(`/repos/${REPOSITORY}/contents/${encodePath(remotePath)}`,{method:"PUT",body:JSON.stringify(payload)});}catch(error){if(error.status===409){const raced=await getExisting(remotePath);if(raced)return res.status(200).json({accepted:true,duplicate:true,batchId:batch.batchId,remotePath,contentSha:raced.sha||null});}throw error;}
-    return res.status(200).json({accepted:true,duplicate:false,batchId:batch.batchId,remotePath,contentSha:created&&created.content&&created.content.sha||null,commitSha:created&&created.commit&&created.commit.sha||null});
+    return res.status(200).json({accepted:true,duplicate:false,batchId:batch.batchId,relayReceivedAt:batch.relayReceivedAt,remotePath,contentSha:created&&created.content&&created.content.sha||null,commitSha:created&&created.commit&&created.commit.sha||null});
   }catch(error){const status=Number(error&&error.status)||500;return res.status(status>=400&&status<600?status:500).json({ok:false,error:String(error&&error.message||error)});}
 }

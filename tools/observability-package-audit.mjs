@@ -16,6 +16,9 @@ export function auditObservabilityPackage(observationsRoot){
   const callReportsIndexFile=path.join(root,"call-reports","index.json");
   const latestCallReportFile=path.join(root,"latest","latest-call-report.json");
   const latestCallReportMarkdown=path.join(root,"latest","latest-call-report.md");
+  const incomingCallWindowFile=path.join(root,"latest","incoming-calls-10m.json");
+  const incomingCallWindowMarkdown=path.join(root,"latest","incoming-calls-10m.md");
+  const healthFile=path.join(root,"health","github-build.json");
   assert(fs.existsSync(root),"observations directory missing");
   const manifestExists=fs.existsSync(manifestFile),indexExists=fs.existsSync(indexFile),latestExists=fs.existsSync(latestFile);
   if(!manifestExists&&!indexExists&&!latestExists){
@@ -48,6 +51,35 @@ export function auditObservabilityPackage(observationsRoot){
   assert(Number.isFinite(Number(screenshots.routeCount)),"screenshot index routeCount missing");
   assert(Number(manifest.platform&&manifest.platform.screenshotsChanged||0)===Number(screenshots.changed||0),"manifest screenshot change count mismatch");
   assert(Number(manifest.platform&&manifest.platform.screenshotErrors||0)===Number(screenshots.errors||0),"manifest screenshot error count mismatch");
+  let incomingCallWindowSummary=null;
+  if(manifest.calls&&manifest.calls.incomingCallWindowPath){
+    assert(manifest.calls.incomingCallWindowPath==="latest/incoming-calls-10m.json","incoming call window path must remain canonical");
+    assert(fs.existsSync(incomingCallWindowFile),"incoming call window report is missing");
+    assert(fs.existsSync(incomingCallWindowMarkdown),"incoming call window Markdown is missing");
+    const incoming=readJson(incomingCallWindowFile);
+    assert(incoming.schema==="signal-interpreter-incoming-call-window/v1","invalid incoming call window schema");
+    assert(Number(incoming.windowMinutes)===10,"incoming call report must cover exactly ten minutes");
+    assert(incoming.privacy&&incoming.privacy.fullCallIdIncluded===false&&incoming.privacy.rawDialogTextIncluded===false,"incoming call report privacy contract invalid");
+    assert(incoming.summary&&Number(incoming.summary.attempts||0)===incoming.attempts.length,"incoming call attempt count mismatch");
+    for(const attempt of incoming.attempts){
+      assert(typeof attempt.attemptId==="string"&&attempt.attemptId.length>0,"incoming attempt ID missing");
+      assert(["answered","missed","connect_failed_no_route","ring_unmatched","closed_unclassified","closed_after_click_unresolved","incoming_observed_pending","incomplete"].includes(attempt.status),"invalid incoming attempt status");
+      for(const callRef of attempt.callRefs||[])assert(/^[a-f0-9]{24}$/.test(callRef),"incoming call reference must be opaque SHA-256 prefix");
+    }
+    assert(Number(manifest.calls.incomingCallWindowSummary&&manifest.calls.incomingCallWindowSummary.attempts||0)===Number(incoming.summary.attempts||0),"manifest incoming call attempt count mismatch");
+    assert(incoming.privacy.rawAudioIncluded===false&&incoming.privacy.rawTranscriptIncluded===false&&incoming.privacy.rawDialogTextIncluded===false,
+      "incoming call report must explicitly declare raw call content excluded");
+    const serialized=fs.readFileSync(incomingCallWindowFile,"utf8");
+    assert(!/"(?:rawAudio|audio|rawTranscript|transcriptText|dialogText|innerText|textContent|outerHTML|innerHTML)"\s*:/.test(serialized),
+      "incoming call report contains a raw content field");
+    incomingCallWindowSummary=incoming.summary;
+  }
+  if(fs.existsSync(healthFile)){
+    const health=readJson(healthFile);
+    if(health.freshness&&["delayed","stale","receipt-unavailable"].includes(health.freshness.status)){
+      assert(health.status!=="ok","stale observability must never be reported as status ok");
+    }
+  }
 
   for(const key of ["lastSequence","eventCount","platform.observations","platform.deltas","platform.identities"]){
     const value=key.split(".").reduce((object,part)=>object&&object[part],manifest);
@@ -121,7 +153,7 @@ export function auditObservabilityPackage(observationsRoot){
     if(manifest.calls)assert(Number(manifest.calls.reportCount||0)===callReportCount,"manifest call report count mismatch");
   }
 
-  return {ok:true,manifest,identityCount:checked,observations:Number(index.observations||0),deltas:Number(index.deltas||0),routeCount:Number(index.routeCount||0),callReportCount:callReportCount,callReportCompleteCount:callReportCompleteCount,callReportPartialCount:callReportPartialCount};
+  return {ok:true,manifest,identityCount:checked,observations:Number(index.observations||0),deltas:Number(index.deltas||0),routeCount:Number(index.routeCount||0),callReportCount:callReportCount,callReportCompleteCount:callReportCompleteCount,callReportPartialCount:callReportPartialCount,incomingCallWindowSummary:incomingCallWindowSummary};
 }
 
 if(import.meta.url==="file://"+process.argv[1].replace(/\\\\/g,"/")){

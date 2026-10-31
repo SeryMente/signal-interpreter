@@ -11,7 +11,7 @@ const content = read("extension/content.js");
 const workflowPath = ".github/workflows/observability-audit.yml";
 const workflow = fs.existsSync(workflowPath) ? read(workflowPath) : null;
 
-assert.equal(manifest.version, "0.10.38", "la versión debe ser la que contiene la corrección");
+assert.equal(manifest.version, "0.10.39", "la versión debe ser la que contiene la corrección");
 assert.ok(manifest.content_scripts.some((entry) =>
   entry.matches?.includes("https://app.cloudinterpreter.com/*") &&
   entry.run_at === "document_start" &&

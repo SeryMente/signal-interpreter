@@ -101,7 +101,8 @@ async function collect(){
 async function flushInternal(reason){
   var now=Date.now();
   var checkpointReason = reason === "call-answered" || reason === "call-ended";
-  if(now-lastTriggerAt<MIN_GAP_MS&&reason!=="manual"&&reason!=="critical"&&reason!=="startup"&&!checkpointReason)return{ok:true,skipped:"rate-limited"};
+  var callLifecycleReason = reason === "call-lifecycle";
+  if(now-lastTriggerAt<MIN_GAP_MS&&reason!=="manual"&&reason!=="critical"&&reason!=="startup"&&!checkpointReason&&!callLifecycleReason)return{ok:true,skipped:"rate-limited"};
   lastTriggerAt=now;
   var data=await collect();
   if(!data.events.length){
@@ -127,7 +128,7 @@ async function flushInternal(reason){
   try{
     var r=await SignalObservabilityRelay.uploadBatch(payload);
     state.ackedSequence=Math.max(Number(state.ackedSequence)||0,Number(data.summary.lastSequence)||0);
-    state.lastSuccessAt=iso();state.lastRelayAcceptedAt=state.lastSuccessAt;
+    state.lastSuccessAt=iso();state.lastRelayAcceptedAt=r&&r.relayReceivedAt||state.lastSuccessAt;
     if(reason==="manual"){state.lastManualPublishAt=state.lastRelayAcceptedAt;state.lastManualBatchId=batchId;}
     else{state.lastAutomaticPublishAt=state.lastRelayAcceptedAt;state.lastAutomaticBatchId=batchId;}
     state.lastError=null;state.consecutiveFailures=0;
@@ -231,8 +232,9 @@ function flush(reason){
 function noteEvent(event){
   mark();
   var action=String(event&&event.action||"");
-  var critical=!!(event&&(event.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(action)||action==="CALL_RATING_STARS_CONFIRMED"));
-  if(critical){flush("critical").catch(function(){});return;}
+  var callLifecycleCritical=/^(?:INCOMING_RING_SIGNAL|INCOMING_DIALOG_DETECTED|INCOMING_DIALOG_CLOSED|INCOMING_DIALOG_CLOSED_OBSERVED|INCOMING_ATTEMPT_REGISTERED|INCOMING_ATTEMPT_SUPERSEDED|CONNECT_BUTTON_FOUND|CONNECT_BUTTON_NOT_FOUND|CONNECT_BUTTON_DISABLED|AUTO_ANSWER_BLOCKED|AUTO_ANSWER_AUTHORIZATION_BLOCKED|AUTO_ANSWER_ELIGIBLE|CONNECT_CLICKED|CONNECT_ACCEPTED_PENDING|ANSWER_FLOW_ROUTE_CONFIRMED|CALL_ROUTE_ENTERED|INCOMING_ATTEMPT_ANSWERED|MISSED_CALL_CLASSIFIED|CONNECT_FLOW_FAILED_NO_CALL_ROUTE|CONNECT_ROUTE_TIMEOUT|CONNECT_ERROR)$/.test(action);
+  var critical=!!(event&&(event.level==="error"||/ERROR|FAILED|TIMEOUT|BLOCKED|REJECTED/i.test(action)||action==="CALL_RATING_STARS_CONFIRMED"||callLifecycleCritical));
+  if(critical){flush(callLifecycleCritical?"call-lifecycle":"critical").catch(function(){});return;}
   if(pendingEvents>=EVENT_THRESHOLD){flush("event-threshold").catch(function(){});return;}
   if(!timer)timer=setTimeout(function(){timer=null;flush("event-window").catch(function(){});},30000);
 }
