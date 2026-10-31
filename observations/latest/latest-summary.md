@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-f9406239-a625-4e98-aa07-cfae059d0720
-- Creado: 2026-10-31T19:45:07.722Z
-- Trigger: event-window
+- Batch: batch-3e20e0f2-e167-4069-85db-4892795168b1
+- Creado: 2026-10-31T19:45:42.898Z
+- Trigger: alarm
 - Extensión: 0.10.36
 - Eventos: 5
 - Errores: 0
 - Warnings: 2
-- Secuencia: 7859 → 7863
+- Secuencia: 7864 → 7868
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 1918
 - Deltas de plataforma: 1897
@@ -21,7 +21,7 @@
 ## Acciones
 
 {
-  "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1,
   "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 2,
-  "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 2
+  "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 2,
+  "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
 }
