@@ -12,6 +12,7 @@ on:
       - "extension/ui/live.html"
       - "extension/transcript-assembler.js"
       - "tools/native-transcript-assembler-test.mjs"
+      - "tools/verify-release-package.mjs"
       - "extension/ui/popup.js"
       - "tools/microphone-guard-test.mjs"
       - "tools/signal-interpreter-longitudinal-regression-test.mjs"
@@ -28,6 +29,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: node tools/verify-release-package.mjs
       - run: node tools/microphone-guard-test.mjs
       - run: node tools/signal-interpreter-longitudinal-regression-test.mjs
       - run: node tools/background-caption-capture-state-test.mjs
