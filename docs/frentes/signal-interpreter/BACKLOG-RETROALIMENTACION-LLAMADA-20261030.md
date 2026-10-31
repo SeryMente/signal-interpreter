@@ -205,3 +205,16 @@ La entrega que incorpore estos cambios debe probar, como mínimo:
 **Implementación:** no iniciada.  
 **Prueba de usuario posterior:** pendiente.  
 **Clasificación:** backlog provisional del mismo frente Signal Interpreter; no crea un frente ni un responsable paralelo.
+
+
+## 7. Retoma longitudinal G7 — 2026-10-31
+
+- Fuente primaria literal: [REQUISITOS-VERBATIM-RETOMA-20261031.md](REQUISITOS-VERBATIM-RETOMA-20261031.md). Se preservan las instrucciones funcionales y el bypass P012/P013; no se publica la muestra cruda ni los datos identificativos.
+- Rama candidata: feat/0.11.0-longitudinal-requirements-20261031, derivada de main 65bd77ad89a7a6c5c716bbfcd600c5466bf7a9fd. Esta rama no equivale a merge, release, instalación o aceptación.
+- SI-FB-01: candidato de implementación en rama: estado base mute, normalización de estados previos a mute sin llamada, bloqueo de unmute fuera de llamada, unmute al confirmar ruta activa, remute antes de limpiar el ID al finalizar y sincronización fail-closed de pestañas Cloud. Pruebas CI y validación real pendientes.
+- SI-FB-04: el overlay de ingresos incorpora minimización/restauración reversible desde su cabecera y conserva el botón del micrófono en estado minimizado. El overlay de captions ya tenía botón; se persiste su preferencia de colapso a través de reinyecciones. Validación visual y de teclado pendiente.
+- SI-FB-05: el lector cambia a una pestaña normal de Chrome, reutiliza la sesión existente y conserva campos separados speaker/source/language, texto original y texto refinado cuando estén presentes. Validación del viewport, scroll y sincronización real pendiente.
+- SI-FB-02 y SI-FB-03 NO implementadas: el arranque de Groq sigue sustituido por el stub native-text-only y no existe ruta autenticada/aislada probada para enviar audio de micrófono desde el proceso de llamada al ASR. No se habilita captura por el puente DOM de control ni se envía audio al relay de observabilidad; éste publica datos en GitHub. No existe credencial Groq ni endpoint privado autenticado disponible en este ciclo.
+- SI-FB-06: se agrega regresión estática y workflow de CI para los invariantes cubiertos; la matriz E2E, las métricas WER/CER y la llamada controlada siguen pendientes.
+- Bypass P012/P013 aplicado únicamente al diseño/construcción de este alcance; permanecen privacidad, consentimiento, aislamiento, no persistencia de audio crudo y aceptación humana.
+- Estado: código candidato por rama; aún no mergeado, no instalado, no probado en Windows/Chrome real, no probado en llamada y no aceptado. Main conserva 0.10.39.

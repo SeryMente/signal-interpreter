@@ -483,6 +483,7 @@
     if (collapseButton) listen(collapseButton, "click", function () {
       collapsed = !collapsed;
       applyCollapsedState();
+      if (!isLabPage) chrome.storage.local.set({ signalCaptionOverlayCollapsed: collapsed }).catch(function () {});
       if (!collapsed) schedulePosition();
       else if (host) host.style.height = "46px";
     });
@@ -1091,10 +1092,11 @@
     });
   }
 
-  chrome.storage.local.get(["effectifConfig", isLabPage ? "signalLabOverlayLayout" : "signalCaptionOverlayLayout"], function (stored) {
+  chrome.storage.local.get(["effectifConfig", "signalCaptionOverlayCollapsed", isLabPage ? "signalLabOverlayLayout" : "signalCaptionOverlayLayout"], function (stored) {
     if (runtimeDisposed) return;
     runtimeStorageReady = true;
     config = Object.assign({}, config, stored.effectifConfig || {});
+    collapsed = !isLabPage && stored.signalCaptionOverlayCollapsed === true;
     if (isLabPage) {config.liveCaptionOverlayEnabled=true;config.liveCaptionOverlayScope="source-only";}
     var saved = isLabPage ? stored.signalLabOverlayLayout : stored.signalCaptionOverlayLayout;
     if (saved && typeof saved === "object") {
@@ -1111,7 +1113,7 @@
     }
     startRecoveryWatchdogs();
     syncContext(true);
-    if (canShowOnThisPage()) { ensureHost(); applyLayout(); render(); }
+    if (canShowOnThisPage()) { ensureHost(); applyLayout(); applyCollapsedState(); render(); }
   });
 
   function startRecoveryWatchdogs() {
@@ -1181,6 +1183,7 @@
   function onOverlayStorageChanged(changes, area) {
     if (runtimeDisposed) return;
     if (area !== "local") return;
+    if (changes.signalCaptionOverlayCollapsed) { collapsed=!isLabPage && changes.signalCaptionOverlayCollapsed.newValue===true;applyCollapsedState();updateUnreadButton(); }
     if (changes.effectifConfig) {
       config = Object.assign({}, config, changes.effectifConfig.newValue || {});
       syncContext(true);
