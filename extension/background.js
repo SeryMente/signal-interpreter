@@ -1652,7 +1652,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       }, "info", "background");
     }).then(async function (state) {
       if (!state || state.callId !== callId) return;
-      var micResult = await setExtensionMicrophoneMuted(false,"call-accepted");
+      var micResult = await setExtensionMicrophoneMuted(false, "call-accepted");
       if (!micResult || micResult.verified !== true || micResult.muted !== false) record("CALL_ACCEPTED_MICROPHONE_UNMUTE_NOT_VERIFIED",{callId:callId,tabId:state.callSourceTabId,error:micResult&&micResult.error||"verification-failed"},"error","microphone");
       if (cachedConfig.liveCaptionOverlayEnabled !== false && state.callSourceTabId != null) {
         var nativeCaptionStarted = false;
