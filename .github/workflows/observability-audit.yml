@@ -46,6 +46,8 @@ jobs:
           node --check tools/overlay-global-toggle-regression-test.mjs
           node --check tools/call-earnings-baseline-tests.mjs
           node --check extension/live-caption-core.js
+          node --check extension/transcript-assembler.js
+          node --check tools/native-transcript-assembler-test.mjs
           node --check extension/live-caption-bridge.js
           node --check extension/live-caption-overlay.js
           node --check extension/youtube-caption-adapter.js
@@ -135,6 +137,8 @@ jobs:
         run: node tools/call-export-runtime-test.mjs
       - name: Live Caption core unit test
         run: node tools/live-caption-core-test.mjs
+      - name: Native transcript assembler unit test
+        run: node tools/native-transcript-assembler-test.mjs
       - name: Live Caption Native Messaging bridge transition test
         run: node tools/live-caption-bridge-tests.mjs
       - name: Live Caption offscreen preview lifecycle test

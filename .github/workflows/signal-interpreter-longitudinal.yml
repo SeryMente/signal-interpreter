@@ -9,6 +9,9 @@ on:
       - "extension/content.js"
       - "extension/live-caption-overlay.js"
       - "extension/ui/live.js"
+      - "extension/ui/live.html"
+      - "extension/transcript-assembler.js"
+      - "tools/native-transcript-assembler-test.mjs"
       - "extension/ui/popup.js"
       - "tools/microphone-guard-test.mjs"
       - "tools/signal-interpreter-longitudinal-regression-test.mjs"
@@ -29,4 +32,5 @@ jobs:
       - run: node tools/signal-interpreter-longitudinal-regression-test.mjs
       - run: node tools/background-caption-capture-state-test.mjs
       - run: node tools/call-caption-runtime-test.mjs
+      - run: node tools/native-transcript-assembler-test.mjs
       - run: node tools/live-caption-offscreen-tests.mjs
