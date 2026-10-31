@@ -5,7 +5,7 @@
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
-- Revisión documental: **SI-OBJ-v1.14-retoma-G7-20261031-01**; ancla: **C-SIGNAL-RETOMA-20261031-G7-86FFBCFE**, transferencia de titularidad y reanudación del 2026-10-31. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
+- Revisión documental: **SI-OBJ-v1.15-retoma-longitudinal-20261031-01**; ancla: **C-SIGNAL-RETOMA-20261031-G7-86FFBCFE**, transferencia de titularidad y reanudación del 2026-10-31. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
 - Estado de producto: `main` contiene Signal Interpreter **0.10.39**, integrado por PR [#68](https://github.com/SeryMente/signal-interpreter/pull/68). CI post-merge de auditoría y host nativo pasó 2/2 en `8955c1cae996d150052483cdf0d5da37c4da41eb`. No hay release. El paquete 0.10.39 quedó staged en el Escritorio autorizado y el puente Native Messaging terminó instalado/verificado; Chrome aún no ha cargado la extensión y la aceptación real Windows/Chrome/llamada OPI sigue pendiente.
@@ -192,6 +192,14 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 - [PR #59 · diagnóstico del laboratorio](https://github.com/SeryMente/signal-interpreter/pull/59): cerrada sin fusionar el 2026-10-30 por decisión del operador; trabajo de laboratorio no prioritario, rama e historial preservados.
 - [Runtime y especificación fuente](../../USER-REQUIREMENT-LIVE-CAPTIONS-OVERLAY-VERBATIM-20261008.md), [arquitectura de observabilidad](../../OBSERVABILITY-ARCHITECTURE-BROWSER-GITHUB-v2.md), [versiones](../../versions/): fuentes técnicas de alcance, no núcleos paralelos. No releídas íntegramente aquí ni presentadas como prueba Windows actual.
 - Originales restringidos SI-D005/SI-D007, `session-instructions.json`, capturas, JSON y sondas privadas: referenciados en antecedente, **no recuperados completos en este ciclo**. Sus hashes no garantizan disponibilidad ni custodia entre plataformas.
+
+## Retoma longitudinal y fuente primaria del 2026-10-31
+
+- Requisitos verbatim: [REQUISITOS-VERBATIM-RETOMA-20261031.md](REQUISITOS-VERBATIM-RETOMA-20261031.md). Instrucciones y bypass P012/P013 preservados sin publicar la transcripción cruda ni datos identificativos.
+- Backlog provisional ampliado: [BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md), sección 7. SI-FB-01/04/05 tienen candidato en rama; SI-FB-02/03 siguen bloqueadas; SI-FB-06 requiere E2E.
+- Rama candidata feat/0.11.0-longitudinal-requirements-20261031 derivada de main 65bd77ad89a7a6c5c716bbfcd600c5466bf7a9fd, producto 0.10.39. No está integrada ni instalada.
+- El bypass P012/P013 no autoriza captura por puentes DOM no autenticados ni publicación de audio/transcripciones en el relay público de observabilidad.
+- Bloqueos: no hay credencial Groq ni endpoint privado autenticado; no hay ruta segura y probada del micrófono de la llamada al ASR; las pruebas Windows/Chrome y llamada real exigen participación local del operador. Se mantiene native-text-only mientras tanto.
 
 ## Reinstanciación
 

@@ -107,7 +107,7 @@
       button.classList.remove("is-muted");
       button.setAttribute("aria-pressed", unmuteRetryPending ? "false" : "true");
       button.title = unmuteRetryPending
-        ? "Activación no verificada. Signal Interpreter no volverá a aplicar mute automáticamente; pulsa para reintentar."
+        ? "Activación no verificada. el micrófono permanece en mute hasta verificarlo; pulsa para reintentar dentro de una llamada activa."
         : "No se pudo verificar el mute. Pulsa para volver a solicitar el mute o usa el atajo para reintentar.";
     } else if (muted) {
       if (label) label.textContent = "MIC OFF";

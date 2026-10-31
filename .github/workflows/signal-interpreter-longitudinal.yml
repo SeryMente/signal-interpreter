@@ -1,0 +1,32 @@
+name: Signal Interpreter longitudinal regression
+on:
+  push:
+    branches: [feat/0.11.0-longitudinal-requirements-20261031]
+  pull_request:
+    paths:
+      - "extension/background.js"
+      - "extension/mic-guard-main.js"
+      - "extension/content.js"
+      - "extension/live-caption-overlay.js"
+      - "extension/ui/live.js"
+      - "extension/ui/popup.js"
+      - "tools/microphone-guard-test.mjs"
+      - "tools/signal-interpreter-longitudinal-regression-test.mjs"
+      - ".github/workflows/signal-interpreter-longitudinal.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node tools/microphone-guard-test.mjs
+      - run: node tools/signal-interpreter-longitudinal-regression-test.mjs
+      - run: node tools/background-caption-capture-state-test.mjs
+      - run: node tools/call-caption-runtime-test.mjs
+      - run: node tools/live-caption-offscreen-tests.mjs
