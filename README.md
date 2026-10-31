@@ -42,7 +42,7 @@ La observabilidad de Signal Interpreter cubre dos planos: telemetría de la prop
 
 - La extensión observa reactivamente el uso real de `app.cloudinterpreter.com` y conserva los eventos en IndexedDB.
 - El envío se dispara por eventos críticos, umbral, ventana temporal y una alarma periódica de aproximadamente 1 minuto.
-- Los batches saneados se publican **directamente desde Chrome a GitHub** en `observations/inbox/`; no existe servidor local intermedio.
+- Los batches saneados salen de Chrome hacia el **relay HTTPS de Vercel**, que los valida y publica en GitHub (`observations/inbox/`) usando `GITHUB_TOKEN` solo en el entorno de servidor. No existe servidor local intermedio ni se entrega ese token a la extensión.
 - GitHub Actions transforma el inbox en batches históricos, snapshots, deltas, índices, manifest y health remoto.
 - La observación de plataforma conserva evidencia estructurada sobre URL, DOM/HTML renderizado, CSS, JavaScript entregado al navegador, recursos, controles y cambios observables, sin almacenar secretos, cuerpos de red ni código server-side privado.
 - La observación distingue evidencia observada, inferencia, hipótesis y desconocido.
