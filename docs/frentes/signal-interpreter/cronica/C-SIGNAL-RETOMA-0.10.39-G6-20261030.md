@@ -12,10 +12,10 @@ El operador informó que la sesión local de Windows/RDC era nueva y que no deb�
 - Titularidad vigente: generación 6 · ACTIVA · constructor.
 - Folio: `SES-20261030-A8F4C291`.
 - Alias operativo: `chatgpt-signal-interpreter-SES-20261030-A8F4C291` (no es ID nativo).
-- UUIDv7 local: `01a18f28-049d-aebb-9fed-cc5264499f6a`.
+- UUIDv7 local: `01a18f6d-79cd-7b7f-8138-083ae11becb4`.
 - Evento: `SIGNAL-INTERPRETER-TRANSFER-20261030-G6-A8F4C291`.
 - Commit de transferencia: `cd4a8bac7ddfcb1294671e398a0f1d408caa660b`.
-- Blob de control tras read-back: `4a3e7a9f0a7045d0603cbc55da39a60f73cc5e4d`.
+- Blob de control tras read-back: `73cd791fb63a2c5f28faf96e53ea8912da2d30ab` (UUIDv7 local corregido y cotejado en lectura de vuelta).
 - La G5 anterior queda preservada como sustituida. La unicidad global del folio no está certificada.
 
 ## Diagnóstico y corrección
