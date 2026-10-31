@@ -201,7 +201,7 @@ La entrega que incorpore estos cambios debe probar, como mínimo:
 
 ## 6. Estado de este registro
 
-**Persistencia:** pendiente de confirmación por commit y lectura de vuelta.  
+**Persistencia:** PERSISTIDO en `main`; commit de creación `02b52c061c8c3c9e22d0a4dbc3e69824f95f2c6c`; lectura de vuelta exacta verificada.  
 **Implementación:** no iniciada.  
 **Prueba de usuario posterior:** pendiente.  
 **Clasificación:** backlog provisional del mismo frente Signal Interpreter; no crea un frente ni un responsable paralelo.
