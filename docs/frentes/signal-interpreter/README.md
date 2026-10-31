@@ -6,6 +6,6 @@ El [núcleo operativo único](OBJETO-CANONICO.md) contiene propósito, gobierno,
 - `originales/`: mensajes disponibles con procedencia, secuencia y límites.
 - `cronica/`: explicación de acciones, evidencia, límites y checkpoint.
 - `evidencias/`: recibo de fuentes/migración y comprobaciones.
-- [Samantha — constructor](PROMPT-SAMANTHA.md) · [Claudia — asistente](PROMPT-CLAUDIA.md).
+- [Prompt operativo único de Signal Interpreter](PROMPT-SIGNAL-INTERPRETER.md) · una instancia responsable; no hay prompts ni papeles paralelos.
 
 Repositorio público: no cargar originales privados, secretos ni datos de llamadas. Código/artefactos operativos permanecen en sus rutas de distribución; sus referencias están en el núcleo. La ruta antigua remite aquí sin sostener estado.
