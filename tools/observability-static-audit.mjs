@@ -38,6 +38,7 @@ const relayBatchAuditTest=read("tools/observability-relay-batch-test.mjs");
 const callLifecycleSyncTest=read("tools/observability-call-lifecycle-sync-test.mjs");
 const relayBatchApi=read("tools/observability-relay/api/batch.js");
 const freshnessWorkflow=read(".github/workflows/observability-freshness.yml");
+const transcriptAssembler=read("extension/transcript-assembler.js");
 
 assert.equal(manifest.version,"0.10.39");
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
@@ -51,7 +52,13 @@ assert.ok(manifest.commands["toggle-extension-microphone"].description.includes(
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 assert.match(manifest.content_security_policy.extension_pages,/https:\/\/signal-interpreter-observability-re\.vercel\.app/);
 
-assert.ok(background.includes('importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js")'));
+assert.ok(background.includes('importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","transcript-assembler.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js")'));
+assert.ok(background.includes("enqueueNativeCaption(caption,sourceTabId)"));
+assert.ok(background.includes("await finalizeNativeCaptionForCall(closedCallId)"));
+assert.ok(background.includes("Number(context.tabId)!==Number(sourceTabId)"));
+assert.ok(transcriptAssembler.includes("HABLANTE NO IDENTIFICADO"));
+assert.ok(transcriptAssembler.includes("languageEvidence"));
+assert.ok(transcriptAssembler.includes("partial:true"));
 assert.ok(background.includes('alarm.name==="signal-observation-sync"'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync-retry"'));
 assert.ok(background.includes('SignalObservationSync.flush("startup"'));
