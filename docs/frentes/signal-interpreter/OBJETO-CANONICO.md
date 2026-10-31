@@ -197,7 +197,7 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 - Requisitos verbatim: [REQUISITOS-VERBATIM-RETOMA-20261031.md](REQUISITOS-VERBATIM-RETOMA-20261031.md). Instrucciones y bypass P012/P013 preservados sin publicar la transcripción cruda ni datos identificativos.
 - Backlog provisional ampliado: [BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md), sección 7. SI-FB-01/04/05 tienen candidato en rama; SI-FB-02/03 siguen bloqueadas; SI-FB-06 requiere E2E.
-- Rama candidata feat/0.11.0-longitudinal-requirements-20261031 derivada de main 65bd77ad89a7a6c5c716bbfcd600c5466bf7a9fd, producto 0.10.39. No está integrada ni instalada.
+- Rama candidata `feat/0.11.0-longitudinal-requirements-20261031`; último checkpoint técnico `95dea5d1ca3fb1f3a18f8bd4bf144d0284fa3a35`. El manifiesto continúa en 0.10.39. No está integrada, publicada como release ni instalada. `main` conserva 0.10.39 y su head observado en este ciclo fue `def54467ab5b52f92fd8b65b2ea13f3f3f6e8bdf`.
 - El bypass P012/P013 no autoriza captura por puentes DOM no autenticados ni publicación de audio/transcripciones en el relay público de observabilidad.
 - Bloqueos: no hay credencial Groq ni endpoint privado autenticado; no hay ruta segura y probada del micrófono de la llamada al ASR; las pruebas Windows/Chrome y llamada real exigen participación local del operador. Se mantiene native-text-only mientras tanto.
 
@@ -220,5 +220,16 @@ RDC M34/M35: PC-14 staging e instalación completados por CLI/headless. Read-bac
 Copia puntual a GitHub no equivale a sincronización global perpetua. El medio repo-backed es provisional mientras el operador normaliza persistencia global. Mantener los lotes históricos append-only; ninguna limpieza, compactación destructiva ni migración sin decisión expresa, prueba de integridad y read-back.
 
 Dos pasadas: fidelidad a originales/decisiones y resultado guardado/read-back. Cada ciclo sustantivo conserva salida visible y crónica, distingue estados propuesto/autorizado/intentado/ejecutado/verificado/aceptado y declara los límites.
+
+## Checkpoint técnico — captions nativos en historial — 2026-10-31
+
+- Crónica: [RETOMA-TECNICA-NATIVE-TRANSCRIPT-20261031.md](cronica/RETOMA-TECNICA-NATIVE-TRANSCRIPT-20261031.md).
+- Commit de código probado: `e726e713710049576b2af9b04fb5ae1d83aa20e7`. Commit final de CI en la rama, que añade el verificador de paquete a la regresión: `95dea5d1ca3fb1f3a18f8bd4bf144d0284fa3a35`. Ocho archivos funcionales y de workflow se leyeron de vuelta por SHA; el verificador de paquete informa 60 archivos íntegros.
+- El texto recibido del host nativo Live Caption ahora alimenta el historial local de sesiones. Los parciales progresivos actualizan un mismo segmento; los duplicados rápidos se omiten, las repeticiones separadas se conservan y la llamada finaliza el segmento abierto. La escritura exige coincidencia entre llamada activa, callId, pestaña de origen y contexto del bridge. El lector normal de Chrome actualiza por ID y preserva el scroll manual.
+- La fuente disponible no ofrece diarización ni timestamps nativos fiables. La atribución queda `HABLANTE NO IDENTIFICADO`; idioma desconocido o heurístico; timestamp local. El segmento de entrada no identifica físicamente a un hablante.
+- CI sobre el head `e726e713…`: auditoría de observabilidad SUCCESS, regresión longitudinal SUCCESS y build/protocolo Native Messaging SUCCESS. En la regresión: `NATIVE_TRANSCRIPT_ASSEMBLER_TEST=PASS`. En auditoría: `PASS: 60 payload hashes` y `OBSERVABILITY_STATIC_AUDIT=PASS`.
+- El último commit `95dea5d…` incorpora `node tools/verify-release-package.mjs` al workflow longitudinal para que el paquete vuelva a verificarse en futuros pushes. Ese head fue escrito y leído de vuelta; los tres workflows deberán quedar confirmados sobre ese SHA antes de declararlo íntegramente probado.
+- SI-FB-02 sigue bloqueada: no hay captura ASR del micrófono del intérprete ni credencial Groq/endpoint privado autenticado. SI-FB-03 es parcial: hay composición de parciales y deduplicación de captions nativos, pero no diarización fiable ni extracción de entidades críticas. SI-FB-05 ya tiene candidato funcional para captions entrantes en historial local, pero queda prueba E2E Chrome/llamada. SI-FB-06 conserva matriz, WER/CER y aceptación humana pendientes.
+- PR #69 permanece CLOSED / NOT MERGED por decisión del titular. No se reabrió ni se creó otro PR. No se modificó `main`, no se creó release, no hubo instalación ni aceptación real en Windows/Chrome. La rama no se debe fusionar sin conciliar primero su divergencia con el `main` actual.
 
 <!-- END_CANONICAL_CORE -->
