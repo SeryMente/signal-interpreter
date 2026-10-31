@@ -796,7 +796,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
             enabled: captionProbe.enabled !== false, contextReady: !!captionProbe.contextReady,
             rowCount: Number(captionProbe.rowCount || 0), policy: "extension-reinject-only-no-page-navigation"
           }, "info", "caption");
-          if (hotloadStateReady) {
+          if (hotloadStateReady && isCloudCallUrl(tab.url)) {
             var activeCallTab=!!(hotloadState&&hotloadState.callId&&hotloadState.callStartedAt)&&isCloudCallUrl(tab.url)&&Number(hotloadState.callSourceTabId)===tabId;
             var hotloadMuted=!activeCallTab||hotloadState.microphoneMuted===true;
             try {
