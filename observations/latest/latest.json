@@ -1,32 +1,34 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-307a145d-5e29-4491-9a8b-fb4fa0812cf4",
-  "createdAt": "2026-10-31T16:10:49.127Z",
-  "trigger": "critical",
+  "batchId": "batch-b3bf194c-a3a8-41c1-ab74-e0c3f3bda585",
+  "createdAt": "2026-10-31T16:21:02.312Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.36",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "76eb50e6-89f0-4432-acbb-ec80165b9aec",
-      "sequence": 7754,
-      "timestamp": "2026-10-31T16:10:46.015Z",
-      "ingestedAt": "2026-10-31T16:10:46.016Z",
-      "level": "warn",
-      "category": "RUNTIME",
-      "component": "background",
+      "id": "77bb9c26-534e-4264-b613-12e4d1ba44ca",
+      "sequence": 7759,
+      "timestamp": "2026-10-31T16:20:42.971Z",
+      "ingestedAt": "2026-10-31T16:20:43.054Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
       "extensionVersion": "0.10.36",
       "host": "",
       "url": "",
-      "phase": "error",
-      "action": "EARNINGS_SYNC_QUEUE_ERROR",
-      "outcome": "error",
-      "traceId": "7226a3b8-8109-4d3c-b3cf-57db1a6b9389",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "114a50cc-c62b-42a9-acfb-d1389ad82b42",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": null,
-      "session": {},
+      "tabId": 220923610,
+      "session": {
+        "callId": null
+      },
       "environment": {
         "extensionVersion": "0.10.36",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -35,41 +37,56 @@
       "expected": null,
       "observed": null,
       "reasonCode": null,
-      "error": "Error: No se pudo sincronizar silenciosamente: Error: Cannot access contents of the page. Extension manifest must request permission to access the respective host.",
+      "error": null,
       "metrics": {},
-      "context": {},
+      "context": {
+        "route": "/c/local-chatgpt%3A05d4dfea-6935-48f2-8be2-428ede9771d6",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220923610,
+        "sourceWindowId": 220923518,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://chatgpt.com/c/local-chatgpt%3A05d4dfea-6935-48f2-8be2-428ede9771d6"
+      },
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "operation": "official-today",
-        "error": "Error: No se pudo sincronizar silenciosamente: Error: Cannot access contents of the page. Extension manifest must request permission to access the respective host."
+        "callId": null,
+        "route": "/c/local-chatgpt%3A05d4dfea-6935-48f2-8be2-428ede9771d6",
+        "extensionVersion": "0.10.36",
+        "previousRoute": "/",
+        "currentRoute": "/c/local-chatgpt%3A05d4dfea-6935-48f2-8be2-428ede9771d6",
+        "activeCallRoute": false
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "7b293b70-1400-4d54-8465-0e4acb2e465c",
-      "sequence": 7755,
-      "timestamp": "2026-10-31T16:10:47.802Z",
-      "ingestedAt": "2026-10-31T16:10:47.802Z",
-      "level": "warn",
-      "category": "RUNTIME",
-      "component": "background",
+      "id": "5a09edf1-e274-401e-856b-1aa3c3ccb977",
+      "sequence": 7760,
+      "timestamp": "2026-10-31T16:20:45.832Z",
+      "ingestedAt": "2026-10-31T16:20:45.983Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
       "extensionVersion": "0.10.36",
       "host": "",
       "url": "",
-      "phase": "error",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
-      "outcome": "error",
-      "traceId": "9df8ae64-b1e4-48e1-9524-1473105a5a3e",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "bb7c867e-60da-473c-8b0c-59e170a2fc57",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": null,
-      "session": {},
+      "tabId": 220923610,
+      "session": {
+        "callId": null
+      },
       "environment": {
         "extensionVersion": "0.10.36",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -78,38 +95,50 @@
       "expected": null,
       "observed": null,
       "reasonCode": null,
-      "error": "Error: No se pudo sincronizar silenciosamente: Error: Cannot access contents of the page. Extension manifest must request permission to access the respective host.",
+      "error": null,
       "metrics": {},
-      "context": {},
+      "context": {
+        "route": "/c/6ae614f9-2fa4-83e8-a982-5980be4179f2",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220923610,
+        "sourceWindowId": 220923518,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://chatgpt.com/c/6ae614f9-2fa4-83e8-a982-5980be4179f2"
+      },
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly",
-        "error": "Error: No se pudo sincronizar silenciosamente: Error: Cannot access contents of the page. Extension manifest must request permission to access the respective host."
+        "callId": null,
+        "route": "/c/6ae614f9-2fa4-83e8-a982-5980be4179f2",
+        "extensionVersion": "0.10.36",
+        "previousRoute": "/c/local-chatgpt%3A05d4dfea-6935-48f2-8be2-428ede9771d6",
+        "currentRoute": "/c/6ae614f9-2fa4-83e8-a982-5980be4179f2",
+        "activeCallRoute": false
       }
     }
   ],
   "summary": {
     "eventsTotal": 2,
     "errors": 0,
-    "warnings": 2,
-    "critical": true,
+    "warnings": 0,
+    "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 7754,
-    "lastSequence": 7755,
-    "firstTimestamp": "2026-10-31T16:10:46.015Z",
-    "lastTimestamp": "2026-10-31T16:10:47.802Z",
+    "firstSequence": 7759,
+    "lastSequence": 7760,
+    "firstTimestamp": "2026-10-31T16:20:42.971Z",
+    "lastTimestamp": "2026-10-31T16:20:45.832Z",
     "actions": {
-      "EARNINGS_SYNC_QUEUE_ERROR": 1,
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
     },
     "categories": {
-      "RUNTIME": 2
+      "CAPTION": 2
     }
   }
 }
