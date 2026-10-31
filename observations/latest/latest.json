@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-07a8a5b9-2a81-4733-8990-6b012bf28896",
-  "createdAt": "2026-10-31T16:06:42.890Z",
-  "trigger": "alarm",
+  "batchId": "batch-307a145d-5e29-4491-9a8b-fb4fa0812cf4",
+  "createdAt": "2026-10-31T16:10:49.127Z",
+  "trigger": "critical",
   "extensionVersion": "0.10.36",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "379725b6-217a-40a9-a24c-1c15944b435d",
-      "sequence": 7750,
-      "timestamp": "2026-10-31T16:06:41.409Z",
-      "ingestedAt": "2026-10-31T16:06:41.409Z",
-      "level": "info",
+      "id": "76eb50e6-89f0-4432-acbb-ec80165b9aec",
+      "sequence": 7754,
+      "timestamp": "2026-10-31T16:10:46.015Z",
+      "ingestedAt": "2026-10-31T16:10:46.016Z",
+      "level": "warn",
       "category": "RUNTIME",
       "component": "background",
       "extensionVersion": "0.10.36",
       "host": "",
       "url": "",
-      "phase": "event",
-      "action": "TELEMETRY_MAINTENANCE",
-      "outcome": "observed",
-      "traceId": "62408b86-83c9-4037-958f-edcd6c7682b6",
+      "phase": "error",
+      "action": "EARNINGS_SYNC_QUEUE_ERROR",
+      "outcome": "error",
+      "traceId": "7226a3b8-8109-4d3c-b3cf-57db1a6b9389",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -35,7 +35,7 @@
       "expected": null,
       "observed": null,
       "reasonCode": null,
-      "error": null,
+      "error": "Error: No se pudo sincronizar silenciosamente: Error: Cannot access contents of the page. Extension manifest must request permission to access the respective host.",
       "metrics": {},
       "context": {},
       "privacy": {
@@ -44,44 +44,72 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "pruned": {
-          "cutoff": "[PHONE]T16:06:41.253Z",
-          "expiredEvents": 0,
-          "expiredSnapshots": 0,
-          "expiredSignalSegments": 0,
-          "excessEvents": 0,
-          "excessSignalSegments": 0
-        },
-        "stats": {
-          "database": "signal-interpreter-telemetry",
-          "events": 7749,
-          "snapshots": 16,
-          "signalSegments": 0,
-          "oldestEventAt": "[PHONE]T17:05:33.453Z",
-          "newestEventAt": "[PHONE]T16:05:47.469Z",
-          "usageBytes": 7976790,
-          "quotaBytes": 15897237334
-        }
+        "operation": "official-today",
+        "error": "Error: No se pudo sincronizar silenciosamente: Error: Cannot access contents of the page. Extension manifest must request permission to access the respective host."
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "7b293b70-1400-4d54-8465-0e4acb2e465c",
+      "sequence": 7755,
+      "timestamp": "2026-10-31T16:10:47.802Z",
+      "ingestedAt": "2026-10-31T16:10:47.802Z",
+      "level": "warn",
+      "category": "RUNTIME",
+      "component": "background",
+      "extensionVersion": "0.10.36",
+      "host": "",
+      "url": "",
+      "phase": "error",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
+      "outcome": "error",
+      "traceId": "9df8ae64-b1e4-48e1-9524-1473105a5a3e",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.36",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": "Error: No se pudo sincronizar silenciosamente: Error: Cannot access contents of the page. Extension manifest must request permission to access the respective host.",
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "trigger": "hourly",
+        "error": "Error: No se pudo sincronizar silenciosamente: Error: Cannot access contents of the page. Extension manifest must request permission to access the respective host."
       }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
-    "warnings": 0,
-    "critical": false,
+    "warnings": 2,
+    "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 7750,
-    "lastSequence": 7750,
-    "firstTimestamp": "2026-10-31T16:06:41.409Z",
-    "lastTimestamp": "2026-10-31T16:06:41.409Z",
+    "firstSequence": 7754,
+    "lastSequence": 7755,
+    "firstTimestamp": "2026-10-31T16:10:46.015Z",
+    "lastTimestamp": "2026-10-31T16:10:47.802Z",
     "actions": {
-      "TELEMETRY_MAINTENANCE": 1
+      "EARNINGS_SYNC_QUEUE_ERROR": 1,
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "RUNTIME": 2
     }
   }
 }
