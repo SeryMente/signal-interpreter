@@ -59,3 +59,45 @@ Hecho: M34 publicado y leído de vuelta; DUG/INICIO actualizados; control G6 en 
 No hecho: staging de escritorio, instalación Native Messaging, carga Chrome, emisión de telemetría 0.10.39, informe incoming de diez minutos, aceptación funcional y release.
 
 Siguiente dependencia única para continuar staging: autorización/conciliación del nuevo perfil Windows descubierto en PC-14 conforme a P036.
+
+## Adenda de cierre · confirmación M35 e instalación verificada · 2026-10-31
+
+La declaración anterior de bloqueo correspondía al instante previo a la confirmación del operador. Posteriormente el operador autorizó expresamente la asociación de Windows observada en el preflight para **este PC-14 y esta instalación solamente**. La autorización quedó registrada en M35 de §24 del DUG; P036 general no cambió. La excepción se consumió y cerró tras la lectura de vuelta del instalador.
+
+DUG actualizado a **v373 · NX-373m**, Metacanon 1.26, GOW 2.14. Commit `c79ddf6f862f97cafa61955eb15a17ffaea463d0`; blob `cac4525de77d4f47a8a59c25201968ecf2056b90`. `INICIO.md` actualizado a v373/NX-373m, commit `1dd4c4e35d5097d28485b86c0f37ec0faf096cb9`, blob `9b169fe76a229279134119d2fa7299e12ddf349c`.
+
+### Staging del repositorio
+
+Se descargó el ZIP público del repositorio desde commit exacto `f4ee70caa2f22b3fbc52493ef17d2f21837ab103`; SHA-256 del ZIP `C587E9F13661148FEDAE547B02B3FD05785952DEFE03D76FAEE98108D89E7782`. Destino relativo: `Desktop/Signal Interpreter/signal-interpreter`. El manifiesto releído indica Signal Interpreter 0.10.39; se verificaron los 59 archivos del inventario `payload-sha256.json` antes de mover la carpeta a su destino. El repositorio queda staged, con `manifest.json` en la raíz y por tanto seleccionable mediante “Cargar descomprimida”.
+
+### Instalación oficial del puente Native Messaging
+
+Se ejecutó `INSTALAR.ps1` directamente desde la raíz, en la identidad Windows autorizada por el operador, sin GUI/Chrome visible ni manipulación de ventanas. Proceso finalizó con exit code **0** y salida:
+- `BRIDGE_PREPARADO=VERIFICADO`
+- `HASHES=PASS`
+- `NATIVE_MESSAGING_PROTOCOL=PASS`
+- `CHROME_RESTARTED=NO`
+
+Read-back de `INSTALACION-RESULTADO.json` confirmó:
+- Version `0.10.39`; raíz del paquete correcta.
+- Hashes `PASS`; NativeProtocol `PASS`; NativeHostRegistry `PASS`.
+- Muestra integrada `BUNDLED_VERIFIED`, SHA-256 `DB8CAE8CE1599ABA06CB3D8AB7E456CB01B396FAA8E1ACA26880D1ACC3B7332C`, duración 281.6s.
+- Registro HKCU apunta al manifiesto `com.signalinterpreter.captionhost.json` del host instalado.
+- SHA-256 esperado y real del ejecutable Native Messaging coinciden: `313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE`.
+- `ChromeLoaded=NO_VERIFICADO`, `RealCall=NO_VERIFICADA`; Chrome no fue reiniciado.
+
+No se guardaron en el repositorio público nombre de usuario Windows, SID, correo, device ID, código de emparejamiento ni rutas privadas.
+
+### Cierre de permisos y control
+
+Control G6 permanece ACTIVO como `agente_unico`; folio/UUID local se conservaron. El control final quedó releído: commit `c0ef30cde03d442475df9b6fc0d9e24b60de242c`, blob `b5fe40082ab8234865c56a1ba859d657dff037d7`. La titularidad vigente y el registro del titular nuevo están ambos en `agente_unico`; las titularidades previas aparecen como historia, sin distribución activa. M34/M35 están `CERRADAS_VERIFICADAS`; no queda permiso RDC para futuras tareas o sesiones.
+
+El núcleo operativo quedó actualizado a revisión `SI-OBJ-v1.12-agente-unico-pc14-01`, commit `b9404785960066467a13a4f456350229f1c50ddf`, blob `92f04bbb52ccf2a98a98a42c8e6e6cebcfef98f2`. El prompt único actualizado quedó en blob `4bede3b3950f4f45d15fbcb44a129521af43704b`. Los dos prompts paralelos siguen retirados del árbol activo.
+
+### Resultado y pendientes
+
+**Ejecutado y verificado:** staging 0.10.39, 59 hashes, instalador, puente Native Messaging, registro HKCU, SHA de ejecutable y recibo.
+
+**No ejecutado:** carga manual en `chrome://extensions`, recarga/uso Chrome, prueba de captions real, llamada OPI controlada, telemetría E2E 0.10.39 y aceptación funcional/release. No se afirma ninguno de esos resultados.
+
+La persistencia provisional repo-backed permanece confirmada para el historial anterior. Su cierre E2E de 0.10.39 requiere que Chrome cargue/ejecute esta extensión y llegue un nuevo batch con runtime 0.10.39 y `relayReceivedAt`, seguido del informe `incoming-calls-10m.json/md` y health fresco. La última lectura previa seguía mostrando runtime 0.10.37; ese hecho no se reemplaza por la instalación local.
