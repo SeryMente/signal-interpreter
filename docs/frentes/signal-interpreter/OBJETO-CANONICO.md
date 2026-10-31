@@ -5,7 +5,7 @@
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
-- Revisión documental: **SI-OBJ-v1.12-agente-unico-pc14-01**; ancla: **C-SIGNAL-SEGURIDAD-IDIOMAS-20261020-01**, encargo directo del operador del 2026-10-20. Naturaleza: permanente, actualización del objeto existente expresamente solicitada; no proyecto nuevo.
+- Revisión documental: **SI-OBJ-v1.13-retroalimentacion-llamada-01**; ancla: **C-SIGNAL-RETROALIMENTACION-LLAMADA-20261030-01**, encargo directo del operador del 2026-10-30. Naturaleza: permanente, actualización del objeto existente expresamente solicitada; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
 - Estado de producto: `main` contiene Signal Interpreter **0.10.39**, integrado por PR [#68](https://github.com/SeryMente/signal-interpreter/pull/68). CI post-merge de auditoría y host nativo pasó 2/2 en `8955c1cae996d150052483cdf0d5da37c4da41eb`. No hay release. El paquete 0.10.39 quedó staged en el Escritorio autorizado y el puente Native Messaging terminó instalado/verificado; Chrome aún no ha cargado la extensión y la aceptación real Windows/Chrome/llamada OPI sigue pendiente.
@@ -47,7 +47,7 @@ Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metac
 
 Incluido: Windows + Chrome; Live Caption → Windows UI Automation → Native Messaging → overlay; carriles por idioma, historial, copiar/buscar, hotloading, controles existentes; instalación portable desde raíz y laboratorio aislado con muestra incluida. MacOS/Linux son entornos de desarrollo, no plataformas de producto acreditadas.
 
-Excluido/vetado: captura de micrófono o pestaña para el overlay, Groq/fallback de voz, replay, atribución biométrica, rutas de audio históricamente sustituidas, infraestructura metodológica nueva. Los papeles de la dramatización no equivalen a identidades de hablantes. No reducir el objetivo a «audio reproduce» o «panel conecta» para declarar éxito.
+Excluido/vetado: captura de audio de pestaña, Groq/fallback de voz como ruta no aprobada, replay, atribución biométrica, rutas de audio históricamente sustituidas e infraestructura metodológica nueva. La captura del micrófono del intérprete deja de estar excluida por la instrucción directa del operador del 2026-10-30, pero queda limitada a una llamada aceptada/activa y sujeta a diseño explícito de permisos, privacidad, estado de llamada y pruebas. No habilita escucha durante espera o timbrado, grabación duradera ni envío de audio/texto clínico a observabilidad. Los papeles de la dramatización no equivalen a identidades de hablantes. No reducir el objetivo a «audio reproduce» o «panel conecta» para declarar éxito.
 
 ## Agente único responsable
 
@@ -65,9 +65,21 @@ El encargo original [SI-D009](originales/C-SIGNAL-METACANON-20261020-01.md) y la
 
 Decisiones posteriores aprobadas: automatismo telefónico solo tras «Estoy disponible»; vídeo manual; idle/bloqueo/fin de disponibilidad revocan sin colgar llamada actual; retorno no rearma; incierto = bloquear. El plazo de 150s fue retirado; NO hay límite numérico nuevo ratificado. La candidata requiere selección expresa (opciones 1/3/5/10 minutos, sin default). No confundir temporizadores técnicos de autorización con presencia.
 
-Participantes declarados por el operador: intérprete por micrófono, cliente habitualmente inglés, LEP español. Idioma NO demuestra identidad; la fuente nativa actual no trae identificación fiable de hablante. Fuente `yo` si llegara a estar verificada corresponde al INTÉRPRETE, jamás al LEP; **no se activó captura de micrófono**. «INTERVENCIÓN · LIVE» es incertidumbre de clasificación, no prueba de una tercera voz. Si se requiere transcribir al intérprete, hace falta resolver explícitamente fuente, privacidad y permiso de captura: no inferirlo de la declaración del canal ni reemplazar por Groq.
+Participantes declarados por el operador: intérprete por micrófono, cliente habitualmente inglés, LEP español. Idioma NO demuestra identidad; la fuente nativa actual no trae identificación fiable de hablante. Fuente `yo` verificada corresponde al INTÉRPRETE, jamás al LEP; en 0.10.39 no se activó captura de micrófono. «INTERVENCIÓN · LIVE» es incertidumbre de clasificación, no prueba de una tercera voz.
 
-Decisiones vigentes: fuente nativa exclusiva (§15 antiguo); raíz portable y laboratorio aislado (§16); muestra integrada y no carga manual (§17 y SI-D002–004); una sola instancia responsable; evidencia causal previa al cambio. Aprobación documental no equivale a aceptación Windows. Los vetos siguen vigentes.
+### Addendum 2026-10-30 — retroalimentación directa de llamada
+
+El operador solicita: (1) micrófono siempre silenciado en espera y durante timbrado; (2) permitir apertura únicamente después de una llamada aceptada/activa; (3) transcribir el canal propio del intérprete en español e inglés; (4) mejorar continuidad, precisión, segmentación y atribución de la transcripción; (5) compactar el overlay para priorizar el texto; y (6) abrir el historial en una pestaña independiente de Chrome.
+
+La política objetivo provisional de mute registra la intención inicial expresada por el operador: micrófono disponible/sin mute al establecerse la llamada contestada. La corrección posterior describe el comportamiento observado en 0.10.39: la llamada inicia con mute y exige desbloqueo manual. Esa observación se conserva como comportamiento actual, no como aceptación del objetivo. Espera, timbrado, estado incierto, desconexión y fin de llamada deben permanecer silenciados; solo una transición verificable a llamada aceptada/activa puede habilitar el micrófono.
+
+Esta instrucción supersede para el trabajo futuro la exclusión anterior de captura del micrófono, únicamente para el canal propio del intérprete y dentro de una llamada activa. No autoriza captura de audio de pestaña, escucha en espera, grabación duradera, telemetría de audio/texto clínico ni proveedor ASR específico. El diseño debe resolver permisos, indicador visible, fuente independiente, retención y cierre seguro antes de construir la captura.
+
+Los hallazgos de transcripción se limitan a la muestra privada aportada en la conversación: fragmentos incompletos, posibles duplicaciones de hipótesis parciales, errores en entidades críticas, habla solapada y mezcla entre fuente/idioma/rol. El idioma no puede usarse para inferir identidad; `source`, `speaker` y `language` son dimensiones distintas. La captura y la muestra no se copian al repositorio público.
+
+El detalle ejecutable está en [Backlog provisional de retroalimentación de llamada](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md), estado PERSISTIDO/PROVISIONAL/NO IMPLEMENTADO, tareas SI-FB-01 a SI-FB-06. Esta actualización documental no altera el paquete instalado, no realiza captura ni concede permisos de RDC/GUI/Chrome o llamadas reales. La aceptación de la prueba de usuario y la liberación permanecen reservadas al operador.
+
+Decisiones vigentes: texto nativo de Chrome para el canal entrante; nueva solicitud de transcripción del micrófono propio, acotada a llamada activa, según addendum de 2026-10-30; raíz portable y laboratorio aislado (§16); muestra integrada y no carga manual (§17 y SI-D002–004); una sola instancia responsable; evidencia causal previa al cambio. Aprobación documental no equivale a aceptación Windows. Los demás vetos siguen vigentes; la captura del micrófono solo se permite dentro del alcance descrito en el addendum.
 
 Antes de cambiar código, instalar o pedir otra prueba: hecho observado + fuente/entorno + alcance de la evidencia + hipótesis separada + prueba causal pertinente. No solicitar otra vez el JSON ya recibido. No modificar lector C# por semejanza de título/clase. Ante timeout, verificar efectos antes de repetir; no presumir ausencia de ejecución.
 
@@ -112,6 +124,7 @@ La sesión remota confirmó el PC-14 y la asociación autorizada; staging y ejec
 2. **SI-P02 — Cargar/aceptar 0.10.39:** el operador realiza la carga manual en `chrome://extensions`, confirma versión y perfil, rearma presencia según los guards y realiza la prueba real cuando decida. Revisar la telemetría saneada, `observations/latest/incoming-calls-10m.json/md` y health. No asumir llamada contestada; no compartir audio/texto.
 3. **SI-P03 — Cerrar persistencia provisional E2E 0.10.39:** tras la carga, verificar batch recibido con extensionVersion 0.10.39, `relayReceivedAt`, ACK, drenaje del inbox, ejecución de build, freshness y materialización del informe de diez minutos. Resolver el posible desajuste de despliegue Vercel/revisión y la discrepancia temporal. Mantener GitHub como depósito provisional; no migrar la persistencia global sin decisión posterior.
 4. **SI-P04 — Liberación:** solo después de pruebas Windows/Chrome, integridad, rollback, evidencia real y aceptación expresa del operador. No crear release por el mero merge o CI.
+5. **SI-FB-01–SI-FB-06 — Retroalimentación de llamada 2026-10-30:** backlog provisional persistido en [BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md). Seguridad de mute, transcripción bilingüe del intérprete, calidad, densidad del overlay, lector en nueva pestaña y matriz de aceptación. Todas las tareas permanecen pendientes; no modificar código ni declarar aceptación por la sola incorporación documental.
 
 ### 🔔 Recordatorios latentes
 
@@ -121,13 +134,13 @@ La sesión remota confirmó el PC-14 y la asociación autorizada; staging y ejec
 - 150 segundos revocados; no reactivar plazos antiguos. Vídeo manual. Idle/ausencia revoca autorización pero no debe colgar la llamada actual; retorno no rearma.
 - Teclado/ratón no prueban presencia física; ausencia de señal = bloquear, no inventar garantía.
 - Cliente/LEP son convenciones lingüísticas, no diarización. Fragmentos ambiguos se conservan sin atribución forzada.
-- Preservar fuente nativa exclusiva y privacidad; nada de micrófono/pestaña/Groq/replay como arreglo encubierto.
+- Preservar texto nativo para el canal entrante y privacidad. La nueva captura de micrófono propio solo se permite después de llamada aceptada/activa y mediante el alcance explícito SI-FB-02; no habilitar audio de pestaña, grabación duradera, envío de audio/texto a observabilidad, Groq no aprobado ni replay.
 - No publicar texto hablado, audio, nombres, teléfonos, cuentas, identificadores de equipo ni secretos.
 - Copia puntual no es sincronización automática; no portar permisos, identidades ni decisiones de otro frente.
 
 ## Aceptación y viabilidad
 
-Estado: **desarrollo 0.10.39 integrado; staging e instalación Native Messaging PC-14 PASS; medio repo-backed histórico confirmado; recepción E2E 0.10.39 y carga Chrome/aceptación funcional aún pendientes.**
+Estado: **desarrollo 0.10.39 integrado; staging e instalación Native Messaging PC-14 PASS; medio repo-backed histórico confirmado; recepción E2E 0.10.39 y carga Chrome/aceptación funcional aún pendientes. Backlog provisional de retroalimentación de llamada persistido; ninguna de sus seis tareas está implementada ni aceptada.**
 
 | Requisito | Estado implementado / evidencia | Aceptación y pendiente |
 |---|---|---|
