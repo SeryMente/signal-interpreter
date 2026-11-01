@@ -434,8 +434,10 @@
   async function refreshTelemetryStats() {
     try {
       var stats = await KhoraTelemetryDB.stats();
+      var ep = await KhoraTelemetryDB.getStatus();
       $("telemetryCount").textContent = stats.events.toLocaleString("es-MX") + " eventos";
       $("telemetryMeta").textContent = stats.snapshots.toLocaleString("es-MX") + " snapshots · " + Number(stats.signalSegments||0).toLocaleString("es-MX") + " segmentos Signal · " + formatBytes(stats.usageBytes) + " usados · desde " + (stats.oldestEventAt ? new Date(stats.oldestEventAt).toLocaleString() : "ahora");
+      if ($("epPersistenceMeta")) $("epPersistenceMeta").textContent = "EP local: " + Number(ep.cloudPendingCount||0).toLocaleString("es-MX") + " referencias pendientes · " + (ep.localRecords === ep.cloudPendingCount ? "sin recibo remoto" : "revisar ledger") + " · transporte deshabilitado hasta contrato/allowlist oficiales";
     } catch (error) {
       $("telemetryCount").textContent = "Base no disponible";
       $("telemetryMeta").textContent = String(error);
