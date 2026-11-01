@@ -1,0 +1,46 @@
+name: Signal Interpreter local-first EP adapter
+
+on:
+  push:
+    branches:
+      - feat/si-ep-local-first-adapter-20261101
+    paths:
+      - "extension/telemetry-db.js"
+      - "extension/background.js"
+      - "extension/observation-sync.js"
+      - "extension/ui/popup.js"
+      - "extension/ui/popup.html"
+      - "tools/ep-local-first-test.cjs"
+      - ".github/workflows/ep-local-first.yml"
+  pull_request:
+    paths:
+      - "extension/telemetry-db.js"
+      - "extension/background.js"
+      - "extension/observation-sync.js"
+      - "extension/ui/popup.js"
+      - "extension/ui/popup.html"
+      - "tools/ep-local-first-test.cjs"
+      - ".github/workflows/ep-local-first.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  local-first-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install IndexedDB test shim
+        run: npm install --no-save --ignore-scripts fake-indexeddb@6.2.7
+      - name: JavaScript syntax
+        run: |
+          node --check extension/telemetry-db.js
+          node --check extension/background.js
+          node --check extension/observation-sync.js
+          node --check extension/ui/popup.js
+          node --check tools/ep-local-first-test.cjs
+      - name: Transactional IndexedDB outbox and retention tests
+        run: node --test tools/ep-local-first-test.cjs
