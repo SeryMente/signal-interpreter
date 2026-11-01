@@ -1035,12 +1035,12 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var capturedInput = JSON.parse(JSON.stringify(input || {}));
     eventQueue = eventQueue.then(async function () {
       input = capturedInput;
-      var stored = await chrome.storage.local.get(["effectifEvents", "effectifEventSequence", "effectifTelemetryHealth"]);
-      var sequence = Number(stored.effectifEventSequence || 0) + 1;
+      var stored = await chrome.storage.local.get(["effectifEvents", "effectifTelemetryHealth"]);
+      var sequence = await KhoraTelemetryDB.getNextEventSequence();
       var event = Object.assign({
         schema: "khora-effectif-event/v4", id: uid(), sequence: sequence,
         timestamp: iso(), level: "info", source: "background",
-        extensionVersion: chrome.runtime.getManifest().version, category: inferEventCategory(input && input.action), component: (input && input.source) || "background", phase: inferEventPhase(input && input.action), outcome: inferEventOutcome(input && input.action, input && input.level || "info"), traceId: (input && input.traceId) || uid(), operationId: (input && input.operationId) || null, parentEventId: (input && input.parentEventId) || null, attempt: Number(input && input.attempt) || 1, durationMs: input && input.durationMs != null ? Number(input.durationMs) : null, session: {}, environment: { extensionVersion: chrome.runtime.getManifest().version, userAgent: typeof navigator!=="undefined"?navigator.userAgent:"", platform: typeof navigator!=="undefined"?navigator.platform:"" }, expected: null, observed: null, reasonCode: null, metrics: {}, privacy: { rawTextStored: false, captionTextStored: false, credentialRedaction: "active" }
+        extensionVersion: chrome.runtime.getManifest().version, category: inferEventCategory(input && input.action), component: (input && input.source) || "background", phase: inferEventPhase(input && input.action), outcome: inferEventOutcome(input && input.action, input && input.level || "info"), traceId: (input && input.traceId) || uid(), operationId: (input && input.operationId) || null, parentEventId: (input && input.parentEventId) || null, attempt: Number(input && input.attempt) || 1, durationMs: input && input.durationMs != null ? Number(input.durationMs) : null, session: {}, environment: { extensionVersion: chrome.runtime.getManifest().version, userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "", platform: typeof navigator !== "undefined" ? navigator.platform : "" }, expected: null, observed: null, reasonCode: null, metrics: {}, privacy: { rawTextStored: false, captionTextStored: false, credentialRedaction: "active" }
       }, input || {});
       delete event.apiKey; delete event.audio; delete event.text;
       if (event.payload) {
@@ -1051,27 +1051,51 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       event.ingestDelayMs = Math.max(0, Date.parse(event.ingestedAt) - Date.parse(event.timestamp || event.ingestedAt));
       event.payload = scrub(event.payload || {}, 0);
       event.context = scrub(event.context || {}, 0);
-      try{var pp=event.payload||{};event.reasonCode=event.reasonCode||pp.reasonCode||pp.reason||null;event.error=event.error||pp.error||pp.message||null;event.metrics=event.metrics&&Object.keys(event.metrics).length?event.metrics:((pp.metrics&&typeof pp.metrics==="object")?pp.metrics:{});event.expected=event.expected!=null?event.expected:(pp.expected!=null?pp.expected:null);event.observed=event.observed!=null?event.observed:(pp.observed!=null?pp.observed:null);}catch(_){}
-      try{var ep=event.payload||{};event.session=Object.assign({},event.session||{},ep.sessionId?{sessionId:ep.sessionId}:{} ,ep.sourceOrigin?{sourceOrigin:ep.sourceOrigin}:{} ,ep.sourceTabId!=null?{sourceTabId:ep.sourceTabId}:{} ,ep.sourceWindowId!=null?{sourceWindowId:ep.sourceWindowId}:{});}catch(_){}
-      event.url = redactString(event.url || "");
-      var health = Object.assign({ dbWrites: 0, dbErrors: 0, lastWriteAt: null }, stored.effectifTelemetryHealth || {});
       try {
-        await KhoraTelemetryDB.putEvent(event);
+        var pp = event.payload || {};
+        event.reasonCode = event.reasonCode || pp.reasonCode || pp.reason || null;
+        event.error = event.error || pp.error || pp.message || null;
+        event.metrics = event.metrics && Object.keys(event.metrics).length ? event.metrics : ((pp.metrics && typeof pp.metrics === "object") ? pp.metrics : {});
+        event.expected = event.expected != null ? event.expected : (pp.expected != null ? pp.expected : null);
+        event.observed = event.observed != null ? event.observed : (pp.observed != null ? pp.observed : null);
+      } catch (_) {}
+      try {
+        var ep = event.payload || {};
+        event.session = Object.assign({}, event.session || {}, ep.sessionId ? { sessionId: ep.sessionId } : {}, ep.sourceOrigin ? { sourceOrigin: ep.sourceOrigin } : {}, ep.sourceTabId != null ? { sourceTabId: ep.sourceTabId } : {}, ep.sourceWindowId != null ? { sourceWindowId: ep.sourceWindowId } : {});
+      } catch (_) {}
+      event.url = redactString(event.url || "");
+      var health = Object.assign({ dbWrites: 0, dbErrors: 0, mirrorErrors: 0, lastWriteAt: null }, stored.effectifTelemetryHealth || {});
+      try {
+        await KhoraTelemetryDB.putEventAndEnqueue(event);
         health.dbWrites += 1;
         health.lastWriteAt = event.timestamp;
+        health.lastError = null;
       } catch (dbError) {
         health.dbErrors += 1;
         health.lastError = String(dbError);
+        try { await chrome.storage.local.set({ effectifTelemetryHealth: health }); } catch (_) {}
+        throw dbError;
       }
       var events = Array.isArray(stored.effectifEvents) ? stored.effectifEvents : [];
       events.push(event);
       if (events.length > 500) events = events.slice(-500);
-      await chrome.storage.local.set({
-        effectifEvents: events, effectifLastEvent: event, effectifEventSequence: sequence,
-        effectifTelemetryHealth: health
-      });
+      try {
+        await chrome.storage.local.set({
+          effectifEvents: events,
+          effectifLastEvent: event,
+          effectifEventSequence: sequence,
+          effectifTelemetryHealth: health
+        });
+      } catch (mirrorError) {
+        health.mirrorErrors += 1;
+        health.lastMirrorError = String(mirrorError);
+        try { await chrome.storage.local.set({ effectifTelemetryHealth: health }); } catch (_) {}
+        console.error("[SIGNAL-INTERPRETER] EVENT_MIRROR_WRITE_ERROR", String(mirrorError));
+      }
       log(event.level, event.action || "EVENT", event.payload);
-      try{if(typeof SignalObservationSync!=="undefined"&&SignalObservationSync&&SignalObservationSync.noteEvent)SignalObservationSync.noteEvent(event)}catch(_){}
+      try {
+        if (typeof SignalObservationSync !== "undefined" && SignalObservationSync && SignalObservationSync.noteEvent) SignalObservationSync.noteEvent(event);
+      } catch (_) {}
       if (callback) callback(event);
     }).catch(function (error) {
       console.error("[SIGNAL-INTERPRETER] EVENT_LOG_ERROR", String(error));
