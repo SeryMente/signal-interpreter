@@ -20,7 +20,7 @@ Fecha del corte: 2026-11-01
 - Repositorio: `https://github.com/SeryMente/signal-interpreter`.
 - Rama de desarrollo: `feat/si-ep-local-first-adapter-20261101`.
 - Base de rama: main SHA `59b4c9e4d3cdc80e7627ba1eef1d546da1fbb8c8`.
-- Main conserva el producto 0.10.39 y no contiene la implementación local-first. No se fusionó la rama, no se cambió el manifiesto ni se creó release.
+- Main conserva el producto 0.10.39 y no contiene la implementación local-first. No se fusionó la rama, no se cambió el manifiesto ni se creó release. La comparación de `main` actual `1826378b7a37ec40a12283337b3109826e44e0ea` contra la base `59b4c9e4d3cdc80e7627ba1eef1d546da1fbb8c8` devuelve `ahead_by=2`, `behind_by=0`, `files=0`: los dos commits de alta/retirada de la crónica accidental permanecen en el historial, pero el árbol actual de main no tiene diferencia neta respecto de la base.
 - **Incidencia de publicación documental:** durante el registro de esta crónica se omitió el argumento `branch` en una llamada de creación y GitHub escribió el archivo por defecto en `main`. Se detectó de inmediato. El archivo se retiró mediante delete condicionado al blob SHA `d1f99ca3672e7679cb239beed4322ba4c1cf861c`; commit correctivo `1826378b7a37ec40a12283337b3109826e44e0ea`. La ruta ya no está en el árbol actual de main, pero los commits de alta y retirada permanecen en el historial Git; no se reescribió la historia. El mismo archivo se publica ahora en esta rama con `branch` explícito.
 
 ## 4. Implementación local-first
@@ -58,11 +58,11 @@ Fecha del corte: 2026-11-01
 - Workflow específico: `.github/workflows/ep-local-first.yml`.
 - Run `41360039965`, SHA `5a24281d5a35b36da6e68f62f85a43f298a9ceac`: SUCCESS. Node 22; sintaxis y pruebas fake-indexeddb.
 - El fixture parte de una DB v2 sintética y valida preservación de eventos, snapshots, segmentos y metadata; piso de secuencia heredado; commit atómico evento/secuencia/outbox/ledger; rechazo de secuencia fuera de orden; referencia `events#<sequence>`; recuperación por lectura local; reintentos; bloqueo de flush y retención de fuentes pendientes.
-- Auditoría general `observability-audit.yml`: run `41360108042`, SHA `89bad8d92a98811de4d390cfe89ed43bd56f6459`: SUCCESS. Incluye sintaxis del background/DB/popup, static audits existentes y comparación contra el inventario de payload.
-- Workflow Windows `native-caption-host.yml`: run `41360060474`, SHA de paquete `1494a3ca04e26e999535cdf0a32b92d6d70e5a6c`: SUCCESS. El instalador en runner Windows PowerShell 5.1 verificó hashes, preparación del puente Native Messaging, framing/clean shutdown y empaquetado del host; es prueba CI aislada, no instalación en el perfil del operador.
-- `payload-sha256.json` fue actualizado en commit `1494a3ca04e26e999535cdf0a32b92d6d70e5a6c`, blob `2151f91c293b8881027552b90045ae91972c147d`; contiene los SHA-256 actuales de `background.js`, `telemetry-db.js`, popup HTML y popup JS.
+- Auditoría general `observability-audit.yml`: run `41360217809`, SHA final `561389550530e6a2eba5a534f820f8ab67ee4c99`: SUCCESS. Incluye sintaxis del background/DB/popup, auditorías estáticas existentes y comparación contra el inventario de payload.
+- Workflow Windows `native-caption-host.yml`: run `41360217829`, SHA final `561389550530e6a2eba5a534f820f8ab67ee4c99`: SUCCESS. El instalador en runner Windows PowerShell 5.1 verificó hashes, preparación del puente Native Messaging, framing/clean shutdown y empaquetado del host. Es prueba CI aislada; no instalación en el perfil del operador.
+- `payload-sha256.json`: commit `1494a3ca04e26e999535cdf0a32b92d6d70e5a6c`, blob `2151f91c293b8881027552b90045ae91972c147d`. Se cotejaron sus cuatro entradas afectadas contra SHA-256 recalculado de los blobs actuales: `background.js`, `telemetry-db.js`, popup HTML y popup JS; las cuatro coinciden.
 - Los primeros runs fallidos correspondieron a inventario de payload obsoleto y a un fixture que intentó reasignar `globalThis.crypto` en Node 22. Se corrigieron: inventario actualizado, WebCrypto nativo y nueva ejecución. Los runs fallidos permanecen en Actions como historial y no se presentan como PASS.
-- Workflow de auditoría del OCP v1.15: run `41360108042` SUCCESS en el SHA de actualización documental indicado. La reejecución Windows disparada por el último commit documental puede finalizar por separado; el resultado Windows del paquete de código con inventario vigente ya está PASS en el run `41360060474`.
+- Workflow local-first: run `41360039965`, SHA `5a24281d5a35b36da6e68f62f85a43f298a9ceac`: SUCCESS. La prueba sintética abarca migración v2→v3, secuencia heredada, referencia local, transacción, recuperación y retención.
 
 ## 6. Límites
 
