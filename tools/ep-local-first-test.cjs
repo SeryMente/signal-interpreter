@@ -77,6 +77,8 @@ test('SI event, sequence, outbox and ledger commit atomically; pruning protects 
   const pendingFirst = await db.listPending(10);
   assert.equal(pendingFirst.length, 1);
   assert.equal(pendingFirst[0].operationRef, written.operationRef);
+  assert.equal(pendingFirst[0].sourceRef, 'events#13');
+  assert.equal(await db.getEventBySequence(13).then(event => event.id), first.id);
   assert.equal(pendingFirst[0].sourceHash, written.sourceHash);
 
   const recovery = await db.recover(written.operationRef);
