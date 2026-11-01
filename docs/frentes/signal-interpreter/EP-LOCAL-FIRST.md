@@ -19,7 +19,7 @@ La secuencia local se deriva del máximo entre:
 2. la secuencia del último evento local,
 3. el contador histórico `effectifEventSequence` de `chrome.storage.local`, utilizado solo como piso de migración.
 
-El piso se registra en IndexedDB sin crear un evento ni marcarlo como transferido. A partir de ahí, IndexedDB es la fuente de verdad. Los huecos de secuencia se permiten; no se reutilizan secuencias ni se rellena historia automáticamente.
+El piso se registra en IndexedDB mediante `ensureSequenceAtLeast` sin crear un evento ni marcarlo como transferido. A partir de ahí, IndexedDB es la fuente de verdad. Los huecos de secuencia se permiten; no se reutilizan secuencias ni se rellena historia automáticamente.
 
 ## Transacción de captura
 
@@ -43,7 +43,7 @@ Si la transacción falla, el evento no se confirma como durable, no avanza el co
 - `recover(operationRef)`: recupera la fuente local y coteja hash e identidad de operación.
 - `flush(options)`: bloqueado hasta contrato oficial y allowlist; no realiza llamadas de red.
 
-La identidad lógica permanece estable en reintentos. El mismo ID con contenido/operación incompatible produce conflicto mediante las restricciones únicas de IndexedDB y la validación de recuperación.
+La identidad lógica permanece estable en reintentos. El mismo ID con contenido/operación incompatible produce conflicto mediante las restricciones únicas de IndexedDB y la validación de recuperación. `getEventBySequence(sequence)` expone la lectura local que utiliza la recuperación y que necesitará el mapper autorizado cuando EP publique el contrato.
 
 ## Retención y eliminación
 
