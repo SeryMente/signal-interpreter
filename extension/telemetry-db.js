@@ -124,6 +124,48 @@
     var digest = await global.crypto.subtle.digest("SHA-256", new global.TextEncoder().encode(String(value)));
     return bytesToHex(digest);
   }
+  async function ensureSequenceAtLeast(sequenceFloor) {
+    var floor = Number(sequenceFloor);
+    if (!Number.isSafeInteger(floor) || floor < 0) floor = 0;
+    var db = await open();
+    var tx = db.transaction(["metadata", "events"], "readwrite");
+    var done = transactionDone(tx);
+    var metadataStore = tx.objectStore("metadata");
+    var eventStore = tx.objectStore("events");
+    var metadataRequest = metadataStore.get("eventSequence");
+    var latestRequest = eventStore.openCursor(null, "prev");
+    var readyCount = 0;
+    var metadataSequence = 0;
+    var storedSequence = 0;
+    var result = 0;
+    var failed = false;
+    function fail() {
+      if (failed) return;
+      failed = true;
+      try { tx.abort(); } catch (_) {}
+    }
+    function commitWhenReady() {
+      readyCount += 1;
+      if (readyCount !== 2 || failed) return;
+      result = Math.max(floor, metadataSequence, storedSequence);
+      if (result !== metadataSequence) {
+        metadataStore.put({ key: "eventSequence", value: result, updatedAt: new Date().toISOString() });
+      }
+    }
+    metadataRequest.onsuccess = function () {
+      metadataSequence = Number(metadataRequest.result && metadataRequest.result.value || 0);
+      commitWhenReady();
+    };
+    metadataRequest.onerror = fail;
+    latestRequest.onsuccess = function () {
+      storedSequence = Number(latestRequest.result && latestRequest.result.value && latestRequest.result.value.sequence || 0);
+      commitWhenReady();
+    };
+    latestRequest.onerror = fail;
+    await done;
+    return result;
+  }
+
   async function getNextEventSequence() {
     var db = await open();
     var tx = db.transaction(["metadata", "events"], "readonly");
@@ -542,6 +584,7 @@
     putEvent: putEventAndEnqueue,
     putEventAndEnqueue: putEventAndEnqueue,
     getNextEventSequence: getNextEventSequence,
+    ensureSequenceAtLeast: ensureSequenceAtLeast,
     enqueue: function (event) { return putEventAndEnqueue(event); },
     flush: flushEp,
     getStatus: getEpStatus,
