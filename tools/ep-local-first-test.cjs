@@ -60,8 +60,10 @@ test('SI event, sequence, outbox and ledger commit atomically; pruning protects 
   assert.equal((await db.stats()).events, 1);
   assert.equal((await db.stats()).snapshots, 1);
   assert.equal((await db.stats()).signalSegments, 1);
-  assert.equal(await db.getNextEventSequence(), 8);
-  const first = makeEvent(8, 'si-ep-test-0001');
+  await db.ensureSequenceAtLeast(12);
+  assert.equal(await db.getNextEventSequence(), 13);
+  assert.equal((await db.getStatus()).localRecords, 0);
+  const first = makeEvent(13, 'si-ep-test-0001');
   const written = await db.putEventAndEnqueue(first);
   assert.equal(written.localState, 'LOCAL_DURABLE');
   assert.equal(written.cloudState, 'CLOUD_PENDING');
@@ -87,10 +89,10 @@ test('SI event, sequence, outbox and ledger commit atomically; pruning protects 
   assert.equal(blockedFlush.attempted, 0);
 
   await assert.rejects(
-    () => db.putEventAndEnqueue(makeEvent(10, 'si-ep-test-skip-sequence')),
+    () => db.putEventAndEnqueue(makeEvent(15, 'si-ep-test-skip-sequence')),
     /Event sequence changed/
   );
-  assert.equal(await db.getNextEventSequence(), 9);
+  assert.equal(await db.getNextEventSequence(), 14);
   assert.equal((await db.getStatus()).localRecords, 1);
 
   await db.defer(written.operationRef, 'synthetic-offline');
@@ -99,7 +101,7 @@ test('SI event, sequence, outbox and ledger commit atomically; pruning protects 
   assert.equal(deferred[0].attempts, 1);
   assert.equal((await db.getStatus()).retryingCount, 1);
 
-  for (let sequence = 9; sequence <= 1008; sequence += 1) {
+  for (let sequence = 14; sequence <= 1013; sequence += 1) {
     const event = makeEvent(sequence, 'si-ep-test-' + String(sequence).padStart(4, '0'));
     await db.putEventAndEnqueue(event);
   }
