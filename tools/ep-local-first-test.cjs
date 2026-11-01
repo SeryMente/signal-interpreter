@@ -4,7 +4,6 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('fake-indexeddb/auto');
 globalThis.self = globalThis;
-globalThis.crypto = globalThis.crypto || require('node:crypto').webcrypto;
 globalThis.TextEncoder = globalThis.TextEncoder || require('node:util').TextEncoder;
 require('../extension/telemetry-db.js');
 
