@@ -142,6 +142,15 @@
     var storedSequence = Number(values[1] && values[1].sequence || 0);
     return Math.max(metadataSequence, storedSequence) + 1;
   }
+  async function putEventsWithOutbox(events) {
+    if (!Array.isArray(events) || !events.length) return 0;
+    var written = 0;
+    for (var i = 0; i < events.length; i += 1) {
+      await putEventAndEnqueue(events[i]);
+      written += 1;
+    }
+    return written;
+  }
   async function putEventAndEnqueue(event) {
     if (!event || !Number.isSafeInteger(Number(event.sequence)) || Number(event.sequence) < 1 ||
         typeof event.id !== "string" || !event.id) throw new Error("Invalid local event identity");
@@ -283,7 +292,9 @@
     await done;
     if (!row) return { found: false, localVerified: false, epVerified: false, reason: "operation-not-found" };
     var event = await getEventBySequence(row.sourceSequence);
-    var localVerified = !!event && event.id === row.eventId && await sha256Hex(JSON.stringify(event)) === row.sourceHash;
+    var sourceHashValid = !!event && event.id === row.eventId && await sha256Hex(JSON.stringify(event)) === row.sourceHash;
+    var expectedOperationRef = sourceHashValid ? await sha256Hex("SIGNAL_INTERPRETER\n" + row.eventId + "\n" + row.sourceHash) : null;
+    var localVerified = sourceHashValid && expectedOperationRef === row.operationRef;
     return {
       found: true,
       operationRef: row.operationRef,
@@ -481,7 +492,7 @@
       expiredSnapshots: expiredSnapshots,
       expiredSignalSegments: expiredSignalSegments,
       excessEvents: excessEvents,
-      protectedEvents: expiredEventResult.protected + excessEventResult.protected,
+      protectedEvents: Math.max(expiredEventResult.protected, excessEventResult.protected),
       remainingEventsOverLimit: excessEventResult.remainingOverLimit,
       excessSignalSegments: excessSignalSegments
     };
@@ -537,7 +548,7 @@
     listPending: listEpPending,
     defer: deferEpOperation,
     recover: recoverEpOperation,
-    putEvents: function (events) { return putMany("events", events); },
+    putEvents: putEventsWithOutbox,
     getEvents: function () { return getAll("events"); },
     getEventsAfter: getEventsAfter,
     putSnapshot: function (snapshot) { return put("snapshots", snapshot); },
