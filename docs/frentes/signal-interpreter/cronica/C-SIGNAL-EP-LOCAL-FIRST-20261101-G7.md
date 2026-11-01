@@ -56,12 +56,13 @@ Fecha del corte: 2026-11-01
 ## 5. Pruebas y evidencia
 
 - Workflow específico: `.github/workflows/ep-local-first.yml`.
-- Run `41359731237`, SHA `880cdce9b794df43127c44ca9c7d98e4f82665dc`: SUCCESS. Node 22; sintaxis y pruebas fake-indexeddb.
-- El fixture parte de una DB v2 sintética y valida preservación de eventos, snapshots, segmentos y metadata; piso de secuencia heredado; commit atómico evento/secuencia/outbox/ledger; rechazo de secuencia fuera de orden; recuperación; reintentos; bloqueo de flush y retención de fuentes pendientes.
-- Run `41359755454`, SHA `b6604e65a3d687959468b1d6a64d4c0d646580e4`: auditoría estática del paquete SUCCESS. Las huellas de `background.js`, `telemetry-db.js` y superficies de popup quedaron registradas en `payload-sha256.json`.
-- Run `41359791711`, SHA `0528c09b91d078d29a8a35e8f07f01bf52e88a9e`: workflow Windows Native Messaging / instalador PowerShell 5.1 SUCCESS; validación del paquete sintético en CI, no instalación en el perfil del operador.
-- El workflow `observability-audit.yml` del OCP v0.15 también pasó en SHA `1ccfd6fbfc735f3454174d102adef2aaf557594a`, run `41359821042`. El workflow Windows para ese mismo SHA estaba en curso al redactar esta crónica; se conserva como pendiente de read-back final en el siguiente checkpoint.
-- Los primeros runs fallidos correspondieron a hashes de payload obsoletos y al fixture que intentó reasignar `globalThis.crypto` en Node 22. Se corrigieron ambos: se usa WebCrypto nativo y se actualizaron los SHA-256. Los runs posteriores anteriores citados ya pasan; no se ocultan las ejecuciones fallidas históricas.
+- Run `41360039965`, SHA `5a24281d5a35b36da6e68f62f85a43f298a9ceac`: SUCCESS. Node 22; sintaxis y pruebas fake-indexeddb.
+- El fixture parte de una DB v2 sintética y valida preservación de eventos, snapshots, segmentos y metadata; piso de secuencia heredado; commit atómico evento/secuencia/outbox/ledger; rechazo de secuencia fuera de orden; referencia `events#<sequence>`; recuperación por lectura local; reintentos; bloqueo de flush y retención de fuentes pendientes.
+- Auditoría general `observability-audit.yml`: run `41360108042`, SHA `89bad8d92a98811de4d390cfe89ed43bd56f6459`: SUCCESS. Incluye sintaxis del background/DB/popup, static audits existentes y comparación contra el inventario de payload.
+- Workflow Windows `native-caption-host.yml`: run `41360060474`, SHA de paquete `1494a3ca04e26e999535cdf0a32b92d6d70e5a6c`: SUCCESS. El instalador en runner Windows PowerShell 5.1 verificó hashes, preparación del puente Native Messaging, framing/clean shutdown y empaquetado del host; es prueba CI aislada, no instalación en el perfil del operador.
+- `payload-sha256.json` fue actualizado en commit `1494a3ca04e26e999535cdf0a32b92d6d70e5a6c`, blob `2151f91c293b8881027552b90045ae91972c147d`; contiene los SHA-256 actuales de `background.js`, `telemetry-db.js`, popup HTML y popup JS.
+- Los primeros runs fallidos correspondieron a inventario de payload obsoleto y a un fixture que intentó reasignar `globalThis.crypto` en Node 22. Se corrigieron: inventario actualizado, WebCrypto nativo y nueva ejecución. Los runs fallidos permanecen en Actions como historial y no se presentan como PASS.
+- Workflow de auditoría del OCP v1.15: run `41360108042` SUCCESS en el SHA de actualización documental indicado. La reejecución Windows disparada por el último commit documental puede finalizar por separado; el resultado Windows del paquete de código con inventario vigente ya está PASS en el run `41360060474`.
 
 ## 6. Límites
 
