@@ -5,10 +5,10 @@
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
-- Revisión documental: **SI-OBJ-v1.14-retoma-G7-20261031-01**; ancla: **C-SIGNAL-RETOMA-20261031-G7-86FFBCFE**, transferencia de titularidad y reanudación del 2026-10-31. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
+- Revisión documental: **SI-OBJ-v1.15-EP-local-first-20261101-01**; ancla de este corte: **C-SIGNAL-EP-LOCAL-FIRST-20261101-G7**. Actualiza el estado técnico del frente sin cambiar el control G7 ni la versión de producto main; conserva como antecedentes la transferencia y reanudación del 2026-10-31.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
-- Estado de producto: `main` contiene Signal Interpreter **0.10.39**, integrado por PR [#68](https://github.com/SeryMente/signal-interpreter/pull/68). CI post-merge de auditoría y host nativo pasó 2/2 en `8955c1cae996d150052483cdf0d5da37c4da41eb`. No hay release. El paquete 0.10.39 quedó staged en el Escritorio autorizado y el puente Native Messaging terminó instalado/verificado; Chrome aún no ha cargado la extensión y la aceptación real Windows/Chrome/llamada OPI sigue pendiente.
+- Estado de producto: `main` contiene Signal Interpreter **0.10.39**, integrado por PR [#68](https://github.com/SeryMente/signal-interpreter/pull/68). CI post-merge de auditoría y host nativo pasó 2/2 en `8955c1cae996d150052483cdf0d5da37c4da41eb`. No hay release. El paquete 0.10.39 quedó staged en el Escritorio autorizado y el puente Native Messaging terminó instalado/verificado; Chrome aún no ha cargado la extensión y la aceptación real Windows/Chrome/llamada OPI sigue pendiente. Desarrollo adicional local-first realizado solo en la rama `feat/si-ep-local-first-adapter-20261101`, base `59b4c9e4d3cdc80e7627ba1eef1d546da1fbb8c8`; no está en `main`, no modifica el manifiesto 0.10.39 y no está fusionado ni liberado. La rama añade el outbox/ledger EP local en IndexedDB v3 y protección de retención; CI específica aprobada. Contrato de red EP, allowlist, aceptación Chrome y recepción remota siguen pendientes.
 - Persistencia verificable: identificar la revisión Git que contiene este archivo y el [recibo de migración](evidencias/C-SIGNAL-METACANON-20261020-01.json); el recibo identifica la base y los contenidos, no autocertifica publicación o conformidad semántica.
 
 ## LEER PRIMERO
@@ -23,10 +23,10 @@ Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metac
 
 ## Referencia metodológica
 
-- **Metacanon adquirido: 1.26**; DUG **v373 · NX-373m**; GOW **2.14**.
-- Fuente canónica autenticada y releída en este ciclo: `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, commit `f74082148d28b575c232e8fc291607bef8861794`, blob `cac4525de77d4f47a8a59c25201968ecf2056b90`. DUG v373/NX-373m; Metacanon 1.26; GOW 2.14.
+- **Metacanon adquirido: 1.28**; DUG **v377 · NX-377m**; GOW **2.17**.
+- Fuente canónica autenticada y releída en este ciclo: `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, commit y blob actuales releídos: `54064c8fe00f872023a455f06596061ed69062ae`. DUG v377/NX-377m; Metacanon 1.28; GOW 2.17.
 - Control vigente: [CONTROL-RESPONSABILIDAD.json](CONTROL-RESPONSABILIDAD.json), **G7 · ACTIVO · agente_unico**, folio `SES-20261031-86FFBCFE`, alias `chatgpt-signal-interpreter-SES-20261031-86FFBCFE`, UUIDv7 local `01a19293-52f8-770b-86ff-bcfe4751d0b1`. Blob de control `c1b4425fa91b5ac6acb90a52298ed9d07a62eaf5`; commit `20d4d02c581a9a2ed08357c49e267a07e566719e`. G6 quedó SUSTITUIDA y permanece en el historial; los identificadores nuevos son operativos, no IDs nativos.
-- Gobierno adquirido desde `main`: DUG v373 · NX-373m; Metacanon 1.26; GOW 2.14. P001/P005/P036 y compuertas pertinentes revisadas manualmente. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
+- Gobierno adquirido desde `main`: DUG v377 · NX-377m; Metacanon 1.28; GOW 2.17. P001/P005/P036 y compuertas pertinentes revisadas manualmente. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
 
 ### Constancia de adquisición y aplicación
 
@@ -132,6 +132,7 @@ La sesión remota confirmó el PC-14 y la asociación autorizada; staging y ejec
 2. **SI-P02 — Cargar/aceptar 0.10.39:** el operador realiza la carga manual en `chrome://extensions`, confirma versión y perfil, rearma presencia según los guards y realiza la prueba real cuando decida. Revisar la telemetría saneada, `observations/latest/incoming-calls-10m.json/md` y health. No asumir llamada contestada; no compartir audio/texto.
 3. **SI-P03 — Cerrar persistencia provisional E2E 0.10.39:** tras la carga, verificar batch recibido con extensionVersion 0.10.39, `relayReceivedAt`, ACK, drenaje del inbox, ejecución de build, freshness y materialización del informe de diez minutos. Resolver el posible desajuste de despliegue Vercel/revisión y la discrepancia temporal. Mantener GitHub como depósito provisional; no migrar la persistencia global sin decisión posterior.
 4. **SI-P04 — Liberación:** solo después de pruebas Windows/Chrome, integridad, rollback, evidencia real y aceptación expresa del operador. No crear release por el mero merge o CI.
+- **SI-P05 — Aceptación de persistencia local-first y conexión EP:** la rama de desarrollo tiene pruebas sintéticas aprobadas; falta validar IndexedDB/MV3 en Chrome real. La capa remota seguirá bloqueada hasta que EP publique contrato versionado, scopes, allowlist, read-back/recibo y entorno OCP-MSP verificable. No sustituir con el ACK Vercel/GitHub legado.
 5. **SI-FB-01–SI-FB-06 — Retroalimentación de llamada 2026-10-30:** backlog provisional persistido en [BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md). Seguridad de mute, transcripción bilingüe del intérprete, calidad, densidad del overlay, lector en nueva pestaña y matriz de aceptación. Todas las tareas permanecen pendientes; no modificar código ni declarar aceptación por la sola incorporación documental.
 
 ### 🔔 Recordatorios latentes
@@ -148,7 +149,7 @@ La sesión remota confirmó el PC-14 y la asociación autorizada; staging y ejec
 
 ## Aceptación y viabilidad
 
-Estado: **desarrollo 0.10.39 integrado; staging e instalación Native Messaging PC-14 PASS; medio repo-backed histórico confirmado; recepción E2E 0.10.39 y carga Chrome/aceptación funcional aún pendientes. Backlog provisional de retroalimentación de llamada persistido; ninguna de sus seis tareas está implementada ni aceptada.**
+Estado: **main conserva producto 0.10.39; staging e instalación Native Messaging PC-14 PASS; rama local-first SI aislada con CI específica PASS; migración IndexedDB v2→v3 preserva los stores heredados y protege secuencias pendientes. No hay merge ni release. Aceptación Chrome real y recepción EP/OCP-MSP pendientes. El relay Vercel/GitHub sigue siendo legado y no acredita EP.** Backlog provisional de retroalimentación de llamada persistido; ninguna de sus seis tareas está implementada ni aceptada.
 
 | Requisito | Estado implementado / evidencia | Aceptación y pendiente |
 |---|---|---|
@@ -172,6 +173,7 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 ## Crónica y fuentes
 
 - [Retoma G7 — 2026-10-31](cronica/C-SIGNAL-RETOMA-20261031-G7-86FFBCFE.md): transferencia autorizada y verificada, estado técnico contrastado y custodia documental pendiente.
+- [Corte local-first EP — 2026-11-01](cronica/C-SIGNAL-EP-LOCAL-FIRST-20261101-G7.md): IndexedDB v3, transacción evento/secuencia/outbox/ledger, retención protegida, integridad del paquete y límites de la capa remota.
 
 - [Crónica de este ciclo · agente único, M34/M35, persistencia e instalación PC-14](cronica/C-SIGNAL-AGENTE-UNICO-PERSISTENCIA-20261030-G6.md); instrucciones directas, DUG v373, control G6, evidencia repo-backed, staging y recibo de instalación.
 - [PR #68 · Signal Interpreter 0.10.39](https://github.com/SeryMente/signal-interpreter/pull/68), fusionada en `f9ddfade6fbdf1b04448906301c3d98de00930e5`. CI 3/3 success en el SHA probado `55416e125922c9e0d3ecad93bffe9edc74a27f85`; workflows push de main aún en curso en la última lectura. Sin release ni aceptación Windows/Chrome.
@@ -212,5 +214,7 @@ RDC M34/M35: PC-14 staging e instalación completados por CLI/headless. Read-bac
 Copia puntual a GitHub no equivale a sincronización global perpetua. El medio repo-backed es provisional mientras el operador normaliza persistencia global. Mantener los lotes históricos append-only; ninguna limpieza, compactación destructiva ni migración sin decisión expresa, prueba de integridad y read-back.
 
 Dos pasadas: fidelidad a originales/decisiones y resultado guardado/read-back. Cada ciclo sustantivo conserva salida visible y crónica, distingue estados propuesto/autorizado/intentado/ejecutado/verificado/aceptado y declara los límites.
+
+Corte local-first EP en rama de desarrollo: `feat/si-ep-local-first-adapter-20261101`. `extension/telemetry-db.js` usa IndexedDB v3 con `events`, `metadata`, `epOutbox` y `epLedger`; captura de eventos y obligación de réplica se confirman en una sola transacción. La secuencia usa el máximo de la secuencia local, el último evento y el piso heredado de `chrome.storage.local`; el mirror nunca confirma por sí mismo persistencia. El pruning protege secuencias con estados CLOUD_PENDING/CLOUD_IN_FLIGHT/EP_RECEIVED/RECONCILE_REQUIRED/RETRYABLE y `clear()` bloquea si quedan obligaciones abiertas. El corte cubre el almacén `events`; snapshots y signalSegments permanecen locales/no elegibles hasta que una allowlist los clasifique. `flush()` permanece bloqueado (`attempted=0`) porque no se dispone de contrato EP oficial. El ACK del relay Vercel/GitHub mantiene su semántica histórica y no marca EP. Workflow específico `.github/workflows/ep-local-first.yml`; ejecución aprobada en `41359731237` para los tests de transacción, migración, secuencia heredada, recuperación y pruning. Las auditorías generales y la prueba Windows 5.1 deben quedar PASS en el SHA final tras validar `payload-sha256.json`. No se ha cargado Chrome, no se ha enviado información clínica ni se ha llamado a infraestructura EP.
 
 <!-- END_CANONICAL_CORE -->
