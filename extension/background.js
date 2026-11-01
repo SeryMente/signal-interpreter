@@ -1035,7 +1035,8 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var capturedInput = JSON.parse(JSON.stringify(input || {}));
     eventQueue = eventQueue.then(async function () {
       input = capturedInput;
-      var stored = await chrome.storage.local.get(["effectifEvents", "effectifTelemetryHealth"]);
+      var stored = await chrome.storage.local.get(["effectifEvents", "effectifEventSequence", "effectifTelemetryHealth"]);
+      await KhoraTelemetryDB.ensureSequenceAtLeast(stored.effectifEventSequence);
       var sequence = await KhoraTelemetryDB.getNextEventSequence();
       var event = Object.assign({
         schema: "khora-effectif-event/v4", id: uid(), sequence: sequence,
