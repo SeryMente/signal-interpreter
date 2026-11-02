@@ -212,7 +212,7 @@ Releer base y método antes de escribir; ante delta/concurrencia conciliar, no s
 
 Gobernanza actual releída: DUG v377 · NX-377m, commit `8ee2482866b3dd085e58e05006727256d0274376`, blob `54064c8fe00f872023a455f06596061ed69062ae`; Metacanon 1.28; GOW 2.17. MCP normativo desactivado. La localización precisa de §ARR queda NO VERIFICADA.
 
-Prompt operativo único actualizado: blob `989180c9b97a874a7e4d5c35d25fbd257d3e72ea`; README continúa apuntando al prompt único. Crónica G9 persistida: blob `3942f8acbcdd8d62263acc29dc3ce11c260de45c`. Recibo de exportación persistido: blob `37b87c76540d2f9586cd1c210c710537f27cd634`.
+Prompt operativo único actualizado: blob `989180c9b97a874a7e4d5c35d25fbd257d3e72ea`; README continúa apuntando al prompt único. Crónica G9 persistida: blob `d4a8ed1b0eeb21efee3dd7215e903e55511472bf`. Recibo de exportación persistido: blob `37b87c76540d2f9586cd1c210c710537f27cd634`.
 
 Versión de producto: manifest 0.10.39 (blob `0cb37ff90b79cd84cf0154c01b055e22485fc5d6`). PR #68 permanece como la integración histórica del baseline. No se volvió a ejecutar CI ni se hizo release en este ciclo.
 
