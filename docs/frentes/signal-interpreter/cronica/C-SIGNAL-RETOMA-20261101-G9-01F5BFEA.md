@@ -91,9 +91,9 @@ El export informa que ART-028 produjo un patch local para durabilidad IndexedDB,
 
 Pendientes heredados, todavía abiertos: aceptación manual de 0.10.39 en Windows/Chrome; comprobación de la persistencia observacional E2E para esa versión; criterios de liberación; y SI-FB-01 a SI-FB-06 del backlog de retroalimentación de llamada. No se intervino llamada real, no se desplegó, no se creó release y no se cambió infraestructura.
 
-## 6. Última salida visible del modelo anterior conservada en el export
+## 6. Extracto de la última salida visible del modelo anterior (procedencia: export local)
 
-Fuente: `ChatGPT-SI-20261101-1724.md`, tramo final leído. Se conserva aquí el texto de la última respuesta visible de ese export como salida histórica, no como afirmación de ejecución de esta instancia:
+Fuente: `ChatGPT-SI-20261101-1724.md`, tramo final leído. Se conserva un extracto sustantivo de la última respuesta visible como salida histórica, no como afirmación de ejecución de esta instancia. Este bloque no constituye una reproducción íntegra/verbatim del mensaje completo; el export original sigue local y no publicado:
 
 > Voy a ejecutar el alcance como una tarea de ingeniería local: primero comprobaré si tengo un clon de `signal-interpreter` disponible, después contrastaré DUG/ART-028 y el objeto canónico, y solo entonces decidiré qué puedo implementar y probar. No usaré RDC, no haré push, PR, despliegue ni cambios de infraestructura.
 >
