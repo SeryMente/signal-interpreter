@@ -153,6 +153,8 @@ Fuente: `ChatGPT-SI-20261101-1724.md`, tramo final leído. Se conserva aquí el 
 >
 > El siguiente paso que indicó esa salida era aplicar el patch en un clon limpio exactamente en el commit base, verificar el diff completo y ejecutar el harness en un perfil Chrome desechable.
 >
+> **Registro de salida del export:** IPZ v0.7 (edad NO VERIFICADA); DUG v377 · NX-377m; CONV/CICLO/A/B pendientes o no asignados; FOL1 preparado, no activo; MCP normativo desactivado.
+>
 > **Procedencia:** SI `main` citado como commit `59b4c9e4d3cdc80e7627ba1eef1d546da1fbb8c8`, versión 0.10.39; DUG informado en ese ciclo como v377 · NX-377m; SHA de ZIP y patch consignados en el export original. Ninguno de esos artefactos ha sido recuperado ni revalidado en esta retoma.
 
 ## 7. Estado de este ciclo
@@ -161,7 +163,9 @@ Fuente: `ChatGPT-SI-20261101-1724.md`, tramo final leído. Se conserva aquí el 
 - Control G9: ACTIVO · agente único.
 - Recibo del export: persistido y releído.
 - Export original: todavía local en PC-8; no publicado por custodia pendiente.
-- Núcleo OCP y prompt: pendientes de reconciliación en esta crónica; se actualizarán secuencialmente en el mismo ciclo.
+- Núcleo OCP: actualizado como `SI-OBJ-v1.15-retoma-G9-20261101-01`; commit `c234d82552852d89449fdd344a9265e6067fa167`; blob `f51a2bd0be69fef9e99a53341c708b2c84ccc22d`; read-back PASS.
+- Prompt operativo único: G9, DUG v377, PC-8/PC-14 y reglas de micrófono reconciliados; blob `989180c9b97a874a7e4d5c35d25fbd257d3e72ea`; read-back PASS.
+- La crónica y el recibo tienen lectura de vuelta verificada. El archivo original continúa local y sin publicar; no se declara persistencia del export íntegro.
 - PC-8: offline tras la lectura del archivo; PC-14: excluido.
 - MCP normativo: DESACTIVADO.
 
