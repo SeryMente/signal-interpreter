@@ -5,7 +5,7 @@
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
-- Revisión documental: **SI-OBJ-v1.14-retoma-G7-20261031-01**; ancla: **C-SIGNAL-RETOMA-20261031-G7-86FFBCFE**, transferencia de titularidad y reanudación del 2026-10-31. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
+- Revisión documental: **SI-OBJ-v1.15-retoma-G9-20261101-01**; ancla: **C-SIGNAL-RETOMA-20261101-G9-01F5BFEA**, transferencia de titularidad y reanudación del 2026-11-01. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
 - Estado de producto: `main` contiene Signal Interpreter **0.10.39**, integrado por PR [#68](https://github.com/SeryMente/signal-interpreter/pull/68). CI post-merge de auditoría y host nativo pasó 2/2 en `8955c1cae996d150052483cdf0d5da37c4da41eb`. No hay release. El paquete 0.10.39 quedó staged en el Escritorio autorizado y el puente Native Messaging terminó instalado/verificado; Chrome aún no ha cargado la extensión y la aceptación real Windows/Chrome/llamada OPI sigue pendiente.
@@ -13,20 +13,20 @@
 
 ## LEER PRIMERO
 
-Modo: continuar el mismo frente como **una sola instancia responsable G7** (`SES-20261031-86FFBCFE`). No crear, asignar, invocar ni coordinar un segundo agente; no dividir trabajo por papeles; no generar prompts dobles ni transferencias internas.
+Modo: continuar el mismo frente como **una sola instancia responsable G9** (`SES-20261101-01F5BFEA`). No crear, asignar, invocar ni coordinar un segundo agente; no dividir trabajo por papeles; no generar prompts dobles ni transferencias internas.
 
 Leer este núcleo y adquirir gobierno vigente antes de actuar. Consultar después solo fuentes/evidencias necesarias para el objetivo actual; no recorrer toda la historia por rutina.
 
 Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metacanon pertinentes → gobierno particular de este frente. [Entrada del gobierno distribuido](https://github.com/SeryMente/metodologia/blob/main/INICIO.md). El repositorio metodológico requiere acceso autorizado; no copiar su contenido privado a este repositorio público ni pedir credenciales en el chat. Revalidar fuente y revisiones desde `main`; una referencia histórica no prueba frescura, autorización o ejecución. Fuente indispensable ausente bloquea solo la acción dependiente.
 
-**Modo operativo vigente:** una instancia única G7 tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva aprobaciones, decisiones humanas, pruebas de uso real, aceptación y liberación. Esta disposición no se propaga a otros proyectos. La transferencia G6→G7 quedó registrada y releída; M34/M35 son antecedentes cerrados y no conceden acceso RDC a esta sesión.
+**Modo operativo vigente:** una instancia única G9 tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva decisiones humanas, uso real, llamadas reales, aceptación y liberación. Esta disposición no se propaga a otros proyectos. G8 quedó SUSTITUIDA por G9 mediante transferencia condicionada por SHA/generación y doble read-back. G7 y G8 permanecen en el historial como titulares anteriores. M34/M35 son antecedentes históricos cerrados; PC-14 está expresamente excluido por el operador.
 
 ## Referencia metodológica
 
-- **Metacanon adquirido: 1.26**; DUG **v373 · NX-373m**; GOW **2.14**.
-- Fuente canónica autenticada y releída en este ciclo: `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, commit `f74082148d28b575c232e8fc291607bef8861794`, blob `cac4525de77d4f47a8a59c25201968ecf2056b90`. DUG v373/NX-373m; Metacanon 1.26; GOW 2.14.
-- Control vigente: [CONTROL-RESPONSABILIDAD.json](CONTROL-RESPONSABILIDAD.json), **G7 · ACTIVO · agente_unico**, folio `SES-20261031-86FFBCFE`, alias `chatgpt-signal-interpreter-SES-20261031-86FFBCFE`, UUIDv7 local `01a19293-52f8-770b-86ff-bcfe4751d0b1`. Blob de control `c1b4425fa91b5ac6acb90a52298ed9d07a62eaf5`; commit `20d4d02c581a9a2ed08357c49e267a07e566719e`. G6 quedó SUSTITUIDA y permanece en el historial; los identificadores nuevos son operativos, no IDs nativos.
-- Gobierno adquirido desde `main`: DUG v373 · NX-373m; Metacanon 1.26; GOW 2.14. P001/P005/P036 y compuertas pertinentes revisadas manualmente. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
+- **Metacanon adquirido: 1.28**; DUG **v377 · NX-377m**; GOW **2.17**.
+- Fuente canónica releída desde `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, commit `8ee2482866b3dd085e58e05006727256d0274376`, blob `54064c8fe00f872023a455f06596061ed69062ae`. `INICIO.md` confirma DUG v377, Metacanon 1.28 y GOW 2.17.
+- Control vigente: [CONTROL-RESPONSABILIDAD.json](CONTROL-RESPONSABILIDAD.json), **G9 · ACTIVO · agente_unico**, folio `SES-20261101-01F5BFEA`, alias `chatgpt-signal-interpreter-SES-20261101-01F5BFEA`, UUIDv7 local `01A199C7-AD7F-77D8-B66B-8B070269D6A6`. Blob final `6ae9903479394ebda40beff83d392fd86a61bad8`; commit de cierre de read-back `d86cc48d20addc6c09360eb5b185c0eaf8274b95`. G8 (`SES-20261101-76B4BFF9`) quedó SUSTITUIDO y permanece en el historial.
+- Se revisaron manualmente P001/P004/P005/P037/P038/P043, §42 de Metacanon y vocabulario GOW relativo a Arranque en Frío, MDP, SPDF, Persistencia documental, Registro conversacional, FT y Control de responsabilidad. `INICIO.md` refiere §ARR; no se localizó un encabezado literal §ARR en las secciones humanas recuperadas, por lo que su ubicación exacta queda NO VERIFICADA. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
 
 ### Constancia de adquisición y aplicación
 
@@ -55,7 +55,7 @@ Una sola instancia mantiene la responsabilidad completa del frente: análisis, d
 
 **Responsabilidad humana reservada:** el operador decide lo que requiere consentimiento, realiza el uso real que no pueda ejecutarse por CLI, controla las llamadas reales y emite la aceptación funcional y la autorización de liberación. La instancia no simula uso, no interviene una llamada real y no declara aceptación sin evidencia revisable.
 
-**RDC M34/M35:** staging e instalación oficial completados por terminal/CLI/headless en el PC-14 autorizado. No se usó GUI, no se abrió Chrome ni se intervino llamada real. La excepción remota está CERRADA_VERIFICADA tras read-back de `INSTALACION-RESULTADO.json`; no queda permiso para futuras sesiones.
+**RDC M34/M35:** staging e instalación oficial en PC-14 fueron hechos históricos de una sesión anterior, ya consumida y cerrada. Esta mención preserva la trazabilidad y no autoriza ni recomienda reutilizar PC-14. En la retoma actual el operador indicó PC-8; se usó solo para lectura/hash del export y después quedó OFFLINE. PC-14 está expresamente EXCLUIDO. No hay operación RDC actualmente en curso.
 
 **Criterio de ejecución:** realizar directamente todo diagnóstico, edición, automatización, pruebas aisladas, análisis y persistencia que esté autorizado y no requiera interacción real del operador. Cuando exista una dependencia humana, emitir una instrucción breve con precondiciones, resultado esperado, PASS/FAIL y evidencia mínima saneada. La salida debe reflejar qué fue observado, reportado, histórico, sintético, inferido o desconocido. Un único prompt activo: [PROMPT-SIGNAL-INTERPRETER.md](PROMPT-SIGNAL-INTERPRETER.md).
 
@@ -100,13 +100,14 @@ Preflight y ejecución remota: el PC-14 y el perfil Windows autorizado por el op
 ### 🔄 Estado vivo
 
 ```text
-Corte 2026-10-31 · generación 6 · instancia única ACTIVA. Control G6: folio `SES-20261030-A8F4C291`; UUIDv7 local `01a18f6d-79cd-7b7f-8138-083ae11becb4`; alias operativo `chatgpt-signal-interpreter-SES-20261030-A8F4C291`. Modo `agente_unico`. Blob de control `b5fe40082ab8234865c56a1ba859d657dff037d7`; commit `c0ef30cde03d442475df9b6fc0d9e24b60de242c`.
-DUG v373 · NX-373m; Metacanon 1.26; M34/M35 registrados y releídos en Metodología. M35 conservó P036 general y autorizó el perfil Windows actual de PC-14 exclusivamente para esta instalación; la excepción quedó consumida y cerrada tras el read-back. Commit DUG `c79ddf6f862f97cafa61955eb15a17ffaea463d0`; blob `cac4525de77d4f47a8a59c25201968ecf2056b90`.
-`main` contiene Signal Interpreter 0.10.39, integrado por PR #68. CI post-merge de auditoría y host nativo terminó 2/2 SUCCESS en `8955c1cae996d150052483cdf0d5da37c4da41eb`. No hay release.
-La versión 0.10.39 instrumenta observación pasiva de diálogos, `attemptId`, readiness/blocked reasons, transición/clic/ruta/desenlace, flush prioritario, `relayReceivedAt`, informe móvil de diez minutos y auditoría de frescura. Los guards fail-closed permanecen.
-La persistencia provisional existe en GitHub: `observations/batches` conserva 10,384 batches; hay 19 informes de llamada (16 completos, 3 parciales), 1,878 snapshots y 1,858 deltas. Health registrado `status=ok`, `inboxRemaining=0`, un batch procesado automáticamente y fecha de último input `2026-10-31T00:41:50.519Z`. El batch más reciente visible declara extensión **0.10.37** y 3 eventos. La versión nueva aún no se ha demostrado en telemetría real. No se encontró `incoming-calls-10m.json/md` en la última lectura.
-La persistencia provisional se confirma como mecanismo repo-backed Chrome → IndexedDB → Vercel relay → GitHub inbox → GitHub Actions → batches/reportes/snapshots/deltas/health. La API de administración/logs Vercel devolvió 403; no se inspeccionó ni descifró `GITHUB_TOKEN`. La recepción automática en GitHub prueba operación histórica real, pero el último batch visible sigue en runtime 0.10.37; el cierre E2E de 0.10.39 requiere un nuevo batch con `relayReceivedAt` y el informe incoming de diez minutos.
-El paquete 0.10.39 está staged en `Desktop/Signal Interpreter/signal-interpreter`; el instalador Native Messaging está verificado y el permiso RDC M34/M35 cerrado. La carga de la extensión en Chrome y la llamada de aceptación siguen NO VERIFICADAS. No release.
+Corte 2026-11-01 · generación 9 · instancia única ACTIVA. Control G9: folio `SES-20261101-01F5BFEA`; alias `chatgpt-signal-interpreter-SES-20261101-01F5BFEA`; UUIDv7 local `01A199C7-AD7F-77D8-B66B-8B070269D6A6`; rol `agente_unico`. Control SHA final `6ae9903479394ebda40beff83d392fd86a61bad8`; commit de read-back `d86cc48d20addc6c09360eb5b185c0eaf8274b95`. G8 quedó SUSTITUIDO; se conserva el historial.
+Transferencia G8→G9: autorización explícita del operador en esta conversación; CAS por blob anterior `93791ee500064375d9d101ffe866e5076a3488a3`, generación 8; escritura `31c4b06931fc7dee78ed85bee09eb50ff4149c48`; read-back inicial PASS; commit final de verificación `d86cc48d20addc6c09360eb5b185c0eaf8274b95`; lectura final PASS. Control cooperativo, no fencing universal.
+Gobierno adquirido: DUG v377 · NX-377m; Metacanon 1.28; GOW 2.17. DUG commit `8ee2482866b3dd085e58e05006727256d0274376`, blob `54064c8fe00f872023a455f06596061ed69062ae`. P001/P004/P005/P037/P038/P043 y Metacanon §42 revisados manualmente; MCP normativo DESACTIVADO.
+Producto: el manifest de `main` declara Signal Interpreter 0.10.39 (blob `0cb37ff90b79cd84cf0154c01b055e22485fc5d6`). No se ejecutó CI, no se instaló, no se cargó Chrome ni se hizo prueba real en este ciclo. El export anterior informa un patch ART-028 local no aplicado; sus artefactos no fueron recuperados ni revalidados.
+Persistencia observacional: GitHub sigue siendo el depósito provisional descrito en el núcleo; el último corte heredado observaba runtime 0.10.37, 10,384 batches y health ok. E2E de 0.10.39 sigue sin demostrarse. No se leyó telemetría nueva en esta retoma.
+Export recibido: `ChatGPT-SI-20261101-1724.md`, 81,920 bytes, 1,488 líneas, SHA-256 `7C92BC2DE3301EEFC12F531ECE33C6C1E9B79329AF4355441395B0190A264A0B`. Capturado y leído en PC-8; sin escritura remota. Original no publicado ni almacenado en OCP porque el repo es público y la revisión de privacidad/credenciales/datos de llamada quedó pendiente. Recibo persistido: `evidencias/RECIBO-EXPORT-CHATGPT-SI-20261101-1724.json`; crónica: `cronica/C-SIGNAL-RETOMA-20261101-G9-01F5BFEA.md`.
+PC-8: autorizado para esta solicitud, usado para localizar/leer/hash y después OFFLINE. PC-14: EXCLUIDO expresamente; no utilizar. No hay operación RDC actual.
+Pendientes: revisión de custodia del export original; aceptar manualmente 0.10.39 en Windows/Chrome cuando el operador lo decida; verificar persistencia provisional E2E con runtime 0.10.39; SI-P04 liberación; SI-FB-01–SI-FB-06. No llamadas reales, despliegue ni release.
 ```
 
 
@@ -117,6 +118,12 @@ Se identificó `ChatGPT-SI-20261031-0916.txt` (133.492 bytes; 2.794 líneas; SHA
 
 La última salida visible del modelo anterior no está localizada como registro recuperable en el OCP leído: **NO DISPONIBLE / NO VERIFICADA**. No reconstruirla desde fragmentos.
 
+
+### Captura documental pendiente — exportación 2026-11-01
+
+Se localizó y leyó `ChatGPT-SI-20261101-1724.md` en `PC-8/Downloads`: 81.920 bytes, 1.488 líneas, exportado/guardado el 2026-11-01 a las 17:24:23 (America/Mexico_City), SHA-256 `7C92BC2DE3301EEFC12F531ECE33C6C1E9B79329AF4355441395B0190A264A0B`. El archivo se leyó y su huella se verificó en PC-8; no se hizo escritura remota.
+
+El recibo [de adquisición y custodia](evidencias/RECIBO-EXPORT-CHATGPT-SI-20261101-1724.json) está persistido y releído, pero el original **NO está adjunto ni persistido en el OCP**. El repositorio es público; no se ha completado revisión de privacidad, credenciales o datos relacionados con llamadas. PC-8 quedó desconectado antes de completar esa revisión. Mantener el original local hasta reconectar PC-8, inspeccionar el contenido completo y decidir un derivado saneado o un destino privado autorizado. No publicar el original sin revisión.
 ### ⚗️ En prueba / recién fallido
 
 ```text
@@ -128,11 +135,12 @@ La sesión remota confirmó el PC-14 y la asociación autorizada; staging y ejec
 
 ### Pendientes en secuencia
 
-1. **SI-P01 — Staging e instalación del puente: COMPLETADO/VERIFICADO.** Paquete 0.10.39, 59 hashes, muestra, protocolo y registro HKCU PASS; recibo releído y ejecutable con SHA coincidente. M34/M35 consumidas y cerradas.
+1. **SI-P01 — Staging e instalación del puente: COMPLETADO/VERIFICADO en la sesión histórica registrada.** Paquete 0.10.39, 59 hashes, muestra, protocolo y registro HKCU PASS; recibo releído y ejecutable con SHA coincidente. M34/M35 consumidas y cerradas; PC-14 queda ahora EXCLUIDO y no se reutiliza.
 2. **SI-P02 — Cargar/aceptar 0.10.39:** el operador realiza la carga manual en `chrome://extensions`, confirma versión y perfil, rearma presencia según los guards y realiza la prueba real cuando decida. Revisar la telemetría saneada, `observations/latest/incoming-calls-10m.json/md` y health. No asumir llamada contestada; no compartir audio/texto.
 3. **SI-P03 — Cerrar persistencia provisional E2E 0.10.39:** tras la carga, verificar batch recibido con extensionVersion 0.10.39, `relayReceivedAt`, ACK, drenaje del inbox, ejecución de build, freshness y materialización del informe de diez minutos. Resolver el posible desajuste de despliegue Vercel/revisión y la discrepancia temporal. Mantener GitHub como depósito provisional; no migrar la persistencia global sin decisión posterior.
 4. **SI-P04 — Liberación:** solo después de pruebas Windows/Chrome, integridad, rollback, evidencia real y aceptación expresa del operador. No crear release por el mero merge o CI.
-5. **SI-FB-01–SI-FB-06 — Retroalimentación de llamada 2026-10-30:** backlog provisional persistido en [BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md). Seguridad de mute, transcripción bilingüe del intérprete, calidad, densidad del overlay, lector en nueva pestaña y matriz de aceptación. Todas las tareas permanecen pendientes; no modificar código ni declarar aceptación por la sola incorporación documental.
+5. **SI-FB-01–SI-FB-06 — Retroalimentación de llamada 2026-10-30:** backlog provisional persistido en [BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md). Seguridad de mute, transcripción bilingüe del intérprete, calidad, densidad del overlay, lector en nueva pestaña y matriz de aceptación. Todas las tareas permanecen pendientes.
+6. **Custodia de exportación 2026-11-01:** completar revisión de privacidad del original local en PC-8 y decidir destino autorizado/derivado saneado. El recibo de adquisición está persistido; el original no está publicado ni adjunto al OCP.
 
 ### 🔔 Recordatorios latentes
 
@@ -181,6 +189,7 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 - [Crónica de retoma y evidencia del 2026-10-29 · generación 4](cronica/C-SIGNAL-RETOMA-20261029-G4.md); entrada literal del operador, procedencia del adjunto, transferencia/read-back, fuentes vigentes, evidencia r3 y límites.
 - [Crónica de retoma y transferencia del 2026-10-30 · generación 5](cronica/C-SIGNAL-RETOMA-20261030-G5.md); autorización literal, control G5/read-back, delta de ramas, batch observacional del baseline 0.10.37, límites y siguiente secuencia.
+- [Crónica de retoma y transferencia G8→G9 · 2026-11-01](cronica/C-SIGNAL-RETOMA-20261101-G9-01F5BFEA.md); autorización, CAS/read-back G9, DUG v377, recepción del export y custodia pendiente. [Recibo del export](evidencias/RECIBO-EXPORT-CHATGPT-SI-20261101-1724.json).
 - [Crónica de reconciliación de candidata y CI del 2026-10-30 · generación 5](cronica/C-SIGNAL-RECONCILIACION-CI-20261030-G5.md); merge con ambos padres, preservación del árbol, PR base actualizada, CI 3/3 en bd21f384 y CI 3/3 en la actualización documental 23762a15.
 - [Crónica de sincronización final y CI del 2026-10-30 · generación 5](cronica/C-SIGNAL-FINAL-SYNC-20261030-G5.md); merge documental 0601cf0c, compare 70/0 y CI 3/3 en la cabeza exacta.
 - [Estado final de PR #67 y CI del 2026-10-30 · generación 5](cronica/C-SIGNAL-PR-FINAL-STATE-20261030-G5.md); base main leída de vuelta, diff 40 archivos, compare 71/0, mergeable_state clean y CI 3/3 sobre 5f57a47c; aceptación local del operador pendiente.
@@ -195,22 +204,24 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 ## Reinstanciación
 
-[Prompt operativo único](PROMPT-SIGNAL-INTERPRETER.md), subordinado al objeto canónico y al gobierno vigente. Al retomar, adquiere fuente metodológica actual, relee OCP y control G7 (`SES-20261031-86FFBCFE`), confirma una sola titularidad y continúa desde el checkpoint. No instancies identidades adicionales ni emitas prompts paralelos. Un prompt no crea permiso, conectividad, persistencia ni aceptación.
+[Prompt operativo único](PROMPT-SIGNAL-INTERPRETER.md), subordinado al objeto canónico y al gobierno vigente. El checkpoint de esta revisión es G9 (`SES-20261101-01F5BFEA`), pero cada retoma debe releer el control, verificar generación/SHA y adquirir el gobierno actual. No instancies identidades adicionales ni emitas prompts paralelos. Un prompt no crea permiso, conectividad, persistencia ni aceptación.
 
 ## Persistencia y revisión
 
-Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control G7 ACTIVO y modo `agente_unico` releídos; blob `c1b4425fa91b5ac6acb90a52298ed9d07a62eaf5`, commit `20d4d02c581a9a2ed08357c49e267a07e566719e`. Modo único registrado como `SIGNAL-INTERPRETER-M34-AGENTE-UNICO-20261030-G6`; M34/M35 CERRADAS_VERIFICADAS. El DUG está en v373/NX-373m, commit `c79ddf6f862f97cafa61955eb15a17ffaea463d0`, blob `cac4525de77d4f47a8a59c25201968ecf2056b90`.
+Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. **Control G9 ACTIVO** y modo `agente_unico` releídos; blob `6ae9903479394ebda40beff83d392fd86a61bad8`, commit de cierre `d86cc48d20addc6c09360eb5b185c0eaf8274b95`. G8 quedó SUSTITUIDO con histórico preservado. La transferencia G8→G9 quedó COMMITTED_AND_READBACK_VERIFIED bajo el evento `SIGNAL-INTERPRETER-TRANSFER-20261101-G9-01F5BFEA`. El control es cooperativo y no garantiza fencing frente a escritores que lo eludan.
 
-El prompt único está en `PROMPT-SIGNAL-INTERPRETER.md`, blob `4bede3b3950f4f45d15fbcb44a129521af43704b`. README releído y apunta a ese prompt. Los dos prompts anteriores fueron retirados del árbol activo; su historia permanece en Git y no se utiliza como instrucción activa.
+Gobernanza actual releída: DUG v377 · NX-377m, commit `8ee2482866b3dd085e58e05006727256d0274376`, blob `54064c8fe00f872023a455f06596061ed69062ae`; Metacanon 1.28; GOW 2.17. MCP normativo desactivado. La localización precisa de §ARR queda NO VERIFICADA.
 
-Versión de producto: manifest 0.10.39. PR #68 integrada en merge commit `f9ddfade6fbdf1b04448906301c3d98de00930e5`. Auditoría y host build post-merge 2/2 SUCCESS en `8955c1cae996d150052483cdf0d5da37c4da41eb`. No hay release.
+Prompt operativo único actualizado: blob `08f645dc63e9008b775c32b64bea20978c436f70`; README continúa apuntando al prompt único. Crónica G9 persistida: blob `7570620e5c97dcc4f46ce82f71a9a8f173209065`. Recibo de exportación persistido: blob `37b87c76540d2f9586cd1c210c710537f27cd634`.
 
-Persistencia provisional: `observations/manifest.json` declara 10,384 batches, 19 informes de llamada, 1,878 snapshots y 1,858 deltas. Health leído: `status=ok`, un batch procesado automáticamente e inbox 0. El batch más reciente es de runtime 0.10.37; no incluye `relayReceivedAt` en su objeto superior. El pipeline de main sí contiene la generación de informe incoming de diez minutos y freshness; los artefactos no aparecieron en la última lectura. Vercel management/logs API devolvió 403; no se inspeccionó el secret. La recepción automática confirmada en GitHub prueba que el medio ha funcionado, pero no prueba aún runtime 0.10.39, timestamp fiable o frescura actual.
+Versión de producto: manifest 0.10.39 (blob `0cb37ff90b79cd84cf0154c01b055e22485fc5d6`). PR #68 permanece como la integración histórica del baseline. No se volvió a ejecutar CI ni se hizo release en este ciclo.
 
-RDC M34/M35: PC-14 staging e instalación completados por CLI/headless. Read-back de `INSTALACION-RESULTADO.json`, registry manifest y ejecutable PASS. La autorización está cerrada y no se hereda a sesiones futuras. No registrar correo, device ID, SID, nombre de usuario Windows, código de sesión ni rutas privadas en este repositorio público.
+Persistencia provisional: `observations/manifest.json` y el corte heredado siguen registrando 10,384 batches, 19 informes de llamada, 1,878 snapshots y 1,858 deltas; health `status=ok`, inbox 0. El último batch visible en ese corte es de runtime 0.10.37 y no contiene `relayReceivedAt` superior. El pipeline de main contiene el informe incoming de diez minutos y freshness; los artefactos no aparecieron en esa lectura. Vercel management/logs API devolvió 403; no se inspeccionó el secret. Recepción histórica no prueba runtime 0.10.39, timestamp fiable ni frescura actual.
 
-Copia puntual a GitHub no equivale a sincronización global perpetua. El medio repo-backed es provisional mientras el operador normaliza persistencia global. Mantener los lotes históricos append-only; ninguna limpieza, compactación destructiva ni migración sin decisión expresa, prueba de integridad y read-back.
+**Export documental 2026-11-01:** el archivo `ChatGPT-SI-20261101-1724.md` fue localizado, leído y hasheado en PC-8; 81.920 bytes, 1.488 líneas, SHA-256 `7C92BC2DE3301EEFC12F531ECE33C6C1E9B79329AF4355441395B0190A264A0B`. Solo el recibo de custodia está publicado y verificado. El original no está en el repositorio público: falta revisión completa de privacidad/credenciales/datos de llamada. PC-8 quedó offline; PC-14 está expresamente excluido.
+
+PC-14/M34/M35 son historia cerrada y no habilitan acceso futuro. PC-8 fue autorizado por el operador para la solicitud actual, usado solo para lectura/hash y está offline. No se ejecutó RDC ahora, no se intervinieron llamadas reales ni se modificó el producto.
+
+Copia puntual a GitHub no equivale a sincronización global perpetua. Mantener los lotes históricos append-only; ninguna limpieza, compactación destructiva ni migración sin decisión expresa, prueba de integridad y read-back.
 
 Dos pasadas: fidelidad a originales/decisiones y resultado guardado/read-back. Cada ciclo sustantivo conserva salida visible y crónica, distingue estados propuesto/autorizado/intentado/ejecutado/verificado/aceptado y declara los límites.
-
-<!-- END_CANONICAL_CORE -->
