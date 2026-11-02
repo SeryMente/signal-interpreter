@@ -163,7 +163,7 @@ Fuente: `ChatGPT-SI-20261101-1724.md`, tramo final leído. Se conserva un extrac
 - Control G9: ACTIVO · agente único.
 - Recibo del export: persistido y releído.
 - Export original: todavía local en PC-8; no publicado por custodia pendiente.
-- Núcleo OCP: actualizado como `SI-OBJ-v1.15-retoma-G9-20261101-01`; commit `c234d82552852d89449fdd344a9265e6067fa167`; blob `f51a2bd0be69fef9e99a53341c708b2c84ccc22d`; read-back PASS.
+- Núcleo OCP: actualizado como `SI-OBJ-v1.15-retoma-G9-20261101-01`; reconciliación y lectura de vuelta final PASS. La revisión actual y sus enlaces son los que devuelve `main`.
 - Prompt operativo único: G9, DUG v377, PC-8/PC-14 y reglas de micrófono reconciliados; blob `989180c9b97a874a7e4d5c35d25fbd257d3e72ea`; read-back PASS.
 - La crónica y el recibo tienen lectura de vuelta verificada. El archivo original continúa local y sin publicar; no se declara persistencia del export íntegro.
 - PC-8: offline tras la lectura del archivo; PC-14: excluido.
