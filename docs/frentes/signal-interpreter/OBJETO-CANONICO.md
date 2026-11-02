@@ -116,7 +116,7 @@ Pendientes: revisión de custodia del export original; aceptar manualmente 0.10.
 
 Se identificó `ChatGPT-SI-20261031-0916.txt` (133.492 bytes; 2.794 líneas; SHA-256 `D906E3399F6F6763546351D0EFB09CB1FCBC1C28E4802BADCE1DA8E67C9B5195`). La carga del original al OCP está pendiente: el repositorio es público y la exportación contiene datos de contacto. No se ha escrito el original, no se ha creado el manifiesto y no se presenta ningún derivado como original. Estado: **NO DISPONIBLE / BLOQUEADO** hasta resolver autorización de exposición o destino privado autorizado.
 
-La última salida visible del modelo anterior fue recuperada del tramo final del export local leído y conservada en la sección «Última salida visible del modelo anterior» de [la crónica G9](cronica/C-SIGNAL-RETOMA-20261101-G9-01F5BFEA.md). Esta copia deriva de la lectura real del export; no implica que el export íntegro esté publicado o custodiado en el OCP.
+Un extracto sustantivo de la última salida visible del modelo anterior fue recuperado del tramo final del export local y conservado en la sección correspondiente de [la crónica G9](cronica/C-SIGNAL-RETOMA-20261101-G9-01F5BFEA.md). No se presenta como reproducción íntegra/verbatim del mensaje completo; el export íntegro sigue local, no publicado ni custodiado en el OCP.
 
 
 ### Captura documental pendiente — exportación 2026-11-01
@@ -212,7 +212,7 @@ Releer base y método antes de escribir; ante delta/concurrencia conciliar, no s
 
 Gobernanza actual releída: DUG v377 · NX-377m, commit `8ee2482866b3dd085e58e05006727256d0274376`, blob `54064c8fe00f872023a455f06596061ed69062ae`; Metacanon 1.28; GOW 2.17. MCP normativo desactivado. La localización precisa de §ARR queda NO VERIFICADA.
 
-Prompt operativo único actualizado: blob `989180c9b97a874a7e4d5c35d25fbd257d3e72ea`; README continúa apuntando al prompt único. Crónica G9 persistida: blob `3f29f73b81813be24a5a660f9c4ac6bf451f4eec`. Recibo de exportación persistido: blob `37b87c76540d2f9586cd1c210c710537f27cd634`.
+Prompt operativo único actualizado: blob `989180c9b97a874a7e4d5c35d25fbd257d3e72ea`; README continúa apuntando al prompt único. Crónica G9 persistida: blob `3942f8acbcdd8d62263acc29dc3ce11c260de45c`. Recibo de exportación persistido: blob `37b87c76540d2f9586cd1c210c710537f27cd634`.
 
 Versión de producto: manifest 0.10.39 (blob `0cb37ff90b79cd84cf0154c01b055e22485fc5d6`). PR #68 permanece como la integración histórica del baseline. No se volvió a ejecutar CI ni se hizo release en este ciclo.
 
