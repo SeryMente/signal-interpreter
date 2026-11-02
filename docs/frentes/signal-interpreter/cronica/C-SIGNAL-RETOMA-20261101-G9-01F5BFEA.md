@@ -148,6 +148,11 @@ Fuente: `ChatGPT-SI-20261101-1724.md`, tramo final leído. Se conserva aquí el 
 >
 > **Estado de ejecución:** patch preparado localmente; no aplicado a GitHub, sin rama, commit, PR, push, despliegue ni modificación de infraestructura. No se utilizó RDC.
 >
+> SHA-256 del ZIP informado en el export: `bb0cd1d20738bf5d3fb767cc9d31435386f90dd1e7d27793c9928a5a7c6b75e3`.
+> SHA-256 del patch informado en el export: `1d34a72f439c93dcaac9f280508b8457219d80dced06696d1495d85edbe1a0cc`.
+>
+> El siguiente paso que indicó esa salida era aplicar el patch en un clon limpio exactamente en el commit base, verificar el diff completo y ejecutar el harness en un perfil Chrome desechable.
+>
 > **Procedencia:** SI `main` citado como commit `59b4c9e4d3cdc80e7627ba1eef1d546da1fbb8c8`, versión 0.10.39; DUG informado en ese ciclo como v377 · NX-377m; SHA de ZIP y patch consignados en el export original. Ninguno de esos artefactos ha sido recuperado ni revalidado en esta retoma.
 
 ## 7. Estado de este ciclo
