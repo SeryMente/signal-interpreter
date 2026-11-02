@@ -32,9 +32,9 @@ Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metac
 
 | Fuente/regla | Requisito de esta acción | Evidencia | Resultado |
 |---|---|---|---|
-| DUG v373 / Metacanon 1.26 | Un frente, una instancia, un OCP y un control | M34/M35 en §24; control G6 actualizado y releído | Modo agente único registrado |
-| P036/M35 | Resolver identidad y autorizar excepción puntual para PC-14 | Revalidación CLI + confirmación expresa del operador | Excepción usada solo para este staging; P036 general intacto |
-| M34/M35 / §24 | RDC mínimo y temporal para PC-14 | Staging e instalador ejecutados, recibo y registro releídos | Excepción cerrada/verificada; sin permiso remoto futuro |
+| DUG v373 / Metacanon 1.26 · antecedente histórico | Un frente, una instancia, un OCP y un control | M34/M35 en §24; control G6 actualizado y releído | Modo agente único registrado en aquel ciclo; sustituido después |
+| P036/M35 · antecedente PC-14 | Resolver identidad y autorizar excepción puntual para una instalación | Revalidación CLI + confirmación expresa del operador en 2026-10-31 | Excepción consumida y cerrada; no se reutiliza; PC-14 excluido en la retoma actual |
+| M34/M35 / §24 · antecedente | RDC mínimo y temporal para PC-14 | Staging e instalador ejecutados, recibo y registro releídos | Ejecución histórica cerrada/verificada; no concede acceso futuro |
 | §§22–23 | Una única instrucción operativa | `PROMPT-SIGNAL-INTERPRETER.md`, README actualizado, prompts paralelos retirados del árbol activo | Una sola vía de reinstanciación |
 | Persistencia de observabilidad | Confirmar batch durable y proceso | GitHub: 10,384 batches, 19 informes de llamada, 1,878 snapshots, 1,858 deltas; health `ok`, inbox 0 | Medio provisional confirmado; versión runtime observada aún 0.10.37 |
 | §28 | Originales, secuencia, crónica, read-back | Crónica de este ciclo y revisión Git | Historia preservada, sin fingir acciones no ejecutadas |
@@ -61,7 +61,7 @@ Una sola instancia mantiene la responsabilidad completa del frente: análisis, d
 
 ## Autoridad
 
-El encargo original [SI-D009](originales/C-SIGNAL-METACANON-20261020-01.md) y las órdenes posteriores se conservan como procedencia del mismo frente. La instrucción directa del 2026-10-30 establece una sola instancia responsable para todo Signal Interpreter y supersede en la capa activa cualquier distribución anterior de tareas o prompts. DUG v373 · NX-373m, Metacanon 1.26 §24 M34/M35, autorizó el staging/instalación CLI en este PC-14 y perfil únicamente para esta sesión; la autorización está consumida y cerrada. P036 general no fue modificado. No se autorizó GUI, llamadas reales, otros equipos, sesiones futuras, exposición de datos privados, captura de micrófono/pestaña, arquitectura vetada ni liberación sin aceptación.
+El encargo original [SI-D009](originales/C-SIGNAL-METACANON-20261020-01.md) y las órdenes posteriores se conservan como procedencia del mismo frente. La instrucción directa del 2026-10-30 estableció una sola instancia responsable para todo Signal Interpreter y supersedió cualquier distribución anterior de tareas o prompts. **Antecedente histórico:** DUG v373 · NX-373m, Metacanon 1.26 §24 M34/M35 autorizó una sola instalación CLI en PC-14 durante esa sesión; la autorización está consumida y cerrada, y P036 general no fue modificado. **Estado actual:** el operador excluyó expresamente PC-14 y señaló PC-8 para esta retoma; PC-8 solo se usó para leer/hash del export y luego quedó offline. No se autoriza GUI, intervención de llamadas reales, exposición de datos privados, cambios metodológicos ni liberación sin aceptación.
 
 Decisiones posteriores aprobadas: automatismo telefónico solo tras «Estoy disponible»; vídeo manual; idle/bloqueo/fin de disponibilidad revocan sin colgar llamada actual; retorno no rearma; incierto = bloquear. El plazo de 150s fue retirado; NO hay límite numérico nuevo ratificado. La candidata requiere selección expresa (opciones 1/3/5/10 minutos, sin default). No confundir temporizadores técnicos de autorización con presencia.
 
@@ -93,7 +93,7 @@ El operador después confirma texto visible en una llamada y aporta contenido pr
 
 Sandbox Linux: lógica real y DOM Chromium con eventos sintéticos para candidata; NO Windows UI Automation ni aceptación del host del operador. Históricamente se observó un intento de preparación remota con efecto incierto; queda como antecedente y no debe repetirse a ciegas. **Actualización de evidencia r3 leída el 2026-10-29:** el registro local identifica paquete 0.10.38, inventario 59/59, 34/34 pruebas, Native Messaging registrado/protocolo PASS y smoke Chromium 149 headless con extensión/service worker/popup y cero errores; informa que el perfil principal de Chrome permaneció intacto. Es evidencia reportada por registros locales, no una prueba nueva ejecutada por este ciclo. No se verificó Cloud Interpreter autenticado, llamada real, Live Caption nativo, idle/bloqueo/desbloqueo/suspensión Windows ni upgrade en perfil activo. No hubo escrituras ni acciones GUI en el equipo durante esta retoma.
 
-Preflight y ejecución remota: el PC-14 y el perfil Windows autorizado por el operador se verificaron por CLI. Se preparó `Desktop/Signal Interpreter/signal-interpreter` desde commit `f4ee70caa2f22b3fbc52493ef17d2f21837ab103`; el ZIP tuvo SHA-256 `C587E9F13661148FEDAE547B02B3FD05785952DEFE03D76FAEE98108D89E7782`; versión 0.10.39; inventario de 59 payloads verificado. `INSTALAR.ps1` terminó exit code 0. `INSTALACION-RESULTADO.json` leído de vuelta: Hashes PASS, NativeProtocol PASS, NativeHostRegistry PASS, muestra BUNDLED_VERIFIED, ChromeLoaded NO_VERIFICADO, RealCall NO_VERIFICADA. El ejecutable nativo instalado coincidió SHA-256 `313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE`. La excepción M34/M35 quedó cerrada tras este read-back.
+**Registro histórico de PC-14 (2026-10-30/31; no repetir):** el PC-14 y el perfil Windows autorizado por el operador se verificaron por CLI. Se preparó `Desktop/Signal Interpreter/signal-interpreter` desde commit `f4ee70caa2f22b3fbc52493ef17d2f21837ab103`; el ZIP tuvo SHA-256 `C587E9F13661148FEDAE547B02B3FD05785952DEFE03D76FAEE98108D89E7782`; versión 0.10.39; inventario de 59 payloads verificado. `INSTALAR.ps1` terminó exit code 0. `INSTALACION-RESULTADO.json` leído de vuelta: Hashes PASS, NativeProtocol PASS, NativeHostRegistry PASS, muestra BUNDLED_VERIFIED, ChromeLoaded NO_VERIFICADO, RealCall NO_VERIFICADA. El ejecutable nativo instalado coincidió SHA-256 `313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE`. La excepción M34/M35 quedó cerrada tras este read-back. El operador excluyó PC-14 en la retoma actual.
 
 ## Estado vivo
 
@@ -116,7 +116,7 @@ Pendientes: revisión de custodia del export original; aceptar manualmente 0.10.
 
 Se identificó `ChatGPT-SI-20261031-0916.txt` (133.492 bytes; 2.794 líneas; SHA-256 `D906E3399F6F6763546351D0EFB09CB1FCBC1C28E4802BADCE1DA8E67C9B5195`). La carga del original al OCP está pendiente: el repositorio es público y la exportación contiene datos de contacto. No se ha escrito el original, no se ha creado el manifiesto y no se presenta ningún derivado como original. Estado: **NO DISPONIBLE / BLOQUEADO** hasta resolver autorización de exposición o destino privado autorizado.
 
-La última salida visible del modelo anterior no está localizada como registro recuperable en el OCP leído: **NO DISPONIBLE / NO VERIFICADA**. No reconstruirla desde fragmentos.
+La última salida visible del modelo anterior fue recuperada del tramo final del export local leído y conservada en la sección «Última salida visible del modelo anterior» de [la crónica G9](cronica/C-SIGNAL-RETOMA-20261101-G9-01F5BFEA.md). Esta copia deriva de la lectura real del export; no implica que el export íntegro esté publicado o custodiado en el OCP.
 
 
 ### Captura documental pendiente — exportación 2026-11-01
@@ -156,16 +156,16 @@ La sesión remota confirmó el PC-14 y la asociación autorizada; staging y ejec
 
 ## Aceptación y viabilidad
 
-Estado: **desarrollo 0.10.39 integrado; staging e instalación Native Messaging PC-14 PASS; medio repo-backed histórico confirmado; recepción E2E 0.10.39 y carga Chrome/aceptación funcional aún pendientes. Backlog provisional de retroalimentación de llamada persistido; ninguna de sus seis tareas está implementada ni aceptada.**
+Estado: **desarrollo 0.10.39 integrado; staging e instalación Native Messaging completados históricamente en PC-14 (equipo hoy excluido); medio repo-backed histórico confirmado; recepción E2E 0.10.39 y carga Chrome/aceptación funcional aún pendientes. Backlog provisional de retroalimentación de llamada persistido; ninguna de sus seis tareas está implementada ni aceptada.**
 
 | Requisito | Estado implementado / evidencia | Aceptación y pendiente |
 |---|---|---|
 | Integración de desarrollo | PR #68 integrada; `main` 0.10.39; CI post-merge de auditoría y host nativo 2/2 SUCCESS en SHA `8955c1cae996d150052483cdf0d5da37c4da41eb` | No hay release; aceptación real pendiente |
-| Modo de trabajo del frente | Control G7 ACTIVO como `agente_unico`; un prompt activo; README actualizado; prompts anteriores retirados del árbol activo | Read-back verificado; historial Git anterior permanece como historia |
+| Modo de trabajo del frente | Control G9 ACTIVO como `agente_unico`; un prompt activo; README actualizado; prompts anteriores retirados del árbol activo | Transferencia G8→G9 COMMITTED_AND_READBACK_VERIFIED; G8/G7 conservados como historia |
 | Persistencia provisional | 10,384 batches; 19 informes de llamada; 1,878 snapshots; 1,858 deltas; último health `ok`; inbox 0 | Operación histórica confirmada; runtime más reciente 0.10.37; falta E2E 0.10.39 |
 | Relay Vercel | Código server-side usa `GITHUB_TOKEN` y escribe `observations/inbox`; GitHub muestra procesamiento automático reciente | Recepción efectiva observada; Vercel management/logs API 403; no se inspeccionó secret ni deployment |
 | Informe incoming 10m | Código de pipeline genera JSON/Markdown y aplica corrección por `relayReceivedAt` | Los artefactos no aparecieron en última lectura; falta batch 0.10.39 con receipt timestamp |
-| Identidad/entorno PC-14 | Dispositivo RDC Online; M35 autorizó la asociación actual solo para esta instalación | Revalidación CLI PASS; permiso remoto cerrado tras instalación |
+| Identidad/entorno PC-14 · histórico | Dispositivo RDC Online en el evento 2026-10-31; M35 autorizó la asociación solo para esa instalación | Revalidación CLI PASS; permiso consumido. PC-14 está EXCLUIDO en la retoma actual |
 | Puente Native Messaging | `INSTALAR.ps1` ejecutado en el perfil autorizado | Receipt PASS, protocolo PASS, registro PASS y SHA del ejecutable coincidente |
 | Aceptación funcional | Guards y pruebas sintéticas verdes | Falta carga manual en Chrome, llamada OPI controlada y aceptación expresa |
 
@@ -212,7 +212,7 @@ Releer base y método antes de escribir; ante delta/concurrencia conciliar, no s
 
 Gobernanza actual releída: DUG v377 · NX-377m, commit `8ee2482866b3dd085e58e05006727256d0274376`, blob `54064c8fe00f872023a455f06596061ed69062ae`; Metacanon 1.28; GOW 2.17. MCP normativo desactivado. La localización precisa de §ARR queda NO VERIFICADA.
 
-Prompt operativo único actualizado: blob `08f645dc63e9008b775c32b64bea20978c436f70`; README continúa apuntando al prompt único. Crónica G9 persistida: blob `7570620e5c97dcc4f46ce82f71a9a8f173209065`. Recibo de exportación persistido: blob `37b87c76540d2f9586cd1c210c710537f27cd634`.
+Prompt operativo único actualizado: blob `989180c9b97a874a7e4d5c35d25fbd257d3e72ea`; README continúa apuntando al prompt único. Crónica G9 persistida: blob `3f29f73b81813be24a5a660f9c4ac6bf451f4eec`. Recibo de exportación persistido: blob `37b87c76540d2f9586cd1c210c710537f27cd634`.
 
 Versión de producto: manifest 0.10.39 (blob `0cb37ff90b79cd84cf0154c01b055e22485fc5d6`). PR #68 permanece como la integración histórica del baseline. No se volvió a ejecutar CI ni se hizo release en este ciclo.
 
