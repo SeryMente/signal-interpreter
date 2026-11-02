@@ -21,6 +21,7 @@ El operador indicó expresamente que PC-8 era la conexión activa y autorizó us
 **PC-14 está expresamente EXCLUIDO por el operador.** No seleccionarlo, no conectarse, no utilizar sesiones registradas de PC-14 ni intentar sustituir PC-8 por PC-14. M34/M35 de 2026-10-30 son antecedentes históricos de una sesión consumida y no otorgan permisos actuales.
 
 No se utilizó GUI, mouse, teclas de interfaz, automatización de accesibilidad, navegación visible, Chrome ni lectura de pantalla. No se intervino llamada real. El estado actual no autoriza llamadas reales, ni acciones fuera de la tarea concreta.
+
 ## Persistencia provisional de observabilidad
 
 La persistencia provisional canónica es el repositorio `SeryMente/signal-interpreter`, mediante este flujo:
