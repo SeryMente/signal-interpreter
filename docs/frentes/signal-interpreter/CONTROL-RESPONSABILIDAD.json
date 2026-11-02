@@ -104,10 +104,13 @@
       "modo_operativo_actual": "AGENTE_UNICO"
     },
     "revision_objeto_observada": "SeryMente/signal-interpreter/main:docs/frentes/signal-interpreter/OBJETO-CANONICO.md; blob ac161de1a9dfd283e112cccfde78c1a58443f087; main HEAD c054477c84f1d1d10088eb6c991f00e43c593008.",
-    "resultado_mutacion": "WRITE_REQUESTED_READBACK_REQUIRED",
+    "resultado_mutacion": "COMMITTED_AND_READBACK_VERIFIED",
     "verificacion": {
-      "estado": "PENDING_READBACK",
-      "fields_to_verify": [
+      "estado": "read_back_verified",
+      "verified_at_utc": "2026-11-02T01:03:38.742Z",
+      "initial_commit_sha": "31c4b06931fc7dee78ed85bee09eb50ff4149c48",
+      "verified_blob_sha": "534aeea0e126baaa8eef66420cc244ae29ba03bf",
+      "fields_verified": [
         "frente",
         "instancia",
         "tipo_identidad",
@@ -127,7 +130,8 @@
         "variant_nibble": "B",
         "format": "UUIDv7 local conforme a RFC 9562",
         "status": "PASS"
-      }
+      },
+      "scope_limit": "Control cooperativo; no prueba ID nativo ni fencing de escritores que eludan el control."
     },
     "scope_limit": "Control cooperativo y API GitHub; no prueba ID nativo ni fencing de escritores que eludan el control."
   },
