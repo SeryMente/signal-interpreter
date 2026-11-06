@@ -1,36 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-0ac76b74-8e6d-4f1a-a587-68a41216e8b9",
-  "createdAt": "2026-11-06T22:58:06.513Z",
-  "trigger": "event-window",
+  "batchId": "batch-824fef6a-e345-4bd7-b0e9-64647bac6871",
+  "createdAt": "2026-11-06T23:01:15.575Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.39",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "db43a4b4-ad21-4a8c-ad71-b9b6fcbb2adf",
-      "sequence": 17821,
-      "timestamp": "2026-11-06T22:57:35.954Z",
-      "ingestedAt": "2026-11-06T22:57:36.000Z",
+      "id": "53884446-e050-482d-9d4e-f3a42d3868a3",
+      "sequence": 18058,
+      "timestamp": "2026-11-06T23:01:06.003Z",
+      "ingestedAt": "2026-11-06T23:01:06.003Z",
       "level": "info",
       "category": "RUNTIME",
-      "component": "content",
+      "component": "background",
       "extensionVersion": "0.10.39",
-      "host": "app.cloudinterpreter.com",
-      "url": "https://app.cloudinterpreter.com/profile/<ID>",
+      "host": "",
+      "url": "",
       "phase": "event",
-      "action": "AUTO_ANSWER_READINESS",
+      "action": "PLATFORM_TELEMETRY_RECONCILED",
       "outcome": "observed",
-      "traceId": "fa39d64a-27fe-4145-8210-6be4f518e90a",
+      "traceId": "661d50ad-f4f4-436b-ab13-5424fb88606c",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220924849,
-      "session": {
-        "sessionId": "b2d9d79d-affc-4de6-a1b[PHONE]ba39c",
-        "pageLifecycleId": "cfbdab75-eed4-4c62-90f6-504d8813c33d",
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.39",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -38,45 +34,22 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": "heartbeat",
+      "reasonCode": null,
       "error": null,
       "metrics": {},
-      "context": {
-        "route": "/profile/<ID>",
-        "visibility": "hidden",
-        "focused": false,
-        "online": true,
-        "monotonicMs": 6823710,
-        "callId": null,
-        "pageLifecycleId": "cfbdab75-eed4-4c62-90f6-504d8813c33d",
-        "sourceTabId": 220924849,
-        "sourceWindowId": 220923849,
-        "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "ready": false,
-        "attemptId": null,
-        "availability": "online",
-        "authorizedProfile": true,
-        "configEnabled": true,
-        "labSafetyLock": false,
-        "presenceArmed": false,
-        "presenceReason": "idle-or-locked-confirm-again",
-        "presenceGeneration": 2,
-        "blockedReasons": [
-          "IDLE_OR_LOCKED_CONFIRM_AGAIN"
-        ],
-        "route": "/profile/<ID>",
-        "exactUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz",
-        "runtimeVersion": "0.10.39",
-        "reason": "heartbeat"
+        "trigger": "event:PLATFORM_SESSION_ENDED",
+        "tabCount": 0,
+        "authenticatedCount": 0,
+        "onlineCount": 0,
+        "callCount": 0,
+        "probeErrors": 0
       }
     }
   ],
@@ -88,12 +61,12 @@
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 17821,
-    "lastSequence": 17821,
-    "firstTimestamp": "2026-11-06T22:57:35.954Z",
-    "lastTimestamp": "2026-11-06T22:57:35.954Z",
+    "firstSequence": 18058,
+    "lastSequence": 18058,
+    "firstTimestamp": "2026-11-06T23:01:06.003Z",
+    "lastTimestamp": "2026-11-06T23:01:06.003Z",
     "actions": {
-      "AUTO_ANSWER_READINESS": 1
+      "PLATFORM_TELEMETRY_RECONCILED": 1
     },
     "categories": {
       "RUNTIME": 1
