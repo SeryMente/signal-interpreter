@@ -1,10 +1,10 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-06T21:46:57.341Z → 2026-11-06T21:56:57.341Z
-- Generado: 2026-11-06T21:56:57.341Z
-- Eventos: 732 · lotes fuente: 76
+- Ventana UTC: 2026-11-06T21:47:26.783Z → 2026-11-06T21:57:26.783Z
+- Generado: 2026-11-06T21:57:26.783Z
+- Eventos: 761 · lotes fuente: 76
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 732
+- Reloj cliente sin verificación de recibo: 761
 
 ## Resumen
 - Intentos observados: 15
@@ -18,8 +18,8 @@
 
 ### 7e7cd207-8ce3-4638-a025-aa8f5529a98e — answered
 - Detectada: 2026-11-06T21:48:01.221Z · modalidad: OPI
-- Tab: 220924849 · eventos: 14
-- Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_OFFLINE"],"ready":false,"availability":"offline","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"route:navigation","reasonCode":"route:navigation"}
+- Tab: 220924849 · eventos: 16
+- Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"availability","reasonCode":"availability"}
 - Desenlace/motivo: null
 - Señales ausentes: ninguna identificada
   - 2026-11-06T21:48:01.221Z · INCOMING_DIALOG_DETECTED · info
@@ -36,6 +36,8 @@
   - 2026-11-06T21:48:31.476Z · CONNECT_ACCEPTED_PENDING · info · await-call-route
   - 2026-11-06T21:50:53.477Z · AUTO_ANSWER_READINESS · info · route:navigation
   - 2026-11-06T21:50:53.485Z · CALL_ROUTE_ENTERED · info · navigation
+  - 2026-11-06T21:50:54.619Z · AUTO_ANSWER_READINESS · info · route:start
+  - 2026-11-06T21:50:54.643Z · AUTO_ANSWER_READINESS · info · availability
 
 ### 6055a5ea-0acd-4642-a6a4-14b0337ce6e5 — connect_failed_no_route
 - Detectada: 2026-11-06T21:48:01.293Z · modalidad: OPI
@@ -329,30 +331,37 @@
 
 ### 49c783b8-b711-4afa-a1ec-80c2841a3ca0 — answered
 - Detectada: 2026-11-06T21:50:53.123Z · modalidad: desconocida
-- Tab: 220924849 · eventos: 4
-- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"route:start","reasonCode":"route:start"}
+- Tab: 220924849 · eventos: 7
+- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"config","reasonCode":"config"}
 - Desenlace/motivo: null
 - Señales ausentes: INCOMING_DIALOG_DETECTED
   - 2026-11-06T21:50:53.123Z · PLATFORM_URL_CHANGED · info · navigation
   - 2026-11-06T21:50:53.160Z · AUTO_ANSWER_READINESS · info · route:navigation
   - 2026-11-06T21:50:53.167Z · CALL_ROUTE_ENTERED · info · navigation
   - 2026-11-06T21:50:54.522Z · AUTO_ANSWER_READINESS · info · route:start
+  - 2026-11-06T21:50:54.541Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.541Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.542Z · AUTO_ANSWER_READINESS · info · config
 
 ### 40e255ed-f3fd-4d86-a2f6-3f5293a1942a — answered
 - Detectada: 2026-11-06T21:50:53.206Z · modalidad: desconocida
-- Tab: 220924849 · eventos: 4
-- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_OFFLINE"],"ready":false,"availability":"offline","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"route:navigation","reasonCode":"route:navigation"}
+- Tab: 220924849 · eventos: 8
+- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"config","reasonCode":"config"}
 - Desenlace/motivo: null
 - Señales ausentes: INCOMING_DIALOG_DETECTED
   - 2026-11-06T21:50:53.206Z · PLATFORM_SURFACE_SNAPSHOT · info
   - 2026-11-06T21:50:53.207Z · PLATFORM_URL_CHANGED · info · navigation
   - 2026-11-06T21:50:53.236Z · AUTO_ANSWER_READINESS · info · route:navigation
   - 2026-11-06T21:50:53.240Z · CALL_ROUTE_ENTERED · info · navigation
+  - 2026-11-06T21:50:54.544Z · AUTO_ANSWER_READINESS · info · route:start
+  - 2026-11-06T21:50:54.562Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.563Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.564Z · AUTO_ANSWER_READINESS · info · config
 
 ### 7b2fd0ee-5fd[PHONE]cd-60a23a0aec3d — answered
 - Detectada: 2026-11-06T21:50:53.273Z · modalidad: desconocida
-- Tab: 220924849 · eventos: 34
-- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_OFFLINE"],"ready":false,"availability":"offline","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"route:navigation","reasonCode":"route:navigation"}
+- Tab: 220924849 · eventos: 51
+- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"config","reasonCode":"config"}
 - Desenlace/motivo: null
 - Señales ausentes: INCOMING_DIALOG_DETECTED
   - 2026-11-06T21:50:53.273Z · PLATFORM_SURFACE_SNAPSHOT · info
@@ -389,6 +398,23 @@
   - 2026-11-06T21:50:54.517Z · PLATFORM_SURFACE_SNAPSHOT · info
   - 2026-11-06T21:50:54.521Z · PLATFORM_SESSION_STARTED · info
   - 2026-11-06T21:50:54.521Z · OBSERVER_STARTED · info
+  - 2026-11-06T21:50:54.540Z · PLATFORM_SURFACE_SNAPSHOT · info
+  - 2026-11-06T21:50:54.543Z · PLATFORM_SESSION_STARTED · info
+  - 2026-11-06T21:50:54.544Z · OBSERVER_STARTED · info
+  - 2026-11-06T21:50:54.561Z · PLATFORM_SURFACE_SNAPSHOT · info
+  - 2026-11-06T21:50:54.565Z · PLATFORM_SESSION_STARTED · info
+  - 2026-11-06T21:50:54.565Z · OBSERVER_STARTED · info
+  - 2026-11-06T21:50:54.566Z · AUTO_ANSWER_READINESS · info · route:start
+  - 2026-11-06T21:50:54.594Z · PLATFORM_SURFACE_SNAPSHOT · info
+  - 2026-11-06T21:50:54.595Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.596Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.596Z · AUTO_ANSWER_READINESS · info · config
+  - 2026-11-06T21:50:54.597Z · PLATFORM_SESSION_STARTED · info
+  - 2026-11-06T21:50:54.597Z · OBSERVER_STARTED · info
+  - 2026-11-06T21:50:54.615Z · PLATFORM_SURFACE_SNAPSHOT · info
+  - 2026-11-06T21:50:54.618Z · PLATFORM_SESSION_STARTED · info
+  - 2026-11-06T21:50:54.618Z · OBSERVER_STARTED · info
+  - 2026-11-06T21:50:54.641Z · PLATFORM_SURFACE_SNAPSHOT · info
 
 ### ring-782558960cda1f5dafb82727 — ring_unmatched
 - Detectada: 2026-11-06T21:51:29.767Z · modalidad: desconocida
