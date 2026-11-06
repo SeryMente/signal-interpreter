@@ -1,16 +1,16 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-06T21:35:29.580Z → 2026-11-06T21:45:29.580Z
-- Generado: 2026-11-06T21:45:29.580Z
-- Eventos: 260 · lotes fuente: 42
+- Ventana UTC: 2026-11-06T21:36:00.928Z → 2026-11-06T21:46:00.928Z
+- Generado: 2026-11-06T21:46:00.928Z
+- Eventos: 258 · lotes fuente: 42
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 260
+- Reloj cliente sin verificación de recibo: 258
 
 ## Resumen
 - Intentos observados: 5
 - Contestadas: 0 · perdidas confirmadas: 1
-- Clic sin ruta: 1 · timbrados sin diálogo correlacionado: 1
-- Sin desenlace concluyente: 3
+- Clic sin ruta: 2 · timbrados sin diálogo correlacionado: 1
+- Sin desenlace concluyente: 2
 - Detecciones de diálogo/botón: 4 / 4
 - Bloqueos de autocontestación: 5 · clics: 1
 
@@ -72,12 +72,12 @@
   - 2026-11-06T21:45:07.157Z · INCOMING_ATTEMPT_SUPERSEDED · warn · new-incoming-dialog-before-previous-attempt-terminal
   - 2026-11-06T21:45:10.506Z · CONNECT_ACCEPTED_PENDING · info · await-call-route
 
-### 19ea2ee6-a021-4f80-a317-c5f431ea0e3e — closed_unclassified
+### 19ea2ee6-a021-4f80-a317-c5f431ea0e3e — connect_failed_no_route
 - Detectada: 2026-11-06T21:44:46.622Z · modalidad: OPI
-- Tab: 220924849 · eventos: 65
+- Tab: 220924849 · eventos: 66
 - Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":[],"ready":true,"availability":"online","authorizedProfile":true,"configEnabled":true,"labSafetyLock":false,"presenceArmed":true,"presenceReason":"explicit-availability","presenceGeneration":2,"reason":"availability","reasonCode":"availability"}
-- Desenlace/motivo: null
-- Señales ausentes: TERMINAL_CALL_OUTCOME
+- Desenlace/motivo: "connect_clicked_no_call_route"
+- Señales ausentes: ninguna identificada
   - 2026-11-06T21:44:46.590Z · PLATFORM_SESSION_STARTED · info
   - 2026-11-06T21:44:46.590Z · OBSERVER_STARTED · info
   - 2026-11-06T21:44:46.620Z · PLATFORM_SURFACE_SNAPSHOT · info
@@ -143,10 +143,11 @@
   - 2026-11-06T21:44:51.466Z · AUTO_ANSWER_BOOTSTRAP_INJECTED · info
   - 2026-11-06T21:45:07.570Z · INCOMING_ATTEMPT_REGISTERED · info
   - 2026-11-06T21:45:10.928Z · INCOMING_DIALOG_CLOSED_OBSERVED · info · dialog-removed
+  - 2026-11-06T21:45:40.584Z · CONNECT_FLOW_FAILED_NO_CALL_ROUTE · warn · connect_clicked_no_call_route
 
 ### ring-08883cbf9a15eb5cbb2d4535 — ring_unmatched
 - Detectada: 2026-11-06T21:45:25.412Z · modalidad: desconocida
-- Tab: 220924849 · eventos: 4
+- Tab: 220924849 · eventos: 5
 - Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: null
 - Desenlace/motivo: null
 - Señales ausentes: INCOMING_DIALOG_DETECTED, TERMINAL_CALL_OUTCOME
@@ -154,6 +155,7 @@
   - 2026-11-06T21:45:24.291Z · PLATFORM_SCREENSHOT_CAPTURE_ERROR · error · tab-activated
   - 2026-11-06T21:45:25.412Z · INCOMING_RING_SIGNAL · info
   - 2026-11-06T21:45:26.065Z · AUTO_ANSWER_BOOTSTRAP_REQUESTED · info
+  - 2026-11-06T21:45:29.761Z · AUTO_ANSWER_BOOTSTRAP_INJECTED · info
 
 ## Privacidad
 - No se exportan audio, transcripciones, texto crudo del diálogo ni IDs de llamada completos.

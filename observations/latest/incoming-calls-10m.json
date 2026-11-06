@@ -1,29 +1,29 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-06T21:45:29.580Z",
-  "windowStartAt": "2026-11-06T21:35:29.580Z",
-  "windowEndAt": "2026-11-06T21:45:29.580Z",
+  "generatedAt": "2026-11-06T21:46:00.928Z",
+  "windowStartAt": "2026-11-06T21:36:00.928Z",
+  "windowEndAt": "2026-11-06T21:46:00.928Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 260
+    "client-clock-unverified": 258
   },
   "sourceBatchCount": 42,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 11141,
+  "receiptUnverifiedBatchCount": 11142,
   "medianClientClockSkewMs": null,
-  "eventCount": 260,
+  "eventCount": 258,
   "summary": {
     "attempts": 5,
     "answered": 0,
     "missed": 1,
-    "connectFailedNoRoute": 1,
+    "connectFailedNoRoute": 2,
     "ringUnmatched": 1,
-    "unresolved": 3,
+    "unresolved": 2,
     "ringSignals": 2,
     "dialogsDetected": 4,
     "buttonsFound": 4,
     "buttonsNotFound": 0,
-    "readinessSamples": 115,
+    "readinessSamples": 110,
     "blocked": 5,
     "clicks": 1
   },
@@ -608,7 +608,7 @@
     },
     {
       "attemptId": "19ea2ee6-a021-4f80-a317-c5f431ea0e3e",
-      "status": "closed_unclassified",
+      "status": "connect_failed_no_route",
       "modality": "OPI",
       "tabId": 220924849,
       "detectedAt": "2026-11-06T21:44:46.622Z",
@@ -616,7 +616,7 @@
       "clickedAt": null,
       "answeredAt": null,
       "missedAt": null,
-      "outcomeReason": null,
+      "outcomeReason": "connect_clicked_no_call_route",
       "button": {
         "found": true,
         "notFound": false,
@@ -662,10 +662,8 @@
       "clickToAnswerLatencyMs": null,
       "detectionToAnswerLatencyMs": null,
       "callRefs": [],
-      "missingSignals": [
-        "TERMINAL_CALL_OUTCOME"
-      ],
-      "eventCount": 65,
+      "missingSignals": [],
+      "eventCount": 66,
       "timeline": [
         {
           "at": "2026-11-06T21:44:46.590Z",
@@ -1352,6 +1350,18 @@
           },
           "eventId": "33fa0b84-4522-4923-b57b-93d0d2dc8bda",
           "sequence": 12497
+        },
+        {
+          "at": "2026-11-06T21:45:40.584Z",
+          "action": "CONNECT_FLOW_FAILED_NO_CALL_ROUTE",
+          "level": "warn",
+          "reasonCode": "connect_clicked_no_call_route",
+          "details": {
+            "reason": "connect_clicked_no_call_route",
+            "reasonCode": "connect_clicked_no_call_route"
+          },
+          "eventId": "953a1a28-8f31-4be9-9d38-aaa88ee23638",
+          "sequence": 12550
         }
       ]
     },
@@ -1384,7 +1394,7 @@
         "INCOMING_DIALOG_DETECTED",
         "TERMINAL_CALL_OUTCOME"
       ],
-      "eventCount": 4,
+      "eventCount": 5,
       "timeline": [
         {
           "at": "2026-11-06T21:45:21.898Z",
@@ -1434,6 +1444,17 @@
           },
           "eventId": "4da13609-938e-4c33-b588-d61c8e69083c",
           "sequence": 12522
+        },
+        {
+          "at": "2026-11-06T21:45:29.761Z",
+          "action": "AUTO_ANSWER_BOOTSTRAP_INJECTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {
+            "trigger": "ring.mp3-completed"
+          },
+          "eventId": "603dbf3e-a6df-4f2e-9438-f066ee8b1926",
+          "sequence": 12529
         }
       ]
     }
