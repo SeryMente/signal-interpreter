@@ -1,16 +1,16 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-06T22:40:48.926Z → 2026-11-06T22:50:48.926Z
-- Generado: 2026-11-06T22:50:48.926Z
-- Eventos: 188 · lotes fuente: 22
+- Ventana UTC: 2026-11-06T22:41:46.884Z → 2026-11-06T22:51:46.884Z
+- Generado: 2026-11-06T22:51:46.884Z
+- Eventos: 196 · lotes fuente: 23
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 188
+- Reloj cliente sin verificación de recibo: 196
 
 ## Resumen
 - Intentos observados: 8
-- Contestadas: 0 · perdidas confirmadas: 0
+- Contestadas: 0 · perdidas confirmadas: 1
 - Clic sin ruta: 0 · timbrados sin diálogo correlacionado: 0
-- Sin desenlace concluyente: 8
+- Sin desenlace concluyente: 7
 - Detecciones de diálogo/botón: 2 / 2
 - Bloqueos de autocontestación: 2 · clics: 0
 
@@ -121,20 +121,22 @@
 
 ### b122c361-aeb[PHONE]-d4eb6a54e95c — incoming_observed_pending
 - Detectada: 2026-11-06T22:48:32.751Z · modalidad: OPI
-- Tab: 220924849 · eventos: 3
+- Tab: 220924849 · eventos: 5
 - Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: null
 - Desenlace/motivo: ["WORKER_START_CONFIRM_AGAIN"]
 - Señales ausentes: AUTO_ANSWER_READINESS, TERMINAL_CALL_OUTCOME
   - 2026-11-06T22:48:32.751Z · INCOMING_DIALOG_DETECTED · info
   - 2026-11-06T22:48:32.751Z · CONNECT_BUTTON_FOUND · info
   - 2026-11-06T22:48:32.752Z · AUTO_ANSWER_BLOCKED · warn
+  - 2026-11-06T22:50:55.083Z · INCOMING_ATTEMPT_REGISTERED · info
+  - 2026-11-06T22:51:07.081Z · INCOMING_ATTEMPT_SUPERSEDED · warn · new-incoming-dialog-before-previous-attempt-terminal
 
-### 378b0035-db3f-45d8-ab93-b72ca3bdc0c9 — closed_unclassified
+### 378b0035-db3f-45d8-ab93-b72ca3bdc0c9 — missed
 - Detectada: 2026-11-06T22:48:33.479Z · modalidad: OPI
-- Tab: 220924849 · eventos: 11
+- Tab: 220924849 · eventos: 14
 - Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["WORKER_START_CONFIRM_AGAIN"],"ready":false,"availability":"online","authorizedProfile":true,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"worker-start-confirm-again","presenceGeneration":1,"reason":"availability","reasonCode":"availability"}
-- Desenlace/motivo: ["WORKER_START_CONFIRM_AGAIN"]
-- Señales ausentes: TERMINAL_CALL_OUTCOME
+- Desenlace/motivo: "dialog_closed_without_connect"
+- Señales ausentes: ninguna identificada
   - 2026-11-06T22:48:33.262Z · OBSERVER_STOPPED · info · runtime-replaced
   - 2026-11-06T22:48:33.471Z · PLATFORM_SESSION_STARTED · info
   - 2026-11-06T22:48:33.472Z · OBSERVER_STARTED · info
@@ -146,6 +148,9 @@
   - 2026-11-06T22:48:33.485Z · AUTO_ANSWER_READINESS · info · config
   - 2026-11-06T22:48:33.960Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T22:48:33.962Z · INCOMING_DIALOG_CLOSED · info · dialog-removed
+  - 2026-11-06T22:51:07.665Z · INCOMING_ATTEMPT_REGISTERED · info
+  - 2026-11-06T22:51:08.196Z · INCOMING_DIALOG_CLOSED_OBSERVED · info · dialog-removed
+  - 2026-11-06T22:51:11.380Z · MISSED_CALL_CLASSIFIED · warn · dialog_closed_without_connect
 
 ## Privacidad
 - No se exportan audio, transcripciones, texto crudo del diálogo ni IDs de llamada completos.

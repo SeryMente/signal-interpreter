@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-80719bea-a53e-4ac7-bb89-668a29d4245c",
-  "createdAt": "2026-11-06T22:52:06.496Z",
+  "batchId": "batch-8e446422-373f-4a1f-837b-28f508908f7b",
+  "createdAt": "2026-11-06T22:53:06.457Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.39",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "f81bfbc7-ab55-4b92-af12-4b636d0bc167",
-      "sequence": 17783,
-      "timestamp": "2026-11-06T22:51:35.954Z",
-      "ingestedAt": "2026-11-06T22:51:36.016Z",
+      "id": "57e6b521-e6c7-4de8-a86b-d092891a2121",
+      "sequence": 17784,
+      "timestamp": "2026-11-06T22:52:35.951Z",
+      "ingestedAt": "2026-11-06T22:52:35.999Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -20,7 +20,7 @@
       "phase": "event",
       "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "bc61f647-2a11-438b-bda4-0b0d039457c4",
+      "traceId": "fb6ca901-7bb8-4259-86e9-41a4ba33adb9",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +46,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 6463710,
+        "monotonicMs": 6523707,
         "callId": null,
         "pageLifecycleId": "cfbdab75-eed4-4c62-90f6-504d8813c33d",
         "sourceTabId": 220924849,
@@ -78,25 +78,71 @@
         "runtimeVersion": "0.10.39",
         "reason": "heartbeat"
       }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "35ba839f-326b-4305-b1e5-ba26dc60f8cb",
+      "sequence": 17785,
+      "timestamp": "2026-11-06T22:52:46.842Z",
+      "ingestedAt": "2026-11-06T22:52:46.842Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "runtime",
+      "extensionVersion": "0.10.39",
+      "host": "",
+      "url": "",
+      "phase": "completed",
+      "action": "HOTLOAD_EXISTING_WEB_TABS_SCAN_COMPLETED",
+      "outcome": "success",
+      "traceId": "198902d8-e27c-4f5e-80d2-8c543a05293d",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.39",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "trigger": "runtime-start",
+        "scanned": 9,
+        "injected": 9,
+        "errors": 0
+      }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 17783,
-    "lastSequence": 17783,
-    "firstTimestamp": "2026-11-06T22:51:35.954Z",
-    "lastTimestamp": "2026-11-06T22:51:35.954Z",
+    "firstSequence": 17784,
+    "lastSequence": 17785,
+    "firstTimestamp": "2026-11-06T22:52:35.951Z",
+    "lastTimestamp": "2026-11-06T22:52:46.842Z",
     "actions": {
-      "AUTO_ANSWER_READINESS": 1
+      "AUTO_ANSWER_READINESS": 1,
+      "HOTLOAD_EXISTING_WEB_TABS_SCAN_COMPLETED": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "RUNTIME": 2
     }
   }
 }
