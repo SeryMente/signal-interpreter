@@ -1,122 +1,20 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-06T21:06:41.896Z → 2026-11-06T21:16:41.896Z
-- Generado: 2026-11-06T21:16:41.896Z
-- Eventos: 624 · lotes fuente: 100
+- Ventana UTC: 2026-11-06T21:08:29.429Z → 2026-11-06T21:18:29.429Z
+- Generado: 2026-11-06T21:18:29.429Z
+- Eventos: 525 · lotes fuente: 81
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 624
+- Reloj cliente sin verificación de recibo: 525
 
 ## Resumen
-- Intentos observados: 10
+- Intentos observados: 8
 - Contestadas: 0 · perdidas confirmadas: 0
-- Clic sin ruta: 10 · timbrados sin diálogo correlacionado: 0
-- Sin desenlace concluyente: 0
-- Detecciones de diálogo/botón: 10 / 10
-- Bloqueos de autocontestación: 11 · clics: 5
+- Clic sin ruta: 6 · timbrados sin diálogo correlacionado: 0
+- Sin desenlace concluyente: 2
+- Detecciones de diálogo/botón: 8 / 8
+- Bloqueos de autocontestación: 9 · clics: 4
 
 ## Intentos
-
-### 52c6f41b-75a2-423b-8d0e-0eb1efae3b13 — connect_failed_no_route
-- Detectada: 2026-11-06T21:06:49.608Z · modalidad: OPI
-- Tab: 220924849 · eventos: 10
-- Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":[],"ready":true,"availability":"online","authorizedProfile":true,"configEnabled":true,"labSafetyLock":false,"presenceArmed":true,"presenceReason":"explicit-availability","presenceGeneration":2,"reason":"availability","reasonCode":"availability"}
-- Desenlace/motivo: null
-- Señales ausentes: ninguna identificada
-  - 2026-11-06T21:06:49.608Z · INCOMING_DIALOG_DETECTED · info
-  - 2026-11-06T21:06:49.609Z · CONNECT_BUTTON_FOUND · info
-  - 2026-11-06T21:06:49.864Z · AUTO_ANSWER_READINESS · info · heartbeat
-  - 2026-11-06T21:06:49.867Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-06T21:06:50.100Z · AUTO_ANSWER_ELIGIBLE · info
-  - 2026-11-06T21:06:50.102Z · CONNECT_CLICKED · info
-  - 2026-11-06T21:06:53.488Z · INCOMING_ATTEMPT_REGISTERED · info
-  - 2026-11-06T21:06:57.103Z · CONNECT_ROUTE_TIMEOUT · error
-  - 2026-11-06T21:07:08.434Z · INCOMING_ATTEMPT_SUPERSEDED · warn · new-incoming-dialog-before-previous-attempt-terminal
-  - 2026-11-06T21:07:09.252Z · CONNECT_ACCEPTED_PENDING · info · await-call-route
-
-### b32ebc43-f7a3-4d48-aa91-f5256ce17292 — connect_failed_no_route
-- Detectada: 2026-11-06T21:06:50.089Z · modalidad: OPI
-- Tab: 220924849 · eventos: 25
-- Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":[],"ready":true,"availability":"online","authorizedProfile":true,"configEnabled":true,"labSafetyLock":false,"presenceArmed":true,"presenceReason":"explicit-availability","presenceGeneration":2,"reason":"availability","reasonCode":"availability"}
-- Desenlace/motivo: "connect_clicked_no_call_route"
-- Señales ausentes: ninguna identificada
-  - 2026-11-06T21:06:50.036Z · OBSERVER_STOPPED · info · runtime-replaced
-  - 2026-11-06T21:06:50.047Z · PERFORMANCE_HEARTBEAT · info · telemetry-start
-  - 2026-11-06T21:06:50.048Z · PLATFORM_SESSION_STARTED · info
-  - 2026-11-06T21:06:50.049Z · OBSERVER_STARTED · info
-  - 2026-11-06T21:06:50.085Z · PLATFORM_SURFACE_SNAPSHOT · info
-  - 2026-11-06T21:06:50.088Z · AVAILABILITY_STATE · info
-  - 2026-11-06T21:06:50.089Z · INCOMING_DIALOG_DETECTED · info
-  - 2026-11-06T21:06:50.090Z · CONNECT_BUTTON_FOUND · info
-  - 2026-11-06T21:06:50.091Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-06T21:06:50.094Z · AUTO_ANSWER_READINESS · info · config
-  - 2026-11-06T21:06:50.153Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-06T21:06:50.267Z · AUTO_ANSWER_AUTHORIZATION_BLOCKED · warn · not-authorized
-  - 2026-11-06T21:06:50.305Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-06T21:06:50.306Z · INCOMING_DIALOG_CLOSED · info · dialog-removed
-  - 2026-11-06T21:06:52.121Z · PAGE_VISIBILITY_CHANGED · info
-  - 2026-11-06T21:06:52.125Z · PAGE_VISIBILITY_CHANGED · info
-  - 2026-11-06T21:06:52.125Z · PAGE_VISIBILITY_CHANGED · info
-  - 2026-11-06T21:06:52.136Z · PAGE_LIFECYCLE · info
-  - 2026-11-06T21:06:52.136Z · PAGE_LIFECYCLE · info
-  - 2026-11-06T21:06:52.136Z · PAGE_LIFECYCLE · info
-  - 2026-11-06T21:06:52.509Z · AUTO_ANSWER_BOOTSTRAP_REQUESTED · info
-  - 2026-11-06T21:06:52.999Z · INCOMING_RING_SIGNAL · info
-  - 2026-11-06T21:07:08.855Z · INCOMING_ATTEMPT_REGISTERED · info
-  - 2026-11-06T21:07:09.624Z · INCOMING_DIALOG_CLOSED_OBSERVED · info · dialog-removed
-  - 2026-11-06T21:07:14.009Z · CONNECT_FLOW_FAILED_NO_CALL_ROUTE · warn · connect_clicked_no_call_route
-
-### 2f6ceebe-c0ef-[PHONE]b078 — connect_failed_no_route
-- Detectada: 2026-11-06T21:07:54.327Z · modalidad: OPI
-- Tab: 220924849 · eventos: 13
-- Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: null
-- Desenlace/motivo: null
-- Señales ausentes: AUTO_ANSWER_READINESS
-  - 2026-11-06T21:07:50.865Z · PERFORMANCE_HEARTBEAT · info · heartbeat
-  - 2026-11-06T21:07:54.327Z · INCOMING_DIALOG_DETECTED · info
-  - 2026-11-06T21:07:54.327Z · CONNECT_BUTTON_FOUND · info
-  - 2026-11-06T21:07:54.368Z · OBSERVER_STOPPED · info · runtime-replaced
-  - 2026-11-06T21:07:54.383Z · PERFORMANCE_HEARTBEAT · info · telemetry-start
-  - 2026-11-06T21:07:54.384Z · PLATFORM_SESSION_STARTED · info
-  - 2026-11-06T21:07:54.384Z · OBSERVER_STARTED · info
-  - 2026-11-06T21:07:54.854Z · AUTO_ANSWER_ELIGIBLE · info
-  - 2026-11-06T21:07:54.856Z · CONNECT_CLICKED · info
-  - 2026-11-06T21:08:01.857Z · CONNECT_ROUTE_TIMEOUT · error
-  - 2026-11-06T21:08:02.896Z · INCOMING_ATTEMPT_REGISTERED · info
-  - 2026-11-06T21:08:09.567Z · INCOMING_ATTEMPT_SUPERSEDED · warn · new-incoming-dialog-before-previous-attempt-terminal
-  - 2026-11-06T21:08:21.879Z · CONNECT_ACCEPTED_PENDING · info · await-call-route
-
-### de2e28f5-f75a-4db2-922e-957d9464fc50 — connect_failed_no_route
-- Detectada: 2026-11-06T21:07:54.443Z · modalidad: OPI
-- Tab: 220924849 · eventos: 26
-- Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":[],"ready":true,"availability":"online","authorizedProfile":true,"configEnabled":true,"labSafetyLock":false,"presenceArmed":true,"presenceReason":"explicit-availability","presenceGeneration":2,"reason":"availability","reasonCode":"availability"}
-- Desenlace/motivo: "connect_clicked_no_call_route"
-- Señales ausentes: ninguna identificada
-  - 2026-11-06T21:07:54.441Z · PLATFORM_SURFACE_SNAPSHOT · info
-  - 2026-11-06T21:07:54.442Z · AVAILABILITY_STATE · info
-  - 2026-11-06T21:07:54.443Z · INCOMING_DIALOG_DETECTED · info
-  - 2026-11-06T21:07:54.443Z · CONNECT_BUTTON_FOUND · info
-  - 2026-11-06T21:07:54.445Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-06T21:07:54.446Z · AUTO_ANSWER_READINESS · info · config
-  - 2026-11-06T21:07:54.503Z · AUTO_ANSWER_AUTHORIZATION_BLOCKED · warn · not-authorized
-  - 2026-11-06T21:07:54.783Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-06T21:07:54.815Z · AUTO_ANSWER_AUTHORIZATION_BLOCKED · warn · not-authorized
-  - 2026-11-06T21:07:54.901Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-06T21:07:54.917Z · AUTO_ANSWER_BOOTSTRAP_REQUESTED · info
-  - 2026-11-06T21:07:55.053Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-06T21:07:55.054Z · INCOMING_DIALOG_CLOSED · info · dialog-removed
-  - 2026-11-06T21:07:55.912Z · PAGE_VISIBILITY_CHANGED · info
-  - 2026-11-06T21:07:55.914Z · PAGE_VISIBILITY_CHANGED · info
-  - 2026-11-06T21:07:55.915Z · PAGE_VISIBILITY_CHANGED · info
-  - 2026-11-06T21:07:55.917Z · PAGE_VISIBILITY_CHANGED · info
-  - 2026-11-06T21:07:55.929Z · PAGE_LIFECYCLE · info
-  - 2026-11-06T21:07:55.929Z · PAGE_LIFECYCLE · info
-  - 2026-11-06T21:07:55.929Z · PAGE_LIFECYCLE · info
-  - 2026-11-06T21:07:55.929Z · PAGE_LIFECYCLE · info
-  - 2026-11-06T21:07:59.438Z · AUTO_ANSWER_BOOTSTRAP_INJECTED · info
-  - 2026-11-06T21:08:06.937Z · INCOMING_RING_SIGNAL · info
-  - 2026-11-06T21:08:10.138Z · INCOMING_ATTEMPT_REGISTERED · info
-  - 2026-11-06T21:08:22.358Z · INCOMING_DIALOG_CLOSED_OBSERVED · info · dialog-removed
-  - 2026-11-06T21:08:24.043Z · CONNECT_FLOW_FAILED_NO_CALL_ROUTE · warn · connect_clicked_no_call_route
 
 ### c5e8e753-1f63-419e-a466-bc87243b7caa — connect_failed_no_route
 - Detectada: 2026-11-06T21:09:41.746Z · modalidad: OPI
@@ -280,6 +178,41 @@
   - 2026-11-06T21:13:21.363Z · INCOMING_ATTEMPT_REGISTERED · info
   - 2026-11-06T21:13:22.732Z · INCOMING_DIALOG_CLOSED_OBSERVED · info · dialog-removed
   - 2026-11-06T21:13:23.663Z · CONNECT_FLOW_FAILED_NO_CALL_ROUTE · warn · connect_clicked_no_call_route
+
+### 49c783b8-b711-4afa-a1ec-80c2841a3ca0 — incoming_observed_pending
+- Detectada: 2026-11-06T21:18:22.328Z · modalidad: OPI
+- Tab: 220924849 · eventos: 5
+- Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: null
+- Desenlace/motivo: null
+- Señales ausentes: AUTO_ANSWER_READINESS, TERMINAL_CALL_OUTCOME
+  - 2026-11-06T21:18:22.328Z · INCOMING_DIALOG_DETECTED · info
+  - 2026-11-06T21:18:22.328Z · CONNECT_BUTTON_FOUND · info
+  - 2026-11-06T21:18:22.360Z · OBSERVER_STOPPED · info · runtime-replaced
+  - 2026-11-06T21:18:22.783Z · AUTO_ANSWER_ELIGIBLE · info
+  - 2026-11-06T21:18:22.787Z · CONNECT_CLICKED · info
+
+### 5407790b-4976-46b0-81c7-aadeedb19816 — closed_unclassified
+- Detectada: 2026-11-06T21:18:22.408Z · modalidad: OPI
+- Tab: 220924849 · eventos: 16
+- Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":[],"ready":true,"availability":"online","authorizedProfile":true,"configEnabled":true,"labSafetyLock":false,"presenceArmed":true,"presenceReason":"explicit-availability","presenceGeneration":2,"reason":"availability","reasonCode":"availability"}
+- Desenlace/motivo: null
+- Señales ausentes: TERMINAL_CALL_OUTCOME
+  - 2026-11-06T21:18:22.371Z · PERFORMANCE_HEARTBEAT · info · telemetry-start
+  - 2026-11-06T21:18:22.372Z · PLATFORM_SESSION_STARTED · info
+  - 2026-11-06T21:18:22.372Z · OBSERVER_STARTED · info
+  - 2026-11-06T21:18:22.404Z · PLATFORM_SURFACE_SNAPSHOT · info
+  - 2026-11-06T21:18:22.406Z · AVAILABILITY_STATE · info
+  - 2026-11-06T21:18:22.408Z · INCOMING_DIALOG_DETECTED · info
+  - 2026-11-06T21:18:22.408Z · CONNECT_BUTTON_FOUND · info
+  - 2026-11-06T21:18:22.410Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:18:22.411Z · AUTO_ANSWER_READINESS · info · config
+  - 2026-11-06T21:18:22.458Z · AUTO_ANSWER_AUTHORIZATION_BLOCKED · warn · not-authorized
+  - 2026-11-06T21:18:22.737Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:18:22.774Z · AUTO_ANSWER_AUTHORIZATION_BLOCKED · warn · not-authorized
+  - 2026-11-06T21:18:22.858Z · AUTO_ANSWER_BOOTSTRAP_REQUESTED · info
+  - 2026-11-06T21:18:23.896Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:18:23.897Z · INCOMING_DIALOG_CLOSED · info · dialog-removed
+  - 2026-11-06T21:18:26.921Z · AUTO_ANSWER_BOOTSTRAP_INJECTED · info
 
 ## Privacidad
 - No se exportan audio, transcripciones, texto crudo del diálogo ni IDs de llamada completos.
