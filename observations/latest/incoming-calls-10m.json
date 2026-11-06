@@ -1,17 +1,17 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-06T21:55:57.766Z",
-  "windowStartAt": "2026-11-06T21:45:57.766Z",
-  "windowEndAt": "2026-11-06T21:55:57.766Z",
+  "generatedAt": "2026-11-06T21:56:57.341Z",
+  "windowStartAt": "2026-11-06T21:46:57.341Z",
+  "windowEndAt": "2026-11-06T21:56:57.341Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 689
+    "client-clock-unverified": 732
   },
-  "sourceBatchCount": 75,
+  "sourceBatchCount": 76,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 11225,
+  "receiptUnverifiedBatchCount": 11227,
   "medianClientClockSkewMs": null,
-  "eventCount": 689,
+  "eventCount": 732,
   "summary": {
     "attempts": 15,
     "answered": 11,
@@ -23,7 +23,7 @@
     "dialogsDetected": 6,
     "buttonsFound": 6,
     "buttonsNotFound": 0,
-    "readinessSamples": 159,
+    "readinessSamples": 184,
     "blocked": 10,
     "clicks": 3
   },
@@ -2596,23 +2596,23 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 1,
+        "samples": 5,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
             "PROFILE_NOT_AUTHORIZED",
-            "AVAILABILITY_OFFLINE"
+            "AVAILABILITY_UNKNOWN"
           ],
           "ready": false,
-          "availability": "offline",
+          "availability": "unknown",
           "authorizedProfile": false,
           "configEnabled": true,
           "labSafetyLock": false,
           "presenceArmed": false,
           "presenceReason": "session-ended-confirm-again",
           "presenceGeneration": 3,
-          "reason": "route:navigation",
-          "reasonCode": "route:navigation"
+          "reason": "config",
+          "reasonCode": "config"
         }
       },
       "blockedEvents": [],
@@ -2625,7 +2625,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 6,
+      "eventCount": 10,
       "timeline": [
         {
           "at": "2026-11-06T21:50:52.783Z",
@@ -2705,6 +2705,106 @@
           },
           "eventId": "f210c0d6-c711-49a5-b742-2b84b7125ad6",
           "sequence": 13331
+        },
+        {
+          "at": "2026-11-06T21:50:54.404Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "route:start",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "route:start",
+            "reasonCode": "route:start"
+          },
+          "eventId": "0fa84863-1fc2-47ad-90d9-ef9d83700ffd",
+          "sequence": 13509
+        },
+        {
+          "at": "2026-11-06T21:50:54.423Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "dbf1e5bf-2f1d-44bd-bc92-02f29c821bd5",
+          "sequence": 13511
+        },
+        {
+          "at": "2026-11-06T21:50:54.423Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "76eb6310-21a0-4d14-8226-7d4cc4ee67cc",
+          "sequence": 13513
+        },
+        {
+          "at": "2026-11-06T21:50:54.424Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "config",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "config",
+            "reasonCode": "config"
+          },
+          "eventId": "7b680a58-ffbd-49c0-8ef0-71d181ef7684",
+          "sequence": 13514
         }
       ]
     },
@@ -2725,23 +2825,23 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 1,
+        "samples": 5,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
             "PROFILE_NOT_AUTHORIZED",
-            "AVAILABILITY_OFFLINE"
+            "AVAILABILITY_UNKNOWN"
           ],
           "ready": false,
-          "availability": "offline",
+          "availability": "unknown",
           "authorizedProfile": false,
           "configEnabled": true,
           "labSafetyLock": false,
           "presenceArmed": false,
           "presenceReason": "session-ended-confirm-again",
           "presenceGeneration": 3,
-          "reason": "route:navigation",
-          "reasonCode": "route:navigation"
+          "reason": "config",
+          "reasonCode": "config"
         }
       },
       "blockedEvents": [],
@@ -2754,7 +2854,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 2,
+      "eventCount": 6,
       "timeline": [
         {
           "at": "2026-11-06T21:50:52.872Z",
@@ -2792,6 +2892,106 @@
           },
           "eventId": "3bcc267b-0f61-48b1-aeca-b2e72bfdcaa2",
           "sequence": 13333
+        },
+        {
+          "at": "2026-11-06T21:50:54.427Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "route:start",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "route:start",
+            "reasonCode": "route:start"
+          },
+          "eventId": "e5365803-3d6f-45c5-91c7-d604d5360e59",
+          "sequence": 13519
+        },
+        {
+          "at": "2026-11-06T21:50:54.445Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "c49752fe-0c50-4fd4-abce-bf13c5fb3911",
+          "sequence": 13521
+        },
+        {
+          "at": "2026-11-06T21:50:54.446Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "70180526-cdf2-4b04-aab9-845750eb672d",
+          "sequence": 13523
+        },
+        {
+          "at": "2026-11-06T21:50:54.446Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "config",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "config",
+            "reasonCode": "config"
+          },
+          "eventId": "3130ae4a-c0c3-4cbf-b242-34e1fa689e33",
+          "sequence": 13524
         }
       ]
     },
@@ -2812,23 +3012,23 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 1,
+        "samples": 5,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
             "PROFILE_NOT_AUTHORIZED",
-            "AVAILABILITY_OFFLINE"
+            "AVAILABILITY_UNKNOWN"
           ],
           "ready": false,
-          "availability": "offline",
+          "availability": "unknown",
           "authorizedProfile": false,
           "configEnabled": true,
           "labSafetyLock": false,
           "presenceArmed": false,
           "presenceReason": "session-ended-confirm-again",
           "presenceGeneration": 3,
-          "reason": "route:navigation",
-          "reasonCode": "route:navigation"
+          "reason": "config",
+          "reasonCode": "config"
         }
       },
       "blockedEvents": [],
@@ -2841,7 +3041,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 4,
+      "eventCount": 8,
       "timeline": [
         {
           "at": "2026-11-06T21:50:52.910Z",
@@ -2900,6 +3100,106 @@
           },
           "eventId": "d2dda6ca-c78b-4c39-af73-7205ff423eb0",
           "sequence": 13341
+        },
+        {
+          "at": "2026-11-06T21:50:54.448Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "route:start",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "route:start",
+            "reasonCode": "route:start"
+          },
+          "eventId": "a529e290-df15-4d8a-8c4e-d294004a9a5e",
+          "sequence": 13529
+        },
+        {
+          "at": "2026-11-06T21:50:54.469Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "76ca02c0-b92f-4bcb-8ce0-f48c94758c8c",
+          "sequence": 13531
+        },
+        {
+          "at": "2026-11-06T21:50:54.470Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "23592f38-7594-4de7-9344-0d7e99f1aa98",
+          "sequence": 13533
+        },
+        {
+          "at": "2026-11-06T21:50:54.471Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "config",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "config",
+            "reasonCode": "config"
+          },
+          "eventId": "6967f9fd-288c-479b-a1cd-95f142e88fa8",
+          "sequence": 13534
         }
       ]
     },
@@ -2920,23 +3220,23 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 1,
+        "samples": 5,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
             "PROFILE_NOT_AUTHORIZED",
-            "AVAILABILITY_OFFLINE"
+            "AVAILABILITY_UNKNOWN"
           ],
           "ready": false,
-          "availability": "offline",
+          "availability": "unknown",
           "authorizedProfile": false,
           "configEnabled": true,
           "labSafetyLock": false,
           "presenceArmed": false,
           "presenceReason": "session-ended-confirm-again",
           "presenceGeneration": 3,
-          "reason": "route:navigation",
-          "reasonCode": "route:navigation"
+          "reason": "config",
+          "reasonCode": "config"
         }
       },
       "blockedEvents": [],
@@ -2949,7 +3249,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 4,
+      "eventCount": 8,
       "timeline": [
         {
           "at": "2026-11-06T21:50:52.975Z",
@@ -3008,6 +3308,106 @@
           },
           "eventId": "b73a6ff8-f6d1-4c2f-8e2e-a61870428a40",
           "sequence": 13351
+        },
+        {
+          "at": "2026-11-06T21:50:54.472Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "route:start",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "route:start",
+            "reasonCode": "route:start"
+          },
+          "eventId": "53b3fdaf-8c41-45c1-a02c-22c1d0b5cb56",
+          "sequence": 13539
+        },
+        {
+          "at": "2026-11-06T21:50:54.492Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "738a6d75-dfad-4077-a918-f58fc600ebc0",
+          "sequence": 13541
+        },
+        {
+          "at": "2026-11-06T21:50:54.493Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "5f717279-7116-4346-9c97-1de993f8d688",
+          "sequence": 13543
+        },
+        {
+          "at": "2026-11-06T21:50:54.493Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "config",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "config",
+            "reasonCode": "config"
+          },
+          "eventId": "50a9d96a-5994-444f-b00c-afe71ddffe70",
+          "sequence": 13544
         }
       ]
     },
@@ -3028,23 +3428,23 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 1,
+        "samples": 5,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
             "PROFILE_NOT_AUTHORIZED",
-            "AVAILABILITY_OFFLINE"
+            "AVAILABILITY_UNKNOWN"
           ],
           "ready": false,
-          "availability": "offline",
+          "availability": "unknown",
           "authorizedProfile": false,
           "configEnabled": true,
           "labSafetyLock": false,
           "presenceArmed": false,
           "presenceReason": "session-ended-confirm-again",
           "presenceGeneration": 3,
-          "reason": "route:navigation",
-          "reasonCode": "route:navigation"
+          "reason": "config",
+          "reasonCode": "config"
         }
       },
       "blockedEvents": [],
@@ -3057,7 +3457,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 5,
+      "eventCount": 9,
       "timeline": [
         {
           "at": "2026-11-06T21:50:53.054Z",
@@ -3125,6 +3525,106 @@
           "details": {},
           "eventId": "a125c617-2ac1-4342-96d0-494d7f74462c",
           "sequence": 13363
+        },
+        {
+          "at": "2026-11-06T21:50:54.496Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "route:start",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "route:start",
+            "reasonCode": "route:start"
+          },
+          "eventId": "e25f89d1-0b1b-4588-8d17-91e03f24e1d4",
+          "sequence": 13549
+        },
+        {
+          "at": "2026-11-06T21:50:54.519Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "e6cd1b9b-4581-4c67-96f2-af0d0a342edc",
+          "sequence": 13551
+        },
+        {
+          "at": "2026-11-06T21:50:54.520Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "e422f0d4-0c8d-4091-93f4-8eb97c610ca3",
+          "sequence": 13553
+        },
+        {
+          "at": "2026-11-06T21:50:54.520Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "config",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "config",
+            "reasonCode": "config"
+          },
+          "eventId": "c25098b3-79da-4e60-a5d7-fdf95c4906cd",
+          "sequence": 13554
         }
       ]
     },
@@ -3145,23 +3645,23 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 1,
+        "samples": 2,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
             "PROFILE_NOT_AUTHORIZED",
-            "AVAILABILITY_OFFLINE"
+            "AVAILABILITY_UNKNOWN"
           ],
           "ready": false,
-          "availability": "offline",
+          "availability": "unknown",
           "authorizedProfile": false,
           "configEnabled": true,
           "labSafetyLock": false,
           "presenceArmed": false,
           "presenceReason": "session-ended-confirm-again",
           "presenceGeneration": 3,
-          "reason": "route:navigation",
-          "reasonCode": "route:navigation"
+          "reason": "route:start",
+          "reasonCode": "route:start"
         }
       },
       "blockedEvents": [],
@@ -3174,7 +3674,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 3,
+      "eventCount": 4,
       "timeline": [
         {
           "at": "2026-11-06T21:50:53.123Z",
@@ -3224,6 +3724,31 @@
           },
           "eventId": "7cb280a5-554e-4249-bb02-b4b5134d20d9",
           "sequence": 13367
+        },
+        {
+          "at": "2026-11-06T21:50:54.522Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "route:start",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "route:start",
+            "reasonCode": "route:start"
+          },
+          "eventId": "3352cc5d-8cd1-4ba2-8216-f0b597f72443",
+          "sequence": 13559
         }
       ]
     },
@@ -3381,7 +3906,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 14,
+      "eventCount": 34,
       "timeline": [
         {
           "at": "2026-11-06T21:50:53.273Z",
@@ -3545,6 +4070,186 @@
           },
           "eventId": "455970a6-f7eb-492e-baed-f9fdd3425dbc",
           "sequence": 13437
+        },
+        {
+          "at": "2026-11-06T21:50:54.372Z",
+          "action": "PLATFORM_SESSION_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "6ed8d282-9b78-4fec-87e7-027e4b1546ba",
+          "sequence": 13495
+        },
+        {
+          "at": "2026-11-06T21:50:54.372Z",
+          "action": "OBSERVER_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "0812ad1c-a3a8-40d6-b673-1460fb45ebb4",
+          "sequence": 13496
+        },
+        {
+          "at": "2026-11-06T21:50:54.400Z",
+          "action": "PLATFORM_SURFACE_SNAPSHOT",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "08c149df-f34e-4f59-acb3-05cc189cb780",
+          "sequence": 13500
+        },
+        {
+          "at": "2026-11-06T21:50:54.403Z",
+          "action": "PLATFORM_SESSION_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "e78425bb-5260-48e9-8f17-04ddf30fa7df",
+          "sequence": 13506
+        },
+        {
+          "at": "2026-11-06T21:50:54.403Z",
+          "action": "OBSERVER_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "b15ab0c3-14e8-4ff1-a302-f104b5754e18",
+          "sequence": 13507
+        },
+        {
+          "at": "2026-11-06T21:50:54.422Z",
+          "action": "PLATFORM_SURFACE_SNAPSHOT",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "b5678a42-7111-462b-b8ba-d6cfffc5b4f5",
+          "sequence": 13510
+        },
+        {
+          "at": "2026-11-06T21:50:54.425Z",
+          "action": "PLATFORM_SESSION_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "1d826423-fe7a-4dd7-b38e-f5e5c849db16",
+          "sequence": 13516
+        },
+        {
+          "at": "2026-11-06T21:50:54.426Z",
+          "action": "OBSERVER_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "cd2262d4-21fb-47a7-8adf-528d826a847c",
+          "sequence": 13517
+        },
+        {
+          "at": "2026-11-06T21:50:54.444Z",
+          "action": "PLATFORM_SURFACE_SNAPSHOT",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "064c78ad-54e1-46c5-b214-e5bf85070b3b",
+          "sequence": 13520
+        },
+        {
+          "at": "2026-11-06T21:50:54.447Z",
+          "action": "PLATFORM_SESSION_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "246565e8-948f-4e52-a0de-011a9a259db0",
+          "sequence": 13526
+        },
+        {
+          "at": "2026-11-06T21:50:54.447Z",
+          "action": "OBSERVER_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "4960f001-ff5d-40e1-a0e0-abb2bbc02e9e",
+          "sequence": 13527
+        },
+        {
+          "at": "2026-11-06T21:50:54.468Z",
+          "action": "PLATFORM_SURFACE_SNAPSHOT",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "fb9d6ada-301b-4101-bec8-844459432930",
+          "sequence": 13530
+        },
+        {
+          "at": "2026-11-06T21:50:54.471Z",
+          "action": "PLATFORM_SESSION_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "99643b43-f8ca-4550-a0f7-7e93dcf7d4e7",
+          "sequence": 13536
+        },
+        {
+          "at": "2026-11-06T21:50:54.472Z",
+          "action": "OBSERVER_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "9ccbb64e-ac70-4a3b-b989-f01d3d6bbb8b",
+          "sequence": 13537
+        },
+        {
+          "at": "2026-11-06T21:50:54.491Z",
+          "action": "PLATFORM_SURFACE_SNAPSHOT",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "5a268114-b4b9-4ce1-a1ad-0183371bb24f",
+          "sequence": 13540
+        },
+        {
+          "at": "2026-11-06T21:50:54.495Z",
+          "action": "PLATFORM_SESSION_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "f80f322f-f416-4f66-a24f-953070f877ad",
+          "sequence": 13546
+        },
+        {
+          "at": "2026-11-06T21:50:54.495Z",
+          "action": "OBSERVER_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "2149a9ee-e669-4ca0-b454-a08607483046",
+          "sequence": 13547
+        },
+        {
+          "at": "2026-11-06T21:50:54.517Z",
+          "action": "PLATFORM_SURFACE_SNAPSHOT",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "7914e068-93dd-4d83-a296-ecca13149ba6",
+          "sequence": 13550
+        },
+        {
+          "at": "2026-11-06T21:50:54.521Z",
+          "action": "PLATFORM_SESSION_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "710fccc2-d0fc-46a7-a032-a38cb8ba3904",
+          "sequence": 13556
+        },
+        {
+          "at": "2026-11-06T21:50:54.521Z",
+          "action": "OBSERVER_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "c790937d-2ab6-4e04-a8ab-350c08f24450",
+          "sequence": 13557
         }
       ]
     },
