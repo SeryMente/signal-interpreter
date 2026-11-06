@@ -25,7 +25,7 @@ Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metac
 
 - **Metacanon adquirido: 1.28**; DUG **v377 · NX-377m**; GOW **2.17**.
 - Fuente canónica releída desde `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, commit `8ee2482866b3dd085e58e05006727256d0274376`, blob `54064c8fe00f872023a455f06596061ed69062ae`. `INICIO.md` confirma DUG v377, Metacanon 1.28 y GOW 2.17.
-- Control vigente: CONTROL-RESPONSABILIDAD.json, G10 ACTIVO agente_unico; folio SES-20261106-95D9F8B5; alias chatgpt-signal-interpreter-SES-20261106-95D9F8B5; UUIDv7 local 01a1b2c1-d44f-7410-b313-928495d9f8b5. Blob nuevo 13721a88ba5e499b318f4bb0c268296a5c99c6bb; read-back remoto pendiente. G9 queda SUSTITUIDO y permanece en el historial.
+- Control vigente: CONTROL-RESPONSABILIDAD.json, G10 ACTIVO agente_unico; folio SES-20261106-95D9F8B5; alias chatgpt-signal-interpreter-SES-20261106-95D9F8B5; UUIDv7 local 01a1b2c1-d44f-7410-b313-928495d9f8b5. Blob bb0cb36c3add81987caa99c4d63e4722ddb4487b; read-back remoto PASS. G9 queda SUSTITUIDO.
 - Se revisaron manualmente P001/P004/P005/P037/P038/P043, §42 de Metacanon y vocabulario GOW relativo a Arranque en Frío, MDP, SPDF, Persistencia documental, Registro conversacional, FT y Control de responsabilidad. `INICIO.md` refiere §ARR; no se localizó un encabezado literal §ARR en las secciones humanas recuperadas, por lo que su ubicación exacta queda NO VERIFICADA. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
 
 ### Constancia de adquisición y aplicación
@@ -100,8 +100,8 @@ Sandbox Linux: lógica real y DOM Chromium con eventos sintéticos para candidat
 ### 🔄 Estado vivo
 
 ```text
-Corte 2026-11-06 - generacion 10 - instancia unica ACTIVA. Control G10: folio SES-20261106-95D9F8B5; alias chatgpt-signal-interpreter-SES-20261106-95D9F8B5; UUIDv7 local 01a1b2c1-d44f-7410-b313-928495d9f8b5; rol agente_unico. Control blob 13721a88ba5e499b318f4bb0c268296a5c99c6bb; commit/read-back remoto pendiente. G9 quedo SUSTITUIDO; se conserva el historial.
-Transferencia G8 a G9: COMMITTED_AND_READBACK_VERIFIED; conservar como historia. Transferencia G9 a G10: autorizacion explicita del operador; precondicion control blob 6ae9903479394ebda40beff83d392fd86a61bad8, generacion 9; evento SIGNAL-INTERPRETER-TRANSFER-20261106-G10-95D9F8B5; commit y read-back remoto pendientes al corte de esta cronica.
+Corte 2026-11-06 - generacion 10 - instancia unica ACTIVA. Control G10: folio SES-20261106-95D9F8B5; alias chatgpt-signal-interpreter-SES-20261106-95D9F8B5; UUIDv7 local 01a1b2c1-d44f-7410-b313-928495d9f8b5; rol agente_unico. Control blob bb0cb36c3add81987caa99c4d63e4722ddb4487b; read-back remoto PASS. G9 quedo SUSTITUIDO; se conserva el historial.
+Transferencia G8 a G9: COMMITTED_AND_READBACK_VERIFIED; conservar como historia. Transferencia G9 a G10: COMMITTED_AND_READBACK_VERIFIED; autorizacion explicita, precondicion G9/blob 6ae9903479394ebda40beff83d392fd86a61bad8; evento SIGNAL-INTERPRETER-TRANSFER-20261106-G10-95D9F8B5; commit inicial d3e6e37f7bb43a61ee33e134303847a50ce37828 y lectura de vuelta de seis artefactos PASS.
 Gobierno adquirido: DUG v377 · NX-377m; Metacanon 1.28; GOW 2.17. DUG commit `8ee2482866b3dd085e58e05006727256d0274376`, blob `54064c8fe00f872023a455f06596061ed69062ae`. P001/P004/P005/P037/P038/P043 y Metacanon §42 revisados manualmente; MCP normativo DESACTIVADO.
 Producto: el manifest de `main` declara Signal Interpreter 0.10.39 (blob `0cb37ff90b79cd84cf0154c01b055e22485fc5d6`). No se ejecutó CI, no se instaló, no se cargó Chrome ni se hizo prueba real en este ciclo. El export anterior informa un patch ART-028 local no aplicado; sus artefactos no fueron recuperados ni revalidados.
 Persistencia observacional: GitHub sigue siendo el depósito provisional descrito en el núcleo; el último corte heredado observaba runtime 0.10.37, 10,384 batches y health ok. E2E de 0.10.39 sigue sin demostrarse. No se leyó telemetría nueva en esta retoma.
@@ -161,7 +161,7 @@ Estado: **desarrollo 0.10.39 integrado; staging e instalación Native Messaging 
 | Requisito | Estado implementado / evidencia | Aceptación y pendiente |
 |---|---|---|
 | Integración de desarrollo | PR #68 integrada; `main` 0.10.39; CI post-merge de auditoría y host nativo 2/2 SUCCESS en SHA `8955c1cae996d150052483cdf0d5da37c4da41eb` | No hay release; aceptación real pendiente |
-| Modo de trabajo del frente | Control G10 ACTIVO como agente_unico; un prompt activo; README actualizado; prompts anteriores retirados del arbol activo | Transferencia G9 a G10 autorizada; commit/read-back remoto pendiente |
+| Modo de trabajo del frente | Control G10 ACTIVO como agente_unico; un prompt activo; README actualizado; prompts anteriores retirados del arbol activo | Transferencia G9 a G10 COMMITTED_AND_READBACK_VERIFIED |
 | Persistencia provisional | 10,384 batches; 19 informes de llamada; 1,878 snapshots; 1,858 deltas; último health `ok`; inbox 0 | Operación histórica confirmada; runtime más reciente 0.10.37; falta E2E 0.10.39 |
 | Relay Vercel | Código server-side usa `GITHUB_TOKEN` y escribe `observations/inbox`; GitHub muestra procesamiento automático reciente | Recepción efectiva observada; Vercel management/logs API 403; no se inspeccionó secret ni deployment |
 | Informe incoming 10m | Código de pipeline genera JSON/Markdown y aplica corrección por `relayReceivedAt` | Los artefactos no aparecieron en última lectura; falta batch 0.10.39 con receipt timestamp |
@@ -209,11 +209,11 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 ## Persistencia y revisión
 
-Releer base y metodo antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control G10 ACTIVO; blob 13721a88ba5e499b318f4bb0c268296a5c99c6bb; push/read-back remoto pendiente. G9 queda SUSTITUIDO con historico preservado.
+Releer base y metodo antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control G10 ACTIVO; blob bb0cb36c3add81987caa99c4d63e4722ddb4487b; read-back remoto PASS. G9 queda SUSTITUIDO con historico preservado.
 
 Gobernanza actual releída: DUG v377 · NX-377m, commit `8ee2482866b3dd085e58e05006727256d0274376`, blob `54064c8fe00f872023a455f06596061ed69062ae`; Metacanon 1.28; GOW 2.17. MCP normativo desactivado. La localización precisa de §ARR queda NO VERIFICADA.
 
-Prompt operativo unico blob 014f477fcfdfb87f4a4dfddf189b8a78ce6afa7c; cronica G10 blob c6add25867dfaf8bc244af87d0d25c58552da622; recibo de export blob 793c01beb695b1807399044cf032d234e66d4630. Publicacion pendiente de commit/read-back.
+Prompt operativo unico blob b4540e0e0fb199e7cb20d314eff770ae345c056e; cronica G10 blob bf9d918ccedd8778301e626cf197aeb45761ccee; recibo de export blob edd3f368731c544b09a684004a5ccf3211c5ca8f. Persistencia y read-back verificados.
 
 Versión de producto: manifest 0.10.39 (blob `0cb37ff90b79cd84cf0154c01b055e22485fc5d6`). PR #68 permanece como la integración histórica del baseline. No se volvió a ejecutar CI ni se hizo release en este ciclo.
 

@@ -13,7 +13,7 @@ Se transfiere la titularidad primaria del frente Signal Interpreter de G9 a G10,
 - Generacion: G9 -> G10
 - Control previo: blob 6ae9903479394ebda40beff83d392fd86a61bad8; generacion 9; estado ACTIVO.
 - Base documental: main d737e39e4db0192256cbd0ff44a500b9b66563fe.
-- Control nuevo blob: 13721a88ba5e499b318f4bb0c268296a5c99c6bb. Commit pendiente y lectura de vuelta pendiente al momento de esta cronica.
+- Control G10 final blob: bb0cb36c3add81987caa99c4d63e4722ddb4487b. Commit inicial d3e6e37f7bb43a61ee33e134303847a50ce37828; read-back de seis artefactos: PASS.
 
 El UUIDv7 es local; el ID nativo de la conversacion no esta expuesto. La busqueda de colisiones se limita al OCP de Signal Interpreter; unicidad global NO VERIFICADA. El control es cooperativo y no constituye fencing universal.
 
@@ -56,9 +56,9 @@ El repositorio SeryMente/signal-interpreter es publico y su README prohibe publi
 
 Original local: COPIA_BYTE_EXACTA_VERIFICADA.
 Exclusion de Git local: VERIFICADA.
-Recibo publico: ESCRITO_LOCALMENTE; COMMIT_PENDING_READBACK.
-Cronica publica: ESCRITA_LOCALMENTE; COMMIT_PENDING_READBACK.
-Control G10: ESCRITO_LOCALMENTE; COMMIT_PENDING_READBACK.
-Nucleo OCP: ACTUALIZACION_LOCAL; COMMIT_PENDING_READBACK.
+Recibo publico: PERSISTIDO_Y_VERIFICADO.
+Cronica publica: PERSISTIDA_Y_VERIFICADA tras lectura de vuelta del commit inicial.
+Control G10: PERSISTIDO_Y_VERIFICADO; G9 queda SUSTITUIDO.
+Nucleo OCP: PERSISTIDO_Y_VERIFICADO.
 
-La persistencia publica solo se declarara tras push fast-forward y lectura de vuelta del commit remoto. La custodia del original sigue siendo local; la revision de privacidad/credenciales permanece pendiente.
+La persistencia publica se verifico tras push fast-forward y lectura de vuelta: seis blobs remotos coinciden exactamente con los artefactos locales. El commit inicial y su control quedaron cotejados; este commit de cierre conserva el resultado. La custodia del original sigue siendo local; la revision de privacidad/credenciales permanece pendiente.
