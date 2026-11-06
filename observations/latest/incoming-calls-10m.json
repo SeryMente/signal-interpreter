@@ -1,45 +1,46 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-06T21:19:23.291Z",
-  "windowStartAt": "2026-11-06T21:09:23.291Z",
-  "windowEndAt": "2026-11-06T21:19:23.291Z",
+  "generatedAt": "2026-11-06T21:19:52.620Z",
+  "windowStartAt": "2026-11-06T21:09:52.620Z",
+  "windowEndAt": "2026-11-06T21:19:52.620Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 491
+    "client-clock-unverified": 423
   },
-  "sourceBatchCount": 79,
+  "sourceBatchCount": 69,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 11058,
+  "receiptUnverifiedBatchCount": 11059,
   "medianClientClockSkewMs": null,
-  "eventCount": 491,
+  "eventCount": 423,
   "summary": {
     "attempts": 8,
     "answered": 0,
     "missed": 0,
-    "connectFailedNoRoute": 8,
+    "connectFailedNoRoute": 7,
     "ringUnmatched": 0,
-    "unresolved": 0,
-    "ringSignals": 5,
-    "dialogsDetected": 8,
-    "buttonsFound": 8,
+    "unresolved": 1,
+    "ringSignals": 4,
+    "dialogsDetected": 6,
+    "buttonsFound": 6,
     "buttonsNotFound": 0,
-    "readinessSamples": 225,
-    "blocked": 9,
-    "clicks": 4
+    "readinessSamples": 199,
+    "blocked": 6,
+    "clicks": 3
   },
   "attempts": [
     {
       "attemptId": "c5e8e753-1f63-419e-a466-bc87243b7caa",
-      "status": "connect_failed_no_route",
+      "status": "incomplete",
       "modality": "OPI",
       "tabId": 220924849,
-      "detectedAt": "2026-11-06T21:09:41.746Z",
+      "detectedAt": "2026-11-06T21:09:54.446Z",
       "closedAt": null,
-      "clickedAt": "2026-11-06T21:09:42.196Z",
+      "clickedAt": null,
       "answeredAt": null,
       "missedAt": null,
+      "outcomeReason": null,
       "button": {
-        "found": true,
+        "found": false,
         "notFound": false,
         "disabled": false
       },
@@ -49,118 +50,15 @@
       },
       "blockedEvents": [],
       "ringSignalCount": 0,
-      "clickToAnswerLatencyMs": 450,
+      "clickToAnswerLatencyMs": null,
       "detectionToAnswerLatencyMs": null,
       "callRefs": [],
       "missingSignals": [
-        "AUTO_ANSWER_READINESS"
+        "INCOMING_DIALOG_DETECTED",
+        "TERMINAL_CALL_OUTCOME"
       ],
-      "eventCount": 12,
+      "eventCount": 3,
       "timeline": [
-        {
-          "at": "2026-11-06T21:09:41.746Z",
-          "action": "INCOMING_DIALOG_DETECTED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "OPI",
-            "connectFound": true,
-            "connectDisabled": false
-          },
-          "eventId": "710c68fa-a742-4a97-b81b-1676373f428a",
-          "sequence": 10526
-        },
-        {
-          "at": "2026-11-06T21:09:41.746Z",
-          "action": "CONNECT_BUTTON_FOUND",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "OPI"
-          },
-          "eventId": "6c151b2d-bc67-4280-abb5-f461307daa9d",
-          "sequence": 10527
-        },
-        {
-          "at": "2026-11-06T21:09:41.767Z",
-          "action": "OBSERVER_STOPPED",
-          "level": "info",
-          "reasonCode": "runtime-replaced",
-          "details": {
-            "reason": "runtime-replaced",
-            "reasonCode": "runtime-replaced"
-          },
-          "eventId": "2a19c694-be81-4c46-b4c1-8b3e9e452e37",
-          "sequence": 10530
-        },
-        {
-          "at": "2026-11-06T21:09:41.778Z",
-          "action": "PERFORMANCE_HEARTBEAT",
-          "level": "info",
-          "reasonCode": "telemetry-start",
-          "details": {
-            "reason": "telemetry-start",
-            "reasonCode": "telemetry-start"
-          },
-          "eventId": "389c50f9-192e-4d12-8ccc-edfc4787b4b9",
-          "sequence": 10536
-        },
-        {
-          "at": "2026-11-06T21:09:41.779Z",
-          "action": "PLATFORM_SESSION_STARTED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "a64bf267-c9a0-4dcf-b332-d3e7442ed742",
-          "sequence": 10537
-        },
-        {
-          "at": "2026-11-06T21:09:41.779Z",
-          "action": "OBSERVER_STARTED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "844d7df6-24b3-4a27-a86e-d6825f94d943",
-          "sequence": 10538
-        },
-        {
-          "at": "2026-11-06T21:09:42.194Z",
-          "action": "AUTO_ANSWER_ELIGIBLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "OPI",
-            "decision": "click-connect"
-          },
-          "eventId": "64699ba0-4854-4b04-b09d-21d0d6621723",
-          "sequence": 10554
-        },
-        {
-          "at": "2026-11-06T21:09:42.196Z",
-          "action": "CONNECT_CLICKED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "OPI",
-            "clickLatencyMs": 1.8,
-            "platformInteraction": "permitted-connect-only"
-          },
-          "eventId": "874126af-f673-4bdd-8255-773fd8354ff9",
-          "sequence": 10560
-        },
-        {
-          "at": "2026-11-06T21:09:49.198Z",
-          "action": "CONNECT_ROUTE_TIMEOUT",
-          "level": "error",
-          "reasonCode": null,
-          "details": {
-            "modality": "OPI",
-            "elapsedMs": 7004,
-            "action": "no-second-click"
-          },
-          "eventId": "95150b15-cf23-4bf2-98a2-66ea73a7fbb0",
-          "sequence": 10600
-        },
         {
           "at": "2026-11-06T21:09:54.446Z",
           "action": "INCOMING_ATTEMPT_REGISTERED",
@@ -206,375 +104,31 @@
       "status": "connect_failed_no_route",
       "modality": "OPI",
       "tabId": 220924849,
-      "detectedAt": "2026-11-06T21:09:41.812Z",
-      "closedAt": "2026-11-06T21:09:42.376Z",
+      "detectedAt": "2026-11-06T21:10:00.150Z",
+      "closedAt": "2026-11-06T21:10:08.907Z",
       "clickedAt": null,
       "answeredAt": null,
       "missedAt": null,
       "outcomeReason": "connect_clicked_no_call_route",
       "button": {
-        "found": true,
+        "found": false,
         "notFound": false,
         "disabled": false
       },
       "readiness": {
-        "samples": 5,
-        "last": {
-          "blockedReasons": [],
-          "ready": true,
-          "availability": "online",
-          "authorizedProfile": true,
-          "configEnabled": true,
-          "labSafetyLock": false,
-          "presenceArmed": true,
-          "presenceReason": "explicit-availability",
-          "presenceGeneration": 2,
-          "reason": "availability",
-          "reasonCode": "availability"
-        }
+        "samples": 0,
+        "last": null
       },
-      "blockedEvents": [
-        {
-          "at": "2026-11-06T21:09:41.881Z",
-          "action": "AUTO_ANSWER_AUTHORIZATION_BLOCKED",
-          "reasonCode": "not-authorized",
-          "blockedReasons": []
-        },
-        {
-          "at": "2026-11-06T21:09:42.181Z",
-          "action": "AUTO_ANSWER_AUTHORIZATION_BLOCKED",
-          "reasonCode": "not-authorized",
-          "blockedReasons": []
-        },
-        {
-          "at": "2026-11-06T21:09:42.344Z",
-          "action": "AUTO_ANSWER_AUTHORIZATION_BLOCKED",
-          "reasonCode": "not-authorized",
-          "blockedReasons": []
-        }
-      ],
-      "ringSignalCount": 1,
+      "blockedEvents": [],
+      "ringSignalCount": 0,
       "clickToAnswerLatencyMs": null,
       "detectionToAnswerLatencyMs": null,
       "callRefs": [],
-      "missingSignals": [],
-      "eventCount": 28,
+      "missingSignals": [
+        "INCOMING_DIALOG_DETECTED"
+      ],
+      "eventCount": 3,
       "timeline": [
-        {
-          "at": "2026-11-06T21:09:41.809Z",
-          "action": "PLATFORM_SURFACE_SNAPSHOT",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "0abb4990-d6c7-480f-b06a-0fd186259d5f",
-          "sequence": 10541
-        },
-        {
-          "at": "2026-11-06T21:09:41.812Z",
-          "action": "INCOMING_DIALOG_DETECTED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "OPI",
-            "connectFound": true,
-            "connectDisabled": false
-          },
-          "eventId": "60dc607d-9add-4f14-b834-4d7458673772",
-          "sequence": 10544
-        },
-        {
-          "at": "2026-11-06T21:09:41.812Z",
-          "action": "AVAILABILITY_STATE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "7d26103c-e75f-4c65-9d92-588e6fe368d0",
-          "sequence": 10543
-        },
-        {
-          "at": "2026-11-06T21:09:41.813Z",
-          "action": "CONNECT_BUTTON_FOUND",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "OPI"
-          },
-          "eventId": "c8804b26-6e07-4c03-929f-db1454b22b61",
-          "sequence": 10545
-        },
-        {
-          "at": "2026-11-06T21:09:41.814Z",
-          "action": "AUTO_ANSWER_READINESS",
-          "level": "info",
-          "reasonCode": "availability",
-          "details": {
-            "blockedReasons": [],
-            "ready": true,
-            "availability": "online",
-            "authorizedProfile": true,
-            "configEnabled": true,
-            "labSafetyLock": false,
-            "presenceArmed": true,
-            "presenceReason": "explicit-availability",
-            "presenceGeneration": 2,
-            "reason": "availability",
-            "reasonCode": "availability"
-          },
-          "eventId": "c2a52cf7-ab14-4248-a6b1-5dafe7f4785a",
-          "sequence": 10547
-        },
-        {
-          "at": "2026-11-06T21:09:41.816Z",
-          "action": "AUTO_ANSWER_READINESS",
-          "level": "info",
-          "reasonCode": "config",
-          "details": {
-            "blockedReasons": [],
-            "ready": true,
-            "availability": "online",
-            "authorizedProfile": true,
-            "configEnabled": true,
-            "labSafetyLock": false,
-            "presenceArmed": true,
-            "presenceReason": "explicit-availability",
-            "presenceGeneration": 2,
-            "reason": "config",
-            "reasonCode": "config"
-          },
-          "eventId": "1c7104ab-4d01-42a9-8e6b-afa18c9c4c7d",
-          "sequence": 10548
-        },
-        {
-          "at": "2026-11-06T21:09:41.881Z",
-          "action": "AUTO_ANSWER_AUTHORIZATION_BLOCKED",
-          "level": "warn",
-          "reasonCode": "not-authorized",
-          "details": {
-            "modality": "OPI",
-            "reasonCode": "not-authorized",
-            "grantOk": false,
-            "currentPresenceGeneration": 2
-          },
-          "eventId": "306d027c-a271-4067-b5b6-69b631b584f4",
-          "sequence": 10549
-        },
-        {
-          "at": "2026-11-06T21:09:42.147Z",
-          "action": "AUTO_ANSWER_READINESS",
-          "level": "info",
-          "reasonCode": "availability",
-          "details": {
-            "blockedReasons": [],
-            "ready": true,
-            "availability": "online",
-            "authorizedProfile": true,
-            "configEnabled": true,
-            "labSafetyLock": false,
-            "presenceArmed": true,
-            "presenceReason": "explicit-availability",
-            "presenceGeneration": 2,
-            "reason": "availability",
-            "reasonCode": "availability"
-          },
-          "eventId": "8711c023-b7e7-43e4-9994-fadcc75a6698",
-          "sequence": 10551
-        },
-        {
-          "at": "2026-11-06T21:09:42.181Z",
-          "action": "AUTO_ANSWER_AUTHORIZATION_BLOCKED",
-          "level": "warn",
-          "reasonCode": "not-authorized",
-          "details": {
-            "modality": "OPI",
-            "reasonCode": "not-authorized",
-            "grantOk": false,
-            "currentPresenceGeneration": 2
-          },
-          "eventId": "f6825ede-ccf1-4128-b483-cfcf4a19c03a",
-          "sequence": 10553
-        },
-        {
-          "at": "2026-11-06T21:09:42.223Z",
-          "action": "AUTO_ANSWER_READINESS",
-          "level": "info",
-          "reasonCode": "availability",
-          "details": {
-            "blockedReasons": [],
-            "ready": true,
-            "availability": "online",
-            "authorizedProfile": true,
-            "configEnabled": true,
-            "labSafetyLock": false,
-            "presenceArmed": true,
-            "presenceReason": "explicit-availability",
-            "presenceGeneration": 2,
-            "reason": "availability",
-            "reasonCode": "availability"
-          },
-          "eventId": "38a82dd0-9369-4b29-9889-26738c5cd729",
-          "sequence": 10564
-        },
-        {
-          "at": "2026-11-06T21:09:42.263Z",
-          "action": "AUTO_ANSWER_BOOTSTRAP_REQUESTED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "trigger": "ring.mp3-start"
-          },
-          "eventId": "bda5cf04-cdf2-430b-8795-9808726e3c73",
-          "sequence": 10524
-        },
-        {
-          "at": "2026-11-06T21:09:42.344Z",
-          "action": "AUTO_ANSWER_AUTHORIZATION_BLOCKED",
-          "level": "warn",
-          "reasonCode": "not-authorized",
-          "details": {
-            "modality": "OPI",
-            "reasonCode": "not-authorized",
-            "grantOk": false,
-            "currentPresenceGeneration": 2
-          },
-          "eventId": "2c9fb9a5-1dff-4149-a675-d3126b46c22e",
-          "sequence": 10565
-        },
-        {
-          "at": "2026-11-06T21:09:42.375Z",
-          "action": "AUTO_ANSWER_READINESS",
-          "level": "info",
-          "reasonCode": "availability",
-          "details": {
-            "blockedReasons": [],
-            "ready": true,
-            "availability": "online",
-            "authorizedProfile": true,
-            "configEnabled": true,
-            "labSafetyLock": false,
-            "presenceArmed": true,
-            "presenceReason": "explicit-availability",
-            "presenceGeneration": 2,
-            "reason": "availability",
-            "reasonCode": "availability"
-          },
-          "eventId": "c47fe479-f9c0-495a-95bb-efcdb00eac34",
-          "sequence": 10566
-        },
-        {
-          "at": "2026-11-06T21:09:42.376Z",
-          "action": "INCOMING_DIALOG_CLOSED",
-          "level": "info",
-          "reasonCode": "dialog-removed",
-          "details": {
-            "reason": "dialog-removed",
-            "reasonCode": "dialog-removed"
-          },
-          "eventId": "8bdecc9a-8f3f-46e7-9eae-6ec03b6bb821",
-          "sequence": 10567
-        },
-        {
-          "at": "2026-11-06T21:09:43.732Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "16f9620d-d078-459f-9645-fcc80e525ec8",
-          "sequence": 10572
-        },
-        {
-          "at": "2026-11-06T21:09:43.734Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "ff9f4922-b383-49a0-bb3e-3f81d95a6c5f",
-          "sequence": 10573
-        },
-        {
-          "at": "2026-11-06T21:09:43.734Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "78567505-48e4-4fb4-a738-1d49f54e07c6",
-          "sequence": 10574
-        },
-        {
-          "at": "2026-11-06T21:09:43.734Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "e911fe0d-0f9a-417a-8102-37d200f022ac",
-          "sequence": 10575
-        },
-        {
-          "at": "2026-11-06T21:09:43.736Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "746bbce2-823e-400b-b139-ec552570d4fb",
-          "sequence": 10576
-        },
-        {
-          "at": "2026-11-06T21:09:43.749Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "78c14def-a551-4940-aa1d-f9df612569cc",
-          "sequence": 10577
-        },
-        {
-          "at": "2026-11-06T21:09:43.750Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "25f4b88a-7f13-4f67-ae82-773115888615",
-          "sequence": 10578
-        },
-        {
-          "at": "2026-11-06T21:09:43.750Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "e8643c1f-3416-4216-9ed7-7e0ddb3287aa",
-          "sequence": 10579
-        },
-        {
-          "at": "2026-11-06T21:09:43.750Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "a03c7750-22aa-4789-a3ce-785a35a4dfd4",
-          "sequence": 10580
-        },
-        {
-          "at": "2026-11-06T21:09:43.750Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "8489259e-a7bc-4972-a911-b708d4aa5175",
-          "sequence": 10581
-        },
-        {
-          "at": "2026-11-06T21:09:46.585Z",
-          "action": "INCOMING_RING_SIGNAL",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "signal": "ring.mp3",
-            "statusCode": 206,
-            "durationMs": 147
-          },
-          "eventId": "5715ad2d-61c9-410a-b501-fcd3858b6278",
-          "sequence": 10533
-        },
         {
           "at": "2026-11-06T21:10:00.150Z",
           "action": "INCOMING_ATTEMPT_REGISTERED",
