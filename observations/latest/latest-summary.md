@@ -1,16 +1,16 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-9d24a61d-1a5f-4893-a31c-b84954923f30
-- Creado: 2026-11-06T19:50:23.784Z
+- Batch: batch-60f1eb5d-505f-4b3f-a1c6-b8cd592c3f1c
+- Creado: 2026-11-06T20:01:00.262Z
 - Trigger: critical
 - Extensión: 0.10.36
 - Eventos: 1
 - Errores: 1
 - Warnings: 0
-- Secuencia: 8023 → 8023
+- Secuencia: 8385 → 8385
 - Identidades de plataforma: 14
-- Snapshots de plataforma: 1918
-- Deltas de plataforma: 1897
+- Snapshots de plataforma: 1924
+- Deltas de plataforma: 1903
 
 ## Categorías
 
