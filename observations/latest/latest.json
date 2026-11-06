@@ -1,34 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-2d290edf-39d3-4d20-9dbe-f55525330957",
-  "createdAt": "2026-10-31T20:59:42.888Z",
-  "trigger": "alarm",
+  "batchId": "batch-9d24a61d-1a5f-4893-a31c-b84954923f30",
+  "createdAt": "2026-11-06T19:50:23.784Z",
+  "trigger": "critical",
   "extensionVersion": "0.10.36",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "c38eb08a-798d-442c-9c28-2fd4a919f153",
-      "sequence": 7965,
-      "timestamp": "2026-10-31T20:59:29.174Z",
-      "ingestedAt": "2026-10-31T20:59:29.242Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "id": "47d51ab4-df03-4aef-aa56-75e0c4b19034",
+      "sequence": 8023,
+      "timestamp": "2026-11-06T19:50:23.182Z",
+      "ingestedAt": "2026-11-06T19:50:23.182Z",
+      "level": "error",
+      "category": "RUNTIME",
+      "component": "platform-screenshot",
       "extensionVersion": "0.10.36",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
-      "outcome": "observed",
-      "traceId": "b4b9bca6-61c4-43c5-860f-795184ecf50b",
+      "phase": "error",
+      "action": "PLATFORM_SCREENSHOT_CAPTURE_ERROR",
+      "outcome": "error",
+      "traceId": "6bbe89a9-b555-4816-9c2d-f8cff649bec2",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220923612,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.36",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -36,51 +34,40 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
-      "error": null,
+      "reasonCode": "tab-activated",
+      "error": "Error: Could not establish connection. Receiving end does not exist.",
       "metrics": {},
-      "context": {
-        "route": "/c/6ae6561f-a530-83e8-8ab4-c94da0a8f675",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220923612,
-        "sourceWindowId": 220923796,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/c/6ae6561f-a530-83e8-8ab4-c94da0a8f675"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/c/6ae6561f-a530-83e8-8ab4-c94da0a8f675",
-        "extensionVersion": "0.10.36",
-        "previousRoute": "/",
-        "currentRoute": "/c/6ae6561f-a530-83e8-8ab4-c94da0a8f675",
-        "activeCallRoute": false
+        "tabId": 220923940,
+        "windowId": 220923849,
+        "error": "Error: Could not establish connection. Receiving end does not exist.",
+        "reason": "tab-activated"
       }
     }
   ],
   "summary": {
     "eventsTotal": 1,
-    "errors": 0,
+    "errors": 1,
     "warnings": 0,
-    "critical": false,
+    "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 7965,
-    "lastSequence": 7965,
-    "firstTimestamp": "2026-10-31T20:59:29.174Z",
-    "lastTimestamp": "2026-10-31T20:59:29.174Z",
+    "firstSequence": 8023,
+    "lastSequence": 8023,
+    "firstTimestamp": "2026-11-06T19:50:23.182Z",
+    "lastTimestamp": "2026-11-06T19:50:23.182Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
+      "PLATFORM_SCREENSHOT_CAPTURE_ERROR": 1
     },
     "categories": {
-      "CAPTION": 1
+      "RUNTIME": 1
     }
   }
 }
