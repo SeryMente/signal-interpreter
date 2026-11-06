@@ -1,16 +1,72 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-628b8cef-c8b5-4cd6-b97f-fc405349fe68",
-  "createdAt": "2026-11-06T20:24:47.680Z",
+  "batchId": "batch-f342a594-d759-4774-b8a7-231c92bc86a6",
+  "createdAt": "2026-11-06T20:25:59.647Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.36",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "27cfb4f3-6a39-4ba2-981e-4e2e6b4bcedf",
-      "sequence": 8895,
-      "timestamp": "2026-11-06T20:24:35.819Z",
-      "ingestedAt": "2026-11-06T20:24:35.914Z",
+      "id": "788c2e30-5492-4d15-99ef-2153006618a6",
+      "sequence": 8899,
+      "timestamp": "2026-11-06T20:25:28.625Z",
+      "ingestedAt": "2026-11-06T20:25:28.739Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.36",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "7117dfe6-fc4f-4c65-b0fe-fe6c92fe55c2",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220924877,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.36",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/c/6ae6561f-a530-83e8-8ab4-c94da0a8f675",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220924877,
+        "sourceWindowId": 220923849,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://chatgpt.com/c/6ae6561f-a530-83e8-8ab4-c94da0a8f675"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/c/6ae6561f-a530-83e8-8ab4-c94da0a8f675",
+        "extensionVersion": "0.10.36",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "ca5ad885-b896-48e2-a3ce-16f389480f67",
+      "sequence": 8900,
+      "timestamp": "2026-11-06T20:25:35.821Z",
+      "ingestedAt": "2026-11-06T20:25:35.935Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -20,7 +76,7 @@
       "phase": "event",
       "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "412f6555-9d45-495d-bef2-e98f68d5e063",
+      "traceId": "895a3661-c47c-4e15-99ec-7b029784fd18",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +102,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 1684064,
+        "monotonicMs": 1744063,
         "callId": null,
         "pageLifecycleId": "51ae098f-4fc6-4cc6-8090-a99f84b06220",
         "sourceTabId": 220924849,
@@ -72,10 +128,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "233adf27-bfc1-400a-b65b-9142bbcb394d",
-      "sequence": 8896,
-      "timestamp": "2026-11-06T20:24:35.848Z",
-      "ingestedAt": "2026-11-06T20:24:37.029Z",
+      "id": "be8240d3-f693-4e97-8822-eb268347c30a",
+      "sequence": 8901,
+      "timestamp": "2026-11-06T20:25:35.856Z",
+      "ingestedAt": "2026-11-06T20:25:36.839Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -85,7 +141,7 @@
       "phase": "event",
       "action": "PERFORMANCE_HEARTBEAT",
       "outcome": "observed",
-      "traceId": "8194a569-e3cf-42c6-a79a-0532814839ee",
+      "traceId": "e0b43a48-ec8f-47ed-a8f7-92576b9622e6",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -111,7 +167,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 1684090,
+        "monotonicMs": 1744094,
         "callId": null,
         "pageLifecycleId": "51ae098f-4fc6-4cc6-8090-a99f84b06220",
         "sourceTabId": 220924849,
@@ -128,7 +184,7 @@
       "payload": {
         "reason": "heartbeat",
         "route": "/profile/<ID>/logs",
-        "uptimeMs": 1684090,
+        "uptimeMs": 1744094,
         "callId": null,
         "document": {
           "readyState": "complete",
@@ -158,8 +214,8 @@
           "saveData": false
         },
         "memory": {
-          "usedBytes": 27524085,
-          "totalBytes": 30754337,
+          "usedBytes": 24556105,
+          "totalBytes": 30733681,
           "limitBytes": 4395630592
         },
         "performance": {
@@ -195,10 +251,65 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "56fa95d5-0cd5-473e-9c68-984f02dd273a",
-      "sequence": 8897,
-      "timestamp": "2026-11-06T20:24:37.922Z",
-      "ingestedAt": "2026-11-06T20:24:38.011Z",
+      "id": "b3fde4e4-cc34-4109-9906-cd9741e8ff6b",
+      "sequence": 8902,
+      "timestamp": "2026-11-06T20:25:37.904Z",
+      "ingestedAt": "2026-11-06T20:25:37.904Z",
+      "level": "info",
+      "category": "PORTAL",
+      "component": "webRequest",
+      "extensionVersion": "0.10.36",
+      "host": "",
+      "url": "",
+      "phase": "event",
+      "action": "NETWORK_ACTIVITY_WINDOW",
+      "outcome": "observed",
+      "traceId": "5620ba33-7990-49c2-b33d-b3e03d052021",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.36",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "windowSeconds": 15,
+        "endpointCount": 1,
+        "endpoints": [
+          {
+            "method": "POST",
+            "type": "xmlhttprequest",
+            "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
+            "statusCode": 200,
+            "count": 1,
+            "totalDurationMs": 73,
+            "maxDurationMs": 73,
+            "avgDurationMs": 73
+          }
+        ]
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "a7434896-8de6-4431-808a-85ab978e038e",
+      "sequence": 8903,
+      "timestamp": "2026-11-06T20:25:49.417Z",
+      "ingestedAt": "2026-11-06T20:25:49.699Z",
       "level": "warn",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -208,12 +319,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
       "outcome": "degraded",
-      "traceId": "022fe5eb-f404-485f-9657-976c8d1eb637",
+      "traceId": "f8a13e57-7418-414a-9b2a-bbea82209c34",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220924877,
+      "tabId": 220924881,
       "session": {
         "callId": null
       },
@@ -231,7 +342,7 @@
         "route": "/c/6ae6561f-a530-83e8-8ab4-c94da0a8f675",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220924877,
+        "sourceTabId": 220924881,
         "sourceWindowId": 220923849,
         "observedTabStatus": "loading",
         "observedTabActive": true,
@@ -259,10 +370,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "f780c3ee-d638-48d2-9e76-890d86477f15",
-      "sequence": 8898,
-      "timestamp": "2026-11-06T20:24:37.923Z",
-      "ingestedAt": "2026-11-06T20:24:38.980Z",
+      "id": "03bf50eb-415c-4c07-820e-7be099f5f38a",
+      "sequence": 8904,
+      "timestamp": "2026-11-06T20:25:49.418Z",
+      "ingestedAt": "2026-11-06T20:25:50.849Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -272,12 +383,12 @@
       "phase": "lifecycle",
       "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
       "outcome": "observed",
-      "traceId": "93e5a622-62bb-458f-82b7-6e285a19007a",
+      "traceId": "3961d3ca-9780-4d8c-9277-46d75a8d1668",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220924877,
+      "tabId": 220924881,
       "session": {
         "callId": null
       },
@@ -295,7 +406,7 @@
         "route": "/c/6ae6561f-a530-83e8-8ab4-c94da0a8f675",
         "visibility": "visible",
         "online": true,
-        "sourceTabId": 220924877,
+        "sourceTabId": 220924881,
         "sourceWindowId": 220923849,
         "observedTabStatus": "loading",
         "observedTabActive": true,
@@ -324,26 +435,29 @@
     }
   ],
   "summary": {
-    "eventsTotal": 4,
+    "eventsTotal": 6,
     "errors": 0,
     "warnings": 1,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 1,
     "invariantSignals": 0,
-    "firstSequence": 8895,
-    "lastSequence": 8898,
-    "firstTimestamp": "2026-11-06T20:24:35.819Z",
-    "lastTimestamp": "2026-11-06T20:24:37.923Z",
+    "firstSequence": 8899,
+    "lastSequence": 8904,
+    "firstTimestamp": "2026-11-06T20:25:28.625Z",
+    "lastTimestamp": "2026-11-06T20:25:49.418Z",
     "actions": {
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1,
       "AUTO_ANSWER_READINESS": 1,
       "PERFORMANCE_HEARTBEAT": 1,
+      "NETWORK_ACTIVITY_WINDOW": 1,
       "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
       "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
     },
     "categories": {
+      "CAPTION": 3,
       "RUNTIME": 2,
-      "CAPTION": 2
+      "PORTAL": 1
     }
   }
 }
