@@ -1,14 +1,14 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-06T21:49:00.142Z → 2026-11-06T21:59:00.142Z
-- Generado: 2026-11-06T21:59:00.142Z
-- Eventos: 647 · lotes fuente: 56
+- Ventana UTC: 2026-11-06T21:49:36.168Z → 2026-11-06T21:59:36.168Z
+- Generado: 2026-11-06T21:59:36.168Z
+- Eventos: 583 · lotes fuente: 54
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 647
+- Reloj cliente sin verificación de recibo: 583
 
 ## Resumen
-- Intentos observados: 14
-- Contestadas: 11 · perdidas confirmadas: 1
+- Intentos observados: 13
+- Contestadas: 11 · perdidas confirmadas: 0
 - Clic sin ruta: 1 · timbrados sin diálogo correlacionado: 1
 - Sin desenlace concluyente: 1
 - Detecciones de diálogo/botón: 3 / 3
@@ -16,19 +16,9 @@
 
 ## Intentos
 
-### 89c00b5e-3b6b-4586-bae0-89c52a9f4a51 — missed
-- Detectada: 2026-11-06T21:49:16.724Z · modalidad: OPI
-- Tab: 0 · eventos: 3
-- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: null
-- Desenlace/motivo: "dialog_closed_without_connect"
-- Señales ausentes: INCOMING_DIALOG_DETECTED
-  - 2026-11-06T21:49:16.724Z · INCOMING_DIALOG_CLOSED_OBSERVED · info · dialog-removed
-  - 2026-11-06T21:49:17.713Z · NETWORK_ACTIVITY_WINDOW · info
-  - 2026-11-06T21:49:30.519Z · MISSED_CALL_CLASSIFIED · warn · dialog_closed_without_connect
-
 ### 479ad08e-d604-4c[PHONE]a2219832aff — answered
 - Detectada: 2026-11-06T21:50:28.698Z · modalidad: OPI
-- Tab: 220924849 · eventos: 19
+- Tab: 220924849 · eventos: 20
 - Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"availability","reasonCode":"availability"}
 - Desenlace/motivo: null
 - Señales ausentes: ninguna identificada
@@ -48,6 +38,7 @@
   - 2026-11-06T21:50:54.711Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.723Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.904Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.953Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:51:46.746Z · INCOMING_ATTEMPT_REGISTERED · info
   - 2026-11-06T21:52:17.900Z · INCOMING_ATTEMPT_SUPERSEDED · warn · new-incoming-dialog-before-previous-attempt-terminal
   - 2026-11-06T21:53:46.847Z · CONNECT_ACCEPTED_PENDING · info · await-call-route
@@ -176,7 +167,7 @@
 
 ### 2f6ceebe-c0ef-[PHONE]b078 — answered
 - Detectada: 2026-11-06T21:50:52.872Z · modalidad: desconocida
-- Tab: 220924849 · eventos: 10
+- Tab: 220924849 · eventos: 11
 - Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"availability","reasonCode":"availability"}
 - Desenlace/motivo: null
 - Señales ausentes: INCOMING_DIALOG_DETECTED
@@ -190,10 +181,11 @@
   - 2026-11-06T21:50:54.707Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.717Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.892Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.943Z · AUTO_ANSWER_READINESS · info · availability
 
 ### c5e8e753-1f63-419e-a466-bc87243b7caa — answered
 - Detectada: 2026-11-06T21:50:52.910Z · modalidad: desconocida
-- Tab: 220924849 · eventos: 12
+- Tab: 220924849 · eventos: 13
 - Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"availability","reasonCode":"availability"}
 - Desenlace/motivo: null
 - Señales ausentes: INCOMING_DIALOG_DETECTED
@@ -209,10 +201,11 @@
   - 2026-11-06T21:50:54.708Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.717Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.893Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.944Z · AUTO_ANSWER_READINESS · info · availability
 
 ### f[PHONE]db-478d-ab74-cef62f876642 — answered
 - Detectada: 2026-11-06T21:50:52.975Z · modalidad: desconocida
-- Tab: 220924849 · eventos: 12
+- Tab: 220924849 · eventos: 13
 - Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"availability","reasonCode":"availability"}
 - Desenlace/motivo: null
 - Señales ausentes: INCOMING_DIALOG_DETECTED
@@ -228,10 +221,11 @@
   - 2026-11-06T21:50:54.708Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.717Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.895Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.945Z · AUTO_ANSWER_READINESS · info · availability
 
 ### f472fa[PHONE]f6c04d13e03 — answered
 - Detectada: 2026-11-06T21:50:53.054Z · modalidad: desconocida
-- Tab: 220924849 · eventos: 13
+- Tab: 220924849 · eventos: 14
 - Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"availability","reasonCode":"availability"}
 - Desenlace/motivo: null
 - Señales ausentes: INCOMING_DIALOG_DETECTED
@@ -248,10 +242,11 @@
   - 2026-11-06T21:50:54.708Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.718Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.896Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.945Z · AUTO_ANSWER_READINESS · info · availability
 
 ### 49c783b8-b711-4afa-a1ec-80c2841a3ca0 — answered
 - Detectada: 2026-11-06T21:50:53.123Z · modalidad: desconocida
-- Tab: 220924849 · eventos: 11
+- Tab: 220924849 · eventos: 12
 - Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"availability","reasonCode":"availability"}
 - Desenlace/motivo: null
 - Señales ausentes: INCOMING_DIALOG_DETECTED
@@ -266,10 +261,11 @@
   - 2026-11-06T21:50:54.709Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.719Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.897Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.947Z · AUTO_ANSWER_READINESS · info · availability
 
 ### 40e255ed-f3fd-4d86-a2f6-3f5293a1942a — answered
 - Detectada: 2026-11-06T21:50:53.206Z · modalidad: desconocida
-- Tab: 220924849 · eventos: 12
+- Tab: 220924849 · eventos: 13
 - Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"availability","reasonCode":"availability"}
 - Desenlace/motivo: null
 - Señales ausentes: INCOMING_DIALOG_DETECTED
@@ -285,10 +281,11 @@
   - 2026-11-06T21:50:54.709Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.720Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.898Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.948Z · AUTO_ANSWER_READINESS · info · availability
 
 ### 7b2fd0ee-5fd[PHONE]cd-60a23a0aec3d — answered
 - Detectada: 2026-11-06T21:50:53.273Z · modalidad: desconocida
-- Tab: 220924849 · eventos: 14
+- Tab: 220924849 · eventos: 15
 - Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"availability","reasonCode":"availability"}
 - Desenlace/motivo: null
 - Señales ausentes: INCOMING_DIALOG_DETECTED
@@ -306,10 +303,11 @@
   - 2026-11-06T21:50:54.710Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.721Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.900Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.949Z · AUTO_ANSWER_READINESS · info · availability
 
 ### 7e7cd207-8ce3-4638-a025-aa8f5529a98e — answered
 - Detectada: 2026-11-06T21:50:53.438Z · modalidad: desconocida
-- Tab: 220924849 · eventos: 54
+- Tab: 220924849 · eventos: 55
 - Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["SESSION_ENDED_CONFIRM_AGAIN","PROFILE_NOT_AUTHORIZED","AVAILABILITY_UNKNOWN"],"ready":false,"availability":"unknown","authorizedProfile":false,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"session-ended-confirm-again","presenceGeneration":3,"reason":"availability","reasonCode":"availability"}
 - Desenlace/motivo: null
 - Señales ausentes: INCOMING_DIALOG_DETECTED
@@ -367,6 +365,7 @@
   - 2026-11-06T21:50:54.711Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.722Z · AUTO_ANSWER_READINESS · info · availability
   - 2026-11-06T21:50:54.903Z · AUTO_ANSWER_READINESS · info · availability
+  - 2026-11-06T21:50:54.952Z · AUTO_ANSWER_READINESS · info · availability
 
 ### ring-782558960cda1f5dafb82727 — ring_unmatched
 - Detectada: 2026-11-06T21:51:29.767Z · modalidad: desconocida

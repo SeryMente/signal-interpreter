@@ -1,21 +1,21 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-06T21:59:00.142Z",
-  "windowStartAt": "2026-11-06T21:49:00.142Z",
-  "windowEndAt": "2026-11-06T21:59:00.142Z",
+  "generatedAt": "2026-11-06T21:59:36.168Z",
+  "windowStartAt": "2026-11-06T21:49:36.168Z",
+  "windowEndAt": "2026-11-06T21:59:36.168Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 647
+    "client-clock-unverified": 583
   },
-  "sourceBatchCount": 56,
+  "sourceBatchCount": 54,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 11231,
+  "receiptUnverifiedBatchCount": 11232,
   "medianClientClockSkewMs": null,
-  "eventCount": 647,
+  "eventCount": 583,
   "summary": {
-    "attempts": 14,
+    "attempts": 13,
     "answered": 11,
-    "missed": 1,
+    "missed": 0,
     "connectFailedNoRoute": 1,
     "ringUnmatched": 1,
     "unresolved": 1,
@@ -23,80 +23,11 @@
     "dialogsDetected": 3,
     "buttonsFound": 3,
     "buttonsNotFound": 0,
-    "readinessSamples": 217,
+    "readinessSamples": 207,
     "blocked": 3,
     "clicks": 2
   },
   "attempts": [
-    {
-      "attemptId": "89c00b5e-3b6b-4586-bae0-89c52a9f4a51",
-      "status": "missed",
-      "modality": "OPI",
-      "tabId": 0,
-      "detectedAt": "2026-11-06T21:49:16.724Z",
-      "closedAt": "2026-11-06T21:49:16.724Z",
-      "clickedAt": null,
-      "answeredAt": null,
-      "missedAt": "2026-11-06T21:49:30.519Z",
-      "outcomeReason": "dialog_closed_without_connect",
-      "button": {
-        "found": false,
-        "notFound": false,
-        "disabled": false
-      },
-      "readiness": {
-        "samples": 0,
-        "last": null
-      },
-      "blockedEvents": [],
-      "ringSignalCount": 0,
-      "clickToAnswerLatencyMs": null,
-      "detectionToAnswerLatencyMs": null,
-      "callRefs": [],
-      "missingSignals": [
-        "INCOMING_DIALOG_DETECTED"
-      ],
-      "eventCount": 3,
-      "timeline": [
-        {
-          "at": "2026-11-06T21:49:16.724Z",
-          "action": "INCOMING_DIALOG_CLOSED_OBSERVED",
-          "level": "info",
-          "reasonCode": "dialog-removed",
-          "details": {
-            "reason": "dialog-removed",
-            "reasonCode": "dialog-removed"
-          },
-          "eventId": "d6539452-388c-4949-abc7-8bb16e968bca",
-          "sequence": 12748
-        },
-        {
-          "at": "2026-11-06T21:49:17.713Z",
-          "action": "NETWORK_ACTIVITY_WINDOW",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "87285186-260a-482a-afce-f86a1e998bb0",
-          "sequence": 12750
-        },
-        {
-          "at": "2026-11-06T21:49:30.519Z",
-          "action": "MISSED_CALL_CLASSIFIED",
-          "level": "warn",
-          "reasonCode": "dialog_closed_without_connect",
-          "details": {
-            "modality": "OPI",
-            "connectFound": true,
-            "connectDisabled": false,
-            "reason": "dialog_closed_without_connect",
-            "status": "missed",
-            "reasonCode": "dialog_closed_without_connect"
-          },
-          "eventId": "48695ee4-4732-4f82-929b-7cff97dd9286",
-          "sequence": 12779
-        }
-      ]
-    },
     {
       "attemptId": "479ad08e-d604-4c[PHONE]a2219832aff",
       "status": "answered",
@@ -113,7 +44,7 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 9,
+        "samples": 10,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
@@ -140,7 +71,7 @@
         "2d34a88e9568feb95d414242"
       ],
       "missingSignals": [],
-      "eventCount": 19,
+      "eventCount": 20,
       "timeline": [
         {
           "at": "2026-11-06T21:50:28.698Z",
@@ -452,6 +383,31 @@
           },
           "eventId": "f4b74d9e-9ea8-4509-9b84-5da610ab40af",
           "sequence": 13724
+        },
+        {
+          "at": "2026-11-06T21:50:54.953Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "aec67bfc-d7f1-44d8-8f88-0192e8e3375a",
+          "sequence": 13754
         },
         {
           "at": "2026-11-06T21:51:46.746Z",
@@ -1921,7 +1877,7 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 9,
+        "samples": 10,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
@@ -1950,7 +1906,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 10,
+      "eventCount": 11,
       "timeline": [
         {
           "at": "2026-11-06T21:50:52.872Z",
@@ -2188,6 +2144,31 @@
           },
           "eventId": "513ef0a8-0813-44c2-9529-2df3a7c7bdb1",
           "sequence": 13697
+        },
+        {
+          "at": "2026-11-06T21:50:54.943Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "adbc1409-876f-4079-b4b7-312776fa457f",
+          "sequence": 13731
         }
       ]
     },
@@ -2208,7 +2189,7 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 9,
+        "samples": 10,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
@@ -2237,7 +2218,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 12,
+      "eventCount": 13,
       "timeline": [
         {
           "at": "2026-11-06T21:50:52.910Z",
@@ -2496,6 +2477,31 @@
           },
           "eventId": "e019d7f3-7042-4d48-b18f-70a661e52ff5",
           "sequence": 13700
+        },
+        {
+          "at": "2026-11-06T21:50:54.944Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "79176d7d-b370-446c-be60-ac1be1ed0ff5",
+          "sequence": 13734
         }
       ]
     },
@@ -2516,7 +2522,7 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 9,
+        "samples": 10,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
@@ -2545,7 +2551,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 12,
+      "eventCount": 13,
       "timeline": [
         {
           "at": "2026-11-06T21:50:52.975Z",
@@ -2804,6 +2810,31 @@
           },
           "eventId": "60e78562-c496-49e3-9a71-1cb01acd081a",
           "sequence": 13703
+        },
+        {
+          "at": "2026-11-06T21:50:54.945Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "f4152f55-9684-4402-90ff-1a6070429658",
+          "sequence": 13736
         }
       ]
     },
@@ -2824,7 +2855,7 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 9,
+        "samples": 10,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
@@ -2853,7 +2884,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 13,
+      "eventCount": 14,
       "timeline": [
         {
           "at": "2026-11-06T21:50:53.054Z",
@@ -3121,6 +3152,31 @@
           },
           "eventId": "b38a6a66-5869-4123-8bae-0a75a04e7c91",
           "sequence": 13706
+        },
+        {
+          "at": "2026-11-06T21:50:54.945Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "e7d5ecf7-20d1-4498-8f24-809783b7543e",
+          "sequence": 13738
         }
       ]
     },
@@ -3141,7 +3197,7 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 9,
+        "samples": 10,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
@@ -3170,7 +3226,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 11,
+      "eventCount": 12,
       "timeline": [
         {
           "at": "2026-11-06T21:50:53.123Z",
@@ -3420,6 +3476,31 @@
           },
           "eventId": "83fcf121-8a28-4164-965d-73526c1e2ee0",
           "sequence": 13709
+        },
+        {
+          "at": "2026-11-06T21:50:54.947Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "494930b0-2cb8-422e-99e9-0f8583d6cf9b",
+          "sequence": 13742
         }
       ]
     },
@@ -3440,7 +3521,7 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 9,
+        "samples": 10,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
@@ -3469,7 +3550,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 12,
+      "eventCount": 13,
       "timeline": [
         {
           "at": "2026-11-06T21:50:53.206Z",
@@ -3728,6 +3809,31 @@
           },
           "eventId": "2510d454-8cc3-4572-8fd9-7e59b4870f2f",
           "sequence": 13712
+        },
+        {
+          "at": "2026-11-06T21:50:54.948Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "9427fd19-378c-4cd9-8107-842bf394f61c",
+          "sequence": 13745
         }
       ]
     },
@@ -3748,7 +3854,7 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 9,
+        "samples": 10,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
@@ -3777,7 +3883,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 14,
+      "eventCount": 15,
       "timeline": [
         {
           "at": "2026-11-06T21:50:53.273Z",
@@ -4057,6 +4163,31 @@
           },
           "eventId": "95b3d6b6-add9-41c9-8b4e-d8e606e7c568",
           "sequence": 13715
+        },
+        {
+          "at": "2026-11-06T21:50:54.949Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "921cf377-62e4-4cd5-bf5f-026fe42d3c54",
+          "sequence": 13748
         }
       ]
     },
@@ -4077,7 +4208,7 @@
         "disabled": false
       },
       "readiness": {
-        "samples": 9,
+        "samples": 10,
         "last": {
           "blockedReasons": [
             "SESSION_ENDED_CONFIRM_AGAIN",
@@ -4106,7 +4237,7 @@
       "missingSignals": [
         "INCOMING_DIALOG_DETECTED"
       ],
-      "eventCount": 54,
+      "eventCount": 55,
       "timeline": [
         {
           "at": "2026-11-06T21:50:53.438Z",
@@ -4752,6 +4883,31 @@
           },
           "eventId": "ac6a4950-4514-40ca-a398-edead5eb5c83",
           "sequence": 13721
+        },
+        {
+          "at": "2026-11-06T21:50:54.952Z",
+          "action": "AUTO_ANSWER_READINESS",
+          "level": "info",
+          "reasonCode": "availability",
+          "details": {
+            "blockedReasons": [
+              "SESSION_ENDED_CONFIRM_AGAIN",
+              "PROFILE_NOT_AUTHORIZED",
+              "AVAILABILITY_UNKNOWN"
+            ],
+            "ready": false,
+            "availability": "unknown",
+            "authorizedProfile": false,
+            "configEnabled": true,
+            "labSafetyLock": false,
+            "presenceArmed": false,
+            "presenceReason": "session-ended-confirm-again",
+            "presenceGeneration": 3,
+            "reason": "availability",
+            "reasonCode": "availability"
+          },
+          "eventId": "eeae43ec-ed1c-4776-ab66-2ab8b7ae0e00",
+          "sequence": 13753
         }
       ]
     },
