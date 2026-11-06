@@ -1,24 +1,24 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-06T22:03:44.798Z",
-  "windowStartAt": "2026-11-06T21:53:44.798Z",
-  "windowEndAt": "2026-11-06T22:03:44.798Z",
+  "generatedAt": "2026-11-06T22:04:13.208Z",
+  "windowStartAt": "2026-11-06T21:54:13.208Z",
+  "windowEndAt": "2026-11-06T22:04:13.208Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 11
+    "client-clock-unverified": 8
   },
-  "sourceBatchCount": 9,
+  "sourceBatchCount": 7,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 11242,
+  "receiptUnverifiedBatchCount": 11243,
   "medianClientClockSkewMs": null,
-  "eventCount": 11,
+  "eventCount": 8,
   "summary": {
-    "attempts": 3,
+    "attempts": 1,
     "answered": 1,
     "missed": 0,
-    "connectFailedNoRoute": 1,
+    "connectFailedNoRoute": 0,
     "ringUnmatched": 0,
-    "unresolved": 1,
+    "unresolved": 0,
     "ringSignals": 0,
     "dialogsDetected": 0,
     "buttonsFound": 0,
@@ -28,108 +28,6 @@
     "clicks": 0
   },
   "attempts": [
-    {
-      "attemptId": "479ad08e-d604-4c[PHONE]a2219832aff",
-      "status": "incomplete",
-      "modality": "OPI",
-      "tabId": 0,
-      "detectedAt": "2026-11-06T21:53:46.847Z",
-      "closedAt": null,
-      "clickedAt": null,
-      "answeredAt": null,
-      "missedAt": null,
-      "outcomeReason": null,
-      "button": {
-        "found": false,
-        "notFound": false,
-        "disabled": false
-      },
-      "readiness": {
-        "samples": 0,
-        "last": null
-      },
-      "blockedEvents": [],
-      "ringSignalCount": 0,
-      "clickToAnswerLatencyMs": null,
-      "detectionToAnswerLatencyMs": null,
-      "callRefs": [],
-      "missingSignals": [
-        "INCOMING_DIALOG_DETECTED",
-        "TERMINAL_CALL_OUTCOME"
-      ],
-      "eventCount": 1,
-      "timeline": [
-        {
-          "at": "2026-11-06T21:53:46.847Z",
-          "action": "CONNECT_ACCEPTED_PENDING",
-          "level": "info",
-          "reasonCode": "await-call-route",
-          "details": {
-            "modality": "OPI",
-            "reason": "await-call-route",
-            "reasonCode": "await-call-route"
-          },
-          "eventId": "20bc13c5-c81a-4113-8031-43c99aaf9613",
-          "sequence": 13093
-        }
-      ]
-    },
-    {
-      "attemptId": "8bfc1424-226a-479b-a693-8fa54f523966",
-      "status": "connect_failed_no_route",
-      "modality": null,
-      "tabId": 0,
-      "detectedAt": "2026-11-06T21:53:48.169Z",
-      "closedAt": "2026-11-06T21:53:48.169Z",
-      "clickedAt": null,
-      "answeredAt": null,
-      "missedAt": null,
-      "outcomeReason": "connect_clicked_no_call_route",
-      "button": {
-        "found": false,
-        "notFound": false,
-        "disabled": false
-      },
-      "readiness": {
-        "samples": 0,
-        "last": null
-      },
-      "blockedEvents": [],
-      "ringSignalCount": 0,
-      "clickToAnswerLatencyMs": null,
-      "detectionToAnswerLatencyMs": null,
-      "callRefs": [],
-      "missingSignals": [
-        "INCOMING_DIALOG_DETECTED"
-      ],
-      "eventCount": 2,
-      "timeline": [
-        {
-          "at": "2026-11-06T21:53:48.169Z",
-          "action": "INCOMING_DIALOG_CLOSED_OBSERVED",
-          "level": "info",
-          "reasonCode": "dialog-removed",
-          "details": {
-            "reason": "dialog-removed",
-            "reasonCode": "dialog-removed"
-          },
-          "eventId": "263e8052-eeec-4b2b-921b-c9afce772b49",
-          "sequence": 13095
-        },
-        {
-          "at": "2026-11-06T21:53:49.739Z",
-          "action": "CONNECT_FLOW_FAILED_NO_CALL_ROUTE",
-          "level": "warn",
-          "reasonCode": "connect_clicked_no_call_route",
-          "details": {
-            "reason": "connect_clicked_no_call_route",
-            "reasonCode": "connect_clicked_no_call_route"
-          },
-          "eventId": "f3f16092-0b48-466f-92ce-96f455fd0879",
-          "sequence": 13098
-        }
-      ]
-    },
     {
       "attemptId": "45a6a2bb-95b5-483c-9192-d4d01954c265",
       "status": "answered",
