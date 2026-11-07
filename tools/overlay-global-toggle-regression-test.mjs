@@ -7,7 +7,7 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
 const read=(p)=>fs.readFileSync(path.join(root,p),"utf8");
 const hash=(b)=>createHash("sha256").update(b).digest("hex").toUpperCase();
 const manifest=JSON.parse(read("manifest.json")),inventory=JSON.parse(read("payload-sha256.json"));
-assert.equal(manifest.version,"0.10.39");assert.equal(inventory.schema,"signal-interpreter-payload-sha256/v1");
+assert.equal(manifest.version,"0.10.40");assert.equal(inventory.schema,"signal-interpreter-payload-sha256/v1");
 assert.ok(Array.isArray(inventory.files)&&inventory.files.length>=50);
 const seen=new Set();for(const e of inventory.files){assert.ok(e&&typeof e.path==="string"&&/^[A-Fa-f0-9]{64}$/.test(e.sha256));assert.ok(!path.isAbsolute(e.path)&&!e.path.split(/[\\/]/).includes(".."));assert.ok(!seen.has(e.path));seen.add(e.path);assert.equal(hash(fs.readFileSync(path.join(root,e.path))),e.sha256.toUpperCase(),"hash mismatch "+e.path);}
 assert.equal(manifest.commands["toggle-global-overlays"].suggested_key.default,"Ctrl+Shift+8");
