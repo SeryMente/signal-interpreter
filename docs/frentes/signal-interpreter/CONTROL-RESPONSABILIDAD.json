@@ -9,14 +9,14 @@
   "condicion": "ACTIVO",
   "rol": "agente_unico",
   "autorizacion": {
-    "procedencia": "Instruccion directa del operador en la conversacion receptora",
-    "literal": "Retomar responsabilidad del  frente de trabajo SI.",
-    "fecha_registro_local": "2026-11-06",
+    "procedencia": "Instrucción directa del operador para retomar el frente, seguida de «Sigue»; la interpretación de sustitución G10→G11 fue comunicada por el asistente y recibió la confirmación posterior «Bien sigue».",
+    "literal": "Signal Interpreter retoma frente,  documenta converascion en persistencia documental del frente. retoma contexto y lo que se estaba construyendo de manera seamless.\n\nUsa rdc para acceder a converascion en downloads. Lee todo.\n\nRespuesta posterior del operador: «Sigue». Confirmación posterior a la interpretación de transferencia G10→G11: «Bien sigue».",
+    "fecha_registro_local": "2026-11-07",
     "zona_horaria": "America/Mexico_City",
-    "hora_exacta": "15:31:44",
-    "fecha_autorizacion_utc": "2026-11-06T21:31:44.5125257+00:00",
-    "alcance": "Transferencia exclusiva de titularidad primaria G9 a G10 y continuidad integral del mismo frente Signal Interpreter en modo agente unico. Incluye diagnostico, analisis, desarrollo autorizado, pruebas, CI, documentacion y persistencia. El operador conserva aprobaciones humanas, uso real, llamadas reales, aceptacion funcional y liberacion. No autoriza intervenir llamadas reales, publicar datos privados, cambiar metodologia ni desplegar.",
-    "acceso_remoto": "El operador solicito documentacion mediante RDC. El acceso se limita a esta ingesta documental y persistencia OCP en la conexion disponible; no concede GUI, intervencion de llamadas ni acceso a otros equipos/proyectos. PC-14 permanece excluido."
+    "hora_exacta": "NO VERIFICADA",
+    "fecha_autorizacion_utc": "NO VERIFICADA",
+    "alcance": "Transferencia de titularidad primaria G10 a G11 y continuidad de Signal Interpreter en modo agente_unico. Incluye diagnóstico, análisis, desarrollo autorizado, pruebas y CI, documentación y persistencia. El operador conserva las decisiones de aprobación humana, uso real, llamadas reales, aceptación funcional y liberación. No autoriza intervenir llamadas reales, publicar datos privados, modificar metodología ni desplegar.",
+    "acceso_remoto": "RDC solicitado expresamente para localizar y leer el export en Downloads y cotejar su SHA con el adjunto. Acceso de solo lectura al archivo; el original no se copió al OCP. La identidad RDC no coincide con la titular del perfil Windows y P036 bloquea escrituras en ese perfil. PC-14 permanece excluido."
   },
   "propietario_anterior": {
     "hilo": null,
@@ -44,7 +44,7 @@
   "transaccion_transferencia": {
     "evento": "SIGNAL-INTERPRETER-TRANSFER-20261107-G11-6495BAA5",
     "autorizacion_explicita": true,
-    "literal_autorizacion": "Signal Interpreter retoma frente,  documenta converascion en persistencia documental del frente. retoma contexto y lo que se estaba construyendo de manera seamless.\n\nUsa rdc para acceder a converascion en downloads. Lee todo.\n\nRespuesta posterior del operador: \"Sigue\".",
+    "literal_autorizacion": "Signal Interpreter retoma frente,  documenta converascion en persistencia documental del frente. retoma contexto y lo que se estaba construyendo de manera seamless.\n\nUsa rdc para acceder a converascion en downloads. Lee todo.\n\nRespuesta posterior del operador: «Sigue». Confirmación posterior a la interpretación de transferencia G10→G11: «Bien sigue».",
     "fecha_autorizacion_local": "2026-11-07",
     "zona_horaria": "America/Mexico_City",
     "hora_exacta": "11:16:35",
@@ -138,7 +138,9 @@
         "status": "PASS"
       }
     },
-    "scope_limit": "La instrucción habilita la transferencia de titularidad y continuidad del frente Signal Interpreter. No crea ID nativo ni amplía permisos de RDC, GUI, Chrome, llamadas reales, despliegue o release. El operador conserva aceptación funcional y liberación."
+    "scope_limit": "La instrucción habilita la transferencia de titularidad y continuidad del frente Signal Interpreter. No crea ID nativo ni amplía permisos de RDC, GUI, Chrome, llamadas reales, despliegue o release. El operador conserva aceptación funcional y liberación.",
+    "confirmacion_posterior_operador": "Bien sigue",
+    "autorizacion_contexto": "La petición inicial fue retomar el frente. El asistente comunicó antes de la mutación que interpretaba «Sigue» como TRANSFER_RESPONSIBILITY; la confirmación posterior «Bien sigue» ratificó continuar bajo esa interpretación."
   },
   "limites": "Control cooperativo; no ofrece fencing de escritores que lo eludan. El folio, UUIDv7 local y la instancia son identificadores operativos, no IDs nativos de plataforma. La transferencia no crea conectividad, permisos remotos ni autorizaciÃƒÂ³n para intervenir en llamadas reales.",
   "enforcement": "cooperative registry; no server fencing of arbitrary writes",
