@@ -1,34 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-9e5527af-79d5-47a7-84cf-c86bd743a0a7",
-  "createdAt": "2026-11-07T16:15:47.331Z",
+  "batchId": "batch-0e36ca55-9426-4ec3-badd-2267b7594cff",
+  "createdAt": "2026-11-07T16:16:25.809Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.39",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "19dab01b-ad27-43e4-bd8d-ff797352efb6",
-      "sequence": 18475,
-      "timestamp": "2026-11-07T16:15:36.731Z",
-      "ingestedAt": "2026-11-07T16:15:36.781Z",
+      "id": "3bfefeb6-914f-42ca-ae14-316e8c7711a9",
+      "sequence": 18476,
+      "timestamp": "2026-11-07T16:15:55.282Z",
+      "ingestedAt": "2026-11-07T16:15:55.334Z",
       "level": "info",
-      "category": "RUNTIME",
-      "component": "content",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
       "extensionVersion": "0.10.39",
-      "host": "app.cloudinterpreter.com",
-      "url": "https://app.cloudinterpreter.com/profile/<ID>",
-      "phase": "event",
-      "action": "AUTO_ANSWER_READINESS",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "8d47fd8c-7418-48ce-8f29-b88490b0eab7",
+      "traceId": "33897d14-9f41-43ae-b016-178049cb7ceb",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220925147,
+      "tabId": 220925066,
       "session": {
-        "sessionId": "40616eaa-859a-4e82-b3d2-3aa6dd7080db",
-        "pageLifecycleId": "fe4d21cb-7541-49d9-97d2-7de0633a93b7",
         "callId": null
       },
       "environment": {
@@ -38,22 +36,18 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": "heartbeat",
+      "reasonCode": null,
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/profile/<ID>",
-        "visibility": "hidden",
-        "focused": false,
+        "route": "/",
+        "visibility": "visible",
         "online": true,
-        "monotonicMs": 1427031,
-        "callId": null,
-        "pageLifecycleId": "fe4d21cb-7541-49d9-97d2-7de0633a93b7",
-        "sourceTabId": 220925147,
+        "sourceTabId": 220925066,
         "sourceWindowId": 220925064,
         "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz"
+        "observedTabActive": true,
+        "observedTabUrl": "https://chatgpt.com/"
       },
       "privacy": {
         "rawTextStored": false,
@@ -61,43 +55,148 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "ready": false,
-        "attemptId": null,
-        "availability": "offline",
-        "authorizedProfile": true,
-        "configEnabled": true,
-        "labSafetyLock": false,
-        "presenceArmed": false,
-        "presenceReason": "session-ended-confirm-again",
-        "presenceGeneration": 2,
-        "blockedReasons": [
-          "SESSION_ENDED_CONFIRM_AGAIN",
-          "AVAILABILITY_OFFLINE"
-        ],
-        "route": "/profile/<ID>",
-        "exactUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz",
-        "runtimeVersion": "0.10.39",
-        "reason": "heartbeat"
+        "callId": null,
+        "route": "/",
+        "extensionVersion": "0.10.39",
+        "previousRoute": "/c/6aee5d94-e908-83e8-abe0-317c502145ee",
+        "currentRoute": "/",
+        "activeCallRoute": false
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "f2e61255-bfce-4722-8e16-e1554f28a7a4",
+      "sequence": 18477,
+      "timestamp": "2026-11-07T16:15:56.641Z",
+      "ingestedAt": "2026-11-07T16:15:56.697Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.39",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "1765eaee-29c0-4dec-946d-2280d4b9e6b1",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220925066,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.39",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/c/6aee5d94-e908-83e8-abe0-317c502145ee",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220925066,
+        "sourceWindowId": 220925064,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://chatgpt.com/c/6aee5d94-e908-83e8-abe0-317c502145ee"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/c/6aee5d94-e908-83e8-abe0-317c502145ee",
+        "extensionVersion": "0.10.39",
+        "previousRoute": "/",
+        "currentRoute": "/c/6aee5d94-e908-83e8-abe0-317c502145ee",
+        "activeCallRoute": false
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "c24412f9-ed20-4f63-a8e0-bdae914a3261",
+      "sequence": 18478,
+      "timestamp": "2026-11-07T16:16:00.221Z",
+      "ingestedAt": "2026-11-07T16:16:00.265Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.39",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "158123ae-3eca-44e7-8e63-46beac082470",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220925066,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.39",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/c/local-chatgpt%3Ac0612e0e-892e-44e8-b3e0-4adb79f0c390",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220925066,
+        "sourceWindowId": 220925064,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://chatgpt.com/c/local-chatgpt%3Ac0612e0e-892e-44e8-b3e0-4adb79f0c390"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/c/local-chatgpt%3Ac0612e0e-892e-44e8-b3e0-4adb79f0c390",
+        "extensionVersion": "0.10.39",
+        "previousRoute": "/c/6aee5d94-e908-83e8-abe0-317c502145ee",
+        "currentRoute": "/c/local-chatgpt%3Ac0612e0e-892e-44e8-b3e0-4adb79f0c390",
+        "activeCallRoute": false
       }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 3,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 18475,
-    "lastSequence": 18475,
-    "firstTimestamp": "2026-11-07T16:15:36.731Z",
-    "lastTimestamp": "2026-11-07T16:15:36.731Z",
+    "firstSequence": 18476,
+    "lastSequence": 18478,
+    "firstTimestamp": "2026-11-07T16:15:55.282Z",
+    "lastTimestamp": "2026-11-07T16:16:00.221Z",
     "actions": {
-      "AUTO_ANSWER_READINESS": 1
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 3
     },
     "categories": {
-      "RUNTIME": 1
+      "CAPTION": 3
     }
   }
 }
