@@ -90,7 +90,6 @@
     presenceState = changes.signalPresenceGuard.newValue || { armed: false };
     if (runtimeMarker.active) autoAnswer();
   });
-  var fingerprints = new Map();
   var route = location.pathname;
   var callRouteId = null;
   var lastIncomingSignature = "";
@@ -839,7 +838,7 @@
           evidence: evidence,
           confirmation: "authorized-profile-to-call-route"
         });
-        releasePresenceAuthorization(answerFlow.authorizationRequestId, "call-route-confirmed");
+        releasePresenceAuthorization(answerFlow.authorizationRequestId, "call-route-confirmed", answerFlow.attemptId);
       } else {
         emit("CALL_ROUTE_ENTERED", {
           callId: callRouteId,
@@ -863,17 +862,12 @@
     updateDiagnosticTimers();
     renderOverlay();
   }
-  function cleanupFingerprints() {
-    var cutoff = Date.now() - 15000;
-    fingerprints.forEach(function (at, key) {
-      if (at < cutoff) fingerprints.delete(key);
-    });
-  }
-  function releasePresenceAuthorization(requestId, reason) {
+  function releasePresenceAuthorization(requestId, reason, attemptId) {
     if (!requestId) return Promise.resolve({ ok: false, error: "missing-request-id" });
+    var releaseAttemptId = attemptId || incomingAttemptId || null;
     var reportFailure = function () {
       emit("AUTO_ANSWER_AUTHORIZATION_RELEASE_ERROR", {
-        attemptId: incomingAttemptId || null,
+        attemptId: releaseAttemptId,
         reason: reason || "answer-flow-terminal",
         reasonCode: "release-message-failed"
       }, "warn");
@@ -888,12 +882,13 @@
     } catch (_) { return Promise.resolve(reportFailure()); }
     return Promise.resolve(request).then(function (result) {
       emit("AUTO_ANSWER_AUTHORIZATION_RELEASED", {
-        attemptId: incomingAttemptId || null,
+        attemptId: releaseAttemptId,
         reason: reason || "answer-flow-terminal",
         released: !!(result && result.released),
         releaseResult: result && result.error || null
       });
-      if (result && result.released && reason === "connect-route-timeout" &&
+      if (result && result.released &&
+          (reason === "connect-route-timeout" || reason === "incoming-attempt-replaced-before-click") &&
           runtimeMarker.active && !currentCallId()) {
         Promise.resolve().then(function () {
           if (runtimeMarker.active && !currentCallId()) autoAnswer();
@@ -1015,6 +1010,7 @@
     var attemptIdForAuthorization = incomingAttemptId;
     if (!runtimeMarker.active || clickedAttempts.has(attemptIdForAuthorization) ||
         pendingAttempts.has(attemptIdForAuthorization) || pendingConnect.has(button)) return;
+    var fingerprint = safe(incomingText) + "|" + modality;
     pendingAttempts.add(attemptIdForAuthorization);
     pendingConnect.add(button);
     var authorizationRequestId = crypto.randomUUID();
@@ -1035,8 +1031,10 @@
         !presenceState.armed || grant.generation !== presenceState.generation ||
         !isAutoAnswerReady() || currentCallId() || !button.isConnected || button.disabled ||
         clickedAttempts.has(attemptIdForAuthorization) || !incomingDialog.contains(button) || !visibleElement(button)) {
+      var attemptReplaced = incomingAttemptId !== attemptIdForAuthorization;
       if (grant && grant.ok === true) await releasePresenceAuthorization(authorizationRequestId,
-        incomingAttemptId !== attemptIdForAuthorization ? "incoming-attempt-replaced-before-click" : "post-authorization-revalidation-failed");
+        attemptReplaced ? "incoming-attempt-replaced-before-click" : "post-authorization-revalidation-failed",
+        attemptIdForAuthorization);
       emit("AUTO_ANSWER_AUTHORIZATION_BLOCKED", {
         attemptId: attemptIdForAuthorization,
         modality: modality,
@@ -1046,12 +1044,14 @@
         currentPresenceGeneration: Number(presenceState.generation || 0),
         readiness: autoAnswerReadiness()
       }, "warn");
+      if (attemptReplaced && runtimeMarker.active && !currentCallId()) {
+        Promise.resolve().then(function () { if (runtimeMarker.active && !currentCallId()) autoAnswer(); });
+      }
       return;
     }
     var currentText = normalized(incomingDialog.innerText || incomingDialog.textContent);
     if (!/Audio interpreting/i.test(currentText) || /Video interpreting/i.test(currentText)) {
-      await releasePresenceAuthorization(authorizationRequestId, "dialog-modality-changed-after-authorization");
-      await releasePresenceAuthorization(authorizationRequestId, "dialog-modality-changed-after-authorization");
+      await releasePresenceAuthorization(authorizationRequestId, "dialog-modality-changed-after-authorization", attemptIdForAuthorization);
       emit("AUTO_ANSWER_AUTHORIZATION_BLOCKED", {
         attemptId: attemptIdForAuthorization, modality: modality,
         reasonCode: "dialog-modality-changed-after-authorization"
@@ -1059,7 +1059,7 @@
       return;
     }
     if (labSafetyLock) {
-      await releasePresenceAuthorization(authorizationRequestId, "lab-safety-lock-before-click");
+      await releasePresenceAuthorization(authorizationRequestId, "lab-safety-lock-before-click", attemptIdForAuthorization);
       emit("AUTO_ANSWER_BLOCKED", {
         attemptId: attemptIdForAuthorization, modality: modality,
         blockedReasons: ["LAB_SAFETY_LOCK_CHANGED_BEFORE_CLICK"]
@@ -1116,11 +1116,11 @@
           expectedRoute: "/call/<ID>",
           action: "no-second-click"
         }, "error");
-        releasePresenceAuthorization(authorizationRequestId, "connect-route-timeout");
+        releasePresenceAuthorization(authorizationRequestId, "connect-route-timeout", attemptIdForAuthorization);
       }, 7000);
     } catch (error) {
       if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; }
-      releasePresenceAuthorization(authorizationRequestId, "connect-click-error");
+      releasePresenceAuthorization(authorizationRequestId, "connect-click-error", attemptIdForAuthorization);
       emit("CONNECT_ERROR", {
         attemptId: attemptIdForAuthorization,
         message: String(error),
