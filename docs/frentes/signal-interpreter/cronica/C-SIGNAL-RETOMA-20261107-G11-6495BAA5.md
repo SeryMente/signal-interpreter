@@ -351,3 +351,83 @@ CICLO n: CY-G PENDIENTE/NO ASIGNADO · OCP: CY-OCP-SI PENDIENTE/NO ASIGNADO.
 A: A-G PENDIENTE/NO ASIGNADO · OCP: A-OCP-SI PENDIENTE/NO ASIGNADO.
 B: B-G PENDIENTE/NO ASIGNADO · OCP: B-OCP-SI PENDIENTE/NO ASIGNADO.
 ```
+
+
+## 14. Actualización local 0.10.40 y preparación de recarga Chrome · 2026-11-07
+
+### 14.1 Corrección de la ruta y compuerta de identidad
+
+El operador reiteró: «ya tienes rdc». Se confirmó que RDC estaba conectado. La lectura inicial de `C:\Users\fila4\Desktop\Signal Interpreter` correspondía a una carpeta distinta y **no** a la que Chrome tenía registrada; la conclusión anterior de que la extensión cargada seguía en 0.10.36 queda corregida para el objetivo activo.
+
+Se leyó `Secure Preferences` del perfil Chrome `Profile`: el ID `ldpbjhobnfgmhdoehehdmnbhhjckebmj` registra la ruta `C:\Users\fila4\Desktop\SeryMente\Signal Interpreter\extension`. Chrome y Explorer pertenecen a `CENTRAL\fila4`; la sesión RDC está bajo `CENTRAL\MantenimientoRCI`, con `BUILTIN\Administradores` habilitado y token de integridad alta. La ACL de la carpeta concede control total a Administradores. La limitación de escritura referida en el diagnóstico inicial no era aplicable a esta carpeta cargada.
+
+Se actualizó el alcance de la excepción G11 en `CONTROL-RESPONSABILIDAD.json` antes de escribir:
+- Evento: `SIGNAL-INTERPRETER-UPDATE-LOCAL-01040-20261107-G11`.
+- Estado final: `COMPLETADA_VERIFICADA_PREPARADA_PARA_RECARGA`.
+- Control blob tras read-back: `3461d073fe8c76d9aa0a7d472d8f0a7b1e54846b`.
+- El permiso fue de una sola ejecución; queda consumido. No incluyó recarga GUI, reinicio Chrome, llamada real, aceptación funcional ni release.
+
+### 14.2 Fuente 0.10.40, sincronización y respaldo
+
+La rama remota `main` había recibido el commit `679578fb3580b1518a9adafa5e0f398e1ee6d097`, hijo directo de `35dab13e024a7fe2cfe2e26e6935ba2d1042bdfb`. La comparación mostró que ese commit añadido solo incorpora una captura diagnóstica, sin cambios de código ni de payload. El clon local activo se alineó a `679578fb3580b1518a9adafa5e0f398e1ee6d097`; se preservaron las cuatro adaptaciones, el manifiesto anidado y el ejecutable no seguido que ya existían.
+
+Antes de modificar la carpeta cargada se respaldó la extensión 0.10.39 y los archivos relevantes del paquete:
+- 50 archivos de la carpeta anterior, 50/50 verificados por SHA-256, sin discrepancias.
+- `BACKUP-VERIFICATION.json` y `flat-layout.patch` conservados.
+- Después se archivaron aparte el manifiesto anidado 0.10.40 y las cuatro adaptaciones finales para rollback/inspección.
+
+### 14.3 Preparación del layout que Chrome tiene registrado
+
+El paquete canónico de `main` se clonó en staging temporal. `manifest.json` raíz declaró 0.10.40, el inventario tuvo 59 entradas y la prueba `tools/portable-root-test.mjs` pasó sobre el layout canónico. La auditoría de payload inicial fue 59/59 SHA-256.
+
+Como el perfil Chrome registra la subcarpeta `extension` y no la raíz del repositorio, se creó dentro de esa carpeta un manifiesto adaptado que:
+- declara 0.10.40;
+- conserva el ID `ldpbjhobnfgmhdoehehdmnbhhjckebmj`;
+- usa `background.js` como service worker;
+- elimina el prefijo `extension/` de las referencias a recursos del manifiesto;
+- incluye el permiso `idle`.
+
+Se adaptaron cuatro archivos JS para resolver recursos del layout anidado según `chrome.runtime.getManifest().background.service_worker`; sus SHA-256 locales finales son:
+- `extension/caption-lab.js`: `F5DEC79988F75AAAD766C5272800015348134E7B951303702A02CA8D2B8BBAA3`.
+- `extension/live-caption-overlay.js`: `F4197B8A321EF6F9BC1723768845BEB701FB9116062F742E81881DB6733C146B`.
+- `extension/presence-guard.js`: `B231B19480FF2394E626730007963D2ACF7A9F6B7152C217D17254B1ACFC76A7`.
+- `extension/ui/popup.js`: `218FCE464CDBB8BA1182E8686D1308CC2BA186CB1AE3F93922F29B26D8B5B196`.
+
+Estas cuatro diferencias frente al inventario canónico de 59 son deliberadas y están aisladas al layout anidado. Resultado local: 55/59 hashes canónicos coinciden exactamente; cuatro overlays documentados; cero rutas faltantes. Los 48 archivos del árbol candidato se copiaron y leyeron de vuelta en el destino: 48/48 exactos.
+
+Se restauraron dos artefactos locales no incluidos en el árbol canónico: el ejecutable Native Messaging `SignalInterpreter.CaptionHost.exe` (SHA-256 `313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE`) y `ui/sample.ogg` (SHA-256 `DB8CAE8CE1599ABA06CB3D8AB7E456CB01B396FAA8E1ACA26880D1ACC3B7332C`, coincide con `sample.json`). La ruta de registro Native Messaging y el host estable ya instalados se comprobaron y **no se modificaron**. La carpeta cargada contiene 50 archivos después de la restauración.
+
+### 14.4 Regresiones y read-back final
+
+- `node --check`: 25 archivos JavaScript, PASS; las cuatro adaptaciones se comprobaron de nuevo después de normalizar LF.
+- `presence-guard-test.mjs`: 42 checks, PASS (Node VM / APIs Chrome sintéticas).
+- `presence-connect-test.mjs`: 33 checks, PASS (DOM sintético).
+- `autoanswer-runtime-guard-test.mjs`: 15 checks, PASS (APIs Chrome sintéticas).
+- `git diff --check`: PASS.
+- `Secure Preferences` conserva la misma ruta registrada y el mismo ID; la carpeta cargada declara 0.10.40.
+- Recibo local `Desktop/SI-backups/SI-0.10.39-before-0.10.40-20261107/UPDATE-0.10.40-RESULTADO.json`: escritura y read-back exactos; estado `PREPARED_FOR_OPERATOR_CHROME_RELOAD`.
+
+La metadata de Secure Preferences todavía reporta service worker 0.10.39, como corresponde antes de que el operador recargue la extensión. Esto no significa que la carpeta esté pendiente de copiar: los archivos 0.10.40 ya están en la ruta registrada. La actualización está **lista para recarga manual**.
+
+### 14.5 Límites y siguiente compuerta
+
+- Chrome **no** fue recargado ni reiniciado; no se abrió GUI.
+- No se usaron llamadas reales. La prueba positiva de OPI, las negativas de VRI/modalidad desconocida/presencia/perfil, la aceptación funcional del operador y la observabilidad E2E 0.10.40 continúan pendientes.
+- No se creó release ni se desplegó.
+- La siguiente acción del operador es pulsar **Recargar** en `chrome://extensions` para Signal Interpreter. Después habrá que leer la versión activa y ejecutar la aceptación funcional reservada antes de decidir liberación.
+
+### 14.6 Salida visible final de este ciclo
+
+```text
+Signal Interpreter 0.10.40 está preparada en la carpeta que Chrome tiene registrada. Manifiesto anidado 0.10.40, mismo ID, 48/48 archivos cotejados, 55/59 hashes canónicos exactos y cuatro adaptaciones locales documentadas. Native Messaging permanece intacto; respaldo 0.10.39 verificado 50/50. Regresiones sintéticas 42 + 33 + 15 PASS.
+
+El operador ya puede abrir chrome://extensions y pulsar Recargar en Signal Interpreter. Esta instancia no recargó ni reinició Chrome. La aceptación funcional real, observabilidad E2E y release siguen pendientes.
+
+IPZ: v0.7 · edad NO VERIFICADA.
+DUG: v377 · NX-377m · edad por medir al cierre.
+OCP Signal Interpreter: main · edad por medir al cierre.
+CONV: CV-G PENDIENTE/NO ASIGNADO · OCP: CV-OCP-SI PENDIENTE/NO ASIGNADO.
+CICLO n: CY-G PENDIENTE/NO ASIGNADO · OCP: CY-OCP-SI PENDIENTE/NO ASIGNADO.
+A: A-G PENDIENTE/NO ASIGNADO · OCP: A-OCP-SI PENDIENTE/NO ASIGNADO.
+B: B-G PENDIENTE/NO ASIGNADO · OCP: B-OCP-SI PENDIENTE/NO ASIGNADO.
+```
