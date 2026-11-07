@@ -2,7 +2,7 @@
 (function (root) {
   "use strict";
   var armed = false, generation = 0, threshold = 0, lastCheck = Date.now();
-  var consumed = new Set(), busy = false, leaseUntil = 0;
+  var consumed = new Set(), busy = false, activeLease = null;
   var PROFILE = "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz";
   var KEY = "signalPresenceGuard";
   var reason = "confirmation-required";
@@ -14,7 +14,7 @@
   }
   function disarm(why) {
     armed = false; generation++; reason = why || "confirmation-required";
-    consumed.clear(); leaseUntil = 0; publish(); return snapshot();
+    consumed.clear(); activeLease = null; publish(); return snapshot();
   }
   function continuity() {
     var now = Date.now(), gap = now - lastCheck; lastCheck = now;
@@ -53,9 +53,41 @@
       Number.isInteger(sender.tab.id) && String(sender.url || "").split(/[?#]/)[0] === PROFILE &&
       String(sender.tab.url || "").split(/[?#]/)[0] === PROFILE;
   }
+  function releaseSender(sender) {
+    if (!sender || sender.id !== chrome.runtime.id || sender.frameId !== 0 || !sender.tab ||
+        !Number.isInteger(sender.tab.id)) return false;
+    function allowedPage(raw) {
+      var value = String(raw || "").split(/[?#]/)[0].replace(/\\/+$/, "");
+      return value === PROFILE || /^https:\/\/app\\.cloudinterpreter\\.com\/call\/[^/?#]+$/i.test(value);
+    }
+    return allowedPage(sender.url) && allowedPage(sender.tab.url) &&
+      String(sender.url || "").split(/[?#]/)[0].replace(/\\/+$/, "") ===
+      String(sender.tab.url || "").split(/[?#]/)[0].replace(/\\/+$/, "");
+  }
+  function releaseAuthorization(message, sender) {
+    continuity();
+    if (!releaseSender(sender)) return { ok: false, error: "sender-not-authorized" };
+    var requestId = String(message && message.requestId || "");
+    if (!requestId) return { ok: false, error: "request-id-required" };
+    if (activeLease && Date.now() >= activeLease.expiresAt) activeLease = null;
+    if (!activeLease) return { ok: true, released: false, reason: "no-active-lease" };
+    if (activeLease.requestId !== requestId || activeLease.tabId !== sender.tab.id) {
+      return { ok: false, error: "lease-mismatch" };
+    }
+    var releasedGeneration = activeLease.generation;
+    activeLease = null;
+    return { ok: true, released: true, generation: releasedGeneration };
+  }
   async function authorize(message, sender) {
     continuity();
-    if (!armed || busy || Date.now() < leaseUntil || !profile(sender) || message.modality !== "OPI") return { ok: false, error: "not-authorized", state: snapshot() };
+    if (!armed) return { ok: false, error: "presence-disarmed", state: snapshot() };
+    if (busy) return { ok: false, error: "authorization-busy", state: snapshot() };
+    if (!profile(sender)) return { ok: false, error: "sender-not-authorized", state: snapshot() };
+    if (message.modality !== "OPI") return { ok: false, error: "modality-not-eligible", state: snapshot() };
+    var requestId = String(message.requestId || "");
+    if (!requestId) return { ok: false, error: "request-id-required", state: snapshot() };
+    if (activeLease && Date.now() >= activeLease.expiresAt) activeLease = null;
+    if (activeLease) return { ok: false, error: "authorization-lease-active", state: snapshot() };
     busy = true;
     try {
       var epoch = generation, started = Date.now();
@@ -67,11 +99,14 @@
       if (activeCalls.length) return { ok: false, error: "call-already-open" };
       var tab = await chrome.tabs.get(sender.tab.id);
       if (String(tab.url || "").split(/[?#]/)[0] !== PROFILE) return { ok: false, error: "route-changed" };
-      var key = sender.tab.id + ":" + String(message.requestId || "");
-      if (!message.requestId || consumed.has(key) || !armed || epoch !== generation || Date.now() - started > 1000) return { ok: false, error: "stale-or-used" };
-      leaseUntil = Date.now() + 15000; // Cross-tab reservation, not a presence timeout.
+      var key = sender.tab.id + ":" + requestId;
+      if (consumed.has(key) || !armed || epoch !== generation || Date.now() - started > 1000) return { ok: false, error: "stale-or-used" };
       consumed.add(key);
       if (consumed.size > 1000) { disarm("confirmation-required"); return { ok: false, error: reason }; }
+      activeLease = {
+        requestId: requestId, tabId: sender.tab.id, generation: generation,
+        expiresAt: Date.now() + 15000
+      };
       return { ok: true, generation: generation, expiresAt: Date.now() + 500, state: snapshot() };
     } catch (_) { disarm("verification-error-confirm-again"); return { ok: false, error: reason }; }
     finally { busy = false; }
@@ -84,7 +119,7 @@
     if (result.ok) await chrome.storage.local.set({ effectifConfig: Object.assign({}, cfg, { autoAnswerEnabled: true }) });
     return result;
   }
-  root.SignalPresenceGuard = { snapshot: snapshot, disarm: disarm, arm: arm, authorize: authorize, toggleFromKeyboard: toggleFromKeyboard };
+  root.SignalPresenceGuard = { snapshot: snapshot, disarm: disarm, arm: arm, authorize: authorize, releaseAuthorization: releaseAuthorization, toggleFromKeyboard: toggleFromKeyboard };
   disarm("worker-start-confirm-again");
   if (chrome.idle && chrome.idle.onStateChanged) chrome.idle.onStateChanged.addListener(function (state) {
     // Returning/unlocking never re-arms. A current call is deliberately untouched.
@@ -105,7 +140,8 @@
   chrome.runtime.onMessage.addListener(function (message, sender, respond) {
     if (!message || !/^SIGNAL_PRESENCE_/.test(message.type || "")) return false;
     var work;
-    if (message.type === "SIGNAL_PRESENCE_AUTHORIZE") work = authorize(message, sender);
+    if (message.type === "SIGNAL_PRESENCE_RELEASE") work = Promise.resolve(releaseAuthorization(message, sender));
+    else if (message.type === "SIGNAL_PRESENCE_AUTHORIZE") work = authorize(message, sender);
     else if (message.type === "SIGNAL_PRESENCE_END" && profile(sender)) work = Promise.resolve({ ok: true, state: disarm("session-ended-confirm-again") });
     else if (!popup(sender)) work = Promise.resolve({ ok: false, error: "popup-only" });
     else if (message.type === "SIGNAL_PRESENCE_ARM") work = arm(Number(message.idleSeconds));
