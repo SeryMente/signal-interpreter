@@ -5,8 +5,8 @@ const content=fs.readFileSync('extension/content.js','utf8');
 const helper=content.slice(content.indexOf('  function clearAuthorizationRetry('),content.indexOf('  async function autoAnswer() {'));
 const fn=helper+content.slice(content.indexOf('  async function autoAnswer() {'),content.indexOf('  function emitAutoAnswerReadiness'));
 let checks=0;
-function harness({mode='Audio interpreting',grant=true,labLocked=false,presenceArmed=true,autoEnabled=true,availability='online',buttonPresent=true}={}){
- let clicks=0,release=null,route=false,visible=true,dialogVisible=true,events=[],releaseRequests=[],timers=[],authorizationRequests=0,grantValue=grant,grantError='not-authorized';
+function harness({mode='Audio interpreting',grant=true,grantError='not-authorized',labLocked=false,presenceArmed=true,autoEnabled=true,availability='online',buttonPresent=true}={}){
+ let clicks=0,release=null,route=false,visible=true,dialogVisible=true,events=[],releaseRequests=[],timers=[],authorizationRequests=0,grantValue=grant;
  const button={disabled:false,isConnected:true,textContent:'Connect',getAttribute:()=>null,click(){clicks++}};
  const dialog={innerText:'Caller is requesting interpretation '+mode,querySelectorAll:()=>buttonPresent?[button]:[],contains:el=>el===button};
  const ctx={
