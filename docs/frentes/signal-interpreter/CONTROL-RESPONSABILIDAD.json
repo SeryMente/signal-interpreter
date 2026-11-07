@@ -111,17 +111,31 @@
       "evento_actualizacion": "SIGNAL-INTERPRETER-TRANSFER-20261107-G11-6495BAA5"
     },
     "revision_objeto_observada": "SeryMente/signal-interpreter/main:docs/frentes/signal-interpreter/OBJETO-CANONICO.md; blob 4813ac601a25bcaaf128935cc59bda8cb8c66926; main HEAD 9eed724ac4e7d2b8cb7087c83f1f86e218bd66c7.",
-    "resultado_mutacion": "WRITE_COMMITTED_READBACK_PENDING",
+    "resultado_mutacion": "COMMITTED_AND_READBACK_VERIFIED",
     "verificacion": {
-      "estado": "read_back_pending",
+      "estado": "read_back_verified",
       "readback_required": true,
-      "readback_verified": false,
-      "expected_control_blob_sha": "bb0cb36c3add81987caa99c4d63e4722ddb4487b",
+      "readback_verified": true,
+      "initial_commit_sha": "086600fdefa78695b9ff9d150f434735ff72ddff",
+      "verified_blob_sha": "6cc0f58c4d83b4491053e7f0fe7b553481a195c0",
+      "verified_at_utc": "2026-11-07T17:17:44.667Z",
+      "method": "Fetch main CONTROL-RESPONSABILIDAD.json after commit; compare blob SHA, G11 identity and generation, G10 replacement, exact event, authorization, preconditions, UUIDv7 format and collision-check record.",
+      "fields_verified": [
+        "frente Signal Interpreter",
+        "titular anterior G10 y condición SUSTITUIDO",
+        "titular nuevo G11, alias y folio SES",
+        "generación 11 y estado ACTIVO",
+        "autorización explícita de retoma",
+        "precondición SHA y generación 10",
+        "evento de transferencia y revisión del núcleo observada",
+        "UUIDv7 local: versión 7 y variante 10",
+        "colisiones OCP: cero en control y code search del repositorio"
+      ],
       "uuidv7_validation": {
         "version_nibble": "7",
         "variant_nibble": "A",
         "format": "UUIDv7 local conforme a RFC 9562",
-        "status": "PASS_FORMAT_ONLY"
+        "status": "PASS"
       }
     },
     "scope_limit": "La instrucción habilita la transferencia de titularidad y continuidad del frente Signal Interpreter. No crea ID nativo ni amplía permisos de RDC, GUI, Chrome, llamadas reales, despliegue o release. El operador conserva aceptación funcional y liberación."
