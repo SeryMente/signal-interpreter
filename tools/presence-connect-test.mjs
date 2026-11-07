@@ -6,13 +6,14 @@ const helper=content.slice(content.indexOf('  function clearAuthorizationRetry('
 const fn=helper+content.slice(content.indexOf('  async function autoAnswer() {'),content.indexOf('  function emitAutoAnswerReadiness'));
 let checks=0;
 function harness({mode='Audio interpreting',grant=true,labLocked=false,presenceArmed=true,autoEnabled=true,availability='online',buttonPresent=true}={}){
- let clicks=0,release=null,route=false,visible=true,dialogVisible=true,events=[],releaseRequests=[],timers=[],grantValue=grant,grantError='not-authorized';
+ let clicks=0,release=null,route=false,visible=true,dialogVisible=true,events=[],releaseRequests=[],timers=[],authorizationRequests=0,grantValue=grant,grantError='not-authorized';
  const button={disabled:false,isConnected:true,textContent:'Connect',getAttribute:()=>null,click(){clicks++}};
  const dialog={innerText:'Caller is requesting interpretation '+mode,querySelectorAll:()=>buttonPresent?[button]:[],contains:el=>el===button};
  const ctx={
   Date,Promise,Set,WeakSet,Map,Array,Math,performance,crypto,
   chrome:{runtime:{sendMessage:(message)=>{
    if(message.type==='SIGNAL_PRESENCE_RELEASE'){releaseRequests.push(message);return Promise.resolve({ok:true,released:true});}
+   if(message.type==='SIGNAL_PRESENCE_AUTHORIZE')authorizationRequests++;
    return new Promise(r=>{release=r});
   }}},
   document:{querySelectorAll:()=>dialogVisible?[dialog]:[]},
@@ -47,6 +48,7 @@ function harness({mode='Audio interpreting',grant=true,labLocked=false,presenceA
   ctx,button,dialog,clicks:()=>clicks,events:()=>events,
   release:()=>{if(release)release(grantValue?{ok:true,generation:2,expiresAt:Date.now()+500}: {ok:false,error:grantError});},
   setGrant:(value,error='not-authorized')=>{grantValue=value;grantError=error;},
+  authorizationRequests:()=>authorizationRequests,
   releaseRequests:()=>releaseRequests,timers:()=>timers,
   fireRetries:()=>{const t=timers.find(x=>!x.cleared&&x.ms<7000);if(!t)return null;t.cleared=true;t.fn();return t.ms;},
   fireTimeouts:()=>timers.filter(t=>!t.cleared&&t.ms===7000).forEach(t=>t.fn()),
@@ -67,12 +69,16 @@ for(const mode of ['Video interpreting','unidentified']){
  assert(h.events().some(e=>e.action==='AUTO_ANSWER_BLOCKED'),'non-OPI modality must be logged as blocked');checks++;
 }
 h=harness({grant:false});await run(h);assert.equal(h.clicks(),0);
-assert(h.events().some(e=>e.action==='AUTO_ANSWER_AUTHORIZATION_BLOCKED'));assert.equal(h.releaseRequests().length,0,'denied authorization has no lease to release');checks++;
+assert(h.events().some(e=>e.action==='AUTO_ANSWER_AUTHORIZATION_BLOCKED'));assert.equal(h.releaseRequests().length,0,'denied authorization has no lease to release');
+assert.equal(h.timers().filter(t=>!t.cleared&&t.ms<7000).length,0,'permanent authorization denial does not schedule retries');checks++;
 
 h=harness({grant:false,grantError:'authorization-lease-active'});await run(h);
 assert.equal(h.clicks(),0,'active lease never causes an unsafe click');
 assert(h.events().some(e=>e.action==='AUTO_ANSWER_RETRY_SCHEDULED'),'transient lease contention schedules an eligible retry');
 assert.equal(h.timers().filter(t=>!t.cleared&&t.ms<7000).length,1,'only one retry timer exists per attempt');
+await h.ctx.run();
+assert.equal(h.authorizationRequests(),1,'DOM re-observation does not start duplicate authorization while retry is pending');
+assert.equal(h.timers().filter(t=>!t.cleared&&t.ms<7000).length,1,'re-observation preserves the single pending retry');
 h.setGrant(true);assert.equal(h.fireRetries(),250,'first transient retry uses bounded backoff');
 await new Promise(r=>setImmediate(r));h.release();await new Promise(r=>setImmediate(r));
 assert.equal(h.clicks(),1,'same eligible call is answered after the transient lease clears');
