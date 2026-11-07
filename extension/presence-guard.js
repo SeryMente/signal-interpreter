@@ -1,25 +1,48 @@
 /* Presence authorization is ephemeral: storage preferences never arm the guard. */
 (function (root) {
   "use strict";
+  var SESSION_KEY = "signalPresenceGuardSession";
   var armed = false, generation = 0, threshold = 0, lastCheck = Date.now();
   var consumed = new Set(), busy = false, activeLease = null;
+  var sessionWriteQueue = Promise.resolve(), startupReady = Promise.resolve();
   var PROFILE = "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz";
   var KEY = "signalPresenceGuard";
   var reason = "confirmation-required";
   var allowedSeconds = [60, 180, 300, 600];
   function snapshot() { return { armed: armed, generation: generation, idleSeconds: threshold, reason: reason }; }
   function publish() {
-    // Only arm state, never input, captions or desktop content, is persisted.
+    // Only arm state, never input, captions or desktop content, is persisted locally.
     return chrome.storage.local.set({ signalPresenceGuard: snapshot() }).catch(function () {});
+  }
+  function queueSessionWrite(task) {
+    var next = sessionWriteQueue.then(task);
+    sessionWriteQueue = next.catch(function () {});
+    return next;
+  }
+  function clearSessionArm() {
+    if (!chrome.storage.session || !chrome.storage.session.remove) return Promise.resolve();
+    return queueSessionWrite(function () { return chrome.storage.session.remove(SESSION_KEY); });
+  }
+  function saveSessionArm() {
+    if (!chrome.storage.session || !chrome.storage.session.set) return Promise.reject(new Error("session-storage-unavailable"));
+    var saved = {
+      version: 1, explicit: true, armed: true, extensionId: chrome.runtime.id,
+      generation: generation, idleSeconds: threshold, armedAt: Date.now()
+    };
+    return queueSessionWrite(function () {
+      var patch = {}; patch[SESSION_KEY] = saved;
+      return chrome.storage.session.set(patch);
+    });
   }
   function disarm(why) {
     armed = false; generation++; reason = why || "confirmation-required";
-    consumed.clear(); activeLease = null; publish(); return snapshot();
+    consumed.clear(); activeLease = null;
+    clearSessionArm().catch(function () {});
+    publish();
+    return snapshot();
   }
-  function continuity() {
-    var now = Date.now(), gap = now - lastCheck; lastCheck = now;
-    if (gap < 0 || gap > 45000) disarm("observation-gap-confirm-again");
-  }
+  // MV3 may suspend an idle worker. Each authorization independently revalidates idle state.
+  function continuity() { lastCheck = Date.now(); }
   function idleState(seconds) {
     return new Promise(function (resolve) {
       if (!chrome.idle || !chrome.idle.queryState) { resolve("unavailable"); return; }
@@ -32,10 +55,14 @@
     });
   }
   function popup(sender) {
+    var manifest = chrome.runtime.getManifest ? chrome.runtime.getManifest() : null;
+    var popupPath = manifest && manifest.action && manifest.action.default_popup;
     return sender && sender.id === chrome.runtime.id && !sender.tab &&
-      sender.url === chrome.runtime.getURL("extension/ui/popup.html");
+      typeof popupPath === "string" && popupPath.length > 0 &&
+      sender.url === chrome.runtime.getURL(popupPath);
   }
   async function arm(seconds) {
+    await startupReady;
     disarm("checking-presence");
     if (!allowedSeconds.includes(seconds)) return { ok: false, error: "choose-idle-limit", state: snapshot() };
     var epoch = generation;
@@ -46,12 +73,32 @@
     if (stored.signalLabLock === true || epoch !== generation) return { ok: false, error: "lab-or-state-changed", state: snapshot() };
     try { chrome.idle.setDetectionInterval(seconds); } catch (_) { return { ok: false, error: "idle-unavailable", state: snapshot() }; }
     threshold = seconds; lastCheck = Date.now(); armed = true; reason = "explicit-availability";
-    await publish(); return { ok: true, state: snapshot() };
+    try { await saveSessionArm(); }
+    catch (_) {
+      disarm("session-persistence-unavailable-confirm-again");
+      return { ok: false, error: reason, state: snapshot() };
+    }
+    if (epoch !== generation || !armed) {
+      await clearSessionArm().catch(function () {});
+      return { ok: false, error: "presence-state-changed", state: snapshot() };
+    }
+    await publish();
+    return { ok: true, state: snapshot() };
+  }
+  function isAuthorizedProfileUrl(raw) {
+    try {
+      var url = new URL(String(raw || ""));
+      var expected = new URL(PROFILE);
+      var path = url.pathname;
+      if (path.length > 1 && path.charAt(path.length - 1) === "/") path = path.slice(0, -1);
+      return url.origin === expected.origin && path === expected.pathname &&
+        !url.username && !url.password;
+    } catch (_) { return false; }
   }
   function profile(sender) {
     return sender && sender.id === chrome.runtime.id && sender.frameId === 0 && sender.tab &&
-      Number.isInteger(sender.tab.id) && String(sender.url || "").split(/[?#]/)[0] === PROFILE &&
-      String(sender.tab.url || "").split(/[?#]/)[0] === PROFILE;
+      Number.isInteger(sender.tab.id) && isAuthorizedProfileUrl(sender.url) &&
+      isAuthorizedProfileUrl(sender.tab.url);
   }
   function releaseSender(sender) {
     if (!sender || sender.id !== chrome.runtime.id || sender.frameId !== 0 || !sender.tab ||
@@ -73,7 +120,8 @@
     return allowedPage(sender.url) && allowedPage(sender.tab.url) &&
       normalizedPage(sender.url) === normalizedPage(sender.tab.url);
   }
-  function releaseAuthorization(message, sender) {
+  async function releaseAuthorization(message, sender) {
+    await startupReady;
     continuity();
     if (!releaseSender(sender)) return { ok: false, error: "sender-not-authorized" };
     var requestId = String(message && message.requestId || "");
@@ -88,6 +136,7 @@
     return { ok: true, released: true, generation: releasedGeneration };
   }
   async function authorize(message, sender) {
+    await startupReady;
     continuity();
     if (!armed) return { ok: false, error: "presence-disarmed", state: snapshot() };
     if (busy) return { ok: false, error: "authorization-busy", state: snapshot() };
@@ -107,7 +156,7 @@
       var activeCalls = await chrome.tabs.query({ url: "https://app.cloudinterpreter.com/call/*" });
       if (activeCalls.length) return { ok: false, error: "call-already-open" };
       var tab = await chrome.tabs.get(sender.tab.id);
-      if (String(tab.url || "").split(/[?#]/)[0] !== PROFILE) return { ok: false, error: "route-changed" };
+      if (!isAuthorizedProfileUrl(tab.url)) return { ok: false, error: "route-changed" };
       var key = sender.tab.id + ":" + requestId;
       if (consumed.has(key) || !armed || epoch !== generation || Date.now() - started > 1000) return { ok: false, error: "stale-or-used" };
       consumed.add(key);
@@ -121,6 +170,7 @@
     finally { busy = false; }
   }
   async function toggleFromKeyboard() {
+    await startupReady;
     if (armed) return { ok: true, state: disarm("manual-pause") };
     var stored = await chrome.storage.local.get(["effectifConfig"]);
     var cfg = stored.effectifConfig || {};
@@ -128,8 +178,49 @@
     if (result.ok) await chrome.storage.local.set({ effectifConfig: Object.assign({}, cfg, { autoAnswerEnabled: true }) });
     return result;
   }
+  async function restorePresenceSession() {
+    var epoch = generation;
+    try {
+      if (!chrome.storage.session || !chrome.storage.session.get) {
+        await publish();
+        return;
+      }
+      var session = await chrome.storage.session.get([SESSION_KEY]);
+      var saved = session && session[SESSION_KEY];
+      if (!saved || saved.armed !== true || saved.explicit !== true) {
+        await publish();
+        return;
+      }
+      var seconds = Number(saved.idleSeconds);
+      if (saved.version !== 1 || saved.extensionId !== chrome.runtime.id || !allowedSeconds.includes(seconds)) {
+        disarm("session-state-invalid-confirm-again");
+        return;
+      }
+      var current = await chrome.storage.local.get(["signalLabLock", "effectifConfig"]);
+      if (current.signalLabLock === true || !current.effectifConfig ||
+          current.effectifConfig.autoAnswerEnabled !== true) {
+        disarm(current.signalLabLock === true ? "laboratory" : "settings-changed-confirm-again");
+        return;
+      }
+      if (await idleState(seconds) !== "active") {
+        disarm("idle-or-locked-confirm-again");
+        return;
+      }
+      if (epoch !== generation) return;
+      threshold = seconds;
+      if (Number.isInteger(saved.generation)) generation = Math.max(generation, saved.generation);
+      armed = true;
+      reason = "explicit-availability-resumed";
+      lastCheck = Date.now();
+      consumed.clear();
+      activeLease = null;
+      await publish();
+    } catch (_) {
+      disarm("session-restore-failed-confirm-again");
+    }
+  }
   root.SignalPresenceGuard = { snapshot: snapshot, disarm: disarm, arm: arm, authorize: authorize, releaseAuthorization: releaseAuthorization, toggleFromKeyboard: toggleFromKeyboard };
-  disarm("worker-start-confirm-again");
+  startupReady = restorePresenceSession();
   if (chrome.idle && chrome.idle.onStateChanged) chrome.idle.onStateChanged.addListener(function (state) {
     // Returning/unlocking never re-arms. A current call is deliberately untouched.
     if (state !== "active") disarm("idle-or-locked-confirm-again");
@@ -148,14 +239,15 @@
   });
   chrome.runtime.onMessage.addListener(function (message, sender, respond) {
     if (!message || !/^SIGNAL_PRESENCE_/.test(message.type || "")) return false;
-    var work;
-    if (message.type === "SIGNAL_PRESENCE_RELEASE") work = Promise.resolve(releaseAuthorization(message, sender));
-    else if (message.type === "SIGNAL_PRESENCE_AUTHORIZE") work = authorize(message, sender);
-    else if (message.type === "SIGNAL_PRESENCE_END" && profile(sender)) work = Promise.resolve({ ok: true, state: disarm("session-ended-confirm-again") });
-    else if (!popup(sender)) work = Promise.resolve({ ok: false, error: "popup-only" });
-    else if (message.type === "SIGNAL_PRESENCE_ARM") work = arm(Number(message.idleSeconds));
-    else if (message.type === "SIGNAL_PRESENCE_PAUSE") work = Promise.resolve({ ok: true, state: disarm("manual-pause") });
-    else work = Promise.resolve({ ok: true, state: snapshot() });
+    var work = startupReady.then(function () {
+      if (message.type === "SIGNAL_PRESENCE_RELEASE") return releaseAuthorization(message, sender);
+      if (message.type === "SIGNAL_PRESENCE_AUTHORIZE") return authorize(message, sender);
+      if (message.type === "SIGNAL_PRESENCE_END" && profile(sender)) return { ok: true, state: disarm("session-ended-confirm-again") };
+      if (!popup(sender)) return { ok: false, error: "popup-only" };
+      if (message.type === "SIGNAL_PRESENCE_ARM") return arm(Number(message.idleSeconds));
+      if (message.type === "SIGNAL_PRESENCE_PAUSE") return { ok: true, state: disarm("manual-pause") };
+      return { ok: true, state: snapshot() };
+    });
     work.then(respond).catch(function () { disarm("verification-error-confirm-again"); respond({ ok: false, error: reason }); });
     return true;
   });
