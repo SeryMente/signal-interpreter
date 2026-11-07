@@ -12,7 +12,7 @@ function harness(seed={}){
  const changed=events(),stateChanged=events(),messages=events(),intervals=[];
  const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},storage:{onChanged:changed,local:{get:async keys=>Object.fromEntries(keys.map(k=>[k,data[k]])),set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}}},tabs:{get:async()=>({url:PROFILE}),query:async()=>[]}};
  const ctx={chrome,Date:class extends Date{static now(){return now}},setInterval:f=>intervals.push(f),setTimeout,clearTimeout,self:{}};
- ctx.self=ctx;vm.createContext(ctx);vm.runInContext(code,ctx);
+ ctx.self=ctx;ctx.URL=URL;vm.createContext(ctx);vm.runInContext(code,ctx);
  const sender={id:'id',frameId:0,url:PROFILE,tab:{id:7,url:PROFILE}};
  return {guard:ctx.SignalPresenceGuard,chrome,data,sender,stateChanged,intervals,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
 }
@@ -29,6 +29,31 @@ eq((await h.guard.authorize({modality:'OPI',requestId:'o'},{...h.sender,url:'htt
 eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,true,'verified phone gets short-lived grant');
 eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,false,'same grant request cannot replay');
 eq((await h.guard.authorize({modality:'OPI',requestId:'other'}, {...h.sender,tab:{id:8,url:PROFILE}})).ok,false,'cross-tab reservation blocks double click');
+
+const lease=harness();await lease.guard.arm(60);
+const leaseGrant=await lease.guard.authorize({modality:'OPI',requestId:'lease-1'},lease.sender);
+eq(leaseGrant.ok,true,'eligible OPI receives a single-use authorization lease');
+eq((await lease.guard.authorize({modality:'OPI',requestId:'lease-2'},lease.sender)).error,'authorization-lease-active','active lease blocks overlapping answer attempts');
+eq((await lease.message({type:'SIGNAL_PRESENCE_RELEASE',requestId:'wrong'},lease.sender)).error,'lease-mismatch','wrong release token cannot free another attempt');
+eq((await lease.message({type:'SIGNAL_PRESENCE_RELEASE',requestId:'lease-1'},{...lease.sender,tab:{id:8,url:PROFILE}})).error,'lease-mismatch','another tab cannot release the lease');
+const released=await lease.message({type:'SIGNAL_PRESENCE_RELEASE',requestId:'lease-1'},lease.sender);
+eq(released.ok,true,'lease owner can release by exact request identity');
+eq(released.released,true,'matching lease is released');
+eq(lease.guard.snapshot().armed,true,'releasing a failed attempt does not disarm operator presence');
+eq((await lease.guard.authorize({modality:'OPI',requestId:'lease-2'},lease.sender)).ok,true,'next eligible call can obtain a lease immediately after release');
+const callUrl='https://app.cloudinterpreter.com/call/call-fixture';
+const callSender={...lease.sender,url:callUrl,tab:{id:7,url:callUrl}};
+eq((await lease.message({type:'SIGNAL_PRESENCE_RELEASE',requestId:'lease-2'},callSender)).released,true,'confirmed call route can release its own authorization lease');
+
+eq((await lease.message({type:'SIGNAL_PRESENCE_RELEASE',requestId:'lease-2'},{...callSender,url:'https://example.org/call/call-fixture'})).error,'sender-not-authorized','foreign origin cannot release a lease');
+eq((await lease.message({type:'SIGNAL_PRESENCE_RELEASE',requestId:'lease-2'},{...callSender,url:'https://app.cloudinterpreter.com/dashboard'})).error,'sender-not-authorized','unapproved platform route cannot release a lease');
+
+eq((await lease.guard.authorize({modality:'OPI',requestId:'lease-1'},lease.sender)).error,'stale-or-used','released request id remains non-replayable');
+const expired=harness();await expired.guard.arm(60);
+await expired.guard.authorize({modality:'OPI',requestId:'lease-expired'},expired.sender);
+expired.setNow(116000);
+eq((await expired.guard.authorize({modality:'OPI',requestId:'after-expiry'},expired.sender)).ok,true,'lease self-expires if content runtime disappears');
+
 h.setIdle('idle');h.stateChanged.emit('idle');eq(h.guard.snapshot().armed,false,'OS idle revokes');
 h.setIdle('active');h.stateChanged.emit('active');eq(h.guard.snapshot().armed,false,'return never rearms');
 await h.guard.arm(60);h.stateChanged.emit('locked');h.stateChanged.emit('active');eq(h.guard.snapshot().armed,false,'unlock never rearms');
