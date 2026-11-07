@@ -5,7 +5,7 @@
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
-- Revision documental: SI-OBJ-v1.18-retoma-G11-20261107-03; ancla: C-SIGNAL-RETOMA-20261107-G11-6495BAA5, integración 0.10.40 y actualización local verificada para recarga manual de Chrome del 2026-11-07. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
+- Revision documental: SI-OBJ-v1.19-autoanswer-0.10.43-G12-20261107-06; ancla: C-SIGNAL-AUTOANSWER-01043-G12-20261107, instrumentación diagnóstica de revalidación previa a Connect. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
 - Estado de producto: `main` contiene Signal Interpreter **0.10.40**, integrada por PR [#71](https://github.com/SeryMente/signal-interpreter/pull/71) mediante merge commit `2546d967f15759c2eabac7b4026cc5b4f1cbd081`. CI de PR (auditoría, integridad de paquete 59/59 y host nativo) y CI post-merge (auditoría y host nativo) pasaron. La carpeta que Chrome tiene registrada ya contiene el manifiesto anidado **0.10.40**, con ID conservado. La distribución local se cotejó: 48/48 archivos de la candidata coinciden con el destino; 55/59 hashes canónicos coinciden y cuatro archivos tienen adaptaciones locales explícitas para el layout anidado. El host Native Messaging preexistente conserva su registro y SHA. Respaldo previo 0.10.39 verificado 50/50. Chrome no se recargó; aceptación funcional, E2E y liberación siguen pendientes. No hay release.
@@ -19,13 +19,13 @@ Leer este núcleo y adquirir gobierno vigente antes de actuar. Consultar despué
 
 Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metacanon pertinentes → gobierno particular de este frente. [Entrada del gobierno distribuido](https://github.com/SeryMente/metodologia/blob/main/INICIO.md). El repositorio metodológico requiere acceso autorizado; no copiar su contenido privado a este repositorio público ni pedir credenciales en el chat. Revalidar fuente y revisiones desde `main`; una referencia histórica no prueba frescura, autorización o ejecución. Fuente indispensable ausente bloquea solo la acción dependiente.
 
-**Modo operativo vigente:** una instancia única G12 tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva decisiones humanas, uso real, llamadas reales, aceptación funcional y liberación. Esta disposición no se propaga a otros proyectos. G10 quedó SUSTITUIDA por G11 mediante transferencia condicionada por SHA/generación; generaciones anteriores permanecen en el historial. M34/M35 son antecedentes históricos cerrados; PC-14 está expresamente excluido por el operador.
+**Modo operativo vigente:** una instancia única G12 tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva decisiones humanas, uso real, llamadas reales, aceptación funcional y liberación. Esta disposición no se propaga a otros proyectos. G11 quedó SUSTITUIDA por G12 mediante transferencia condicionada por SHA/generación; G10 y G11 permanecen en el historial. M34/M35 son antecedentes históricos cerrados; PC-14 está expresamente excluido por el operador.
 
 ## Referencia metodológica
 
-- **Metacanon adquirido: 1.28**; DUG **v377 · NX-377m**; GOW **2.17**.
+- **Metacanon adquirido: 1.28**; DUG **v378 · NX-378m**; GOW **2.17**.
 - Fuente canónica releída desde `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, commit `8ee2482866b3dd085e58e05006727256d0274376`, blob `54064c8fe00f872023a455f06596061ed69062ae`. `INICIO.md` confirma DUG v377, Metacanon 1.28 y GOW 2.17.
-- Control vigente: CONTROL-RESPONSABILIDAD.json, G11 ACTIVO agente_unico; folio SES-20261107-6495BAA5; alias chatgpt-signal-interpreter-SES-20261107-6495BAA5; UUIDv7 local 01a1b703-181f-7838-a492-0d21cf717013. Blob `f7e75f74961184c38e0a35955896099230bf061e`; read-back remoto PASS. G10 queda SUSTITUIDO.
+- Control histórico G11 SUSTITUIDO. Control vigente G12 ACTIVO agente_unico; folio PENDIENTE/NO ASIGNADO por FOL1 no activa; alias chatgpt-signal-interpreter-01a1b793-ab9f-70bc-bd23-03e83dc1e417; UUIDv7 local 01a1b793-ab9f-70bc-bd23-03e83dc1e417. Blob `f7e75f74961184c38e0a35955896099230bf061e`; read-back remoto PASS. G10 queda SUSTITUIDO.
 - Se revisaron manualmente P001/P004/P005/P037/P038/P043, §42 de Metacanon y vocabulario GOW relativo a Arranque en Frío, MDP, SPDF, Persistencia documental, Registro conversacional, FT y Control de responsabilidad. `INICIO.md` refiere §ARR; no se localizó un encabezado literal §ARR en las secciones humanas recuperadas, por lo que su ubicación exacta queda NO VERIFICADA. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
 
 ### Constancia de adquisición y aplicación
@@ -252,3 +252,7 @@ Esta adenda es el checkpoint vigente y supersede cualquier mención anterior de 
 - **Trabajo siguiente:** instrumentar por separado los predicados de revalidación en `content.js` y añadir pruebas sin audio, transcripción ni texto de llamada; mantener fail-closed. No recargar Chrome ni actuar sobre llamadas reales durante una ventana activa.
 - **Custodia:** el original 1350 está copiado localmente con SHA exacto y excluido de Git; recibo y crónica saneados están en main. Original no publicado ni almacenado remotamente por esta operación.
 - **Estado local:** clon observado 29 commits detrás y con cuatro archivos modificados y dos no seguidos. Preservar; usar base aislada para el desarrollo siguiente.
+
+## Checkpoint vivo G12 · candidata diagnóstica 0.10.43
+
+La crónica técnica G12 y la nota de versión 0.10.43 registran la instrumentación de content.js. La candidata emite códigos enumerados para cada predicado de revalidación; no incorpora texto/audio/transcripción de llamada y no relaja el bloqueo fail-closed. El clasificador tiene 16 casos; suites runtime 31, conexión 33, guard 65 e integridad de paquete 59/59 PASS. El audit de observabilidad se bloqueó por workflow ausente y no se declara PASS. Rama local aislada work/g12-autoanswer-revalidation, aún no publicada; PR #72 permanece abierta como antecedente de la candidata 0.10.42. main sigue en 0.10.40. Sin instalación, recarga de Chrome, llamada real, aceptación funcional ni release.

@@ -45,9 +45,9 @@ const oldRuntime = {
   active: true,
   dispose: reason => { upgradeReason = reason; }
 };
-const upgraded = boot("0.10.42", oldRuntime);
+const upgraded = boot("0.10.43", oldRuntime);
 assert.equal(upgradeReason, "runtime-upgrade-replaced", "version upgrade disposes the previous runtime");
-assert.equal(upgraded.marker.version, "0.10.42", "version upgrade starts the new runtime");
+assert.equal(upgraded.marker.version, "0.10.43", "version upgrade starts the new runtime");
 
 let replacedReason = null;
 const otherExtension = {
@@ -101,9 +101,54 @@ await new Promise(resolve => setImmediate(resolve));
 assert.equal(failed.context.readPresence().armed, false, "storage failure remains fail-closed");
 assert.equal(failed.answerChecks(), 0, "failed hydration never arms or runs answer flow");
 
+const diagnosticStart = source.indexOf("  function postAuthorizationRevalidationFailureCodes(state) {");
+const diagnosticEnd = source.indexOf("\n  function currentCallId()", diagnosticStart);
+assert(diagnosticStart >= 0 && diagnosticEnd > diagnosticStart, "post-authorization diagnostics helper boundaries");
+const diagnosticHelper = source.slice(diagnosticStart, diagnosticEnd);
+const diagnosticContext = {};
+vm.runInNewContext(diagnosticHelper + "\nthis.computeFailures = postAuthorizationRevalidationFailureCodes;", diagnosticContext);
+const computeFailures = diagnosticContext.computeFailures;
+const validRevalidation = {
+  grant: { ok: true, expiresAt: 200, generation: 3 },
+  now: 100,
+  runtimeActive: true,
+  incomingAttemptMatches: true,
+  presenceArmed: true,
+  presenceGeneration: 3,
+  readinessReady: true,
+  hasActiveCall: false,
+  attemptAlreadyClicked: false,
+  buttonPresent: true,
+  buttonConnected: true,
+  buttonDisabled: false,
+  buttonInDialog: true,
+  buttonVisible: true
+};
+let diagnosticChecks = 0;
+function expectRevalidationFailures(changes, expected, label) {
+  const state = { ...validRevalidation, ...changes };
+  assert.deepEqual(Array.from(computeFailures(state)), expected, label);
+  diagnosticChecks++;
+}
+expectRevalidationFailures({}, [], "all authorization predicates pass");
+expectRevalidationFailures({ grant: null }, ["GRANT_MISSING"], "missing grant is diagnosed");
+expectRevalidationFailures({ grant: { ok: false, error: "authorization-busy" } }, ["GRANT_NOT_GRANTED"], "rejected grant is diagnosed");
+expectRevalidationFailures({ now: 201 }, ["GRANT_EXPIRED"], "expired grant is diagnosed");
+expectRevalidationFailures({ runtimeActive: false }, ["RUNTIME_INACTIVE"], "inactive runtime is diagnosed");
+expectRevalidationFailures({ incomingAttemptMatches: false }, ["INCOMING_ATTEMPT_REPLACED"], "replaced dialog attempt is diagnosed");
+expectRevalidationFailures({ presenceArmed: false }, ["PRESENCE_DISARMED"], "revoked presence is diagnosed");
+expectRevalidationFailures({ presenceGeneration: 4 }, ["PRESENCE_GENERATION_MISMATCH"], "presence generation race is diagnosed");
+expectRevalidationFailures({ readinessReady: false }, ["AUTO_ANSWER_NOT_READY"], "readiness rejection is diagnosed");
+expectRevalidationFailures({ hasActiveCall: true }, ["CALL_ALREADY_ACTIVE"], "active call guard is diagnosed");
+expectRevalidationFailures({ attemptAlreadyClicked: true }, ["ATTEMPT_ALREADY_CLICKED"], "duplicate attempt is diagnosed");
+expectRevalidationFailures({ buttonPresent: false, buttonConnected: false, buttonInDialog: false, buttonVisible: false }, ["CONNECT_BUTTON_MISSING"], "missing Connect button is diagnosed once");
+expectRevalidationFailures({ buttonConnected: false }, ["CONNECT_BUTTON_DISCONNECTED"], "detached Connect button is diagnosed");
+expectRevalidationFailures({ buttonDisabled: true }, ["CONNECT_BUTTON_DISABLED"], "disabled Connect button is diagnosed");
+expectRevalidationFailures({ buttonInDialog: false }, ["CONNECT_BUTTON_DETACHED_FROM_DIALOG"], "button/dialog identity mismatch is diagnosed");
+expectRevalidationFailures({ buttonVisible: false }, ["CONNECT_BUTTON_NOT_VISIBLE"], "invisible Connect button is diagnosed");
 console.log(JSON.stringify({
   suite: "autoanswer-runtime-guard",
-  checks: 15,
+  checks: 15 + diagnosticChecks,
   result: "PASS",
   environment: "Node VM / synthetic Chrome APIs"
 }));
