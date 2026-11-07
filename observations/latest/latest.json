@@ -1,32 +1,34 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-df81e82a-7be5-48c1-bb4f-13576b48af80",
-  "createdAt": "2026-11-07T15:59:32.109Z",
-  "trigger": "alarm",
+  "batchId": "batch-7311ca4f-c49f-402c-a63f-7f6af82dd760",
+  "createdAt": "2026-11-07T16:00:07.278Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.39",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "cebecd8f-f822-4ea6-b5c0-67594dd183e3",
-      "sequence": 18400,
-      "timestamp": "2026-11-07T15:59:04.840Z",
-      "ingestedAt": "2026-11-07T15:59:04.894Z",
+      "id": "44f950a9-e6e0-40b4-9a27-aa5cc6561c4e",
+      "sequence": 18402,
+      "timestamp": "2026-11-07T15:59:36.723Z",
+      "ingestedAt": "2026-11-07T15:59:36.774Z",
       "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "category": "RUNTIME",
+      "component": "content",
       "extensionVersion": "0.10.39",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "host": "app.cloudinterpreter.com",
+      "url": "https://app.cloudinterpreter.com/profile/<ID>",
+      "phase": "event",
+      "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "581b4818-5bf3-4d1e-bea6-f8960c74189e",
+      "traceId": "a17a78d7-5366-4a80-9212-55075ee80d88",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220925067,
+      "tabId": 220925147,
       "session": {
+        "sessionId": "40616eaa-859a-4e82-b3d2-3aa6dd7080db",
+        "pageLifecycleId": "fe4d21cb-7541-49d9-97d2-7de0633a93b7",
         "callId": null
       },
       "environment": {
@@ -36,18 +38,22 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "heartbeat",
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/c/local-chatgpt%3A37377f7f-69be-42ff-b6e8-4cf8ddfb73e4",
-        "visibility": "visible",
+        "route": "/profile/<ID>",
+        "visibility": "hidden",
+        "focused": false,
         "online": true,
-        "sourceTabId": 220925067,
+        "monotonicMs": 467030,
+        "callId": null,
+        "pageLifecycleId": "fe4d21cb-7541-49d9-97d2-7de0633a93b7",
+        "sourceTabId": 220925147,
         "sourceWindowId": 220925064,
         "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/c/local-chatgpt%3A37377f7f-69be-42ff-b6e8-4cf8ddfb73e4"
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz"
       },
       "privacy": {
         "rawTextStored": false,
@@ -55,90 +61,43 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/c/local-chatgpt%3A37377f7f-69be-42ff-b6e8-4cf8ddfb73e4",
-        "extensionVersion": "0.10.39",
-        "previousRoute": "/",
-        "currentRoute": "/c/local-chatgpt%3A37377f7f-69be-42ff-b6e8-4cf8ddfb73e4",
-        "activeCallRoute": false
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "665c80c9-027d-4327-b7a0-b90723e8b65c",
-      "sequence": 18401,
-      "timestamp": "2026-11-07T15:59:06.344Z",
-      "ingestedAt": "2026-11-07T15:59:06.394Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.39",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
-      "outcome": "observed",
-      "traceId": "7397efbd-86a0-46bb-b3a3-dc524a3522a7",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220925067,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.39",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/c/6aef4a36-954c-83e8-b642-4c3568ace1c8",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220925067,
-        "sourceWindowId": 220925064,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/c/6aef4a36-954c-83e8-b642-4c3568ace1c8"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/c/6aef4a36-954c-83e8-b642-4c3568ace1c8",
-        "extensionVersion": "0.10.39",
-        "previousRoute": "/c/local-chatgpt%3A37377f7f-69be-42ff-b6e8-4cf8ddfb73e4",
-        "currentRoute": "/c/6aef4a36-954c-83e8-b642-4c3568ace1c8",
-        "activeCallRoute": false
+        "ready": false,
+        "attemptId": null,
+        "availability": "offline",
+        "authorizedProfile": true,
+        "configEnabled": true,
+        "labSafetyLock": false,
+        "presenceArmed": false,
+        "presenceReason": "session-ended-confirm-again",
+        "presenceGeneration": 2,
+        "blockedReasons": [
+          "SESSION_ENDED_CONFIRM_AGAIN",
+          "AVAILABILITY_OFFLINE"
+        ],
+        "route": "/profile/<ID>",
+        "exactUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz",
+        "runtimeVersion": "0.10.39",
+        "reason": "heartbeat"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 18400,
-    "lastSequence": 18401,
-    "firstTimestamp": "2026-11-07T15:59:04.840Z",
-    "lastTimestamp": "2026-11-07T15:59:06.344Z",
+    "firstSequence": 18402,
+    "lastSequence": 18402,
+    "firstTimestamp": "2026-11-07T15:59:36.723Z",
+    "lastTimestamp": "2026-11-07T15:59:36.723Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
+      "AUTO_ANSWER_READINESS": 1
     },
     "categories": {
-      "CAPTION": 2
+      "RUNTIME": 1
     }
   }
 }
