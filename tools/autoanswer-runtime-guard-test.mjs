@@ -21,7 +21,7 @@ function boot(version, existing) {
     deactivateForHotload: reason => disposed.push(reason),
     Date
   };
-  vm.runInNewContext("(function(){\\n" + bootstrap + "\\n}).call(this);", context);
+  vm.runInNewContext("(function(){\n" + bootstrap + "\n}).call(this);", context);
   return { marker: window.__SIGNAL_INTERPRETER_CLOUD_RUNTIME__, disposed };
 }
 
@@ -76,7 +76,7 @@ async function presenceHarness(readPromise) {
     runtimeMarker: { active: true },
     autoAnswer: () => { answerChecks++; }
   };
-  vm.runInNewContext("(function(){\\n" + presenceBootstrap + "\\nthis.readPresence = () => presenceState;\\n}).call(this);", context);
+  vm.runInNewContext("(function(){\n" + presenceBootstrap + "\nthis.readPresence = () => presenceState;\n}).call(this);", context);
   return {
     context,
     changed: (changes, area = "local") => stateListener(changes, area),
@@ -103,7 +103,7 @@ assert.equal(failed.answerChecks(), 0, "failed hydration never arms or runs answ
 
 console.log(JSON.stringify({
   suite: "autoanswer-runtime-guard",
-  checks: 12,
+  checks: 14,
   result: "PASS",
   environment: "Node VM / synthetic Chrome APIs"
 }));
