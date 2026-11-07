@@ -294,7 +294,7 @@ El merge no instala la extensión en el perfil Windows del operador, no reinicia
 **Siguiente trabajo:** instalación controlada en perfil autorizado, aceptación positiva/negativa de la contestación automática, telemetría E2E y posterior decisión de liberación. La fusión no equivale a aceptación funcional.
 
 IPZ: v0.7 · edad NO VERIFICADA.
-DUG: v377 · NX-377m · 0.0.7.
+DUG: v377 · NX-377m · 0.0.13.
 OCP Signal Interpreter: main · 0.0.0.
 CONV: CV-G PENDIENTE/NO ASIGNADO · OCP: CV-OCP-SI PENDIENTE/NO ASIGNADO.
 CICLO n: CY-G PENDIENTE/NO ASIGNADO · OCP: CY-OCP-SI PENDIENTE/NO ASIGNADO.
