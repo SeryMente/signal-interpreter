@@ -56,13 +56,22 @@
   function releaseSender(sender) {
     if (!sender || sender.id !== chrome.runtime.id || sender.frameId !== 0 || !sender.tab ||
         !Number.isInteger(sender.tab.id)) return false;
+    function normalizedPage(raw) {
+      return String(raw || "").split(/[?#]/)[0].replace(/\/+$/, "");
+    }
     function allowedPage(raw) {
-      var value = String(raw || "").split(/[?#]/)[0].replace(/\\/+$/, "");
-      return value === PROFILE || /^https:\/\/app\\.cloudinterpreter\\.com\/call\/[^/?#]+$/i.test(value);
+      try {
+        var url = new URL(normalizedPage(raw));
+        if (url.origin !== "https://app.cloudinterpreter.com") return false;
+        var path = url.pathname.replace(/\/+$/, "");
+        if (path === "/profile/cmu2wuz1v0uwr07adbzb9djfz") return true;
+        if (path.indexOf("/call/") !== 0) return false;
+        var callId = path.slice("/call/".length);
+        return !!callId && callId.indexOf("/") === -1;
+      } catch (_) { return false; }
     }
     return allowedPage(sender.url) && allowedPage(sender.tab.url) &&
-      String(sender.url || "").split(/[?#]/)[0].replace(/\\/+$/, "") ===
-      String(sender.tab.url || "").split(/[?#]/)[0].replace(/\\/+$/, "");
+      normalizedPage(sender.url) === normalizedPage(sender.tab.url);
   }
   function releaseAuthorization(message, sender) {
     continuity();
