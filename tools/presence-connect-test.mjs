@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const content=fs.readFileSync('extension/content.js','utf8');
-const fn=content.slice(content.indexOf('  async function autoAnswer() {'),content.indexOf('  function emitAutoAnswerReadiness'));
+const helper=content.slice(content.indexOf('  function releasePresenceAuthorization('),content.indexOf('  async function autoAnswer() {'));
+const fn=helper+content.slice(content.indexOf('  async function autoAnswer() {'),content.indexOf('  function emitAutoAnswerReadiness'));
 let checks=0;
 function harness({mode='Audio interpreting',grant=true,labLocked=false,presenceArmed=true,autoEnabled=true,availability='online',buttonPresent=true}={}){
  let clicks=0,release=null,route=false,visible=true,events=[],releaseRequests=[],timers=[];
