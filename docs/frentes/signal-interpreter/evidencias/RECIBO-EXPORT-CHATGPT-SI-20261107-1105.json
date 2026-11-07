@@ -1,0 +1,65 @@
+{
+  "schema": "signal-interpreter-export-receipt/v1",
+  "artifact": {
+    "original_filename": "ChatGPT-SI-20261107-1105.txt",
+    "artifact_type": "ChatGPT conversation export",
+    "source_location": "Downloads del perfil de operador; ruta exacta omitida en la copia pública",
+    "exported_at_local": "2026-11-07 11:05:45",
+    "source_updated_at_local": "2026-11-07 11:03:48",
+    "file_last_write_local": "2026-11-07T11:05:45.8385351-06:00",
+    "timezone": "America/Mexico_City",
+    "size_bytes": 55257,
+    "line_count": 1270,
+    "sha256": "B23EB3895BEFDC7AC546DACFD90FB81BF1CD25B5E36B01DCDE3933EE4E5A6182",
+    "encoding": "NO VERIFICADO"
+  },
+  "acquisition": {
+    "requested_by_operator": true,
+    "method": "Remote Desktop Commander (RDC), lectura de archivo por rangos",
+    "device_label": "PC10RCIF4EI4",
+    "rdc_process_identity": "Cuenta técnica distinta del perfil propietario del archivo; nombre de cuenta omitido del recibo público",
+    "read_ranges": [
+      {
+        "start_line": 0,
+        "end_line": 999,
+        "lines": 1000,
+        "status": "READ"
+      },
+      {
+        "start_line": 1000,
+        "end_line": 1269,
+        "lines": 270,
+        "status": "READ"
+      }
+    ],
+    "full_read": "VERIFICADO · 1270/1270 líneas",
+    "matching_chat_attachment": true,
+    "attachment_sha256": "B23EB3895BEFDC7AC546DACFD90FB81BF1CD25B5E36B01DCDE3933EE4E5A6182",
+    "sha256_match": "MATCH_EXACTO",
+    "local_read_only": true,
+    "local_write_attempted": false
+  },
+  "local_custody": {
+    "original_remains_at_source": true,
+    "copied_into_ocp": false,
+    "status": "NO_PERSISTIDO_EN_OCP",
+    "reason": "El repositorio SeryMente/signal-interpreter es público y el export contiene detalles de entorno y telemetría de llamadas. La sesión RDC se ejecutó bajo una identidad distinta de la propietaria del perfil; P036 bloquea escrituras en el perfil del operador desde esa identidad. No se publicó ni se intentó copiar el original.",
+    "next_condition": "Resolver destino privado autorizado o un procedimiento de custodia compatible con privacidad; no volver a escribir desde la identidad RDC actual en el perfil del operador."
+  },
+  "public_repository": {
+    "repository": "SeryMente/signal-interpreter",
+    "visibility": "PUBLIC",
+    "original_published": false,
+    "sanitized_receipt_only": true,
+    "sensitive_content_redacted_from_derivative": true
+  },
+  "transaction": {
+    "responsibility_event": "SIGNAL-INTERPRETER-TRANSFER-20261107-G11-6495BAA5",
+    "active_session": "SES-20261107-6495BAA5",
+    "generation": 11,
+    "control_blob_readback": "251972d60adddf7ec42a6b37068d4001987824ca",
+    "transfer_commit_initial": "086600fdefa78695b9ff9d150f434735ff72ddff",
+    "transfer_commit_verification": "2cc5ee82bc3bda5c65fa6d551bdf8156a8cbd373",
+    "state": "DERIVADO_PERSISTIDO; ORIGINAL_NO_PERSISTIDO_EN_OCP"
+  }
+}
