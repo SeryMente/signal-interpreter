@@ -1054,6 +1054,7 @@
       return;
     }
     lastIncomingBlockedSignature = "";
+    if (authorizationRetryTimers.has(incomingAttemptId)) return;
     var attemptIdForAuthorization = incomingAttemptId;
     if (!runtimeMarker.active || clickedAttempts.has(attemptIdForAuthorization) ||
         pendingAttempts.has(attemptIdForAuthorization) || pendingConnect.has(button)) return;
