@@ -210,3 +210,33 @@ CICLO n: CY-G PENDIENTE/NO ASIGNADO · OCP: CY-OCP-SI PENDIENTE/NO ASIGNADO.
 A: A-G PENDIENTE/NO ASIGNADO · OCP: A-OCP-SI PENDIENTE/NO ASIGNADO.
 B: B-G PENDIENTE/NO ASIGNADO · OCP: B-OCP-SI PENDIENTE/NO ASIGNADO.
 ```
+
+
+## 11. Revisión de frescura metodológica y cierre actualizado · 2026-11-07
+
+La última lectura de `SeryMente/metodologia/main` encontró el commit `53fe190e16d641d50dc868228a41bb79b034fed3` (`docs(ep): ingest 2026-11-07 continuity and master-only decision`). El diff, comparado con `97990e2b56874def3e6afa91aef010f04837c0e1`, modifica únicamente `frentes/ep/` y sus artefactos subordinados. El archivo canónico `gobernanza/METAPROMPT-CANONICO-SAMANTHA.html` conserva el blob `54064c8fe00f872023a455f06596061ed69062ae`; DUG v377 · NX-377m, Metacanon 1.28 y GOW 2.17 siguen vigentes para esta revisión. No se transportó contenido ni autorización del frente EP a Signal Interpreter.
+
+Última comparación de PR #71 desde el ancestro común `84572186a2eb1f6c4ed9e2bcfc08c1aa0f12d3f3`: main +35 commits/26 rutas, rama +47 commits/23 rutas, sin rutas coincidentes. Última respuesta GitHub: PR open, draft, unmerged, `mergeable=false`; consultas anteriores dieron true. No se hizo merge. El manifest de main permanece en 0.10.39.
+
+### Salida visible final de este ciclo
+
+```text
+**Revisión técnica y continuidad de Signal Interpreter completadas en G11.**
+
+- Se corrigió el agotamiento de reintentos: siete intentos como máximo por llamada, con backoff acotado. El mismo diálogo no reinicia la cadena tras agotarla; una llamada nueva recibe presupuesto independiente.
+- La regresión ejecuta los siete intervalos y verifica agotamiento terminal por intento.
+- CI del head `ac50779a6e93288b58d7631c74dacca8ae72300e`: auditoría PASS (run 11096; 42 controles presence-guard, 33 presence-connect, 15 runtime-guard), integridad PASS (run 129; 59 hashes), host nativo Windows PASS (run 8749).
+- PR #71 permanece abierta, en borrador y sin fusionar. La comparación desde el ancestro común no encuentra rutas modificadas solapadas. Las lecturas de mergeability de GitHub variaron; la última devolvió `false`. No se fusionó.
+- `main/manifest.json` sigue en 0.10.39. No se instaló 0.10.40, no se reinició Chrome y no se probó llamada real.
+- Control G11, núcleo, índice y crónica quedaron persistidos y releídos. El original del export sigue fuera del OCP por privacidad/P036; solo se guarda el recibo saneado.
+
+**Siguiente compuerta:** decisión humana de integración/aceptación antes de instalar. La CI sintética no sustituye la aceptación funcional del operador.
+
+IPZ: v0.7 · edad NO VERIFICADA.
+DUG: v377 · NX-377m · 0.0.6.
+OCP Signal Interpreter: main · 0.0.0.
+CONV: CV-G PENDIENTE/NO ASIGNADO · OCP: CV-OCP-SI PENDIENTE/NO ASIGNADO.
+CICLO n: CY-G PENDIENTE/NO ASIGNADO · OCP: CY-OCP-SI PENDIENTE/NO ASIGNADO.
+A: A-G PENDIENTE/NO ASIGNADO · OCP: A-OCP-SI PENDIENTE/NO ASIGNADO.
+B: B-G PENDIENTE/NO ASIGNADO · OCP: B-OCP-SI PENDIENTE/NO ASIGNADO.
+```
