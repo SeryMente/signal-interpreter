@@ -893,7 +893,58 @@
       "alcance": "Corregir los defectos comprobados en la autorización de Auto-Answer: normalizar de forma estricta la URL autorizada del frame/pestaña y conservar la presencia expresamente armada en chrome.storage.session entre suspensiones/reinicios del service worker MV3, revalidando idle=active, perfil, configuración y ausencia de lock en cada grant. No permitir que presencia sobreviva a recarga/deshabilitación de la extensión o reinicio de Chrome. Añadir diagnóstico privado mínimo, pruebas sintéticas, CI, PR, integración si mergeability/CI están limpios, empaquetar e instalar en la carpeta exacta registrada por Chrome, respaldo y SHA/read-back; avisar cuando esté preparada para recarga manual y confirmación explícita de disponibilidad.",
       "limites": "No relajar OPI verificada; VRI/desconocida y subframes siguen bloqueados. No clic de Connect por fuera de los guards. No llamadas reales, no manipular una llamada entrante, no simular aceptación funcional, no recargar/reiniciar Chrome desde RDC, no desplegar ni crear release. Tras recarga de extensión el operador deberá volver a confirmar disponibilidad; solo una suspensión del worker en la misma sesión conserva la activación.",
       "base_diagnostica": "Telemetría local 0.10.40 posterior a la recarga: sender-not-authorized y presence-disarmed en AUTO_ANSWER_AUTHORIZATION_BLOCKED; readiness con PROFILE_NOT_AUTHORIZED/AVAILABILITY_UNKNOWN en algunos cortes. Código presence-guard.js exigía igualdad literal frameUrl/tabUrl y reiniciaba siempre con disarm(worker-start-confirm-again); continuidad por gap 45 s no tolera suspensión MV3.",
-      "estado": "AUTORIZADA_PENDIENTE_EJECUCION"
+      "resultado_ejecucion": {
+        "version_producto": "0.10.41",
+        "branch": "work/g11-presence-continuity",
+        "commit": "b48f65018a643605b5d795538688bdae59d05a7b",
+        "pull_request": "https://github.com/SeryMente/signal-interpreter/pull/72",
+        "estado_pr": "ABIERTA; NO FUSIONADA",
+        "ci_head": {
+          "audit": "SUCCESS",
+          "package_integrity": "SUCCESS",
+          "compile_and_protocol_smoke_test": "IN_PROGRESS al último corte consultado"
+        },
+        "pruebas_locales": {
+          "presence_guard": "60/60 PASS",
+          "presence_connect": "33/33 PASS",
+          "autoanswer_runtime_guard": "15/15 PASS",
+          "package_inventory": "59/59 SHA-256 PASS; identidad de extensión y host nativo embebido PASS",
+          "installer_inventory_shape": "PASS",
+          "overlay_global_toggle": "PASS",
+          "overlay_activation": "PASS",
+          "portable_root": "PASS",
+          "cloud_login_bootstrap": "PASS",
+          "earnings_overlay": "PASS",
+          "live_caption_static_audit": "PASS",
+          "microphone_feedback": "PASS",
+          "pipeline_hotkey_consistency": "PASS",
+          "javascript_syntax": "25/25 PASS",
+          "git_diff_check": "PASS",
+          "observability_static_audit": "NO EJECUTADO: falta .github/workflows/observability-build.yml en el worktree"
+        },
+        "instalacion_local": {
+          "ruta": "C:\\Users\\fila4\\Desktop\\SeryMente\\Signal Interpreter\\extension",
+          "manifiesto_anidado": "0.10.41",
+          "manifest_sha256": "8D2CC6DB597A2429F25DC0192E2AF17F4457DE9E235135957FDBABC44B2B9773",
+          "extension_id_conservado": true,
+          "presence_guard_sha256": "EE311D3A01ED62AB32C8FB7D50283C626F4119643F9F88367A58BCD9C4969912",
+          "readback": "PASS"
+        },
+        "respaldo": {
+          "ruta": "Desktop/SI-backups/SI-0.10.40-before-0.10.41-20261107/extension",
+          "archivos": 50,
+          "sha256_readback": "50/50 PASS",
+          "recibo": "BACKUP-VERIFICATION.json"
+        },
+        "native_messaging": "NO MODIFICADO",
+        "chrome_recargado": false,
+        "chrome_reiniciado": false,
+        "llamadas_reales": false,
+        "aceptacion_funcional": "PENDIENTE DEL OPERADOR",
+        "observabilidad_e2e": "PENDIENTE",
+        "release": "NO CREADO"
+      },
+      "estado": "EJECUTADA_LOCALMENTE_PR72_ABIERTA_PAQUETE_0.10.41_PREPARADO_PARA_RECARGA"
     }
   ]
 }

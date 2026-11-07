@@ -5,10 +5,10 @@
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
-- Revision documental: SI-OBJ-v1.18-retoma-G11-20261107-03; ancla: C-SIGNAL-RETOMA-20261107-G11-6495BAA5, integración 0.10.40 y actualización local verificada para recarga manual de Chrome del 2026-11-07. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
+- Revision documental: SI-OBJ-v1.19-autoanswer-0.10.41-G11-20261107-04; ancla: C-SIGNAL-AUTOANSWER-01041-G11-20261107, retoma del export 1310 y corrección de Auto-Answer 0.10.41. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
-- Estado de producto: `main` contiene Signal Interpreter **0.10.40**, integrada por PR [#71](https://github.com/SeryMente/signal-interpreter/pull/71) mediante merge commit `2546d967f15759c2eabac7b4026cc5b4f1cbd081`. CI de PR (auditoría, integridad de paquete 59/59 y host nativo) y CI post-merge (auditoría y host nativo) pasaron. La carpeta que Chrome tiene registrada ya contiene el manifiesto anidado **0.10.40**, con ID conservado. La distribución local se cotejó: 48/48 archivos de la candidata coinciden con el destino; 55/59 hashes canónicos coinciden y cuatro archivos tienen adaptaciones locales explícitas para el layout anidado. El host Native Messaging preexistente conserva su registro y SHA. Respaldo previo 0.10.39 verificado 50/50. Chrome no se recargó; aceptación funcional, E2E y liberación siguen pendientes. No hay release.
+- Estado de producto: `main` conserva Signal Interpreter **0.10.40**, integrada por PR [#71](https://github.com/SeryMente/signal-interpreter/pull/71). La corrección **0.10.41** está en [PR #72](https://github.com/SeryMente/signal-interpreter/pull/72), rama `work/g11-presence-continuity`, commit `b48f65018a643605b5d795538688bdae59d05a7b`, todavía abierta y no fusionada. CI observado en el head: auditoría y package-integrity SUCCESS; compile/protocol-smoke-test IN_PROGRESS. La carpeta exacta registrada por Chrome ya contiene manifiesto anidado 0.10.41, mismo ID; `presence-guard.js` y manifiesto se releen con SHA exacto. Respaldo 0.10.40 previo verificado 50/50. Chrome no se recargó; aceptación funcional, E2E y liberación siguen pendientes. No hay release.
 - Persistencia verificable: identificar la revisión Git que contiene este archivo y el [recibo de migración](evidencias/C-SIGNAL-METACANON-20261020-01.json); el recibo identifica la base y los contenidos, no autocertifica publicación o conformidad semántica.
 
 ## LEER PRIMERO
@@ -43,7 +43,7 @@ Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metac
 
 **De dónde viene:** mejorar calidad de vida en interpretación telefónica, apoyada en texto de Live Caption nativo; dictados y ratificaciones originales conservados en el [antecedente íntegro](antecedentes/TRANSCRIPTION-SPRINT-CANONICAL.pre-1.9.md), §§13–17 y SI-D001–008.
 
-**Dónde está:** `main` publica **0.10.40**, integrada por PR #71 mediante merge commit `2546d967f15759c2eabac7b4026cc5b4f1cbd081`; el inventario de `main` contiene 59 archivos y el SHA-256 esperado de `extension/content.js` es `7661B95311E2DCD4DFB07943288D6A5AE88DCDA19F3CC56FC07D0936A05A25F0`. El clon local del producto quedó alineado a `main` de código `679578fb3580b1518a9adafa5e0f398e1ee6d097`; un commit posterior de `main` añadió solo una captura diagnóstica. La ruta exacta registrada en Secure Preferences de Chrome ahora tiene un manifiesto anidado 0.10.40 (`background.js`, mismo ID `ldpbjhobnfgmhdoehehdmnbhhjckebmj`). La adaptación de cuatro rutas permite usar los recursos desde esa subcarpeta. Los archivos están preparados y verificados; Chrome espera la recarga manual del operador. No hay release ni aceptación funcional.
+**Dónde está:** `main` conserva **0.10.40**; la corrección **0.10.41** está en PR #72, commit `b48f65018a643605b5d795538688bdae59d05a7b`. La corrección resuelve pérdida de presencia en reinicio de service worker MV3 y el rechazo del perfil canónico por barra final/query/fragmento, sin abrir rutas nuevas ni relajar OPI/VRI. El paquete pasa 59/59 hashes e identidad/host embebido; pruebas sintéticas focalizadas 60/60, 33/33 y 15/15 PASS. La carpeta registrada por Chrome (`C:\Users\fila4\Desktop\SeryMente\Signal Interpreter\extension`) ya declara 0.10.41; `presence-guard.js` SHA `EE311D3A01ED62AB32C8FB7D50283C626F4119643F9F88367A58BCD9C4969912`, manifiesto SHA `8D2CC6DB597A2429F25DC0192E2AF17F4457DE9E235135957FDBABC44B2B9773`, ID conservado. Respaldo 0.10.40 cotejado 50/50. Chrome espera la recarga manual y nueva confirmación explícita de disponibilidad; no hay aceptación funcional ni release.
 
 Incluido: Windows + Chrome; Live Caption → Windows UI Automation → Native Messaging → overlay; carriles por idioma, historial, copiar/buscar, hotloading, controles existentes; instalación portable desde raíz y laboratorio aislado con muestra incluida. MacOS/Linux son entornos de desarrollo, no plataformas de producto acreditadas.
 
@@ -227,7 +227,7 @@ Gobernanza actual releída: DUG v377 · NX-377m, Metodología `main` commit `b66
 
 Prompt operativo único G11 blob `ca9e4f1e25aca92717778772418181477a5c025a`; crónica de retoma G11 blob `02b81140201a7235474dda787477a8a74d101cc2`; recibo del export G11 blob `9f08e7eb9de4650427741e886e5099b3f477b404`. Persistencia y read-back verificados.
 
-Versión de producto: `manifest.json` **0.10.40** (blob `aa3ccf76d28397086045c61b399e5fdae3c7cd41`), integrada por PR #71 en merge commit `2546d967f15759c2eabac7b4026cc5b4f1cbd081`. La carpeta registrada por Chrome fue actualizada a 0.10.40 y está preparada para recarga manual; no hay release ni aceptación funcional en este ciclo.
+Versión de producto: `main` conserva `manifest.json` **0.10.40** (PR #71, merge `2546d967f15759c2eabac7b4026cc5b4f1cbd081`). La candidata **0.10.41** está en PR #72, commit `b48f65018a643605b5d795538688bdae59d05a7b`, abierta y no fusionada. La carpeta cargada por Chrome ya contiene 0.10.41 y está lista para recarga manual; el operador debe rearmar explícitamente Auto-Answer tras recargar. No se probó una llamada real; aceptación funcional, E2E y release pendientes.
 
 Persistencia provisional: `observations/manifest.json` y el corte heredado siguen registrando 10,384 batches, 19 informes de llamada, 1,878 snapshots y 1,858 deltas; health `status=ok`, inbox 0. El último batch visible en ese corte es de runtime 0.10.37 y no contiene `relayReceivedAt` superior. El pipeline de main contiene el informe incoming de diez minutos y freshness; los artefactos no aparecieron en esa lectura. Vercel management/logs API devolvió 403; no se inspeccionó el secret. Recepción histórica no prueba runtime 0.10.39, timestamp fiable ni frescura actual.
 
@@ -238,3 +238,43 @@ PC-14/M34/M35 son historia cerrada y no habilitan acceso futuro. PC-8 fue autori
 Copia puntual a GitHub no equivale a sincronización global perpetua. Mantener los lotes históricos append-only; ninguna limpieza, compactación destructiva ni migración sin decisión expresa, prueba de integridad y read-back.
 
 Dos pasadas: fidelidad a originales/decisiones y resultado guardado/read-back. Cada ciclo sustantivo conserva salida visible y crónica, distingue estados propuesto/autorizado/intentado/ejecutado/verificado/aceptado y declara los límites.
+
+
+## 15. Corrección Auto-Answer 0.10.41 y actualización local · 2026-11-07 · G11
+
+### 15.1 Export y diagnóstico
+
+Se leyó completo por RDC `ChatGPT-SI-20261107-1310.txt` desde `C:\Users\fila4\Downloads`: 58,515 bytes, 1,193 líneas reportadas por RDC, SHA-256 `C88C7586B11BF839A39818DF2696F4DDB394B091CFE42D3098BB08C7B79E1FCC`. El original permanece intacto en Downloads; solo se publica el recibo saneado `evidencias/RECIBO-EXPORT-CHATGPT-SI-20261107-1310.json`.
+
+El export registra llamadas perdidas con 0.10.40 y los bloqueos `sender-not-authorized`, `presence-disarmed`, `PROFILE_NOT_AUTHORIZED` y `AVAILABILITY_UNKNOWN`. La inspección del guard identificó dos causas: el worker MV3 desarmaba siempre la presencia al arrancar y la URL del perfil se comparaba como cadena literal, rechazando barra final/query/fragmento.
+
+### 15.2 Corrección y seguridad
+
+0.10.41 conserva la confirmación expresamente armada en `chrome.storage.session` durante suspensiones del worker. Al restaurar valida de nuevo identidad de extensión, umbral de inactividad, estado OS active, configuración Auto-Answer y lock de laboratorio. Pausa, fin de sesión, inactividad/bloqueo, laboratorio y Auto-Answer deshabilitado borran el marcador. Recarga/actualización/deshabilitación de extensión y reinicio de Chrome requieren nueva confirmación explícita. La URL solo normaliza la barra final de la ruta exacta; rutas ajenas, subpaths, credenciales URL, otros orígenes y subframes siguen bloqueados.
+
+No se relajan modalidades: solo OPI verificada puede ser elegible. VRI y modalidad desconocida siguen excluidas. No se añadió un clic Connect fuera de las guardas.
+
+### 15.3 Evidencia de pruebas
+
+- presence-guard: 60/60 PASS.
+- presence-connect: 33/33 PASS.
+- autoanswer-runtime-guard: 15/15 PASS.
+- Verificador de release: 59/59 hashes, identidad y host nativo embebido PASS.
+- Installer inventory shape, overlay global, overlay activation, portable root, cloud login bootstrap, earnings overlay, Live Caption static audit, microphone feedback y pipeline hotkey: PASS.
+- Sintaxis JavaScript 25/25; `git diff --check`: PASS.
+- `observability-static-audit.mjs` no ejecutado: este worktree no contiene `.github/workflows/observability-build.yml`; no se adjudica ese fallo al código Auto-Answer.
+- PR #72 en el head documentado: `audit` y `package-integrity` SUCCESS; `compile-and-protocol-smoke-test` IN_PROGRESS al último corte consultado.
+
+### 15.4 PR e instalación local
+
+Rama `work/g11-presence-continuity`, commit `b48f65018a643605b5d795538688bdae59d05a7b`, [PR #72](https://github.com/SeryMente/signal-interpreter/pull/72) ABIERTA y NO FUSIONADA. `main` conserva 0.10.40.
+
+En la ruta exacta registrada por Chrome `C:\Users\fila4\Desktop\SeryMente\Signal Interpreter\extension` se actualizaron solamente el manifiesto anidado y `presence-guard.js`. Manifiesto 0.10.41, misma identidad; manifest SHA-256 `8D2CC6DB597A2429F25DC0192E2AF17F4457DE9E235135957FDBABC44B2B9773`; guard SHA-256 `EE311D3A01ED62AB32C8FB7D50283C626F4119643F9F88367A58BCD9C4969912`. Read-back PASS.
+
+Respaldo anterior `Desktop/SI-backups/SI-0.10.40-before-0.10.41-20261107/extension`: 50/50 archivos SHA-256 verificados; recibo `BACKUP-VERIFICATION.json`. Native Messaging no fue modificado.
+
+### 15.5 Salida y límites
+
+**0.10.41 está preparada para recarga manual y prueba del operador.** Chrome no se recargó ni reinició. Tras recargar, el operador debe volver a confirmar disponibilidad/Auto-Answer porque `storage.session` se limpia en la recarga. La siguiente medición debe observar una llamada OPI elegible desde detección hasta conexión confirmada y comprobar las negativas de VRI/desconocida/presencia/perfil.
+
+No se intervino ninguna llamada real ni se declara aceptación funcional. Observabilidad E2E 0.10.41, fusión de PR #72, aceptación humana y release siguen pendientes.
