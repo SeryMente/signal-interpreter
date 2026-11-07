@@ -6,7 +6,12 @@
   var CALL_BEEP_MARKER = "__SIGNAL_INTERPRETER_CALL_BEEP__";
   var existingRuntimeMarker = window[SIGNAL_RUNTIME_MARKER];
   if (existingRuntimeMarker && existingRuntimeMarker.active) {
-    try { if (typeof existingRuntimeMarker.dispose === "function") existingRuntimeMarker.dispose("runtime-replaced"); } catch (_) {}
+    if (existingRuntimeMarker.extensionId === chrome.runtime.id && existingRuntimeMarker.version === RUNTIME_VERSION) {
+      existingRuntimeMarker.duplicateInjectionCount = Number(existingRuntimeMarker.duplicateInjectionCount || 0) + 1;
+      existingRuntimeMarker.lastDuplicateInjectionAt = new Date().toISOString();
+      return;
+    }
+    try { if (typeof existingRuntimeMarker.dispose === "function") existingRuntimeMarker.dispose("runtime-upgrade-replaced"); } catch (_) {}
   }
   try { Array.from(document.querySelectorAll("#signal-interpreter-earnings-overlay")).forEach(function (node) { node.remove(); }); }
   catch (_) { var staleEarningsOverlay = document.getElementById("signal-interpreter-earnings-overlay"); if (staleEarningsOverlay) staleEarningsOverlay.remove(); }
@@ -75,8 +80,15 @@
   var clickedNodes = new WeakSet();
   var pendingConnect = new WeakSet();
   var presenceState = { armed: false };
-  chrome.storage.local.get(["signalPresenceGuard"]).then(function (stored) { presenceState = stored.signalPresenceGuard || { armed: false }; });
-  chrome.storage.onChanged.addListener(function (changes, area) { if (area === "local" && changes.signalPresenceGuard) presenceState = changes.signalPresenceGuard.newValue || { armed: false }; });
+  chrome.storage.local.get(["signalPresenceGuard"]).then(function (stored) {
+    presenceState = stored.signalPresenceGuard || { armed: false };
+    if (runtimeMarker.active) autoAnswer();
+  }).catch(function () { presenceState = { armed: false }; });
+  chrome.storage.onChanged.addListener(function (changes, area) {
+    if (area !== "local" || !changes.signalPresenceGuard) return;
+    presenceState = changes.signalPresenceGuard.newValue || { armed: false };
+    if (runtimeMarker.active) autoAnswer();
+  });
   var fingerprints = new Map();
   var route = location.pathname;
   var callRouteId = null;
@@ -825,6 +837,7 @@
           evidence: evidence,
           confirmation: "authorized-profile-to-call-route"
         });
+        releasePresenceAuthorization(answerFlow.authorizationRequestId, "call-route-confirmed");
       } else {
         emit("CALL_ROUTE_ENTERED", {
           callId: callRouteId,
@@ -852,6 +865,28 @@
     var cutoff = Date.now() - 15000;
     fingerprints.forEach(function (at, key) {
       if (at < cutoff) fingerprints.delete(key);
+    });
+  }
+  function releasePresenceAuthorization(requestId, reason) {
+    if (!requestId) return Promise.resolve({ ok: false, error: "missing-request-id" });
+    return chrome.runtime.sendMessage({
+      type: "SIGNAL_PRESENCE_RELEASE",
+      requestId: requestId
+    }).then(function (result) {
+      emit("AUTO_ANSWER_AUTHORIZATION_RELEASED", {
+        attemptId: incomingAttemptId || null,
+        reason: reason || "answer-flow-terminal",
+        released: !!(result && result.released),
+        releaseResult: result && result.error || null
+      });
+      return result;
+    }).catch(function () {
+      emit("AUTO_ANSWER_AUTHORIZATION_RELEASE_ERROR", {
+        attemptId: incomingAttemptId || null,
+        reason: reason || "answer-flow-terminal",
+        reasonCode: "release-message-failed"
+      }, "warn");
+      return { ok: false, error: "release-message-failed" };
     });
   }
   async function autoAnswer() {
@@ -954,26 +989,28 @@
       return;
     }
     lastIncomingBlockedSignature = "";
-    if (clickedNodes.has(button) || pendingConnect.has(button)) return;
+    if (!runtimeMarker.active || clickedNodes.has(button) || pendingConnect.has(button)) return;
     cleanupFingerprints();
     var fingerprint = safe(incomingText) + "|" + modality;
     if (fingerprints.has(fingerprint)) return;
     pendingConnect.add(button);
+    var authorizationRequestId = crypto.randomUUID();
     var grant;
     try {
       grant = await chrome.runtime.sendMessage({
         type: "SIGNAL_PRESENCE_AUTHORIZE",
         modality: modality,
-        requestId: crypto.randomUUID()
+        requestId: authorizationRequestId
       });
     } catch (error) {
       grant = { ok: false, error: "authorization-message-failed" };
     }
     pendingConnect.delete(button);
     if (!grant || grant.ok !== true || Date.now() > Number(grant.expiresAt || 0) ||
-        !presenceState.armed || grant.generation !== presenceState.generation ||
+        !runtimeMarker.active || !presenceState.armed || grant.generation !== presenceState.generation ||
         !isAutoAnswerReady() || currentCallId() || !button.isConnected || button.disabled ||
         clickedNodes.has(button) || !incomingDialog.contains(button) || !visibleElement(button)) {
+      if (grant && grant.ok === true) await releasePresenceAuthorization(authorizationRequestId, "post-authorization-revalidation-failed");
       emit("AUTO_ANSWER_AUTHORIZATION_BLOCKED", {
         attemptId: incomingAttemptId,
         modality: modality,
@@ -987,9 +1024,18 @@
     }
     var currentText = normalized(incomingDialog.innerText || incomingDialog.textContent);
     if (!/Audio interpreting/i.test(currentText) || /Video interpreting/i.test(currentText)) {
+      await releasePresenceAuthorization(authorizationRequestId, "dialog-modality-changed-after-authorization");
       emit("AUTO_ANSWER_AUTHORIZATION_BLOCKED", {
         attemptId: incomingAttemptId, modality: modality,
         reasonCode: "dialog-modality-changed-after-authorization"
+      }, "warn");
+      return;
+    }
+    if (labSafetyLock) {
+      await releasePresenceAuthorization(authorizationRequestId, "lab-safety-lock-before-click");
+      emit("AUTO_ANSWER_BLOCKED", {
+        attemptId: incomingAttemptId, modality: modality,
+        blockedReasons: ["LAB_SAFETY_LOCK_CHANGED_BEFORE_CLICK"]
       }, "warn");
       return;
     }
@@ -998,14 +1044,13 @@
       modality: modality, decision: "click-connect",
       buttonLabel: safe(button.getAttribute("aria-label") || button.textContent).slice(0, 120)
     });
-    clickedNodes.add(button);
-    fingerprints.set(fingerprint, Date.now());
     try {
       var started = performance.now();
       var flowId = crypto.randomUUID();
       answerFlow = {
         flowId: flowId,
         attemptId: incomingAttemptId,
+        authorizationRequestId: authorizationRequestId,
         clickAt: iso(),
         modality: modality,
         fingerprint: fingerprint,
@@ -1013,16 +1058,12 @@
       };
       window[ANSWER_LEASE_MARKER] = {
         flowId: flowId, attemptId: incomingAttemptId, clickAt: answerFlow.clickAt,
+        authorizationRequestId: authorizationRequestId,
         modality: modality, fingerprint: fingerprint, routeConfirmed: false,
         runtimeVersion: RUNTIME_VERSION
       };
-      if (labSafetyLock) {
-        emit("AUTO_ANSWER_BLOCKED", {
-          attemptId: incomingAttemptId, modality: modality,
-          blockedReasons: ["LAB_SAFETY_LOCK_CHANGED_BEFORE_CLICK"]
-        }, "warn");
-        return;
-      }
+      clickedNodes.add(button);
+      fingerprints.set(fingerprint, Date.now());
       button.click();
       integrity.permittedConnectClicks += 1;
       emit("CONNECT_CLICKED", {
@@ -1048,9 +1089,11 @@
           expectedRoute: "/call/<ID>",
           action: "no-second-click"
         }, "error");
+        releasePresenceAuthorization(authorizationRequestId, "connect-route-timeout");
       }, 7000);
     } catch (error) {
       if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; }
+      releasePresenceAuthorization(authorizationRequestId, "connect-click-error");
       emit("CONNECT_ERROR", {
         attemptId: incomingAttemptId,
         message: String(error),
