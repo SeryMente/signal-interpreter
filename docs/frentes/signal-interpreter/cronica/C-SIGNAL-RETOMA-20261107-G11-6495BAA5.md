@@ -150,3 +150,63 @@ CICLO n: CY-G PENDIENTE/NO ASIGNADO · OCP: CY-OCP-SI PENDIENTE/NO ASIGNADO.
 A: A-G PENDIENTE/NO ASIGNADO · OCP: A-OCP-SI PENDIENTE/NO ASIGNADO.
 B: B-G PENDIENTE/NO ASIGNADO · OCP: B-OCP-SI PENDIENTE/NO ASIGNADO.
 ```
+
+
+## 10. Revisión técnica de la contestación automática y corrección acotada · 2026-11-07
+
+### 10.1 Hallazgo
+
+Al revisar `extension/content.js` se observó que, al superar siete reintentos transitorios, la rama de agotamiento llamaba a `clearAuthorizationRetry()`, que eliminaba también el contador. Una nueva mutación del DOM podía iniciar otra secuencia para el mismo `attemptId`. No permitía un clic sin autorización, pero anulaba el límite efectivo de reintentos y podía generar ruido operativo.
+
+### 10.2 Corrección
+
+Se incorporó `authorizationRetryExhausted`, un conjunto terminal por `attemptId`. Al agotarse los siete reintentos, el intento queda excluido de nuevas cadenas; solo al cerrarse/reemplazarse el diálogo o cambiar su ciclo de elegibilidad se limpia el estado. Una llamada nueva obtiene un presupuesto independiente.
+
+Backoff cubierto: 250/500/1000/2000/4000/4000/4000 ms. La regresión comprueba el orden completo, el agotamiento permanente del mismo intento y la disponibilidad de un presupuesto para un nuevo diálogo.
+
+Commits en la rama:
+- `cda5f92ca8c81fc03b82c67c5ceb8fe9c9b760db` — runtime `content.js`.
+- `6d95d92567067363a08667b6bfce69e114d77be1` y `72a46df4bb5c9dc776a664f23a8a37bfee7ca1d3` — regresión.
+- `ac50779a6e93288b58d7631c74dacca8ae72300e` — actualización del SHA de `content.js` en `payload-sha256.json`.
+
+SHA-256 de `extension/content.js`: `7661B95311E2DCD4DFB07943288D6A5AE88DCDA19F3CC56FC07D0936A05A25F0`. El inventario contiene 59 entradas.
+
+### 10.3 Resultados de CI
+
+Head evaluado: `ac50779a6e93288b58d7631c74dacca8ae72300e`.
+
+- Auditoría de observabilidad, run 11096 / ID `42396386100`: PASS. Pruebas específicas: presence-guard 42 checks, presence-connect 33 checks, autoanswer-runtime-guard 15 checks.
+- Integridad del paquete, run 129 / ID `42396386110`: PASS; 59 hashes, versión 0.10.40, contrato de instalador.
+- Host nativo Windows, run 8749 / ID `42396386126`: PASS; staging/instalador aislado, compilación del host y framing Native Messaging. El log registra `CHROME_RESTARTED=NO`.
+
+Primer intento de CI tras modificar el runtime: integridad, auditoría estática y smoke de instalador fallaron porque el inventario aún contenía el SHA previo de `content.js`. Se actualizó el digest a partir del valor observado en CI y la ejecución siguiente completó las tres suites en PASS. El resultado negativo se conserva aquí para trazabilidad y no se presenta como éxito retroactivo del primer intento.
+
+Todas estas pruebas son sintéticas o de CI aislado. No prueban una llamada entrante real, aceptación en el Chrome del operador, ni el comportamiento final en su perfil.
+
+### 10.4 Estado de integración
+
+PR [#71](https://github.com/SeryMente/signal-interpreter/pull/71): abierta, en borrador, no fusionada; head `ac50779a6e93288b58d7631c74dacca8ae72300e`, base registrada `e8c1e5783c1e3ee3f3dded68aa943bf6c8876c3e`. Desde el ancestro común `84572186a2eb1f6c4ed9e2bcfc08c1aa0f12d3f3`, main presentaba 26 commits/22 rutas y la rama 47 commits/23 rutas; las listas de rutas modificadas no tenían intersección. Las respuestas API de GitHub para mergeability oscilaron; la lectura más reciente al cierre de la revisión devolvió `true`. No se hizo merge.
+
+El manifest de main conserva 0.10.39. No se instaló 0.10.40, no se reinició Chrome, no se accionó Connect ni se probó llamada real. La integración, instalación, aceptación funcional y liberación permanecen bajo las compuertas humanas del operador.
+
+### 10.5 Salida visible final de este ciclo
+
+```text
+**Revisión técnica de Signal Interpreter completada en G11.**
+
+- Se corrigió el agotamiento de reintentos: siete intentos como máximo por llamada, con backoff acotado; el mismo diálogo no reinicia la secuencia tras agotarla. Una llamada nueva recibe su propio presupuesto.
+- Se amplió la regresión para probar los siete intervalos y el agotamiento permanente por intento.
+- CI del head `ac50779a6e93288b58d7631c74dacca8ae72300e`: auditoría PASS (run 11096), integridad PASS (run 129, 59 hashes), host nativo Windows PASS (run 8749).
+- PR #71 permanece abierta, en borrador y sin fusionar. La comparación de rutas no muestra solapamiento con los cambios de documentación/capturas en `main`; GitHub devolvió lecturas fluctuantes de mergeability. No se fusionó.
+- `main/manifest.json` sigue en 0.10.39. No se instaló 0.10.40, no se reinició Chrome y no se probó ninguna llamada real.
+- El control G11, el núcleo y la crónica están en persistencia documental con lectura de vuelta. El original del export sigue fuera del OCP por privacidad y P036; el recibo saneado sí está persistido.
+
+**Siguiente compuerta:** decisión humana para integrar la PR y, después, aceptación funcional en entorno controlado. La CI sintética no sustituye esa aceptación.
+
+IPZ: v0.7 · edad NO VERIFICADA.
+DUG: v377 · NX-377m · antigüedad por commit canónico, pendiente de medir al cierre.
+CONV: CV-G PENDIENTE/NO ASIGNADO · OCP: CV-OCP-SI PENDIENTE/NO ASIGNADO.
+CICLO n: CY-G PENDIENTE/NO ASIGNADO · OCP: CY-OCP-SI PENDIENTE/NO ASIGNADO.
+A: A-G PENDIENTE/NO ASIGNADO · OCP: A-OCP-SI PENDIENTE/NO ASIGNADO.
+B: B-G PENDIENTE/NO ASIGNADO · OCP: B-OCP-SI PENDIENTE/NO ASIGNADO.
+```
