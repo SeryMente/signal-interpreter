@@ -301,3 +301,53 @@ CICLO n: CY-G PENDIENTE/NO ASIGNADO · OCP: CY-OCP-SI PENDIENTE/NO ASIGNADO.
 A: A-G PENDIENTE/NO ASIGNADO · OCP: A-OCP-SI PENDIENTE/NO ASIGNADO.
 B: B-G PENDIENTE/NO ASIGNADO · OCP: B-OCP-SI PENDIENTE/NO ASIGNADO.
 ```
+
+
+
+## 13. Diagnóstico local para preparar la recarga de Chrome · 2026-11-07
+
+### 13.1 Alcance y fuente
+
+A solicitud del operador de finalizar el tramo extremo a extremo y avisar cuando 0.10.40 estuviera lista para recargar Chrome, se inspeccionó en solo lectura la carpeta local que contiene el manifiesto de Signal Interpreter. No se modificó el equipo ni se intervino Chrome.
+
+### 13.2 Observación local, solo lectura
+
+- La carpeta contiene un `manifest.json` con versión **0.10.36**.
+- `payload-sha256.json` contiene **56 rutas**. El SHA-256 local de `extension/content.js` es `BBDDBD86F3CAA1874FC88A2A7C24F6AA9A3C9169A0E9BB9AF8B768899CED8546`; coincide con la entrada de ese archivo en el inventario local.
+- El directorio no contiene `.git`; no es el clon Git del repositorio.
+- La sesión RDC conectada se ejecuta bajo una identidad distinta de la titular del perfil local. El antecedente P036 ya registró que esa identidad no tiene autorización para escribir en la carpeta del titular. No se intentó elevar privilegios ni sortear la ACL.
+
+### 13.3 Comparación con main 0.10.40
+
+- `main` está integrado por PR #71, merge commit `2546d967f15759c2eabac7b4026cc5b4f1cbd081`; la rama continúa con la documentación de cierre.
+- `manifest.json` en main declara **0.10.40**.
+- El inventario de main contiene **59 rutas**.
+- SHA-256 esperado de `extension/content.js` en main: `7661B95311E2DCD4DFB07943288D6A5AE88DCDA19F3CC56FC07D0936A05A25F0`, distinto del contenido local 0.10.36.
+- La integridad interna local observada para `content.js` no demuestra que el resto de sus 56 rutas haya sido auditado exhaustivamente; tampoco convierte 0.10.36 en la versión actual.
+
+### 13.4 Resultado y límites
+
+**Resultado: ACTUALIZACIÓN LOCAL BLOQUEADA POR IDENTIDAD; RECARGA DE CHROME NO AUTORIZADA/NO PREPARADA.**
+
+- No se copió ni sustituyó ningún archivo del perfil local.
+- No se instaló 0.10.40; no se recargó ni reinició Chrome.
+- No se ejecutó aceptación funcional positiva/negativa; no se utilizó ninguna llamada real.
+- No se verificó observabilidad E2E en runtime 0.10.40.
+- No se creó release ni se declaró aceptación.
+- El paso necesario es disponer de una sesión RDC legítima bajo la identidad autorizada del titular del perfil; entonces se puede copiar el artefacto 0.10.40, verificar las 59 rutas y Native Messaging, conservar rollback y avisar al operador para la recarga manual. No pedir ni utilizar contraseñas del operador.
+
+### 13.5 Salida visible final de este ciclo
+
+```text
+Signal Interpreter 0.10.40 está integrada en main y las verificaciones CI disponibles están aprobadas. La carpeta local de Chrome sigue en 0.10.36: 56 rutas, con content.js íntegro respecto de su inventario local, pero distinto del hash 0.10.40 de main. La sesión RDC actual no es la identidad autorizada del perfil; por P036 no se realizó ninguna escritura. No recargues Chrome todavía.
+
+Siguiente compuerta: reconectar Desktop Commander bajo la identidad autorizada del perfil; instalar/verificar 0.10.40 y sus 59 hashes; entonces avisar para recarga manual. La aceptación funcional, el E2E de observabilidad y la liberación siguen pendientes.
+
+IPZ: v0.7 · edad NO VERIFICADA.
+DUG: v377 · NX-377m · edad por medir al cierre.
+OCP Signal Interpreter: main · edad por medir al cierre.
+CONV: CV-G PENDIENTE/NO ASIGNADO · OCP: CV-OCP-SI PENDIENTE/NO ASIGNADO.
+CICLO n: CY-G PENDIENTE/NO ASIGNADO · OCP: CY-OCP-SI PENDIENTE/NO ASIGNADO.
+A: A-G PENDIENTE/NO ASIGNADO · OCP: A-OCP-SI PENDIENTE/NO ASIGNADO.
+B: B-G PENDIENTE/NO ASIGNADO · OCP: B-OCP-SI PENDIENTE/NO ASIGNADO.
+```
