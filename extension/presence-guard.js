@@ -55,8 +55,11 @@
     });
   }
   function popup(sender) {
+    var manifest = chrome.runtime.getManifest ? chrome.runtime.getManifest() : null;
+    var popupPath = manifest && manifest.action && manifest.action.default_popup;
     return sender && sender.id === chrome.runtime.id && !sender.tab &&
-      sender.url === chrome.runtime.getURL("extension/ui/popup.html");
+      typeof popupPath === "string" && popupPath.length > 0 &&
+      sender.url === chrome.runtime.getURL(popupPath);
   }
   async function arm(seconds) {
     await startupReady;

@@ -23,7 +23,7 @@ function harness({mode='Audio interpreting',grant=true,grantError='not-authorize
   authorizationRetryCounts:new Map(),authorizationRetryTimers:new Map(),authorizationRetryExhausted:new Set(),
   lastIncomingSignature:'',incomingAttemptId:null,lastIncomingDialogElement:null,lastIncomingBlockedSignature:'',
   answerFlow:{},ANSWER_LEASE_MARKER:'lease',window:{},integrity:{permittedConnectClicks:0},
-  answerWatchdog:null,RUNTIME_VERSION:'0.10.41',DIALOG:'dialog',runtimeMarker:{active:true},
+  answerWatchdog:null,RUNTIME_VERSION:'0.10.42',DIALOG:'dialog',runtimeMarker:{active:true},
   syncPageFavicon(){},currentCallId:()=>route?'active':null,
   normalized:s=>String(s||''),safe:s=>String(s||''),visibleElement:()=>visible,
   emit(action,payload,level){events.push({action,payload:payload||{},level:level||'info'});},
