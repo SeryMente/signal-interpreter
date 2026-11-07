@@ -6,7 +6,7 @@ const helper=content.slice(content.indexOf('  function releasePresenceAuthorizat
 const fn=helper+content.slice(content.indexOf('  async function autoAnswer() {'),content.indexOf('  function emitAutoAnswerReadiness'));
 let checks=0;
 function harness({mode='Audio interpreting',grant=true,labLocked=false,presenceArmed=true,autoEnabled=true,availability='online',buttonPresent=true}={}){
- let clicks=0,release=null,route=false,visible=true,events=[],releaseRequests=[],timers=[];
+ let clicks=0,release=null,route=false,visible=true,dialogVisible=true,events=[],releaseRequests=[],timers=[];
  const button={disabled:false,isConnected:true,textContent:'Connect',getAttribute:()=>null,click(){clicks++}};
  const dialog={innerText:'Caller is requesting interpretation '+mode,querySelectorAll:()=>buttonPresent?[button]:[],contains:el=>el===button};
  const ctx={
@@ -15,11 +15,11 @@ function harness({mode='Audio interpreting',grant=true,labLocked=false,presenceA
    if(message.type==='SIGNAL_PRESENCE_RELEASE'){releaseRequests.push(message);return Promise.resolve({ok:true,released:true});}
    return new Promise(r=>{release=r});
   }}},
-  document:{querySelectorAll:()=>[dialog]},
+  document:{querySelectorAll:()=>dialogVisible?[dialog]:[]},
   config:{autoAnswerEnabled:autoEnabled,observationEnabled:true},
   labSafetyLock:labLocked,presenceState:{armed:presenceArmed,generation:2,reason:presenceArmed?'explicit-availability':'worker-start-confirm-again'},
-  clickedNodes:new WeakSet(),pendingConnect:new WeakSet(),fingerprints:new Map(),
-  lastIncomingSignature:'',incomingAttemptId:null,lastIncomingBlockedSignature:'',
+  clickedAttempts:new Set(),pendingAttempts:new Set(),pendingConnect:new WeakSet(),
+  lastIncomingSignature:'',incomingAttemptId:null,lastIncomingDialogElement:null,lastIncomingBlockedSignature:'',
   answerFlow:{},ANSWER_LEASE_MARKER:'lease',window:{},integrity:{permittedConnectClicks:0},
   answerWatchdog:null,RUNTIME_VERSION:'0.10.39',DIALOG:'dialog',runtimeMarker:{active:true},
   syncPageFavicon(){},currentCallId:()=>route?'active':null,
@@ -47,12 +47,17 @@ function harness({mode='Audio interpreting',grant=true,labLocked=false,presenceA
   release:()=>{if(release)release(grant?{ok:true,generation:2,expiresAt:Date.now()+500}: {ok:false,error:'not-authorized'});},
   releaseRequests:()=>releaseRequests,timers:()=>timers,
   fireTimeouts:()=>timers.filter(t=>!t.cleared&&t.ms===7000).forEach(t=>t.fn()),
-  route:v=>route=v,visible:v=>visible=v
+  route:v=>route=v,visible:v=>visible=v,dialogVisible:v=>dialogVisible=v
  };
 }
 async function run(h){const pending=h.ctx.run();h.release();await pending;await new Promise(r=>setImmediate(r));}
 let h=harness();await run(h);assert.equal(h.clicks(),1);checks++;
 h.ctx.run();await new Promise(r=>setImmediate(r));assert.equal(h.clicks(),1);checks++;
+
+h=harness();await run(h);assert.equal(h.clicks(),1);
+h.dialogVisible(false);await h.ctx.run();h.dialogVisible(true);await run(h);
+assert.equal(h.clicks(),2,'a distinct incoming attempt can reuse the same Connect DOM node and identical text');checks++;
+
 for(const mode of ['Video interpreting','unidentified']){
  h=harness({mode});await run(h);assert.equal(h.clicks(),0,mode);
  assert(h.events().some(e=>e.action==='INCOMING_DIALOG_DETECTED'),'incoming dialog must be observed');
