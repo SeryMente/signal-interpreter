@@ -106,12 +106,29 @@
       "evento_actualizacion": "SIGNAL-INTERPRETER-TRANSFER-20261107-G12-3DC1E417"
     },
     "revision_objeto_observada": "SeryMente/signal-interpreter/main:docs/frentes/signal-interpreter/OBJETO-CANONICO.md; blob d2d3575d749a58455512071b581cfb8447111e01.",
-    "resultado_mutacion": "WRITE_ATTEMPTED_READBACK_PENDING",
+    "resultado_mutacion": "COMMITTED_AND_READBACK_VERIFIED",
     "verificacion": {
-      "estado": "readback_pending",
+      "estado": "read_back_verified",
       "readback_required": true,
-      "readback_verified": false,
-      "method": "Fetch main CONTROL-RESPONSABILIDAD.json and compare blob SHA, generation, prior owner, new alias and authorization."
+      "readback_verified": true,
+      "initial_commit_sha": "61adbcccf74783447dfbea8bd6c80736888eac85",
+      "verified_blob_sha": "24599467406aab290df780e05d8e014c45d87f8b",
+      "verified_at_utc": "2026-11-07T19:54:34.923Z",
+      "method": "Fetch main CONTROL-RESPONSABILIDAD.json; compare the returned blob SHA, generation, previous G11 owner, new G12 alias/UUIDv7, transfer event and explicit authorization.",
+      "fields_verified": [
+        "owner G11 and condition SUSTITUIDO",
+        "G12 active, role agente_unico",
+        "UUIDv7 local format and variant",
+        "explicit transfer authorization and scope",
+        "FOL1 remains PREPARADA, so session folio is unassigned",
+        "precondition blob SHA and prior generation"
+      ],
+      "uuidv7_validation": {
+        "version_nibble": "7",
+        "variant_nibble": "B",
+        "format": "UUIDv7 local conforme a RFC 9562",
+        "status": "PASS"
+      }
     },
     "scope_limit": "Transferencia del frente SI exclusivamente. No amplía permisos para llamadas reales, GUI, recarga de Chrome, despliegue, liberación ni otros frentes."
   },
