@@ -142,19 +142,15 @@ PR #71 sigue abierta, en borrador y sin merge. GitHub dio lecturas variables de 
 
 ### Pendientes en secuencia
 
-1. **SI-P01 — Staging e instalación del puente 0.10.39: COMPLETADO/VERIFICADO en sesión histórica.** Paquete, inventario de 59 hashes, muestra, protocolo y registro Native Messaging PASS; recibo releído. M34/M35 consumidas y cerradas; PC-14 EXCLUIDO.
-2. **SI-AUTO-01 — Revisión técnica PR #71: COMPLETADA.** Se corrigió el reinicio de la cadena de reintentos tras agotamiento; regresión exhaustiva añadida; SHA del paquete actualizado. CI del head actual PASS en las 3 suites. PR #71 permanece abierta/draft. La integración permanece pendiente de las compuertas y autorización de aceptación correspondientes.
-3. **SI-AUTO-02 — Empaquetado e instalación controlada 0.10.40: PENDIENTE.** Tras integración autorizada, verificar los 59 hashes, identidad, instalador, Native Messaging y rollback. La sesión RDC actual no autoriza escrituras en el perfil del operador; resolver identidad/entorno antes de instalar.
-4. **SI-AUTO-03 — Aceptación funcional de contestación: PENDIENTE.** Prueba controlada: OPI realmente contestable debe contestarse automáticamente; VRI, modalidad desconocida, presencia inactiva, perfil no autorizado y otras condiciones no elegibles deben permanecer sin clic. El operador conserva el uso real y la aceptación; prueba sintética no equivale a llamada real.
-5. **SI-P03 — Persistencia observacional E2E de la versión aceptada: PENDIENTE.** Verificar versión de extensión, relayReceivedAt, ACK, drenaje, workflow, freshness e informe latest, sin audio ni texto de llamadas. Último runtime histórico observado 0.10.37; no hay lectura nueva.
-6. **SI-P04 — Liberación: PENDIENTE.** Solo tras pruebas Windows/Chrome, integridad, rollback, evidencia real y aceptación expresa. No crear release por merge o CI.
-7. **SI-FB-01–SI-FB-06 — Retroalimentación de llamada 2026-10-30: PENDIENTE.** Backlog provisional en [BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md): seguridad de mute, transcripción bilingüe del intérprete, calidad, overlay, lector en pestaña independiente y matriz de aceptación.
-8. **Custodia de exports anteriores: PENDIENTE.** 2026-10-31, 2026-11-01 y 2026-11-07: originales no publicados ni custodiados en OCP; los recibos existentes son derivados saneados. Resolver destino privado seguro.
-9. **Patch ART-028 referido como local/no aplicado: NO RECUPERADO NI REVALIDADO.** No asumir que sigue vigente ni integrarlo por semejanza.
-
-IENTE.** Backlog provisional en [BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md): seguridad de mute, transcripción bilingüe del intérprete, calidad, overlay, lector en pestaña independiente y matriz de aceptación.
-8. **Custodia de exports anteriores: PENDIENTE.** 2026-10-31 y 2026-11-01 tienen recibos; originales no publicados ni custodiados en OCP. 2026-11-07 se leyó y cotejó, pero el original tampoco se copió al OCP. Resolver destino privado seguro; no publicar originales.
-9. **Patch ART-028 referido como local/no aplicado: NO RECUPERADO NI REVALIDADO.** No asumir que sigue vigente ni integrarlo por semejanza.
+1. **SI-P01 — Staging e instalación del puente 0.10.39: COMPLETADO/VERIFICADO en sesión histórica.** Paquete, 59 hashes, muestra, protocolo y registro Native Messaging PASS; recibo releído. M34/M35 consumidas; PC-14 EXCLUIDO.
+2. **SI-AUTO-01 — Revisión técnica PR #71: COMPLETADA.** Agotamiento terminal por intento, regresión de siete backoffs y SHA de payload actualizados; tres suites CI PASS. PR abierta/draft, sin merge. Integración pendiente de decisión y compuertas humanas.
+3. **SI-AUTO-02 — Empaquetado e instalación controlada 0.10.40: PENDIENTE.** Tras integración autorizada, comprobar 59 hashes, identidad, instalador, Native Messaging y rollback. Resolver perfil/identidad autorizada antes de escribir.
+4. **SI-AUTO-03 — Aceptación funcional: PENDIENTE.** OPI realmente contestable debe contestarse automáticamente; VRI, modalidad desconocida, presencia inactiva, perfil no autorizado y demás condiciones no elegibles deben permanecer sin clic. CI sintético no equivale a llamada real ni aceptación del operador.
+5. **SI-P03 — Persistencia observacional E2E: PENDIENTE.** Verificar versión, relayReceivedAt, ACK, drenaje, workflow, freshness e informe latest, sin audio ni texto de llamadas. Último runtime heredado 0.10.37; no hay lectura nueva.
+6. **SI-P04 — Liberación: PENDIENTE.** Requiere pruebas Windows/Chrome, integridad, rollback, evidencia real y aceptación expresa. No liberar por merge o CI.
+7. **SI-FB-01–SI-FB-06 — Retroalimentación 2026-10-30: PENDIENTE.** Backlog [BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md): mute, transcripción bilingüe, calidad, overlay, lector y matriz de aceptación.
+8. **Custodia de exports: PENDIENTE.** Originales 2026-10-31, 2026-11-01 y 2026-11-07 fuera del OCP; recibos derivados saneados. Resolver destino privado autorizado.
+9. **Patch ART-028 local/no aplicado: NO RECUPERADO NI REVALIDADO.** No asumir vigencia ni integrarlo por semejanza.
 
 ### 🔔 Recordatorios latentes
 
