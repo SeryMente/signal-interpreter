@@ -20,7 +20,7 @@ function harness({mode='Audio interpreting',grant=true,grantError='not-authorize
   config:{autoAnswerEnabled:autoEnabled,observationEnabled:true},
   labSafetyLock:labLocked,presenceState:{armed:presenceArmed,generation:2,reason:presenceArmed?'explicit-availability':'worker-start-confirm-again'},
   clickedAttempts:new Set(),pendingAttempts:new Set(),pendingConnect:new WeakSet(),
-  authorizationRetryCounts:new Map(),authorizationRetryTimers:new Map(),
+  authorizationRetryCounts:new Map(),authorizationRetryTimers:new Map(),authorizationRetryExhausted:new Set(),
   lastIncomingSignature:'',incomingAttemptId:null,lastIncomingDialogElement:null,lastIncomingBlockedSignature:'',
   answerFlow:{},ANSWER_LEASE_MARKER:'lease',window:{},integrity:{permittedConnectClicks:0},
   answerWatchdog:null,RUNTIME_VERSION:'0.10.40',DIALOG:'dialog',runtimeMarker:{active:true},
@@ -83,6 +83,21 @@ h.setGrant(true);assert.equal(h.fireRetries(),250,'first transient retry uses bo
 await new Promise(r=>setImmediate(r));h.release();await new Promise(r=>setImmediate(r));
 assert.equal(h.clicks(),1,'same eligible call is answered after the transient lease clears');
 assert(h.events().some(e=>e.action==='CONNECT_CLICKED'),'retry reaches the authorized Connect action');checks++;
+
+h=harness({grant:false,grantError:'authorization-lease-active'});await run(h);
+const exhaustedAttemptId=h.ctx.incomingAttemptId;
+h.ctx.authorizationRetryCounts.set(exhaustedAttemptId,7);
+assert.equal(h.fireRetries(),250,'seventh scheduled retry reaches its bounded final delay');
+await new Promise(r=>setImmediate(r));h.release();await new Promise(r=>setImmediate(r));
+assert(h.events().some(e=>e.action==='AUTO_ANSWER_RETRY_EXHAUSTED'),'the attempt records permanent retry exhaustion');
+assert.equal(h.ctx.authorizationRetryExhausted.has(exhaustedAttemptId),true,'exhaustion is retained for the current attempt');
+const requestsAtExhaustion=h.authorizationRequests();
+await h.ctx.run();
+assert.equal(h.authorizationRequests(),requestsAtExhaustion,'subsequent DOM re-observation cannot restart an exhausted retry chain');
+assert.equal(h.timers().filter(t=>!t.cleared&&t.ms<7000).length,0,'exhausted attempt has no pending retry timer');
+h.dialogVisible(false);await h.ctx.run();h.dialogVisible(true);await run(h);
+assert.equal(h.authorizationRequests(),requestsAtExhaustion+1,'a distinct new incoming attempt receives its own retry budget');checks++;
+
 h=harness({grant:false,grantError:'authorization-lease-active'});await run(h);
 h.dialogVisible(false);await h.ctx.run();
 assert.equal(h.timers().filter(t=>!t.cleared&&t.ms<7000).length,0,'dialog removal cancels pending authorization retries');
