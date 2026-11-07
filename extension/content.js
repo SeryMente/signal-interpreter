@@ -887,8 +887,7 @@
         released: !!(result && result.released),
         releaseResult: result && result.error || null
       });
-      if (result && result.released &&
-          (reason === "connect-route-timeout" || reason === "incoming-attempt-replaced-before-click") &&
+      if (result && result.released && reason === "connect-route-timeout" &&
           runtimeMarker.active && !currentCallId()) {
         Promise.resolve().then(function () {
           if (runtimeMarker.active && !currentCallId()) autoAnswer();
