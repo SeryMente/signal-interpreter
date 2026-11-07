@@ -1,16 +1,145 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-aaf193ea-b8f3-4bb8-a4b5-fea9e8c9974e",
-  "createdAt": "2026-11-07T16:08:07.318Z",
+  "batchId": "batch-04e60333-0310-4fb8-aec6-de5894f245ab",
+  "createdAt": "2026-11-07T16:09:03.204Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.39",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "4fb2bf92-54ae-41cc-9274-07277fb4c888",
-      "sequence": 18420,
-      "timestamp": "2026-11-07T16:07:36.726Z",
-      "ingestedAt": "2026-11-07T16:07:36.774Z",
+      "id": "51847349-c3fb-4e63-b51f-34cd941a0eb4",
+      "sequence": 18421,
+      "timestamp": "2026-11-07T16:08:32.588Z",
+      "ingestedAt": "2026-11-07T16:08:32.640Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.39",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "07611047-e89d-47c6-b9dc-edcda903a42f",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220925780,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.39",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/app_keys.htm",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220925780,
+        "sourceWindowId": 220925064,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://secure.backblaze.com/app_keys.htm"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/app_keys.htm",
+        "extensionVersion": "0.10.39",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "13b1b9a7-0bf2-431c-9600-740ebd6c8cc3",
+      "sequence": 18422,
+      "timestamp": "2026-11-07T16:08:32.588Z",
+      "ingestedAt": "2026-11-07T16:08:33.264Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.39",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "7dcb876b-f621-482e-aaa8-b875d41f66df",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220925780,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.39",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/app_keys.htm",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220925780,
+        "sourceWindowId": 220925064,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://secure.backblaze.com/app_keys.htm"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/app_keys.htm",
+        "extensionVersion": "0.10.39",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "05f06a84-1eb3-47f8-85ce-cb8cd96c5176",
+      "sequence": 18423,
+      "timestamp": "2026-11-07T16:08:36.727Z",
+      "ingestedAt": "2026-11-07T16:08:36.774Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -20,7 +149,7 @@
       "phase": "event",
       "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "658c423d-d0d6-4128-9b58-a8f229ed5e30",
+      "traceId": "3faead9d-c312-4eae-a033-723fb6e6c29d",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +175,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 947030,
+        "monotonicMs": 1007030,
         "callId": null,
         "pageLifecycleId": "fe4d21cb-7541-49d9-97d2-7de0633a93b7",
         "sourceTabId": 220925147,
@@ -79,24 +208,84 @@
         "runtimeVersion": "0.10.39",
         "reason": "heartbeat"
       }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "3964e30c-dc08-45cc-a49f-898620b6e265",
+      "sequence": 18424,
+      "timestamp": "2026-11-07T16:08:41.771Z",
+      "ingestedAt": "2026-11-07T16:08:41.851Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.39",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "faa8c597-e492-4a29-9d38-0c77dd70be2c",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220925776,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.39",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/app_keys.htm",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220925776,
+        "sourceWindowId": 220925064,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://secure.backblaze.com/app_keys.htm"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/app_keys.htm",
+        "extensionVersion": "0.10.39",
+        "hostRemoved": true
+      }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 4,
     "errors": 0,
-    "warnings": 0,
+    "warnings": 1,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 0,
+    "contextEvents": 1,
     "invariantSignals": 0,
-    "firstSequence": 18420,
-    "lastSequence": 18420,
-    "firstTimestamp": "2026-11-07T16:07:36.726Z",
-    "lastTimestamp": "2026-11-07T16:07:36.726Z",
+    "firstSequence": 18421,
+    "lastSequence": 18424,
+    "firstTimestamp": "2026-11-07T16:08:32.588Z",
+    "lastTimestamp": "2026-11-07T16:08:41.771Z",
     "actions": {
-      "AUTO_ANSWER_READINESS": 1
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1,
+      "AUTO_ANSWER_READINESS": 1,
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
     },
     "categories": {
+      "CAPTION": 3,
       "RUNTIME": 1
     }
   }
