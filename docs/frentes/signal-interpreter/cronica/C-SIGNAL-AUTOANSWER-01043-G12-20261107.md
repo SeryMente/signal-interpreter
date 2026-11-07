@@ -45,11 +45,11 @@ Candidata local manifest.json 0.10.43. Cambios principales:
 | hotload-active-call | PASS |
 | node --check, git diff --check | PASS |
 
-observability-static-audit quedó NO EJECUTADO: la base actual no contiene .github/workflows/observability-build.yml. No se registra como PASS. No hubo pruebas en Chrome ni llamadas reales.
+observability-static-audit quedó NO EJECUTADO en la prueba local por la ausencia de .github/workflows/observability-build.yml. En CI de PR #73, package integrity terminó SUCCESS; native-caption-host-build y signal-observability-audit estaban IN_PROGRESS en la última lectura. No se registra CI completa como PASS. No hubo pruebas en Chrome ni llamadas reales.
 
 ## 5. Límites y estado
 
-- La nueva versión es una candidata local en rama aislada; no se ha empujado, creado PR, fusionado ni liberado al momento de esta crónica.
+- La rama work/g12-autoanswer-revalidation se publicó y PR #73 está abierta contra main; no se ha fusionado ni liberado.
 - main continúa en 0.10.40; el directorio de Chrome no se modificó.
 - No recargar/reiniciar Chrome durante la disponibilidad del operador.
 - No manipular llamadas reales, audio, transcripciones ni contenido del diálogo.
