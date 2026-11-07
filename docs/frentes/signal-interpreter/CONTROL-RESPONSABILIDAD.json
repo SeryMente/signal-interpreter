@@ -792,9 +792,9 @@
     },
     "remota": {
       "autorizacion": "RDC autorizada en esta solicitud para localizar y leer el export de Downloads; original no se escribe desde esta sesión.",
-      "permiso_futuro": "Excepción puntual registrada: actualización de los archivos 0.10.40 en la carpeta cargada por Chrome, respaldada y verificada, según SIGNAL-INTERPRETER-UPDATE-LOCAL-01040-20261107-G11. No incluye GUI, recarga de Chrome, llamadas reales, aceptación funcional ni release; no se heredan permisos después de consumirla.",
+      "permiso_futuro": "EXCEPCION PUNTUAL CONSUMIDA: actualización local 0.10.40 registrada y verificada en SIGNAL-INTERPRETER-UPDATE-LOCAL-01040-20261107-G11. No concede permiso para escrituras posteriores, recarga GUI, llamadas reales, aceptación funcional ni release.",
       "cuenta_rdc": "CENTRAL\\MantenimientoRCI (no equivale al perfil CENTRAL\\fila4)",
-      "escritura_perfil_fila4": "AUTORIZADA SOLO PARA ACTUALIZACION LOCAL 0.10.40, RESPALDO PREVIO, SHA-256 DE 59 PAYLOADS Y READ-BACK; UNA SOLA EJECUCION; CHROME NO SE RECARGA.",
+      "escritura_perfil_fila4": "ACTUALIZACION LOCAL 0.10.40 EJECUTADA Y READ-BACK VERIFICADO; EXCEPCION CONSUMIDA; CHROME NO RECARGADO.",
       "pc14": "EXCLUIDO"
     },
     "persistencia": "Export de origen leído completamente y SHA cotejado; repositorio público: no se publicará el original con telemetría. Se persistirá recibo y crónica saneados. Copia original en OCP: PENDIENTE / BLOQUEADA.",
@@ -819,8 +819,68 @@
       "titular_perfil_destino": "CENTRAL\\fila4",
       "evidencia_acl": "Chrome Secure Preferences del perfil Profile registra extension ID ldpbjhobnfgmhdoehehdmnbhhjckebmj en C:\\Users\\fila4\\Desktop\\SeryMente\\Signal Interpreter\\extension, service_worker 0.10.39. Explorer y Chrome pertenecen a CENTRAL\\fila4. La ACL del repositorio C:\\Users\\fila4\\Desktop\\SeryMente\\Signal Interpreter concede (OI)(CI)(F) a BUILTIN\\Administradores y CENTRAL\\fila4; el token RDC enumera BUILTIN\\Administradores habilitado y nivel de integridad High.",
       "precondiciones_sha": "main HEAD al registrar: 29f6cda14e3b8c6c4e82998d890e63b92f681f32; manifest.json 0.10.40 blob aa3ccf76d28397086045c61b399e5fdae3c7cd41; payload-sha256.json blob b432ebee49292f1d96c6f8ac0627925f7c55c06c; 59 payloads; SHA extension/content.js esperado 7661B95311E2DCD4DFB07943288D6A5AE88DCDA19F3CC56FC07D0936A05A25F0. Worktree existente dirty: cuatro archivos modificados y dos no seguidos; preservar antes de la actualización.",
-      "limites": "Permiso de una sola ejecución para la actualización local descrita. La recarga de Chrome queda a cargo del operador. La aceptación real de la contestación, la llamada y la liberación siguen reservadas al operador. PC-14 continúa excluido.",
-      "estado": "AUTORIZACION_REGISTRADA_PENDIENTE_EJECUCION"
+      "limites": "La excepción de escritura local queda consumida tras la actualización verificada. No incluyó recarga/reinicio de Chrome, uso de GUI, llamadas reales, aceptación funcional, verificación E2E ni liberación. PC-14 continúa excluido.",
+      "estado": "COMPLETADA_VERIFICADA_PREPARADA_PARA_RECARGA",
+      "ejecucion": {
+        "fecha_hora_local": "2026-11-07T12:12:19-06:00",
+        "fecha_hora_utc": "2026-11-07T18:12:19Z",
+        "main_head": "679578fb3580b1518a9adafa5e0f398e1ee6d097",
+        "diferencia_main_durante_preparacion": "El único commit concurrente posterior a la autorización agregó una captura de diagnóstico; compare 35dab13e..679578fb registró solo esa imagen, sin cambios de código ni payload.",
+        "repositorio_local": "C:\\Users\\fila4\\Desktop\\SeryMente\\Signal Interpreter",
+        "manifiesto_raiz": "0.10.40",
+        "ruta_cargada_por_chrome": "C:\\Users\\fila4\\Desktop\\SeryMente\\Signal Interpreter\\extension",
+        "manifiesto_cargado": "0.10.40",
+        "extension_id": "ldpbjhobnfgmhdoehehdmnbhhjckebmj",
+        "service_worker": "background.js",
+        "payload_canonico": {
+          "entradas": 59,
+          "hashes_exactos": 55,
+          "adaptaciones_locales_controladas": 4,
+          "entradas_faltantes": 0
+        },
+        "archivos_arbol_preparado": {
+          "archivos": 48,
+          "readback_exactos": 48,
+          "faltantes": 0,
+          "discrepancias": 0
+        },
+        "adaptaciones_hash_sha256": {
+          "extension/caption-lab.js": "F5DEC79988F75AAAD766C5272800015348134E7B951303702A02CA8D2B8BBAA3",
+          "extension/live-caption-overlay.js": "F4197B8A321EF6F9BC1723768845BEB701FB9116062F742E81881DB6733C146B",
+          "extension/presence-guard.js": "B231B19480FF2394E626730007963D2ACF7A9F6B7152C217D17254B1ACFC76A7",
+          "extension/ui/popup.js": "218FCE464CDBB8BA1182E8686D1308CC2BA186CB1AE3F93922F29B26D8B5B196"
+        },
+        "muestra_laboratorio_restaurada_sha256": "DB8CAE8CE1599ABA06CB3D8AB7E456CB01B396FAA8E1ACA26880D1ACC3B7332C",
+        "native_messaging": {
+          "operacion": "NO MODIFICADO; REGISTRO EXISTENTE VERIFICADO",
+          "manifest": "C:\\Users\\fila4\\AppData\\Local\\SignalInterpreter\\NativeMessagingHost\\com.signalinterpreter.captionhost.json",
+          "exe_sha256": "313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE"
+        },
+        "backup": {
+          "ubicacion": "Desktop/SI-backups/SI-0.10.39-before-0.10.40-20261107",
+          "archivos_verificados": 50,
+          "discrepancias": 0,
+          "recibo": "UPDATE-0.10.40-RESULTADO.json"
+        },
+        "verificaciones": {
+          "portable_root_layout": "PASS antes de adaptar el manifiesto anidado",
+          "sintaxis_javascript": "PASS; 25 archivos",
+          "presence_guard": "PASS; 42 checks sintéticos",
+          "presence_connect": "PASS; 33 checks con DOM sintético",
+          "autoanswer_runtime_guard": "PASS; 15 checks sintéticos",
+          "git_diff_check": "PASS"
+        },
+        "estado_chrome": {
+          "recargado": false,
+          "reiniciado": false,
+          "service_worker_antes_de_recarga": "0.10.39",
+          "listo_para_recarga_manual": true
+        },
+        "llamadas_reales": false,
+        "aceptacion_funcional": "PENDIENTE DEL OPERADOR",
+        "observabilidad_e2e": "PENDIENTE",
+        "release": "NO CREADO"
+      }
     }
   ]
 }
