@@ -122,3 +122,31 @@ Esto demuestra las comprobaciones sintéticas y de empaquetado en CI. No demuest
 7. Resolver custodia del original 2026-11-07 en destino privado autorizado; no volver a publicar el export.
 
 Estado de esta crónica: derivado documental saneado, con el control G11 persistido y leído de vuelta. La última salida de esta sesión se añadirá al cierre de ciclo después de prepararse y verificarse literalmente.
+
+
+## 9. Salida visible final de esta sesión (B)
+
+```text
+**Signal Interpreter retomado y documentado en G11.**
+
+- **Titularidad:** transferencia G10→G11 persistida en el control único y verificada por lectura de vuelta. Sesión `SES-20261107-6495BAA5`; UUIDv7 local `01a1b703-181f-7838-a492-0d21cf717013`. No es ID nativo de ChatGPT.
+- **Export:** lectura RDC completa, 1,270 líneas y SHA-256 cotejado con el adjunto: `B23EB3895BEFDC7AC546DACFD90FB81BF1CD25B5E36B01DCDE3933EE4E5A6182`.
+- **Persistencia:** recibo saneado, crónica G11, núcleo operativo y README escritos en `main` y releídos con coincidencia exacta.
+- **Producto:** `main/manifest.json` sigue en 0.10.39. La candidata 0.10.40 permanece en [PR #71](https://github.com/SeryMente/signal-interpreter/pull/71), abierta y en borrador. Las tres ejecuciones CI del head pasaron: 43/43, 8/8 y 10/10. La mergeability reportada por GitHub varió; debe revalidarse antes de integrar.
+- **Límite:** el export original no se copió al OCP ni se publicó por privacidad y por la restricción de identidad RDC/P036. No se modificó Chrome, no se instaló 0.10.40 y no se intervino ninguna llamada real.
+
+Artefactos:
+- [Núcleo operativo](https://github.com/SeryMente/signal-interpreter/blob/main/docs/frentes/signal-interpreter/OBJETO-CANONICO.md)
+- [Control G11](https://github.com/SeryMente/signal-interpreter/blob/main/docs/frentes/signal-interpreter/CONTROL-RESPONSABILIDAD.json)
+- [Crónica G11](https://github.com/SeryMente/signal-interpreter/blob/main/docs/frentes/signal-interpreter/cronica/C-SIGNAL-RETOMA-20261107-G11-6495BAA5.md)
+- [Recibo saneado del export](https://github.com/SeryMente/signal-interpreter/blob/main/docs/frentes/signal-interpreter/evidencias/RECIBO-EXPORT-CHATGPT-SI-20261107-1105.json)
+
+**Siguiente paso operativo:** revisar la PR #71 y resolver su integración antes de preparar la instalación controlada y la aceptación funcional restringida a llamadas realmente contestables.
+
+IPZ: v0.7 · edad NO VERIFICADA.
+DUG: v377 · NX-377m · 0.0.52.
+CONV: CV-G PENDIENTE/NO ASIGNADO · OCP: CV-OCP-SI PENDIENTE/NO ASIGNADO.
+CICLO n: CY-G PENDIENTE/NO ASIGNADO · OCP: CY-OCP-SI PENDIENTE/NO ASIGNADO.
+A: A-G PENDIENTE/NO ASIGNADO · OCP: A-OCP-SI PENDIENTE/NO ASIGNADO.
+B: B-G PENDIENTE/NO ASIGNADO · OCP: B-OCP-SI PENDIENTE/NO ASIGNADO.
+```
