@@ -5,23 +5,30 @@ const code=fs.readFileSync('extension/presence-guard.js','utf8');
 const PROFILE='https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz';
 let checks=0;
 function eq(a,b,label){assert.equal(a,b,label);checks++;}
-function harness(seed={},sessionSeed={}){
+function harness(seed={},sessionSeed={},popupPath='extension/ui/popup.html'){
  let now=100000,idle='active',hold=null;
  const events=()=>({listeners:[],addListener(f){this.listeners.push(f)},emit(...args){this.listeners.forEach(f=>f(...args))}});
  const data={effectifConfig:{autoAnswerEnabled:true,presenceIdleSeconds:60},...seed};
  const sessionData={...sessionSeed};
  const changed=events(),stateChanged=events(),messages=events(),intervals=[];
- const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},storage:{onChanged:changed,local:{get:async keys=>Object.fromEntries(keys.map(k=>[k,data[k]])),set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}},session:{get:async keys=>Object.fromEntries(keys.map(k=>[k,sessionData[k]])),set:async patch=>Object.assign(sessionData,patch),remove:async key=>{delete sessionData[key]}}},tabs:{get:async()=>({url:PROFILE}),query:async()=>[]}};
+ const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,getManifest:()=>({action:{default_popup:popupPath}}),onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},storage:{onChanged:changed,local:{get:async keys=>Object.fromEntries(keys.map(k=>[k,data[k]])),set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}},session:{get:async keys=>Object.fromEntries(keys.map(k=>[k,sessionData[k]])),set:async patch=>Object.assign(sessionData,patch),remove:async key=>{delete sessionData[key]}}},tabs:{get:async()=>({url:PROFILE}),query:async()=>[]}};
  const ctx={chrome,Date:class extends Date{static now(){return now}},setInterval:f=>intervals.push(f),setTimeout,clearTimeout,self:{}};
  ctx.self=ctx;ctx.URL=URL;vm.createContext(ctx);vm.runInContext(code,ctx);
  const sender={id:'id',frameId:0,url:PROFILE,tab:{id:7,url:PROFILE}};
- return {guard:ctx.SignalPresenceGuard,chrome,data,sessionData,sender,stateChanged,intervals,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
+ return {guard:ctx.SignalPresenceGuard,chrome,data,sessionData,sender,popupSender:{id:'id',url:'chrome-extension://id/'+popupPath},stateChanged,intervals,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
 }
 const h=harness();
 eq(h.guard.snapshot().armed,false,'upgraded stored enabled does not arm');
 eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,false,'unarmed blocks');
 eq((await h.guard.arm(150)).ok,false,'revoked 150s never implicit policy');
 eq((await h.message({type:'SIGNAL_PRESENCE_ARM',idleSeconds:60},h.sender)).ok,false,'web content cannot arm');
+const popupRepo=harness();
+eq((await popupRepo.message({type:'SIGNAL_PRESENCE_STATUS'},popupRepo.popupSender)).ok,true,'repo-layout popup path is authorized from the manifest');
+eq((await popupRepo.message({type:'SIGNAL_PRESENCE_ARM',idleSeconds:60},popupRepo.popupSender)).ok,true,'repo-layout popup explicitly arms availability');
+const popupPackaged=harness({}, {}, 'ui/popup.html');
+eq((await popupPackaged.message({type:'SIGNAL_PRESENCE_STATUS'},popupPackaged.popupSender)).ok,true,'packaged extension popup path is authorized from the manifest');
+eq((await popupPackaged.message({type:'SIGNAL_PRESENCE_ARM',idleSeconds:60},popupPackaged.popupSender)).ok,true,'packaged extension popup explicitly arms availability');
+eq((await popupPackaged.message({type:'SIGNAL_PRESENCE_ARM',idleSeconds:60},{...popupPackaged.popupSender,url:'chrome-extension://id/other.html'})).error,'popup-only','non-manifest extension page cannot arm');
 eq((await h.guard.arm(60)).ok,true,'explicit valid selection arms');
 eq((await h.guard.authorize({modality:'VRI',requestId:'v'},h.sender)).ok,false,'video manual only');
 eq((await h.guard.authorize({modality:'UNKNOWN',requestId:'u'},h.sender)).ok,false,'unknown modality blocks');
