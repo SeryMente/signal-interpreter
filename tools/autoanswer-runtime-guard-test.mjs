@@ -60,7 +60,7 @@ boot("0.10.39", otherExtension);
 assert.equal(replacedReason, "runtime-upgrade-replaced", "different extension identity is not suppressed");
 
 const presenceStart = source.indexOf("  var presenceState = { armed: false };");
-const presenceEnd = source.indexOf("  var fingerprints = new Map();", presenceStart);
+const presenceEnd = source.indexOf("  var route = location.pathname;", presenceStart);
 assert(presenceStart >= 0 && presenceEnd > presenceStart, "presence hydration boundaries");
 const presenceBootstrap = source.slice(presenceStart, presenceEnd);
 async function presenceHarness(readPromise) {
@@ -103,7 +103,7 @@ assert.equal(failed.answerChecks(), 0, "failed hydration never arms or runs answ
 
 console.log(JSON.stringify({
   suite: "autoanswer-runtime-guard",
-  checks: 14,
+  checks: 15,
   result: "PASS",
   environment: "Node VM / synthetic Chrome APIs"
 }));
