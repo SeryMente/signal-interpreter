@@ -44,6 +44,10 @@ eq((await lease.guard.authorize({modality:'OPI',requestId:'lease-2'},lease.sende
 const callUrl='https://app.cloudinterpreter.com/call/call-fixture';
 const callSender={...lease.sender,url:callUrl,tab:{id:7,url:callUrl}};
 eq((await lease.message({type:'SIGNAL_PRESENCE_RELEASE',requestId:'lease-2'},callSender)).released,true,'confirmed call route can release its own authorization lease');
+
+eq((await lease.message({type:'SIGNAL_PRESENCE_RELEASE',requestId:'lease-2'},{...callSender,url:'https://example.org/call/call-fixture'})).error,'sender-not-authorized','foreign origin cannot release a lease');
+eq((await lease.message({type:'SIGNAL_PRESENCE_RELEASE',requestId:'lease-2'},{...callSender,url:'https://app.cloudinterpreter.com/dashboard'})).error,'sender-not-authorized','unapproved platform route cannot release a lease');
+
 eq((await lease.guard.authorize({modality:'OPI',requestId:'lease-1'},lease.sender)).error,'stale-or-used','released request id remains non-replayable');
 const expired=harness();await expired.guard.arm(60);
 await expired.guard.authorize({modality:'OPI',requestId:'lease-expired'},expired.sender);
