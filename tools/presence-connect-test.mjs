@@ -21,7 +21,7 @@ function harness({mode='Audio interpreting',grant=true,labLocked=false,presenceA
   clickedAttempts:new Set(),pendingAttempts:new Set(),pendingConnect:new WeakSet(),
   lastIncomingSignature:'',incomingAttemptId:null,lastIncomingDialogElement:null,lastIncomingBlockedSignature:'',
   answerFlow:{},ANSWER_LEASE_MARKER:'lease',window:{},integrity:{permittedConnectClicks:0},
-  answerWatchdog:null,RUNTIME_VERSION:'0.10.39',DIALOG:'dialog',runtimeMarker:{active:true},
+  answerWatchdog:null,RUNTIME_VERSION:'0.10.40',DIALOG:'dialog',runtimeMarker:{active:true},
   syncPageFavicon(){},currentCallId:()=>route?'active':null,
   normalized:s=>String(s||''),safe:s=>String(s||''),visibleElement:()=>visible,
   emit(action,payload,level){events.push({action,payload:payload||{},level:level||'info'});},
