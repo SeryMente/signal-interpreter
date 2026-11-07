@@ -13,3 +13,5 @@ Repositorio público: no cargar originales privados, secretos ni datos de llamad
 
 - [Cronica de retoma G9 a G10 - 2026-11-06](cronica/C-SIGNAL-RETOMA-20261106-G10-95D9F8B5.md) y [recibo del export](evidencias/RECIBO-EXPORT-CHATGPT-SI-20261106-1517.json). El original se conserva byte-exacto solo en la copia local originales/ChatGPT-SI-20261106-1517.txt, excluida de Git; no se publica por contener detalles privados y telemetria relacionada con llamadas.
 - [Crónica de retoma G10→G11 - 2026-11-07](cronica/C-SIGNAL-RETOMA-20261107-G11-6495BAA5.md) y [recibo saneado del export](evidencias/RECIBO-EXPORT-CHATGPT-SI-20261107-1105.json). El original fue leído y su SHA cotejado, pero no se copió al OCP ni se publicó; custodia privada pendiente.
+
+- Revisión técnica G11 de [PR #71](https://github.com/SeryMente/signal-interpreter/pull/71): reintentos por intento con agotamiento terminal, regresión ampliada y CI completo PASS en el head `ac50779a6e93288b58d7631c74dacca8ae72300e`. La PR sigue abierta/en borrador; no fusionada ni instalada. Aceptación funcional real e instalación controlada siguen pendientes.
