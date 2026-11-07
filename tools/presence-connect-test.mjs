@@ -2,11 +2,11 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const content=fs.readFileSync('extension/content.js','utf8');
-const helper=content.slice(content.indexOf('  function releasePresenceAuthorization('),content.indexOf('  async function autoAnswer() {'));
+const helper=content.slice(content.indexOf('  function clearAuthorizationRetry('),content.indexOf('  async function autoAnswer() {'));
 const fn=helper+content.slice(content.indexOf('  async function autoAnswer() {'),content.indexOf('  function emitAutoAnswerReadiness'));
 let checks=0;
 function harness({mode='Audio interpreting',grant=true,labLocked=false,presenceArmed=true,autoEnabled=true,availability='online',buttonPresent=true}={}){
- let clicks=0,release=null,route=false,visible=true,dialogVisible=true,events=[],releaseRequests=[],timers=[];
+ let clicks=0,release=null,route=false,visible=true,dialogVisible=true,events=[],releaseRequests=[],timers=[],grantValue=grant,grantError='not-authorized';
  const button={disabled:false,isConnected:true,textContent:'Connect',getAttribute:()=>null,click(){clicks++}};
  const dialog={innerText:'Caller is requesting interpretation '+mode,querySelectorAll:()=>buttonPresent?[button]:[],contains:el=>el===button};
  const ctx={
@@ -19,6 +19,7 @@ function harness({mode='Audio interpreting',grant=true,labLocked=false,presenceA
   config:{autoAnswerEnabled:autoEnabled,observationEnabled:true},
   labSafetyLock:labLocked,presenceState:{armed:presenceArmed,generation:2,reason:presenceArmed?'explicit-availability':'worker-start-confirm-again'},
   clickedAttempts:new Set(),pendingAttempts:new Set(),pendingConnect:new WeakSet(),
+  authorizationRetryCounts:new Map(),authorizationRetryTimers:new Map(),
   lastIncomingSignature:'',incomingAttemptId:null,lastIncomingDialogElement:null,lastIncomingBlockedSignature:'',
   answerFlow:{},ANSWER_LEASE_MARKER:'lease',window:{},integrity:{permittedConnectClicks:0},
   answerWatchdog:null,RUNTIME_VERSION:'0.10.40',DIALOG:'dialog',runtimeMarker:{active:true},
@@ -44,8 +45,10 @@ function harness({mode='Audio interpreting',grant=true,labLocked=false,presenceA
  vm.createContext(ctx);vm.runInContext(fn+'\nthis.run=autoAnswer;',ctx);
  return {
   ctx,button,dialog,clicks:()=>clicks,events:()=>events,
-  release:()=>{if(release)release(grant?{ok:true,generation:2,expiresAt:Date.now()+500}: {ok:false,error:'not-authorized'});},
+  release:()=>{if(release)release(grantValue?{ok:true,generation:2,expiresAt:Date.now()+500}: {ok:false,error:grantError});},
+  setGrant:(value,error='not-authorized')=>{grantValue=value;grantError=error;},
   releaseRequests:()=>releaseRequests,timers:()=>timers,
+  fireRetries:()=>{const t=timers.find(x=>!x.cleared&&x.ms<7000);if(!t)return null;t.cleared=true;t.fn();return t.ms;},
   fireTimeouts:()=>timers.filter(t=>!t.cleared&&t.ms===7000).forEach(t=>t.fn()),
   route:v=>route=v,visible:v=>visible=v,dialogVisible:v=>dialogVisible=v
  };
@@ -65,6 +68,20 @@ for(const mode of ['Video interpreting','unidentified']){
 }
 h=harness({grant:false});await run(h);assert.equal(h.clicks(),0);
 assert(h.events().some(e=>e.action==='AUTO_ANSWER_AUTHORIZATION_BLOCKED'));assert.equal(h.releaseRequests().length,0,'denied authorization has no lease to release');checks++;
+
+h=harness({grant:false,grantError:'authorization-lease-active'});await run(h);
+assert.equal(h.clicks(),0,'active lease never causes an unsafe click');
+assert(h.events().some(e=>e.action==='AUTO_ANSWER_RETRY_SCHEDULED'),'transient lease contention schedules an eligible retry');
+assert.equal(h.timers().filter(t=>!t.cleared&&t.ms<7000).length,1,'only one retry timer exists per attempt');
+h.setGrant(true);assert.equal(h.fireRetries(),250,'first transient retry uses bounded backoff');
+await new Promise(r=>setImmediate(r));h.release();await new Promise(r=>setImmediate(r));
+assert.equal(h.clicks(),1,'same eligible call is answered after the transient lease clears');
+assert(h.events().some(e=>e.action==='CONNECT_CLICKED'),'retry reaches the authorized Connect action');checks++;
+h=harness({grant:false,grantError:'authorization-lease-active'});await run(h);
+h.dialogVisible(false);await h.ctx.run();
+assert.equal(h.timers().filter(t=>!t.cleared&&t.ms<7000).length,0,'dialog removal cancels pending authorization retries');
+h.setGrant(true);assert.equal(h.fireRetries(),null,'removed call cannot be retried');assert.equal(h.clicks(),0);checks++;
+
 for(const mutate of [
  h=>h.ctx.labSafetyLock=true,
  h=>h.ctx.presenceState.armed=false,
