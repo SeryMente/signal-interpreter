@@ -86,9 +86,10 @@ assert(h.events().some(e=>e.action==='CONNECT_CLICKED'),'retry reaches the autho
 
 h=harness({grant:false,grantError:'authorization-lease-active'});await run(h);
 const exhaustedAttemptId=h.ctx.incomingAttemptId;
-h.ctx.authorizationRetryCounts.set(exhaustedAttemptId,7);
-assert.equal(h.fireRetries(),250,'seventh scheduled retry reaches its bounded final delay');
-await new Promise(r=>setImmediate(r));h.release();await new Promise(r=>setImmediate(r));
+for(const delay of [250,500,1000,2000,4000,4000,4000]){
+ assert.equal(h.fireRetries(),delay,'retry backoff remains bounded and ordered');
+ await new Promise(r=>setImmediate(r));h.release();await new Promise(r=>setImmediate(r));
+}
 assert(h.events().some(e=>e.action==='AUTO_ANSWER_RETRY_EXHAUSTED'),'the attempt records permanent retry exhaustion');
 assert.equal(h.ctx.authorizationRetryExhausted.has(exhaustedAttemptId),true,'exhaustion is retained for the current attempt');
 const requestsAtExhaustion=h.authorizationRequests();
