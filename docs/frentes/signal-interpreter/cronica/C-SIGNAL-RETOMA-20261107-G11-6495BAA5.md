@@ -240,3 +240,64 @@ CICLO n: CY-G PENDIENTE/NO ASIGNADO · OCP: CY-OCP-SI PENDIENTE/NO ASIGNADO.
 A: A-G PENDIENTE/NO ASIGNADO · OCP: A-OCP-SI PENDIENTE/NO ASIGNADO.
 B: B-G PENDIENTE/NO ASIGNADO · OCP: B-OCP-SI PENDIENTE/NO ASIGNADO.
 ```
+
+
+## 12. Autorización e integración de PR #71 · 2026-11-07
+
+### 12.1 Instrucción y autorización
+
+Instrucción literal recibida del operador:
+
+```text
+Si lo que sea para que termines
+```
+
+Contexto inmediato: respuesta afirmativa a la pregunta explícita de actualizar la rama si fuera viable, retirar el borrador y fusionar PR #71. Se interpretó como autorización para esa operación concreta, no como autorización general de instalación, uso real de llamadas, despliegue o liberación.
+
+### 12.2 Preflight de GitHub
+
+- Control vigente: G11 ACTIVO, sesión `SES-20261107-6495BAA5`.
+- PR #71: abierta, draft, head `ac50779a6e93288b58d7631c74dacca8ae72300e`, base `main`.
+- Lectura directa de GitHub: `mergeable=true`, `mergeable_state=clean`; cero revisores solicitados, cero comentarios de revisión.
+- Las tres suites de CI del head estaban aprobadas: auditoría 11096 / `42396386100`; integridad 129 / `42396386110`; host nativo 8749 / `42396386126`.
+- Configuración del repositorio: `allow_update_branch=false`. Por tanto no se ejecutó una actualización separada de la rama. Dado que GitHub informó `clean` y `mergeable=true`, la integración se realizó directamente con el SHA de head esperado. No se forzó ni se reescribió la rama.
+
+### 12.3 Acción y resultado
+
+1. PR #71 marcada como lista para revisión; read-back informó `draft=false`, `merged=false`, head sin cambio.
+2. Se ejecutó `merge_pull_request` con método `merge` y `expected_head_sha=ac50779a6e93288b58d7631c74dacca8ae72300e`.
+3. GitHub confirmó `merged=true`, mensaje `Pull Request successfully merged`, merge commit `2546d967f15759c2eabac7b4026cc5b4f1cbd081`.
+4. Read-back de PR y main: PR cerrada/fusionada; `main` apunta al merge commit; `manifest.json` declara 0.10.40; `payload-sha256.json` conserva 59 entradas y el digest de `content.js` es `7661B95311E2DCD4DFB07943288D6A5AE88DCDA19F3CC56FC07D0936A05A25F0`.
+
+### 12.4 CI posterior al merge
+
+- Push a main: `signal-observability-audit`, run 11114 / ID `42397580798`: PASS.
+- Push a main: `native-caption-host-build`, run 8767 / ID `42397580803`: PASS (compilación, empaquetado aislado y framing Native Messaging).
+- `Package integrity` run 129 / ID `42396386110` había pasado sobre el head exacto de la PR, verificando 59 hashes. No se observó una ejecución separada de esa suite para el merge commit.
+
+### 12.5 Qué no significa la fusión
+
+El merge no instala la extensión en el perfil Windows del operador, no reinicia Chrome, no prueba una llamada real, no confirma persistencia observacional E2E y no crea un release. El último estado local registrado sigue siendo 0.10.39; no se volvió a verificar localmente. Las compuertas SI-AUTO-02 (instalación), SI-AUTO-03 (aceptación funcional), SI-P03 (observabilidad E2E) y SI-P04 (liberación) permanecen pendientes. El operador conserva la aceptación funcional real y la liberación.
+
+### 12.6 Salida visible final de este ciclo
+
+```text
+**Signal Interpreter 0.10.40 integrada en main.**
+
+- PR #71 fusionada el 7 de noviembre de 2026 mediante `2546d967f15759c2eabac7b4026cc5b4f1cbd081`; el head fusionado fue `ac50779a6e93288b58d7631c74dacca8ae72300e`.
+- `main/manifest.json` declara 0.10.40. El inventario contiene 59 archivos y el SHA-256 de `extension/content.js` coincide con el inventario.
+- CI de la PR: auditoría, integridad y host nativo PASS. CI post-merge en main: auditoría run 11114 y host nativo run 8767 PASS.
+- El agotamiento de siete reintentos por llamada queda terminal; el mismo intento no reinicia la cadena tras agotar el presupuesto.
+- La extensión local del operador no se actualizó ni se verificó en este ciclo. No se reinició Chrome, no se intervino ninguna llamada real y no se creó release.
+- Control G11, núcleo, README y crónica quedaron releídos. El original del export permanece fuera del OCP por privacidad/P036.
+
+**Siguiente trabajo:** instalación controlada en perfil autorizado, aceptación positiva/negativa de la contestación automática, telemetría E2E y posterior decisión de liberación. La fusión no equivale a aceptación funcional.
+
+IPZ: v0.7 · edad NO VERIFICADA.
+DUG: v377 · NX-377m · 0.0.7.
+OCP Signal Interpreter: main · 0.0.0.
+CONV: CV-G PENDIENTE/NO ASIGNADO · OCP: CV-OCP-SI PENDIENTE/NO ASIGNADO.
+CICLO n: CY-G PENDIENTE/NO ASIGNADO · OCP: CY-OCP-SI PENDIENTE/NO ASIGNADO.
+A: A-G PENDIENTE/NO ASIGNADO · OCP: A-OCP-SI PENDIENTE/NO ASIGNADO.
+B: B-G PENDIENTE/NO ASIGNADO · OCP: B-OCP-SI PENDIENTE/NO ASIGNADO.
+```
