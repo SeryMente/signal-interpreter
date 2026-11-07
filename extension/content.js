@@ -82,6 +82,7 @@
   var pendingConnect = new WeakSet();
   var authorizationRetryCounts = new Map();
   var authorizationRetryTimers = new Map();
+  var authorizationRetryExhausted = new Set();
   var presenceState = { armed: false };
   chrome.storage.local.get(["signalPresenceGuard"]).then(function (stored) {
     presenceState = stored.signalPresenceGuard || { armed: false };
@@ -870,16 +871,19 @@
     if (timer) clearTimeout(timer);
     authorizationRetryTimers.delete(attemptId);
     authorizationRetryCounts.delete(attemptId);
+    authorizationRetryExhausted.delete(attemptId);
   }
   function scheduleAuthorizationRetry(attemptId, reasonCode) {
     if (!attemptId || !runtimeMarker.active || incomingAttemptId !== attemptId ||
         currentCallId() || !presenceState.armed || !isAutoAnswerReady() ||
         !["authorization-busy", "authorization-lease-active", "authorization-message-failed"].includes(reasonCode)) return false;
+    if (authorizationRetryExhausted.has(attemptId)) return false;
     if (authorizationRetryTimers.has(attemptId)) return true;
     var delays = [250, 500, 1000, 2000, 4000, 4000, 4000];
     var count = Number(authorizationRetryCounts.get(attemptId) || 0) + 1;
     if (count > delays.length) {
-      clearAuthorizationRetry(attemptId);
+      authorizationRetryTimers.delete(attemptId);
+      authorizationRetryExhausted.add(attemptId);
       emit("AUTO_ANSWER_RETRY_EXHAUSTED", {
         attemptId: attemptId, reasonCode: reasonCode, attempts: delays.length
       }, "warn");
@@ -1054,6 +1058,7 @@
       return;
     }
     lastIncomingBlockedSignature = "";
+    if (authorizationRetryExhausted.has(incomingAttemptId)) return;
     if (authorizationRetryTimers.has(incomingAttemptId)) return;
     var attemptIdForAuthorization = incomingAttemptId;
     if (!runtimeMarker.active || clickedAttempts.has(attemptIdForAuthorization) ||
