@@ -13,13 +13,13 @@
 
 ## LEER PRIMERO
 
-Modo: continuar el mismo frente como **una sola instancia responsable G11** (SES-20261107-6495BAA5). No crear, asignar, invocar ni coordinar un segundo agente; no dividir trabajo por papeles; no generar prompts dobles ni transferencias internas.
+Modo: continuar el mismo frente como **una sola instancia responsable G12** (folio pendiente por FOL1 no activa). No crear, asignar, invocar ni coordinar un segundo agente; no dividir trabajo por papeles; no generar prompts dobles ni transferencias internas.
 
 Leer este núcleo y adquirir gobierno vigente antes de actuar. Consultar después solo fuentes/evidencias necesarias para el objetivo actual; no recorrer toda la historia por rutina.
 
 Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metacanon pertinentes → gobierno particular de este frente. [Entrada del gobierno distribuido](https://github.com/SeryMente/metodologia/blob/main/INICIO.md). El repositorio metodológico requiere acceso autorizado; no copiar su contenido privado a este repositorio público ni pedir credenciales en el chat. Revalidar fuente y revisiones desde `main`; una referencia histórica no prueba frescura, autorización o ejecución. Fuente indispensable ausente bloquea solo la acción dependiente.
 
-**Modo operativo vigente:** una instancia única G11 tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva decisiones humanas, uso real, llamadas reales, aceptación funcional y liberación. Esta disposición no se propaga a otros proyectos. G10 quedó SUSTITUIDA por G11 mediante transferencia condicionada por SHA/generación; generaciones anteriores permanecen en el historial. M34/M35 son antecedentes históricos cerrados; PC-14 está expresamente excluido por el operador.
+**Modo operativo vigente:** una instancia única G12 tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva decisiones humanas, uso real, llamadas reales, aceptación funcional y liberación. Esta disposición no se propaga a otros proyectos. G10 quedó SUSTITUIDA por G11 mediante transferencia condicionada por SHA/generación; generaciones anteriores permanecen en el historial. M34/M35 son antecedentes históricos cerrados; PC-14 está expresamente excluido por el operador.
 
 ## Referencia metodológica
 
@@ -217,7 +217,7 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 ## Reinstanciación
 
-[Prompt operativo unico](PROMPT-SIGNAL-INTERPRETER.md), subordinado al objeto canonico y al gobierno vigente. El checkpoint de esta revisión es G11 (SES-20261107-6495BAA5); cada retoma debe releer el control, verificar generación/SHA y adquirir el gobierno actual. No instancies identidades adicionales ni emitas prompts paralelos. Un prompt no crea permiso, conectividad, persistencia ni aceptacion.
+[Prompt operativo unico](PROMPT-SIGNAL-INTERPRETER.md), subordinado al objeto canonico y al gobierno vigente. El checkpoint de esta revisión es G12 (alias local chatgpt-signal-interpreter-01a1b793-ab9f-70bc-bd23-03e83dc1e417; folio no asignado); cada retoma debe releer el control, verificar generación/SHA y adquirir el gobierno actual. No instancies identidades adicionales ni emitas prompts paralelos. Un prompt no crea permiso, conectividad, persistencia ni aceptacion.
 
 ## Persistencia y revisión
 
@@ -238,3 +238,17 @@ PC-14/M34/M35 son historia cerrada y no habilitan acceso futuro. PC-8 fue autori
 Copia puntual a GitHub no equivale a sincronización global perpetua. Mantener los lotes históricos append-only; ninguna limpieza, compactación destructiva ni migración sin decisión expresa, prueba de integridad y read-back.
 
 Dos pasadas: fidelidad a originales/decisiones y resultado guardado/read-back. Cada ciclo sustantivo conserva salida visible y crónica, distingue estados propuesto/autorizado/intentado/ejecutado/verificado/aceptado y declara los límites.
+
+
+## Actualización viva G12 · retoma 2026-11-07
+
+Esta adenda es el checkpoint vigente y supersede cualquier mención anterior de G11 como titular activo, sin reescribir el historial.
+
+- **Responsabilidad:** G12 ACTIVO, alias operativo `chatgpt-signal-interpreter-01a1b793-ab9f-70bc-bd23-03e83dc1e417`, UUIDv7 local `01a1b793-ab9f-70bc-bd23-03e83dc1e417`, generación 12. G11 quedó SUSTITUIDO por `SIGNAL-INTERPRETER-TRANSFER-20261107-G12-3DC1E417`. Control blob `309b3ae07d1fb6b2398787d1c9f3c25d858899f4`; read-back PASS.
+- **Foliación:** FOL1 PREPARADA, NO ACTIVA. Folios CV/CY/A/B permanecen PENDIENTES/NO ASIGNADOS.
+- **Gobierno:** DUG v378 · NX-378m; Metacanon 1.28; GOW 2.17. §ARR adquirido; MCP normativo DESACTIVADO.
+- **Producto:** `main/manifest.json` 0.10.40. El export reporta una candidata local 0.10.42, no reconciliada con main en esta retoma. No declarar integración ni aceptación.
+- **Incidente:** la última llamada perdida fue detectada; se encontró el botón Connect. La revalidación posterior a la autorización se bloqueó con `post-authorization-revalidation-failed`; no consta `CONNECT_CLICKED`. El predicado individual fallido sigue DESCONOCIDO.
+- **Trabajo siguiente:** instrumentar por separado los predicados de revalidación en `content.js` y añadir pruebas sin audio, transcripción ni texto de llamada; mantener fail-closed. No recargar Chrome ni actuar sobre llamadas reales durante una ventana activa.
+- **Custodia:** el original 1350 está copiado localmente con SHA exacto y excluido de Git; recibo y crónica saneados están en main. Original no publicado ni almacenado remotamente por esta operación.
+- **Estado local:** clon observado 29 commits detrás y con cuatro archivos modificados y dos no seguidos. Preservar; usar base aislada para el desarrollo siguiente.
