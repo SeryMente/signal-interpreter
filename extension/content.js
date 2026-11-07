@@ -80,6 +80,8 @@
   var clickedAttempts = new Set();
   var pendingAttempts = new Set();
   var pendingConnect = new WeakSet();
+  var authorizationRetryCounts = new Map();
+  var authorizationRetryTimers = new Map();
   var presenceState = { armed: false };
   chrome.storage.local.get(["signalPresenceGuard"]).then(function (stored) {
     presenceState = stored.signalPresenceGuard || { armed: false };
@@ -862,6 +864,44 @@
     updateDiagnosticTimers();
     renderOverlay();
   }
+  function clearAuthorizationRetry(attemptId) {
+    if (!attemptId) return;
+    var timer = authorizationRetryTimers.get(attemptId);
+    if (timer) clearTimeout(timer);
+    authorizationRetryTimers.delete(attemptId);
+    authorizationRetryCounts.delete(attemptId);
+  }
+  function scheduleAuthorizationRetry(attemptId, reasonCode) {
+    if (!attemptId || !runtimeMarker.active || incomingAttemptId !== attemptId ||
+        currentCallId() || !presenceState.armed || !isAutoAnswerReady() ||
+        !["authorization-busy", "authorization-lease-active", "authorization-message-failed"].includes(reasonCode)) return false;
+    if (authorizationRetryTimers.has(attemptId)) return true;
+    var delays = [250, 500, 1000, 2000, 4000, 4000, 4000];
+    var count = Number(authorizationRetryCounts.get(attemptId) || 0) + 1;
+    if (count > delays.length) {
+      clearAuthorizationRetry(attemptId);
+      emit("AUTO_ANSWER_RETRY_EXHAUSTED", {
+        attemptId: attemptId, reasonCode: reasonCode, attempts: delays.length
+      }, "warn");
+      return false;
+    }
+    var delayMs = delays[count - 1];
+    authorizationRetryCounts.set(attemptId, count);
+    var timer = setTimeout(function () {
+      authorizationRetryTimers.delete(attemptId);
+      if (!runtimeMarker.active || currentCallId() || incomingAttemptId !== attemptId ||
+          !presenceState.armed || !isAutoAnswerReady()) {
+        clearAuthorizationRetry(attemptId);
+        return;
+      }
+      autoAnswer();
+    }, delayMs);
+    authorizationRetryTimers.set(attemptId, timer);
+    emit("AUTO_ANSWER_RETRY_SCHEDULED", {
+      attemptId: attemptId, reasonCode: reasonCode, retry: count, delayMs: delayMs
+    });
+    return true;
+  }
   function releasePresenceAuthorization(requestId, reason, attemptId) {
     if (!requestId) return Promise.resolve({ ok: false, error: "missing-request-id" });
     var releaseAttemptId = attemptId || incomingAttemptId || null;
@@ -898,7 +938,10 @@
   }
   async function autoAnswer() {
     syncPageFavicon();
-    if (currentCallId() || (!config.observationEnabled && !config.autoAnswerEnabled)) return;
+    if (currentCallId() || (!config.observationEnabled && !config.autoAnswerEnabled)) {
+      clearAuthorizationRetry(incomingAttemptId);
+      return;
+    }
     var dialogs = Array.from(document.querySelectorAll(DIALOG));
     var incomingDialog = null;
     var incomingText = "";
@@ -912,6 +955,7 @@
     }
     if (!incomingDialog) {
       if (incomingAttemptId) {
+        clearAuthorizationRetry(incomingAttemptId);
         emit("INCOMING_DIALOG_CLOSED", {
           attemptId: incomingAttemptId,
           signature: lastIncomingSignature,
@@ -935,12 +979,15 @@
     var newIncoming = !incomingAttemptId || incomingDialog !== lastIncomingDialogElement;
     var stateChanged = newIncoming || signature !== lastIncomingSignature;
     if (newIncoming) {
-      if (incomingAttemptId) emit("INCOMING_DIALOG_CLOSED", {
+      if (incomingAttemptId) {
+        clearAuthorizationRetry(incomingAttemptId);
+        emit("INCOMING_DIALOG_CLOSED", {
         attemptId: incomingAttemptId,
         signature: lastIncomingSignature,
         reason: "dialog-replaced",
         callRouteId: currentCallId() || null
-      });
+        });
+      }
       incomingAttemptId = crypto.randomUUID();
     }
     lastIncomingDialogElement = incomingDialog;
@@ -986,6 +1033,7 @@
     if (modality !== "OPI") blockReasons.push("MODALITY_NOT_VERIFIED_OPI");
     var blockedSignature = [incomingAttemptId, blockReasons.join(","), signature].join("|");
     if (blockReasons.length) {
+      clearAuthorizationRetry(incomingAttemptId);
       if (blockedSignature !== lastIncomingBlockedSignature) {
         emit("AUTO_ANSWER_BLOCKED", {
           attemptId: incomingAttemptId,
@@ -1034,10 +1082,11 @@
       if (grant && grant.ok === true) await releasePresenceAuthorization(authorizationRequestId,
         attemptReplaced ? "incoming-attempt-replaced-before-click" : "post-authorization-revalidation-failed",
         attemptIdForAuthorization);
+      var authorizationError = grant && grant.error || "post-authorization-revalidation-failed";
       emit("AUTO_ANSWER_AUTHORIZATION_BLOCKED", {
         attemptId: attemptIdForAuthorization,
         modality: modality,
-        reasonCode: grant && grant.error || "post-authorization-revalidation-failed",
+        reasonCode: authorizationError,
         grantOk: !!(grant && grant.ok),
         grantGeneration: grant && grant.generation != null ? Number(grant.generation) : null,
         currentPresenceGeneration: Number(presenceState.generation || 0),
@@ -1045,6 +1094,8 @@
       }, "warn");
       if (attemptReplaced && runtimeMarker.active && !currentCallId()) {
         Promise.resolve().then(function () { if (runtimeMarker.active && !currentCallId()) autoAnswer(); });
+      } else if (!grant || grant.ok !== true) {
+        scheduleAuthorizationRetry(attemptIdForAuthorization, authorizationError);
       }
       return;
     }
@@ -1065,6 +1116,7 @@
       }, "warn");
       return;
     }
+    clearAuthorizationRetry(attemptIdForAuthorization);
     emit("AUTO_ANSWER_ELIGIBLE", {
       attemptId: attemptIdForAuthorization,
       modality: modality, decision: "click-connect",
