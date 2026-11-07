@@ -72,8 +72,12 @@ jobs:
       - name: Explicit availability and fail-closed answer regression
         run: |
           node --check extension/presence-guard.js
+          node --check tools/presence-guard-test.mjs
+          node --check tools/presence-connect-test.mjs
+          node --check tools/autoanswer-runtime-guard-test.mjs
           node tools/presence-guard-test.mjs
           node tools/presence-connect-test.mjs
+          node tools/autoanswer-runtime-guard-test.mjs
           node tools/caption-language-spans-test.mjs
       - name: Platform learning unit test
         run: node tools/observability/platform-learning-test.mjs
