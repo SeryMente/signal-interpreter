@@ -1,406 +1,72 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-08T17:23:48.086Z",
-  "windowStartAt": "2026-11-08T17:13:48.086Z",
-  "windowEndAt": "2026-11-08T17:23:48.086Z",
+  "generatedAt": "2026-11-08T17:24:19.443Z",
+  "windowStartAt": "2026-11-08T17:14:19.443Z",
+  "windowEndAt": "2026-11-08T17:24:19.443Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 455
+    "client-clock-unverified": 420
   },
-  "sourceBatchCount": 48,
+  "sourceBatchCount": 44,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 11585,
+  "receiptUnverifiedBatchCount": 11586,
   "medianClientClockSkewMs": null,
-  "eventCount": 455,
+  "eventCount": 420,
   "summary": {
-    "attempts": 2,
+    "attempts": 3,
     "answered": 0,
     "missed": 1,
     "connectFailedNoRoute": 1,
-    "ringUnmatched": 0,
-    "unresolved": 0,
+    "ringUnmatched": 1,
+    "unresolved": 1,
     "ringSignals": 2,
-    "dialogsDetected": 2,
-    "buttonsFound": 2,
+    "dialogsDetected": 1,
+    "buttonsFound": 1,
     "buttonsNotFound": 0,
-    "readinessSamples": 300,
-    "blocked": 1,
+    "readinessSamples": 291,
+    "blocked": 0,
     "clicks": 1
   },
   "attempts": [
     {
-      "attemptId": "1971ec[PHONE]b-a238-2e9ab15a4102",
-      "status": "missed",
-      "modality": "OPI",
+      "attemptId": "ring-b3fde5e3bea6a377821f0481",
+      "status": "ring_unmatched",
+      "modality": null,
       "tabId": 1600161561,
-      "detectedAt": "2026-11-08T17:14:14.789Z",
-      "closedAt": "2026-11-08T17:14:15.250Z",
+      "detectedAt": "2026-11-08T17:14:21.347Z",
+      "closedAt": null,
       "clickedAt": null,
       "answeredAt": null,
-      "missedAt": "2026-11-08T17:14:29.661Z",
-      "outcomeReason": "dialog_closed_without_connect",
+      "missedAt": null,
+      "outcomeReason": null,
       "button": {
-        "found": true,
+        "found": false,
         "notFound": false,
         "disabled": false
       },
       "readiness": {
-        "samples": 2,
-        "last": {
-          "blockedReasons": [
-            "SESSION_ENDED_CONFIRM_AGAIN",
-            "AUTO_ANSWER_DISABLED"
-          ],
-          "ready": false,
-          "availability": "online",
-          "authorizedProfile": true,
-          "configEnabled": false,
-          "labSafetyLock": false,
-          "presenceArmed": false,
-          "presenceReason": "session-ended-confirm-again",
-          "presenceGeneration": 3,
-          "reason": "availability",
-          "reasonCode": "availability"
-        }
+        "samples": 0,
+        "last": null
       },
-      "blockedEvents": [
-        {
-          "at": "2026-11-08T17:14:14.790Z",
-          "action": "AUTO_ANSWER_BLOCKED",
-          "reasonCode": null,
-          "blockedReasons": [
-            "SESSION_ENDED_CONFIRM_AGAIN",
-            "AUTO_ANSWER_DISABLED"
-          ]
-        }
-      ],
+      "blockedEvents": [],
       "ringSignalCount": 1,
       "clickToAnswerLatencyMs": null,
       "detectionToAnswerLatencyMs": null,
       "callRefs": [],
-      "missingSignals": [],
-      "eventCount": 32,
+      "missingSignals": [
+        "INCOMING_DIALOG_DETECTED",
+        "TERMINAL_CALL_OUTCOME"
+      ],
+      "eventCount": 2,
       "timeline": [
         {
-          "at": "2026-11-08T17:14:09.905Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "a16bce60-eced-4528-a051-44df57f0fdc6",
-          "sequence": 342
-        },
-        {
-          "at": "2026-11-08T17:14:09.914Z",
+          "at": "2026-11-08T17:14:20.325Z",
           "action": "PAGE_LIFECYCLE",
           "level": "info",
           "reasonCode": null,
           "details": {},
-          "eventId": "b86c426a-2d1e-48b0-bffa-8fb93f39fb2b",
-          "sequence": 343
-        },
-        {
-          "at": "2026-11-08T17:14:09.925Z",
-          "action": "PLATFORM_SURFACE_SNAPSHOT",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "d5d35c7d-3316-4bcd-be76-a976e68faa7a",
-          "sequence": 344
-        },
-        {
-          "at": "2026-11-08T17:14:09.928Z",
-          "action": "PERFORMANCE_HEARTBEAT",
-          "level": "info",
-          "reasonCode": "heartbeat",
-          "details": {
-            "reason": "heartbeat",
-            "reasonCode": "heartbeat"
-          },
-          "eventId": "aacc801e-30c7-4a43-b757-4dc79c018aa2",
-          "sequence": 346
-        },
-        {
-          "at": "2026-11-08T17:14:10.172Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "a92017d0-c795-4448-a7ef-213fd7543833",
-          "sequence": 349
-        },
-        {
-          "at": "2026-11-08T17:14:10.173Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "c685251f-e37c-4aa1-9697-7747bfffb9e5",
-          "sequence": 350
-        },
-        {
-          "at": "2026-11-08T17:14:11.247Z",
-          "action": "PLATFORM_SURFACE_SNAPSHOT",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "57debd66-abef-4ddb-b8e8-f2873beae91c",
-          "sequence": 353
-        },
-        {
-          "at": "2026-11-08T17:14:11.387Z",
-          "action": "PLATFORM_SCREENSHOT_CAPTURE_ERROR",
-          "level": "error",
-          "reasonCode": "tab-activated",
-          "details": {
-            "reason": "tab-activated",
-            "reasonCode": "tab-activated",
-            "error": "Error: Tabs cannot be edited right now (user may be dragging a tab)."
-          },
-          "eventId": "07289031-3315-422a-a2fd-cf8c366204fa",
-          "sequence": 347
-        },
-        {
-          "at": "2026-11-08T17:14:11.737Z",
-          "action": "PLATFORM_SCREENSHOT_CAPTURE_ERROR",
-          "level": "error",
-          "reasonCode": "platform-surface-change",
-          "details": {
-            "reason": "platform-surface-change",
-            "reasonCode": "platform-surface-change",
-            "error": "Error: Tabs cannot be edited right now (user may be dragging a tab)."
-          },
-          "eventId": "d1d8fbd2-ae76-44a2-8215-0e9a6ceef3e6",
-          "sequence": 348
-        },
-        {
-          "at": "2026-11-08T17:14:12.222Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "831c653d-3190-4065-9f0b-77f2264b2f44",
-          "sequence": 354
-        },
-        {
-          "at": "2026-11-08T17:14:12.228Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "8f204eb2-a4a1-4480-900f-a3a883c11dab",
-          "sequence": 355
-        },
-        {
-          "at": "2026-11-08T17:14:12.230Z",
-          "action": "PERFORMANCE_HEARTBEAT",
-          "level": "info",
-          "reasonCode": "heartbeat",
-          "details": {
-            "reason": "heartbeat",
-            "reasonCode": "heartbeat"
-          },
-          "eventId": "7a2b0d9b-2c0f-4814-b087-676fa11140bd",
-          "sequence": 357
-        },
-        {
-          "at": "2026-11-08T17:14:12.739Z",
-          "action": "PLATFORM_SURFACE_SNAPSHOT",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "445fdd83-68e8-4255-a6ce-e649bb4e6cca",
-          "sequence": 360
-        },
-        {
-          "at": "2026-11-08T17:14:13.115Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "1df0a68f-ed21-4137-9d74-070a556f1e20",
-          "sequence": 363
-        },
-        {
-          "at": "2026-11-08T17:14:13.115Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "6168df2e-ec3c-4659-ac8d-647ee613e74f",
-          "sequence": 364
-        },
-        {
-          "at": "2026-11-08T17:14:14.789Z",
-          "action": "INCOMING_DIALOG_DETECTED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "OPI",
-            "connectFound": true,
-            "connectDisabled": false
-          },
-          "eventId": "3e9fe85a-e3d0-4ebf-b9da-e8a34149657e",
-          "sequence": 371
-        },
-        {
-          "at": "2026-11-08T17:14:14.789Z",
-          "action": "CONNECT_BUTTON_FOUND",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "OPI"
-          },
-          "eventId": "ddd298aa-9cb5-4eae-bb94-956123e97d2a",
-          "sequence": 372
-        },
-        {
-          "at": "2026-11-08T17:14:14.790Z",
-          "action": "AUTO_ANSWER_BLOCKED",
-          "level": "warn",
-          "reasonCode": null,
-          "details": {
-            "modality": "OPI",
-            "blockedReasons": [
-              "SESSION_ENDED_CONFIRM_AGAIN",
-              "AUTO_ANSWER_DISABLED"
-            ],
-            "buttonFound": true,
-            "buttonDisabled": false
-          },
-          "eventId": "1b63836b-b3ca-440f-903d-a207553354fe",
-          "sequence": 373
-        },
-        {
-          "at": "2026-11-08T17:14:15.019Z",
-          "action": "PLATFORM_SCREENSHOT_CAPTURE_ERROR",
-          "level": "error",
-          "reasonCode": "tab-activated",
-          "details": {
-            "reason": "tab-activated",
-            "reasonCode": "tab-activated",
-            "error": "Error: Either the '<all_urls>' or 'activeTab' permission is required."
-          },
-          "eventId": "aafa059c-1c14-4ecb-afb2-3043630a404c",
-          "sequence": 358
-        },
-        {
-          "at": "2026-11-08T17:14:15.097Z",
-          "action": "AUTO_ANSWER_READINESS",
-          "level": "info",
-          "reasonCode": "availability",
-          "details": {
-            "blockedReasons": [
-              "SESSION_ENDED_CONFIRM_AGAIN",
-              "AUTO_ANSWER_DISABLED"
-            ],
-            "ready": false,
-            "availability": "online",
-            "authorizedProfile": true,
-            "configEnabled": false,
-            "labSafetyLock": false,
-            "presenceArmed": false,
-            "presenceReason": "session-ended-confirm-again",
-            "presenceGeneration": 3,
-            "reason": "availability",
-            "reasonCode": "availability"
-          },
-          "eventId": "2fdfe683-4df7-4f2c-a1f8-7ae334757ec8",
-          "sequence": 377
-        },
-        {
-          "at": "2026-11-08T17:14:15.249Z",
-          "action": "AUTO_ANSWER_READINESS",
-          "level": "info",
-          "reasonCode": "availability",
-          "details": {
-            "blockedReasons": [
-              "SESSION_ENDED_CONFIRM_AGAIN",
-              "AUTO_ANSWER_DISABLED"
-            ],
-            "ready": false,
-            "availability": "online",
-            "authorizedProfile": true,
-            "configEnabled": false,
-            "labSafetyLock": false,
-            "presenceArmed": false,
-            "presenceReason": "session-ended-confirm-again",
-            "presenceGeneration": 3,
-            "reason": "availability",
-            "reasonCode": "availability"
-          },
-          "eventId": "00b470e6-e5cf-4bc4-921e-4297636bd95e",
-          "sequence": 379
-        },
-        {
-          "at": "2026-11-08T17:14:15.250Z",
-          "action": "INCOMING_DIALOG_CLOSED",
-          "level": "info",
-          "reasonCode": "dialog-removed",
-          "details": {
-            "reason": "dialog-removed",
-            "reasonCode": "dialog-removed"
-          },
-          "eventId": "8051b5d0-970d-491c-8f45-b44677d21f42",
-          "sequence": 380
-        },
-        {
-          "at": "2026-11-08T17:14:15.991Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "4ec764d1-acc0-4cf6-acef-62bf1cb2a71a",
-          "sequence": 385
-        },
-        {
-          "at": "2026-11-08T17:14:15.992Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "6491e6fc-4f98-4171-b5a9-f2a27bf5709a",
-          "sequence": 386
-        },
-        {
-          "at": "2026-11-08T17:14:15.992Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "f361d182-4994-45e3-93d6-769ca697f286",
-          "sequence": 387
-        },
-        {
-          "at": "2026-11-08T17:14:16.418Z",
-          "action": "PLATFORM_SCREENSHOT_CAPTURE_ERROR",
-          "level": "error",
-          "reasonCode": "platform-surface-change",
-          "details": {
-            "reason": "platform-surface-change",
-            "reasonCode": "platform-surface-change",
-            "error": "Error: Either the '<all_urls>' or 'activeTab' permission is required."
-          },
-          "eventId": "4a0f2aad-1dd5-499f-810a-af0bf267422a",
-          "sequence": 362
-        },
-        {
-          "at": "2026-11-08T17:14:17.864Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "80043753-5abf-4fda-b4c6-e3dc06aed69c",
-          "sequence": 392
-        },
-        {
-          "at": "2026-11-08T17:14:18.108Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "76b45f2d-6964-4f39-b327-c9c4bc55279d",
-          "sequence": 394
+          "eventId": "8e70c98a-4ecf-481f-9aee-8d08c7e4ea0a",
+          "sequence": 399
         },
         {
           "at": "2026-11-08T17:14:21.347Z",
@@ -414,7 +80,39 @@
           },
           "eventId": "02cb6479-1c1e-4678-bb4d-39cb909e20d2",
           "sequence": 375
-        },
+        }
+      ]
+    },
+    {
+      "attemptId": "1971ec[PHONE]b-a238-2e9ab15a4102",
+      "status": "missed",
+      "modality": "OPI",
+      "tabId": 1600161561,
+      "detectedAt": "2026-11-08T17:14:21.683Z",
+      "closedAt": "2026-11-08T17:14:23.992Z",
+      "clickedAt": null,
+      "answeredAt": null,
+      "missedAt": "2026-11-08T17:14:29.661Z",
+      "outcomeReason": "dialog_closed_without_connect",
+      "button": {
+        "found": false,
+        "notFound": false,
+        "disabled": false
+      },
+      "readiness": {
+        "samples": 0,
+        "last": null
+      },
+      "blockedEvents": [],
+      "ringSignalCount": 0,
+      "clickToAnswerLatencyMs": null,
+      "detectionToAnswerLatencyMs": null,
+      "callRefs": [],
+      "missingSignals": [
+        "INCOMING_DIALOG_DETECTED"
+      ],
+      "eventCount": 14,
+      "timeline": [
         {
           "at": "2026-11-08T17:14:21.683Z",
           "action": "INCOMING_ATTEMPT_REGISTERED",
@@ -429,6 +127,99 @@
           "sequence": 376
         },
         {
+          "at": "2026-11-08T17:14:22.208Z",
+          "action": "PLATFORM_SESSION_ENDED",
+          "level": "info",
+          "reasonCode": "pagehide",
+          "details": {
+            "reason": "pagehide",
+            "reasonCode": "pagehide"
+          },
+          "eventId": "bf8753f6-b0cb-4505-bc8d-a9533dacb12c",
+          "sequence": 404
+        },
+        {
+          "at": "2026-11-08T17:14:22.209Z",
+          "action": "PERFORMANCE_HEARTBEAT",
+          "level": "info",
+          "reasonCode": "pagehide",
+          "details": {
+            "reason": "pagehide",
+            "reasonCode": "pagehide"
+          },
+          "eventId": "e2ade679-0fb3-4cf2-a1b5-d80ebc10313b",
+          "sequence": 405
+        },
+        {
+          "at": "2026-11-08T17:14:22.209Z",
+          "action": "OBSERVER_STOPPED",
+          "level": "info",
+          "reasonCode": "pagehide",
+          "details": {
+            "reason": "pagehide",
+            "reasonCode": "pagehide"
+          },
+          "eventId": "c9804b87-4ee6-4861-9648-1edf87c2ae7d",
+          "sequence": 406
+        },
+        {
+          "at": "2026-11-08T17:14:22.209Z",
+          "action": "PAGE_LIFECYCLE",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "4c2d9e87-8d40-4db9-ad8c-f7d87277799c",
+          "sequence": 407
+        },
+        {
+          "at": "2026-11-08T17:14:22.210Z",
+          "action": "PAGE_VISIBILITY_CHANGED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "4fb745fb-ab95-4faf-871d-0d11831825ea",
+          "sequence": 408
+        },
+        {
+          "at": "2026-11-08T17:14:22.396Z",
+          "action": "PERFORMANCE_HEARTBEAT",
+          "level": "info",
+          "reasonCode": "telemetry-start",
+          "details": {
+            "reason": "telemetry-start",
+            "reasonCode": "telemetry-start"
+          },
+          "eventId": "d67783dc-589d-44ca-9025-441e006c1dfe",
+          "sequence": 413
+        },
+        {
+          "at": "2026-11-08T17:14:22.396Z",
+          "action": "PLATFORM_SESSION_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "f0d05d25-8298-4104-8a42-c180ae16db17",
+          "sequence": 414
+        },
+        {
+          "at": "2026-11-08T17:14:22.396Z",
+          "action": "OBSERVER_STARTED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "f6fd7c0d-9823-414f-bf07-106e6717fd48",
+          "sequence": 415
+        },
+        {
+          "at": "2026-11-08T17:14:22.404Z",
+          "action": "PLATFORM_SURFACE_SNAPSHOT",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "4a5f2e02-0688-474e-9596-7ef011b7cf7c",
+          "sequence": 418
+        },
+        {
           "at": "2026-11-08T17:14:23.992Z",
           "action": "INCOMING_DIALOG_CLOSED_OBSERVED",
           "level": "info",
@@ -439,6 +230,24 @@
           },
           "eventId": "83e7169b-90b8-4eac-b81d-7fe1310254c4",
           "sequence": 382
+        },
+        {
+          "at": "2026-11-08T17:14:26.614Z",
+          "action": "PAGE_LIFECYCLE",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "abe7dda4-485a-4b38-a392-d460b55a9801",
+          "sequence": 424
+        },
+        {
+          "at": "2026-11-08T17:14:26.623Z",
+          "action": "PAGE_LIFECYCLE",
+          "level": "info",
+          "reasonCode": null,
+          "details": {},
+          "eventId": "927bbeca-f816-4782-bf78-c4a4480a24eb",
+          "sequence": 426
         },
         {
           "at": "2026-11-08T17:14:29.661Z",
