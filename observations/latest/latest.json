@@ -1,36 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-e11b1b92-40d0-46e1-9da1-7952978cde5d",
-  "createdAt": "2026-11-08T19:58:39.660Z",
-  "trigger": "alarm",
+  "batchId": "batch-1521ec52-fac8-4c08-b4f5-93a237de7e0c",
+  "createdAt": "2026-11-08T19:59:04.651Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.40",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "83d64769-20fc-4f17-95bd-320ec027a2df",
-      "sequence": 1444,
-      "timestamp": "2026-11-08T19:58:34.234Z",
-      "ingestedAt": "2026-11-08T19:58:34.287Z",
+      "id": "e3760431-6e6b-4213-9588-acc411de7a29",
+      "sequence": 1446,
+      "timestamp": "2026-11-08T19:58:53.708Z",
+      "ingestedAt": "2026-11-08T19:58:53.708Z",
       "level": "info",
-      "category": "RUNTIME",
-      "component": "content",
+      "category": "PORTAL",
+      "component": "webRequest",
       "extensionVersion": "0.10.40",
-      "host": "app.cloudinterpreter.com",
-      "url": "https://app.cloudinterpreter.com/profile/<ID>",
+      "host": "",
+      "url": "",
       "phase": "event",
-      "action": "AUTO_ANSWER_READINESS",
+      "action": "NETWORK_ACTIVITY_WINDOW",
       "outcome": "observed",
-      "traceId": "05eb92ad-8655-4d3f-8fe5-0eacdba4f9a0",
+      "traceId": "72a269dc-f3f5-48d8-ace9-693edd5ac257",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 1680554836,
-      "session": {
-        "sessionId": "e8162fa8-cdfb-4693-b869-94f8f4b6e225",
-        "pageLifecycleId": "1ed0eab4-d4e3-47a8-98fd-0b3b207b8927",
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.40",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -38,187 +34,50 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": "heartbeat",
+      "reasonCode": null,
       "error": null,
       "metrics": {},
-      "context": {
-        "route": "/profile/<ID>",
-        "visibility": "hidden",
-        "focused": false,
-        "online": true,
-        "monotonicMs": 628479,
-        "callId": null,
-        "pageLifecycleId": "1ed0eab4-d4e3-47a8-98fd-0b3b207b8927",
-        "sourceTabId": 1680554836,
-        "sourceWindowId": 1680554207,
-        "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "ready": true,
-        "attemptId": null,
-        "availability": "online",
-        "authorizedProfile": true,
-        "configEnabled": true,
-        "labSafetyLock": false,
-        "presenceArmed": true,
-        "presenceReason": "explicit-availability",
-        "presenceGeneration": 13,
-        "blockedReasons": [],
-        "route": "/profile/<ID>",
-        "exactUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz",
-        "runtimeVersion": "0.10.40",
-        "reason": "heartbeat"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "64795d38-5308-4237-ba25-ba472c774438",
-      "sequence": 1445,
-      "timestamp": "2026-11-08T19:58:34.235Z",
-      "ingestedAt": "2026-11-08T19:58:34.690Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "content",
-      "extensionVersion": "0.10.40",
-      "host": "app.cloudinterpreter.com",
-      "url": "https://app.cloudinterpreter.com/profile/<ID>",
-      "phase": "event",
-      "action": "PERFORMANCE_HEARTBEAT",
-      "outcome": "observed",
-      "traceId": "214f489e-4502-4ace-a406-4dae5bd97a83",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1680554836,
-      "session": {
-        "sessionId": "e8162fa8-cdfb-4693-b869-94f8f4b6e225",
-        "pageLifecycleId": "1ed0eab4-d4e3-47a8-98fd-0b3b207b8927",
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.40",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "heartbeat",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/profile/<ID>",
-        "visibility": "hidden",
-        "focused": false,
-        "online": true,
-        "monotonicMs": 628480,
-        "callId": null,
-        "pageLifecycleId": "1ed0eab4-d4e3-47a8-98fd-0b3b207b8927",
-        "sourceTabId": 1680554836,
-        "sourceWindowId": 1680554207,
-        "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "reason": "heartbeat",
-        "route": "/profile/<ID>",
-        "uptimeMs": 628479,
-        "callId": null,
-        "document": {
-          "readyState": "complete",
-          "visibility": "hidden",
-          "focused": false,
-          "online": true,
-          "title": "My Profile - Cloud Interpreter",
-          "nodes": 522
-        },
-        "viewport": {
-          "width": 1920,
-          "height": 911,
-          "devicePixelRatio": 1
-        },
-        "navigation": {
-          "type": "reload",
-          "durationMs": 4919,
-          "domInteractiveMs": 415,
-          "domContentLoadedMs": 4918,
-          "loadMs": 4919,
-          "transferBytes": 14290
-        },
-        "connection": {
-          "effectiveType": "4g",
-          "downlinkMbps": 9.3,
-          "rttMs": 50,
-          "saveData": false
-        },
-        "memory": {
-          "usedBytes": 22617405,
-          "totalBytes": 25373433,
-          "limitBytes": 4395630592
-        },
-        "performance": {
-          "longTasks": 3,
-          "longTaskTotalMs": 4555,
-          "longestTaskMs": 4433,
-          "layoutShifts": 11,
-          "layoutShiftScore": 0.03569916434084764
-        },
-        "mutations": {
-          "batches": 0,
-          "addedNodes": 0,
-          "removedNodes": 0,
-          "attributes": 0,
-          "textChanges": 0
-        },
-        "resources": {
-          "newResources": 0,
-          "byType": {},
-          "totalDurationMs": 0,
-          "transferBytes": 0,
-          "slowest": []
-        },
-        "controls": {
-          "buttons": 4,
-          "inputs": 7,
-          "selects": 0,
-          "dialogs": 0,
-          "media": 0,
-          "iframes": 0
-        }
+        "windowSeconds": 15,
+        "endpointCount": 1,
+        "endpoints": [
+          {
+            "method": "POST",
+            "type": "xmlhttprequest",
+            "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
+            "statusCode": 200,
+            "count": 1,
+            "totalDurationMs": 128,
+            "maxDurationMs": 128,
+            "avgDurationMs": 128
+          }
+        ]
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 1444,
-    "lastSequence": 1445,
-    "firstTimestamp": "2026-11-08T19:58:34.234Z",
-    "lastTimestamp": "2026-11-08T19:58:34.235Z",
+    "firstSequence": 1446,
+    "lastSequence": 1446,
+    "firstTimestamp": "2026-11-08T19:58:53.708Z",
+    "lastTimestamp": "2026-11-08T19:58:53.708Z",
     "actions": {
-      "AUTO_ANSWER_READINESS": 1,
-      "PERFORMANCE_HEARTBEAT": 1
+      "NETWORK_ACTIVITY_WINDOW": 1
     },
     "categories": {
-      "RUNTIME": 2
+      "PORTAL": 1
     }
   }
 }
