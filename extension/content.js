@@ -38,6 +38,7 @@
     transcriptionEnabled: true,
     overlayEnabled: true,
     overlaysGlobalEnabled: true,
+    callOverlayControlVisible: true,
     overlayCompact: true,
     opiRatePerMinute: 0.20,
     vriRatePerMinute: 0.25,
@@ -108,6 +109,9 @@
   var autoAnswerStatusHost = null;
   var autoAnswerStatusRoot = null;
   var autoAnswerStatusTimer = null;
+  var callOverlayControlHost = null;
+  var callOverlayControlRoot = null;
+  var callOverlayToggleBusy = false;
   var platformActivationMessage = "";
   var readinessTimer = null;
   var lastSpokenCallId = "";
@@ -526,7 +530,7 @@
   }
   function renderAutoAnswerStatusOverlay() {
     var callId = currentCallId();
-    var shouldShow = isTarget() && (isAuthorizedProfilePage() || !!callId);
+    var shouldShow = isTarget() && isAuthorizedProfilePage() && !callId && config.overlaysGlobalEnabled !== false;
     if (!shouldShow || !document.documentElement) {
       removeAutoAnswerStatusOverlay();
       return;
@@ -599,6 +603,62 @@
     setStatusText(".detail", detail);
     setStatusText(".availability", availability === "online" ? "YOU ARE ONLINE" : availability === "offline" ? "YOU ARE OFFLINE" : "CLOUD INTERPRETER");
     setStatusText(".call-state", callId ? "LLAMADA ACTIVA" : "NO CALL");
+  }
+  function removeCallOverlayControl() {
+    if (callOverlayControlHost && callOverlayControlHost.isConnected) callOverlayControlHost.remove();
+    callOverlayControlHost = null;
+    callOverlayControlRoot = null;
+  }
+  function renderCallOverlayControl() {
+    var callId = currentCallId();
+    var shouldShow = isTarget() && !!callId && config.callOverlayControlVisible !== false;
+    if (!shouldShow || !document.documentElement) { removeCallOverlayControl(); return; }
+    if (!callOverlayControlHost || !callOverlayControlHost.isConnected || !callOverlayControlRoot) {
+      removeCallOverlayControl();
+      callOverlayControlHost = document.createElement("div");
+      callOverlayControlHost.id = "signal-interpreter-call-overlay-control";
+      callOverlayControlHost.setAttribute("aria-label", "Control global de overlays de Signal Interpreter");
+      callOverlayControlHost.style.cssText = "all:initial;position:fixed;z-index:2147483647;top:12px;left:12px;display:block;pointer-events:auto;";
+      callOverlayControlRoot = callOverlayControlHost.attachShadow({ mode: "closed" });
+      callOverlayControlRoot.innerHTML =
+        '<style>:host{all:initial;pointer-events:auto}button{appearance:none;border:1px solid rgba(148,190,220,.55);border-radius:999px;padding:9px 13px;background:rgba(9,22,36,.96);color:#eaf6ff;box-shadow:0 4px 18px rgba(0,0,0,.32);font:750 11px/1.1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.035em;cursor:pointer;pointer-events:auto;backdrop-filter:blur(10px)}button:hover{background:#17324a;border-color:#8fcfff}button:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}button[aria-busy="true"]{opacity:.7;cursor:wait}@media(max-width:720px){button{min-height:42px;padding:10px 14px;font-size:12px}}</style>' +
+        '<button type="button" aria-pressed="false" title="Ocultar todos los overlays de Signal Interpreter">OCULTAR OVERLAYS</button>';
+      var control = callOverlayControlRoot.querySelector("button");
+      if (control) control.addEventListener("click", toggleGlobalOverlaysFromCall);
+      document.documentElement.appendChild(callOverlayControlHost);
+    }
+    var button = callOverlayControlRoot.querySelector("button");
+    if (!button) return;
+    var visible = config.overlaysGlobalEnabled !== false;
+    button.textContent = callOverlayToggleBusy ? "APLICANDO…" : (visible ? "OCULTAR OVERLAYS" : "MOSTRAR OVERLAYS");
+    button.title = visible ? "Ocultar todos los overlays de Signal Interpreter" : "Mostrar los overlays de Signal Interpreter";
+    button.setAttribute("aria-pressed", visible ? "true" : "false");
+    button.setAttribute("aria-busy", callOverlayToggleBusy ? "true" : "false");
+    button.disabled = callOverlayToggleBusy;
+  }
+  async function toggleGlobalOverlaysFromCall() {
+    if (callOverlayToggleBusy) return;
+    callOverlayToggleBusy = true;
+    renderCallOverlayControl();
+    try {
+      var stored = await chrome.storage.local.get(["effectifConfig"]);
+      var next = Object.assign({}, config, stored.effectifConfig || {});
+      next.overlaysGlobalEnabled = next.overlaysGlobalEnabled === false;
+      await chrome.storage.local.set({ effectifConfig: next });
+      config = Object.assign({}, config, next);
+      emit(next.overlaysGlobalEnabled ? "GLOBAL_OVERLAYS_ENABLED" : "GLOBAL_OVERLAYS_DISABLED", {
+        source: "in-call-control", callId: currentCallId(), userInitiated: true
+      });
+      renderAutoAnswerStatusOverlay();
+    } catch (error) {
+      emit("GLOBAL_OVERLAYS_TOGGLE_ERROR", {
+        source: "in-call-control", callId: currentCallId(),
+        errorType: String(error && error.name || "Error").slice(0, 80)
+      }, "error");
+    } finally {
+      callOverlayToggleBusy = false;
+      renderCallOverlayControl();
+    }
   }
   function allowedPresenceIdleSeconds(value) {
     return [60, 180, 300, 600].includes(Number(value));
@@ -984,6 +1044,8 @@
       ? lastCallEndMeasurement.platformSeconds : null;
     route = next;
     callRouteId = nextCallId;
+    renderAutoAnswerStatusOverlay();
+    renderCallOverlayControl();
     emitAutoAnswerReadiness("route:" + reason);
     if (leavingCall) {
       if (!Number.isFinite(endMeasurement)) endMeasurement = ratingMatch ? null : parsePlatformSeconds();
@@ -2455,6 +2517,8 @@
     window.addEventListener("pageshow", function () {
       if (isTarget() && (config.autoAnswerEnabled || config.observationEnabled) && !observer) start();
       if (isAuthorizedProfilePage()) startAvailabilityMonitor();
+      renderAutoAnswerStatusOverlay();
+      renderCallOverlayControl();
       if (isTarget() && earningsOverlayEnabled()) startOverlayActivationWatchdog("pageshow");
       observePlatformUrl("pageshow");
       emitAutoAnswerReadiness("pageshow");
@@ -2481,6 +2545,8 @@
       mediaSnapshot("mutation");
       mapScreen("mutation");
       schedulePlatformMirror("mutation");
+      renderAutoAnswerStatusOverlay();
+      renderCallOverlayControl();
       if (currentCallId()) renderOverlay();
     }, 100);
   }
@@ -2534,6 +2600,7 @@
     if (mediaTimer) { clearInterval(mediaTimer); mediaTimer = null; }
     if (integrityTimer) { clearInterval(integrityTimer); integrityTimer = null; }
     stopAvailabilityMonitor();
+    removeCallOverlayControl();
     stopOverlay(stopReason);
     stop(stopReason);
   }
@@ -2556,7 +2623,9 @@
     if (isTarget() && (config.autoAnswerEnabled || config.observationEnabled)) start();
     else stop("disabled-or-host-mismatch");
     if (isAuthorizedProfilePage()) startAvailabilityMonitor();
-    else renderAutoAnswerStatusOverlay();
+    else stopAvailabilityMonitor();
+    renderAutoAnswerStatusOverlay();
+    renderCallOverlayControl();
     detectAvailability();
     syncPageFavicon();
     autoAnswer();
@@ -2595,6 +2664,8 @@
         if (isTarget() && earningsOverlayEnabled()) startOverlayActivationWatchdog("global-overlays-enabled");
         else stopOverlayActivationWatchdog(!earningsOverlayEnabled() ? (config.overlaysGlobalEnabled === false ? "global-overlays-hidden" : "preference-disabled") : "host-mismatch");
         renderOverlay();
+        renderAutoAnswerStatusOverlay();
+        renderCallOverlayControl();
       } else { apply(newConfig); }
     }
   });
