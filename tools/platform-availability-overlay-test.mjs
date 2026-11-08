@@ -42,7 +42,8 @@ assert(detection.includes('next === "offline"'), "platform Offline revokes prese
 assert(detection.includes('next === "unknown" && previous === "online"'), "loss of confirmed availability fails closed");
 
 assert(source.includes('id = "signal-interpreter-autoanswer-status"'), "independent Auto-Answer status overlay exists");
-assert(source.includes('currentCallId() ? "LLAMADA ACTIVA" : "NO CALL"'), "overlay distinguishes no-call from active-call state");
+assert(source.includes('setStatusText(".call-state", callId ? "LLAMADA ACTIVA" : "NO CALL")'), "overlay distinguishes no-call from active-call state");
+assert(source.includes('isAuthorizedProfilePage() || !!callId'), "overlay remains visible on the authorized profile even without a call");
 assert(source.includes("startAvailabilityMonitor()"), "status overlay/availability monitor starts on authorized profile routes");
 assert(source.includes("stopAvailabilityMonitor()"), "monitor and overlay have a teardown path");
 
