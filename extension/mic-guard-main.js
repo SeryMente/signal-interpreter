@@ -12,8 +12,8 @@
   var patches = previous && previous.patches
     ? previous.patches
     : { gum: false, addTrack: false, addTransceiver: false, replaceTrack: false, clone: false };
-  var timer = previous && previous.timer ? previous.timer : null;
-  if (timer) clearInterval(timer);
+  var timer = previous && previous.timer != null ? previous.timer : null;
+  if (timer !== null) clearInterval(timer);
 
   var state = previous || {
     version: "1.0",
@@ -78,7 +78,7 @@
       stopMuteEnforcement();
       return;
     }
-    if (timer) return;
+    if (timer !== null) return;
     timer = setInterval(function () {
       if (!muted) {
         stopMuteEnforcement();
