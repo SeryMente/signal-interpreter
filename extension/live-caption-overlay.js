@@ -826,7 +826,7 @@
       var time = node.querySelector(".time");
       var text = node.querySelector(".text");
       var nextText = String(item.text || "");
-      var speakerRole = typeof core.roleForSource === "function" ? core.roleForSource(item.source, language) : core.roleForLanguage(language);
+      var speakerRole = typeof core.roleForSource === "function" ? core.roleForSource(item.source, language, item.speaker) : core.roleForLanguage(language);
       if (role && role.textContent !== speakerRole) role.textContent = speakerRole;
       if (lang && lang.textContent !== core.languageLabel(language)) lang.textContent = core.languageLabel(language);
       if (time) time.textContent = formatTime(item.at);
