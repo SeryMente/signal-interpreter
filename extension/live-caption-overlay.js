@@ -212,7 +212,7 @@
     host = document.createElement("div");
     host.id = "signal-interpreter-live-caption-overlay";
     host.setAttribute("aria-hidden", "true");
-    host.style.cssText = "all:initial;position:fixed;z-index:2147483647;pointer-events:none;display:none;left:12px;top:12px;width:560px;height:400px;overflow:visible";
+    host.style.cssText = "all:initial;position:fixed;z-index:2147483630;pointer-events:none;display:none;left:12px;top:12px;width:560px;height:400px;overflow:visible";
 
     root = host.attachShadow({ mode: "closed" });
     root.innerHTML =
@@ -794,7 +794,7 @@
     rows.slice(-MAX_HISTORY).forEach(function (item) {
       var spans = item.source === "chrome-live-caption" && typeof core.segmentCaptionText === "function"
         ? core.segmentCaptionText(item.text) : [{ text: item.text, language: item.language || "unknown" }];
-      spans.forEach(function (span) { if (span.text.trim()) data.push(Object.assign({}, item, span)); });
+      spans.forEach(function (span) { if (span.text.trim()) data.push(Object.assign({}, item, span, { speaker: item.speaker || "unknown" })); });
     });
     data = data.slice(-MAX_HISTORY);
     var routingKey = rows.length + ":" + data.map(function (item) { return item.language + ":" + item.text.length; }).join("|");
@@ -826,7 +826,7 @@
       var time = node.querySelector(".time");
       var text = node.querySelector(".text");
       var nextText = String(item.text || "");
-      var speakerRole = typeof core.roleForSource === "function" ? core.roleForSource(item.source, language) : core.roleForLanguage(language);
+      var speakerRole = typeof core.roleForSource === "function" ? core.roleForSource(item.source, language, item.speaker) : core.roleForLanguage(language);
       if (role && role.textContent !== speakerRole) role.textContent = speakerRole;
       if (lang && lang.textContent !== core.languageLabel(language)) lang.textContent = core.languageLabel(language);
       if (time) time.textContent = formatTime(item.at);
@@ -857,13 +857,14 @@
     if (collapsed) applyCollapsedState();
   }
 
-  function addRow(text, language, source, isLive, timestamp) {
+  function addRow(text, language, source, isLive, timestamp, speaker) {
     if (source !== "chrome-live-caption") return;
     var clean = core.normalizeText(text).slice(0, 1500);
     if (!clean) return;
     lastCaptionAt = Date.now();
     source = source === "yo" || source === "chrome-live-caption" ? source : "cliente";
     language = core.resolveLanguage(language, clean);
+    speaker = source === "yo" && speaker === "INTÉRPRETE" ? "INTÉRPRETE" : "unknown";
     var now = Number(timestamp);
     if (!Number.isFinite(now) || now <= 0) now = Date.now();
     var lane = laneForSource(source);
@@ -881,6 +882,7 @@
       if (relation === "duplicate") {
         candidate.at = Math.max(Number(candidate.at || 0), now);
         if (language !== "unknown") candidate.language = language;
+        candidate.speaker = speaker;
         if (source === "chrome-live-caption") { candidate.source = source; candidate.live = true; }
         else if (candidate.source !== "chrome-live-caption") { candidate.source = source; candidate.live = !!isLive; }
         render();
@@ -893,6 +895,7 @@
         candidate.text = core.mergeCaptionText(candidate.text, clean).slice(0, 4000);
         candidate.at = Math.max(previousAt, now);
         if (language !== "unknown" || candidate.language === "unknown") candidate.language = language;
+        candidate.speaker = speaker;
         if (source === "chrome-live-caption") { candidate.source = source; candidate.live = true; }
         else if (previousSource !== "chrome-live-caption" || now - previousAt > 4500) {
           candidate.source = source;
@@ -903,7 +906,7 @@
       }
     }
 
-    rows.push({ text: clean, language: language, source: source, live: !!isLive, at: now });
+    rows.push({ text: clean, language: language, source: source, speaker: speaker, live: !!isLive, at: now });
     if (rows.length > MAX_HISTORY) rows.splice(0, rows.length - MAX_HISTORY);
     render();
   }
@@ -1221,7 +1224,7 @@
       if (!caption.text || caption.source !== "chrome-live-caption" || caption.native !== true || !canShowOnThisPage()) return;
       active = true;
       sessionEnded = false;
-      addRow(caption.text, caption.language, caption.source, caption.live, caption.timestamp);
+      addRow(caption.text, caption.language, caption.source, caption.live, caption.timestamp, caption.speaker);
     } else if (message.type === "SIGNAL_CAPTION_NATIVE_STATUS") {
       nativeStatus = message;
       active = message.captionFresh === false
