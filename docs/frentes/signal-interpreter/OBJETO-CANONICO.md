@@ -5,28 +5,28 @@
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
-- Revision documental: SI-OBJ-v1.18-retoma-G11-20261107-03; ancla: C-SIGNAL-RETOMA-20261107-G11-6495BAA5, integración 0.10.40 y actualización local verificada para recarga manual de Chrome del 2026-11-07. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
+- Revisión documental: SI-OBJ-v1.19-autoanswer-G13-20261108-01; ancla: C-SIGNAL-MISSED-CALL-AUTOANSWER-20261108-G13-D8FB3E62. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
-- Estado de producto: `main` contiene Signal Interpreter **0.10.40**, integrada por PR [#71](https://github.com/SeryMente/signal-interpreter/pull/71) mediante merge commit `2546d967f15759c2eabac7b4026cc5b4f1cbd081`. CI de PR (auditoría, integridad de paquete 59/59 y host nativo) y CI post-merge (auditoría y host nativo) pasaron. La carpeta que Chrome tiene registrada ya contiene el manifiesto anidado **0.10.40**, con ID conservado. La distribución local se cotejó: 48/48 archivos de la candidata coinciden con el destino; 55/59 hashes canónicos coinciden y cuatro archivos tienen adaptaciones locales explícitas para el layout anidado. El host Native Messaging preexistente conserva su registro y SHA. Respaldo previo 0.10.39 verificado 50/50. Chrome no se recargó; aceptación funcional, E2E y liberación siguen pendientes. No hay release.
+- Estado de producto: `main` permanece en **0.10.40**. La candidata **0.10.41** está en PR [#74](https://github.com/SeryMente/signal-interpreter/pull/74), abierta y no fusionada. La carpeta local autorizada `EP/Signal-Interpreter/extension` en PC-13 fue preparada a 0.10.41 y validada con inventario SHA-256 59/59; respaldo reversible previo de 9 archivos en `.rollback-0.10.40-20261108`. El Native Messaging existente no se modificó. Chrome no se recargó; aceptación real, E2E y liberación siguen pendientes. No hay release.
 - Persistencia verificable: identificar la revisión Git que contiene este archivo y el [recibo de migración](evidencias/C-SIGNAL-METACANON-20261020-01.json); el recibo identifica la base y los contenidos, no autocertifica publicación o conformidad semántica.
 
 ## LEER PRIMERO
 
-Modo: continuar el mismo frente como **una sola instancia responsable G12** (folio pendiente por FOL1 no activa). No crear, asignar, invocar ni coordinar un segundo agente; no dividir trabajo por papeles; no generar prompts dobles ni transferencias internas.
+Modo: continuar el mismo frente como **una sola instancia responsable G13** (folio pendiente por FOL1 no activa). No crear, asignar, invocar ni coordinar un segundo agente; no dividir trabajo por papeles; no generar prompts dobles ni transferencias internas.
 
 Leer este núcleo y adquirir gobierno vigente antes de actuar. Consultar después solo fuentes/evidencias necesarias para el objetivo actual; no recorrer toda la historia por rutina.
 
 Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metacanon pertinentes → gobierno particular de este frente. [Entrada del gobierno distribuido](https://github.com/SeryMente/metodologia/blob/main/INICIO.md). El repositorio metodológico requiere acceso autorizado; no copiar su contenido privado a este repositorio público ni pedir credenciales en el chat. Revalidar fuente y revisiones desde `main`; una referencia histórica no prueba frescura, autorización o ejecución. Fuente indispensable ausente bloquea solo la acción dependiente.
 
-**Modo operativo vigente:** una instancia única G12 tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva decisiones humanas, uso real, llamadas reales, aceptación funcional y liberación. Esta disposición no se propaga a otros proyectos. G10 quedó SUSTITUIDA por G11 mediante transferencia condicionada por SHA/generación; generaciones anteriores permanecen en el historial. M34/M35 son antecedentes históricos cerrados; PC-14 está expresamente excluido por el operador.
+**Modo operativo vigente:** una instancia única G13 tiene titularidad y responsabilidad integral de Signal Interpreter. G12 quedó SUSTITUIDA mediante transferencia condicionada por SHA/generación; el historial queda preservado. El operador conserva decisiones humanas, uso real, llamadas reales, aceptación funcional y liberación. Esta disposición no se propaga a otros proyectos. M34/M35 son antecedentes históricos cerrados; PC-14 permanece excluido.
 
 ## Referencia metodológica
 
-- **Metacanon adquirido: 1.28**; DUG **v377 · NX-377m**; GOW **2.17**.
-- Fuente canónica releída desde `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, commit `8ee2482866b3dd085e58e05006727256d0274376`, blob `54064c8fe00f872023a455f06596061ed69062ae`. `INICIO.md` confirma DUG v377, Metacanon 1.28 y GOW 2.17.
-- Control vigente: CONTROL-RESPONSABILIDAD.json, G11 ACTIVO agente_unico; folio SES-20261107-6495BAA5; alias chatgpt-signal-interpreter-SES-20261107-6495BAA5; UUIDv7 local 01a1b703-181f-7838-a492-0d21cf717013. Blob `f7e75f74961184c38e0a35955896099230bf061e`; read-back remoto PASS. G10 queda SUSTITUIDO.
-- Se revisaron manualmente P001/P004/P005/P037/P038/P043, §42 de Metacanon y vocabulario GOW relativo a Arranque en Frío, MDP, SPDF, Persistencia documental, Registro conversacional, FT y Control de responsabilidad. `INICIO.md` refiere §ARR; no se localizó un encabezado literal §ARR en las secciones humanas recuperadas, por lo que su ubicación exacta queda NO VERIFICADA. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
+- **Metacanon adquirido: 1.29**; DUG **v383 · NX-383m**; GOW **2.18**.
+- Fuente canónica releída desde `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, HTML canónico blob `cad464717c43733aa84b49f8c9c3af0875597fbd`; §ARR consultado. `INICIO.md` visible conserva metadatos anteriores y no se usó para sustituir la fuente canónica.
+- Control vigente: CONTROL-RESPONSABILIDAD.json, G13 ACTIVO agente_unico; alias `chatgpt-signal-interpreter-01a1bca3-e123-74f7-b884-5792d8fb3e62`; UUIDv7 local `01a1bca3-e123-74f7-b884-5792d8fb3e62`; blob/read-back `3c3b0e6999ede64593a013d78fd66c4ce28e9cd4` PASS. G12 queda SUSTITUIDO. Folio PENDIENTE/NO ASIGNADO mientras FOL1 no esté activa.
+- Se consultaron §ARR, P001/P004/P005/P007/P008/P011/P019/P033/P038/P043 y Metacanon §§4/24/42/47 pertinentes. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
 
 ### Constancia de adquisición y aplicación
 
@@ -43,7 +43,7 @@ Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metac
 
 **De dónde viene:** mejorar calidad de vida en interpretación telefónica, apoyada en texto de Live Caption nativo; dictados y ratificaciones originales conservados en el [antecedente íntegro](antecedentes/TRANSCRIPTION-SPRINT-CANONICAL.pre-1.9.md), §§13–17 y SI-D001–008.
 
-**Dónde está:** `main` publica **0.10.40**, integrada por PR #71 mediante merge commit `2546d967f15759c2eabac7b4026cc5b4f1cbd081`; el inventario de `main` contiene 59 archivos y el SHA-256 esperado de `extension/content.js` es `7661B95311E2DCD4DFB07943288D6A5AE88DCDA19F3CC56FC07D0936A05A25F0`. El clon local del producto quedó alineado a `main` de código `679578fb3580b1518a9adafa5e0f398e1ee6d097`; un commit posterior de `main` añadió solo una captura diagnóstica. La ruta exacta registrada en Secure Preferences de Chrome ahora tiene un manifiesto anidado 0.10.40 (`background.js`, mismo ID `ldpbjhobnfgmhdoehehdmnbhhjckebmj`). La adaptación de cuatro rutas permite usar los recursos desde esa subcarpeta. Los archivos están preparados y verificados; Chrome espera la recarga manual del operador. No hay release ni aceptación funcional.
+**Dónde está:** `main` permanece en 0.10.40. La corrección urgente de missed calls / Auto-Answer está en PR #74 como candidata 0.10.41, abierta y sin merge. La carpeta local autorizada `EP/Signal-Interpreter/extension` está preparada en 0.10.41 con 59/59 hashes; Chrome espera recarga manual. Sin E2E real, aceptación funcional ni release.
 
 Incluido: Windows + Chrome; Live Caption → Windows UI Automation → Native Messaging → overlay; carriles por idioma, historial, copiar/buscar, hotloading, controles existentes; instalación portable desde raíz y laboratorio aislado con muestra incluida. MacOS/Linux son entornos de desarrollo, no plataformas de producto acreditadas.
 
@@ -51,11 +51,11 @@ Excluido/vetado: captura de audio de pestaña, Groq/fallback de voz como ruta no
 
 ## Agente único responsable
 
-Una sola instancia mantiene la responsabilidad completa del frente: análisis, diseño dentro de decisiones autorizadas, código, pruebas automatizadas, CI, ramas/PR, revisión de resultados, observabilidad, persistencia, documentación, instalación permitida, control, crónicas y continuidad. No existe una segunda instancia responsable ni una división activa de tareas. No se producen mensajes de relevo ni prompts por separado.
+Una sola instancia G13 mantiene la responsabilidad completa del frente: análisis, diseño dentro de decisiones autorizadas, código, pruebas automatizadas, CI, ramas/PR, revisión, observabilidad, persistencia, documentación, instalación permitida dentro del alcance autorizado, control, crónicas y continuidad. No existe una segunda instancia responsable ni una división activa de tareas.
 
 **Responsabilidad humana reservada:** el operador decide lo que requiere consentimiento, realiza el uso real que no pueda ejecutarse por CLI, controla las llamadas reales y emite la aceptación funcional y la autorización de liberación. La instancia no simula uso, no interviene una llamada real y no declara aceptación sin evidencia revisable.
 
-**RDC M34/M35:** staging e instalación oficial en PC-14 fueron hechos históricos de una sesión anterior, ya consumida y cerrada. Esta mención preserva la trazabilidad y no autoriza ni recomienda reutilizar PC-14. En la retoma actual el operador indicó PC-8; se usó solo para lectura/hash del export y después quedó OFFLINE. PC-14 está expresamente EXCLUIDO. No hay operación RDC actualmente en curso.
+**RDC vigente G13:** terminal/CLI únicamente en PC-13 y dentro de `EP/Signal-Interpreter/extension` para preparar y verificar el paquete. Sin GUI, sin intervenir llamadas reales y sin recargar/reiniciar Chrome por RDC. PC-14 permanece EXCLUIDO; autorizaciones históricas PC-8/PC-14 no se reutilizan.
 
 **Criterio de ejecución:** realizar directamente todo diagnóstico, edición, automatización, pruebas aisladas, análisis y persistencia que esté autorizado y no requiera interacción real del operador. Cuando exista una dependencia humana, emitir una instrucción breve con precondiciones, resultado esperado, PASS/FAIL y evidencia mínima saneada. La salida debe reflejar qué fue observado, reportado, histórico, sintético, inferido o desconocido. Un único prompt activo: [PROMPT-SIGNAL-INTERPRETER.md](PROMPT-SIGNAL-INTERPRETER.md).
 
@@ -168,7 +168,7 @@ Resultado: ACTUALIZACIÓN LOCAL 0.10.40 COMPLETADA/VERIFICADA; LISTA PARA QUE EL
 
 ## Aceptación y viabilidad
 
-Estado: **desarrollo 0.10.40 integrado en `main`; la carpeta registrada por Chrome ya contiene 0.10.40 y está verificada para recarga manual; respaldo 0.10.39 50/50 y registro Native Messaging intacto. Chrome no se recargó y el operador conserva la recarga y aceptación funcional real. Observabilidad E2E 0.10.40 y liberación siguen pendientes. Backlog provisional de retroalimentación de llamada persistido; ninguna de sus seis tareas está implementada ni aceptada.**
+Estado vigente: **`main` 0.10.40; candidata 0.10.41 en PR #74 no fusionada; carpeta local preparada y verificada 59/59. Chrome no se recargó. Aceptación real, E2E y liberación pendientes. Backlog SI-FB-01–SI-FB-06 permanece intacto y se abordará en el siguiente ciclo.**
 
 | Requisito | Estado implementado / evidencia | Aceptación y pendiente |
 |---|---|---|
@@ -181,7 +181,7 @@ Estado: **desarrollo 0.10.40 integrado en `main`; la carpeta registrada por Chro
 | Puente Native Messaging | Registro Native Messaging ya existente en el perfil Chrome, manifest y ejecutable leídos; SHA estable coincidente y sin cambios durante la actualización | Verificación PASS; no se reinstaló el host |
 | Aceptación funcional | Carpeta 0.10.40 preparada; recarga manual pendiente; guards y regresiones sintéticas PASS | Después de recargar: confirmar versión, ejecutar aceptación OPI controlada y aceptación expresa del operador |
 
-Cono terminal de liberación: integridad + CI sobre SHA candidato + actualización segura en el perfil correcto + recarga manual y lectura de versión 0.10.40 en Chrome + fuente nativa real + segmentación visible + guards de presencia + telemetría 0.10.40 fresca + informe incoming 10m + upgrade/rollback + aceptación expresa. La carpeta ya está preparada; la recarga sigue pendiente. Fixtures, CI y Chromium headless no sustituyen aceptación integral Windows.
+Cono terminal de liberación: integridad + checks del SHA candidato + actualización segura en el perfil correcto + recarga manual y lectura de versión 0.10.41 en Chrome + fuente nativa real + segmentación visible + guards de presencia + telemetría 0.10.41 fresca + informe incoming 10m + upgrade/rollback + aceptación expresa. La carpeta está preparada; la recarga sigue pendiente. Fixtures, CI y Chromium headless no sustituyen aceptación integral Windows.
 
 ## Formato de ciclo
 
@@ -217,17 +217,17 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 ## Reinstanciación
 
-[Prompt operativo unico](PROMPT-SIGNAL-INTERPRETER.md), subordinado al objeto canonico y al gobierno vigente. El checkpoint de esta revisión es G12 (alias local chatgpt-signal-interpreter-01a1b793-ab9f-70bc-bd23-03e83dc1e417; folio no asignado); cada retoma debe releer el control, verificar generación/SHA y adquirir el gobierno actual. No instancies identidades adicionales ni emitas prompts paralelos. Un prompt no crea permiso, conectividad, persistencia ni aceptacion.
+[Prompt operativo único](PROMPT-SIGNAL-INTERPRETER.md), subordinado al objeto canónico y al gobierno vigente. El checkpoint de esta revisión es G13 (UUIDv7 local `01a1bca3-e123-74f7-b884-5792d8fb3e62`; folio no asignado); cada retoma debe releer el control, verificar generación/SHA y adquirir el gobierno actual. No instancies identidades adicionales ni emitas prompts paralelos. Un prompt no crea permiso, conectividad, persistencia ni aceptación.
 
 ## Persistencia y revisión
 
-Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control G11 ACTIVO; blob `3461d073fe8c76d9aa0a7d472d8f0a7b1e54846b`; read-back remoto PASS. G10 queda SUSTITUIDO con histórico preservado.
+Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control G13 ACTIVO; blob `3c3b0e6999ede64593a013d78fd66c4ce28e9cd4`; read-back remoto PASS. G12 queda SUSTITUIDO con histórico preservado.
 
-Gobernanza actual releída: DUG v377 · NX-377m, Metodología `main` commit `b66789064c7e6efed4b712f3b2e7bfab9744f4d9`, HTML canónico blob `54064c8fe00f872023a455f06596061ed69062ae`; Metacanon 1.28; GOW 2.17. MCP normativo desactivado. La localización precisa de §ARR queda NO VERIFICADA.
+Gobernanza actual releída: DUG v383 · NX-383m, Metodología `main` HTML canónico blob `cad464717c43733aa84b49f8c9c3af0875597fbd`; Metacanon 1.29; GOW 2.18. §ARR consultado; MCP normativo DESACTIVADO.
 
 Prompt operativo único G11 blob `ca9e4f1e25aca92717778772418181477a5c025a`; crónica de retoma G11 blob `02b81140201a7235474dda787477a8a74d101cc2`; recibo del export G11 blob `9f08e7eb9de4650427741e886e5099b3f477b404`. Persistencia y read-back verificados.
 
-Versión de producto: `manifest.json` **0.10.40** (blob `aa3ccf76d28397086045c61b399e5fdae3c7cd41`), integrada por PR #71 en merge commit `2546d967f15759c2eabac7b4026cc5b4f1cbd081`. La carpeta registrada por Chrome fue actualizada a 0.10.40 y está preparada para recarga manual; no hay release ni aceptación funcional en este ciclo.
+Versión de producto: `main/manifest.json` **0.10.40**. La candidata **0.10.41** está en PR #74, no fusionada. La carpeta local autorizada fue preparada y verificada con inventario SHA-256 59/59; recarga manual de Chrome, E2E y aceptación siguen pendientes. No hay release.
 
 Persistencia provisional: `observations/manifest.json` y el corte heredado siguen registrando 10,384 batches, 19 informes de llamada, 1,878 snapshots y 1,858 deltas; health `status=ok`, inbox 0. El último batch visible en ese corte es de runtime 0.10.37 y no contiene `relayReceivedAt` superior. El pipeline de main contiene el informe incoming de diez minutos y freshness; los artefactos no aparecieron en esa lectura. Vercel management/logs API devolvió 403; no se inspeccionó el secret. Recepción histórica no prueba runtime 0.10.39, timestamp fiable ni frescura actual.
 
@@ -252,3 +252,17 @@ Esta adenda es el checkpoint vigente y supersede cualquier mención anterior de 
 - **Trabajo siguiente:** instrumentar por separado los predicados de revalidación en `content.js` y añadir pruebas sin audio, transcripción ni texto de llamada; mantener fail-closed. No recargar Chrome ni actuar sobre llamadas reales durante una ventana activa.
 - **Custodia:** el original 1350 está copiado localmente con SHA exacto y excluido de Git; recibo y crónica saneados están en main. Original no publicado ni almacenado remotamente por esta operación.
 - **Estado local:** clon observado 29 commits detrás y con cuatro archivos modificados y dos no seguidos. Preservar; usar base aislada para el desarrollo siguiente.
+
+## Actualización viva G13 · corrección urgente Auto-Answer · 2026-11-08
+
+Esta actualización supersede los checkpoints anteriores como estado actual, preservando las adendas G11/G12 como historia.
+
+- **Responsabilidad:** G13 ACTIVO, agente único; UUIDv7 local `01a1bca3-e123-74f7-b884-5792d8fb3e62`. Control blob/read-back `3c3b0e6999ede64593a013d78fd66c4ce28e9cd4`. FOL1 PREPARADA, NO ACTIVA; folios de sesión y CV/CY/A/B PENDIENTES/NO ASIGNADOS.
+- **Gobierno:** DUG v383 · NX-383m; Metacanon 1.29; GOW 2.18; §ARR consultado; MCP normativo DESACTIVADO.
+- **Diagnóstico:** el intento OPI `471263e4-f995-429c-9358-eed8ed6b94b6` encontró Connect habilitado y readiness=true, pero recibió dos rechazos `sender-not-authorized` antes del clic. En v0.10.40, content script y guardián aplicaban reglas de URL inconsistentes: el primero reconocía el perfil, el segundo exigía igualdad literal. Ese defecto puede ocasionar el falso rechazo. Los campos históricos del remitente no quedaron registrados; el predicado individual responsable de aquella llamada es NO DETERMINADO.
+- **Corrección:** PR [#74](https://github.com/SeryMente/signal-interpreter/pull/74), rama `fix/autoanswer-missed-call-guard-20261108`, head `c938decb70888c1ecc7a6b8eb096fc1a0d139975`, abierta/no fusionada; último read-back indica mergeable=true. `main` sigue en 0.10.40. No se reportaron workflow runs ni status checks para el head.
+- **Paquete local:** `EP/Signal-Interpreter/extension` en PC-13 preparado con manifiesto 0.10.41, inventario SHA-256 59/59 PASS y respaldo de 9 archivos en `.rollback-0.10.40-20261108`. Native Messaging sin cambios.
+- **Pruebas:** autoanswer-runtime-guard 15, presence-guard 59, presence-connect 33, platform-availability-overlay 20: 127 checks PASS. Verificador del paquete 59/59, contrato de inventario de instalador y sintaxis JavaScript PASS. Todas son pruebas sintéticas; no sustituyen aceptación en Chrome ni una llamada real.
+- **Límites:** Chrome no recargado; E2E real y aceptación funcional PENDIENTES. PR no fusionada; no hay release ni deploy.
+- **Siguiente ciclo:** SI-FB-01–SI-FB-06 permanecen pendientes, por instrucción del operador para el siguiente ciclo; no se abordaron aquí.
+- **Evidencia:** [crónica G13](cronica/C-SIGNAL-MISSED-CALL-AUTOANSWER-20261108-G13-D8FB3E62.md) y [PR #74](https://github.com/SeryMente/signal-interpreter/pull/74).
