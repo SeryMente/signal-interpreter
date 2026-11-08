@@ -95,6 +95,27 @@ Sandbox Linux: lógica real y DOM Chromium con eventos sintéticos para candidat
 
 **Registro histórico de PC-14 (2026-10-30/31; no repetir):** el PC-14 y el perfil Windows autorizado por el operador se verificaron por CLI. Se preparó `Desktop/Signal Interpreter/signal-interpreter` desde commit `f4ee70caa2f22b3fbc52493ef17d2f21837ab103`; el ZIP tuvo SHA-256 `C587E9F13661148FEDAE547B02B3FD05785952DEFE03D76FAEE98108D89E7782`; versión 0.10.39; inventario de 59 payloads verificado. `INSTALAR.ps1` terminó exit code 0. `INSTALACION-RESULTADO.json` leído de vuelta: Hashes PASS, NativeProtocol PASS, NativeHostRegistry PASS, muestra BUNDLED_VERIFIED, ChromeLoaded NO_VERIFICADO, RealCall NO_VERIFICADA. El ejecutable nativo instalado coincidió SHA-256 `313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE`. La excepción M34/M35 quedó cerrada tras este read-back. El operador excluyó PC-14 en la retoma actual.
 
+## Reglas operativas del frente
+
+### SI-OP-01 — El puente Chrome Native Messaging forma parte de la materialización Windows
+
+<text>Estado: PROVISIONAL · Regla de operación del frente · 2026-11-08</text>
+
+Cuando el operador solicite materializar Signal Interpreter en el Escritorio del usuario operativo de Windows, el procedimiento estándar debe instalar y verificar el puente Chrome Native Messaging como parte de la misma materialización. No debe dejarse como paso opcional ni como tarea posterior.
+
+Alcance mínimo de la rutina:
+
+1. Materializar el ejecutable host, el manifiesto Native Messaging y los scripts de preparación/registro que correspondan al paquete canónico.
+2. Registrar el host en el ámbito del usuario operativo mediante la clave HKCU y comprobar que su ruta absoluta apunta al ejecutable de la materialización final. No usar elevación administrativa para una instalación por usuario salvo que una dependencia concreta la exija y exista autorización.
+3. Validar que el manifiesto declare el nombre de host correcto, el origen permitido de la extensión y una ruta ejecutable existente.
+4. Cotejar SHA-256 del ejecutable materializado contra el hash autorizado del paquete.
+5. Ejecutar la prueba de protocolo Native Messaging y hacer read-back del manifiesto, registro y resultado de la prueba bajo el mismo perfil Windows.
+6. Conservar el resultado y distinguir materializado, registrado, protocolo probado y verificado. Si cualquiera de las comprobaciones falla, informar la materialización como INCOMPLETA; no afirmar que el puente está operativo.
+
+La regla se aplica a instalaciones nuevas o a materializaciones que cambien la ubicación final del host. En actualizaciones de una extensión ya instalada se puede reutilizar el puente existente solo después de comprobar que el ejecutable, manifiesto, registro HKCU y ruta corresponden al paquete y destino actuales; no reinstalarlo a ciegas. La recarga de la extensión en Chrome sigue siendo una acción separada y no queda implícita por instalar el host.
+
+Esta regla no declara que el puente haya sido instalado en una máquina por el mero hecho de estar escrita aquí. Cada ejecución necesita evidencia propia y read-back.
+
 ## Estado vivo
 
 ### 🔄 Estado vivo
