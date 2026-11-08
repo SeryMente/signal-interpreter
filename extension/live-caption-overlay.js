@@ -49,6 +49,7 @@
   }
 
   var MAX_HISTORY = 800;
+  var MAX_RENDERED_ROWS = 72;
   var rows = [];
   var host = null;
   var root = null;
@@ -257,6 +258,8 @@
       '.collapsed .header{border-bottom:0;border-radius:13px}' +
       '@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}' +
       '.card{border-radius:12px;background:rgba(20,23,28,.98);border-color:#53667b;box-shadow:0 4px 16px rgba(0,0,0,.2);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}.header{padding:8px;gap:8px;flex-shrink:0;background:#1d2632}.move{flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-height:44px}.title{font-size:14px;line-height:1.4;letter-spacing:0}.subtitle{font-size:14px;line-height:1.4;color:#bac8d6}.state{font-size:14px;line-height:1.4;letter-spacing:0;max-width:100%;overflow-wrap:anywhere}.stateLabel{min-width:0}.toolbar{gap:4px}.tool{min-width:44px;min-height:44px;font-size:14px}.transcript{padding:12px 12px 48px;gap:8px}.row{padding:8px 0}.role,.lang,.time{font-size:14px;letter-spacing:0}.lang,.time{color:#b3c1cf}.text{font-size:16px;line-height:1.55}.empty{font-size:14px;color:#bac8d6}.action-toast{font-size:14px}.unread{min-height:44px;font-size:14px;bottom:8px;border-radius:8px}.resize{width:44px;height:44px;min-width:44px;min-height:44px;background:transparent}.collapsed{min-height:0}.collapsed .subtitle,.collapsed .state{display:none}.collapsed .header{min-height:44px;padding:0 8px;border-radius:11px}' +
+      '.history{min-width:72px;padding-left:8px;padding-right:8px}' +
+      '.role[hidden],.lang[hidden]{display:none!important}' +
       '</style>' +
       '<section class="card" role="region" aria-label="Subtítulos en vivo de Signal Interpreter">' +
         '<header class="header">' +
@@ -264,7 +267,7 @@
             '<span class="brand"><span class="title">Signal Interpreter</span><span class="subtitle" title="Clic: copiar teléfono/dirección · Ctrl+clic: verificar · Ctrl+Mayús+clic: Linguee">Copiar · Verificar · Linguee</span></span>' +
             '<span class="state"><i class="dot idle"></i><span class="stateLabel">EN ESPERA</span></span>' +
           '</button>' +
-          '<div class="toolbar"><button class="tool auto" type="button" title="Restablecer posición y tamaño automáticos">Auto</button><button class="tool collapse" type="button" aria-expanded="true" title="Contraer o expandir el historial">−</button></div>' +
+          '<div class="toolbar"><button class="tool history" type="button" title="Abrir transcripción completa" aria-label="Abrir transcripción completa">HISTORIAL</button><button class="tool auto" type="button" title="Restablecer posición y tamaño automáticos">Auto</button><button class="tool collapse" type="button" aria-expanded="true" title="Contraer o expandir el historial">−</button></div>' +
         '</header>' +
         '<div class="transcript" role="log" aria-label="Historial completo de subtítulos" aria-live="off" tabindex="0"><div class="empty">Esperando la primera intervención…</div></div>' +
         '<button class="unread" type="button" hidden>Nuevas intervenciones ↓</button>' +
@@ -448,6 +451,7 @@
     var move = root.querySelector(".move");
     var auto = root.querySelector(".auto");
     var collapseButton = root.querySelector(".collapse");
+    var historyButton = root.querySelector(".history");
     var resize = root.querySelector(".resize");
     var unread = root.querySelector(".unread");
     if (isLabPage) {if (move){move.disabled=true;move.style.cursor="default";move.setAttribute("aria-label","Panel de prueba anclado");}if(resize)resize.hidden=true;}
@@ -485,6 +489,34 @@
       applyCollapsedState();
       if (!collapsed) schedulePosition();
       else if (host) host.style.height = "46px";
+    });
+    if (historyButton) listen(historyButton, "click", function () {
+      if (!chrome.runtime || typeof chrome.runtime.sendMessage !== "function") {
+        showActionToast("No se pudo abrir la transcripción", true);
+        return;
+      }
+      historyButton.disabled = true;
+      try {
+        chrome.runtime.sendMessage({
+          type: "OPEN_SIGNAL_LIVE_WINDOW",
+          tabId: sourceTabId != null ? sourceTabId : null,
+          sourceUrl: String(location.href || ""),
+          sourceTitle: String(document.title || "")
+        }, function (response) {
+          historyButton.disabled = false;
+          var runtimeError = chrome.runtime.lastError;
+          if (runtimeError || !response || response.ok !== true) {
+            showActionToast("No se pudo abrir la transcripción", true);
+            reportLifecycle("LIVE_CAPTION_TRANSCRIPT_OPEN_FAILED", { reasonCode: runtimeError ? "runtime-message-error" : "open-failed" }, "warn");
+            return;
+          }
+          showActionToast("Transcripción abierta en pestaña independiente");
+          reportLifecycle("LIVE_CAPTION_TRANSCRIPT_OPENED", { reused: !!response.reused, destination: "tab" });
+        });
+      } catch (_) {
+        historyButton.disabled = false;
+        showActionToast("No se pudo abrir la transcripción", true);
+      }
     });
     if (resize) {
       listen(resize, "pointerdown", startResize);
@@ -791,12 +823,12 @@
 
     var wasNearBottom = nearBottom(container);
     var data = [];
-    rows.slice(-MAX_HISTORY).forEach(function (item) {
+    rows.slice(-MAX_RENDERED_ROWS).forEach(function (item) {
       var spans = item.source === "chrome-live-caption" && typeof core.segmentCaptionText === "function"
         ? core.segmentCaptionText(item.text) : [{ text: item.text, language: item.language || "unknown" }];
       spans.forEach(function (span) { if (span.text.trim()) data.push(Object.assign({}, item, span, { speaker: item.speaker || "unknown" })); });
     });
-    data = data.slice(-MAX_HISTORY);
+    data = data.slice(-MAX_RENDERED_ROWS);
     var routingKey = rows.length + ":" + data.map(function (item) { return item.language + ":" + item.text.length; }).join("|");
     if (routingKey !== lastLanguageRoutingKey) {
       lastLanguageRoutingKey = routingKey;
@@ -809,10 +841,12 @@
       });
     }
     var rendered = container.querySelectorAll(".row");
-    while (rendered.length > data.length) {
-      rendered[rendered.length - 1].remove();
-      rendered = container.querySelectorAll(".row");
+    for (var removeIndex = rendered.length - 1; removeIndex >= data.length; removeIndex -= 1) {
+      rendered[removeIndex].remove();
     }
+    rendered = container.querySelectorAll(".row");
+    var previousRole = null;
+    var previousLanguageLabel = null;
     data.forEach(function (item, index) {
       var node = rendered[index];
       if (!node) {
@@ -827,10 +861,23 @@
       var text = node.querySelector(".text");
       var nextText = String(item.text || "");
       var speakerRole = typeof core.roleForSource === "function" ? core.roleForSource(item.source, language, item.speaker) : core.roleForLanguage(language);
-      if (role && role.textContent !== speakerRole) role.textContent = speakerRole;
-      if (lang && lang.textContent !== core.languageLabel(language)) lang.textContent = core.languageLabel(language);
+      var languageText = core.languageLabel(language);
+      var showRole = index === 0 || speakerRole !== previousRole;
+      var showLanguage = index === 0 || languageText !== previousLanguageLabel;
+      if (role) {
+        var roleText = showRole ? speakerRole : "";
+        if (role.textContent !== roleText) role.textContent = roleText;
+        role.hidden = !showRole;
+      }
+      if (lang) {
+        var langText = showLanguage ? languageText : "";
+        if (lang.textContent !== langText) lang.textContent = langText;
+        lang.hidden = !showLanguage;
+      }
       if (time) time.textContent = formatTime(item.at);
       if (text && text.textContent !== nextText) renderSmartText(text, nextText);
+      previousRole = speakerRole;
+      previousLanguageLabel = languageText;
     });
 
     var empty = container.querySelector(".empty");
