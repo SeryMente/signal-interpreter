@@ -91,6 +91,7 @@
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local" || !changes.signalPresenceGuard) return;
     presenceState = changes.signalPresenceGuard.newValue || { armed: false };
+    renderAutoAnswerStatusOverlay();
     if (runtimeMarker.active) autoAnswer();
   });
   var route = location.pathname;
@@ -100,6 +101,14 @@
   var lastIncomingDialogElement = null;
   var lastIncomingBlockedSignature = "";
   var lastAvailability = "";
+  var platformOnlineActivationPending = false;
+  var platformOnlineActivationTimer = null;
+  var availabilityObserver = null;
+  var availabilityClickListenerInstalled = false;
+  var autoAnswerStatusHost = null;
+  var autoAnswerStatusRoot = null;
+  var autoAnswerStatusTimer = null;
+  var platformActivationMessage = "";
   var readinessTimer = null;
   var lastSpokenCallId = "";
   var lastMediaSignature = "";
@@ -453,8 +462,9 @@
   }
   function isTarget() { return location.hostname === config.targetHost; }
   function isAuthorizedProfilePage() {
+    var path = String(location.pathname || "").replace(/\/+$/, "");
     return location.origin === AUTHORIZED_PROFILE_ORIGIN &&
-      (location.pathname === AUTHORIZED_PROFILE_PATH || location.pathname === AUTHORIZED_PROFILE_PATH + "/");
+      (path === AUTHORIZED_PROFILE_PATH || path.indexOf(AUTHORIZED_PROFILE_PATH + "/") === 0);
   }
   function readAvailabilityState() {
     var controls = Array.from(document.querySelectorAll("button,[role='button'],[aria-label],[title],[data-testid]"))
@@ -471,6 +481,188 @@
     if (/(?:click to go offline|you are online|go offline|status[:\s]+online|online status)/i.test(text)) return "online";
     if (/(?:click to go online|you are offline|go online|status[:\s]+offline|offline status)/i.test(text)) return "offline";
     return "unknown";
+  }
+  function onPlatformAvailabilityClick(event) {
+    if (!event || event.isTrusted === false) return;
+    var target = event.target && event.target.closest
+      ? event.target.closest("button,[role='button']")
+      : null;
+    if (!target || !visibleElement(target)) return;
+    var label = normalized([
+      target.getAttribute("aria-label") || "",
+      target.getAttribute("title") || "",
+      target.textContent || ""
+    ].join(" ")).slice(0, 180);
+    if (!/click\s+to\s+go\s+online|^go\s+online$/i.test(label)) return;
+    if (readAvailabilityState() === "online") return;
+    platformOnlineActivationPending = true;
+    platformActivationMessage = "Confirmando que Cloud Interpreter cambió a Online…";
+    if (platformOnlineActivationTimer) clearTimeout(platformOnlineActivationTimer);
+    platformOnlineActivationTimer = setTimeout(function () {
+      platformOnlineActivationTimer = null;
+      platformOnlineActivationPending = false;
+      platformActivationMessage = "No se confirmó el estado Online. Auto-Answer permanece pausado.";
+      renderAutoAnswerStatusOverlay();
+    }, 15000);
+    renderAutoAnswerStatusOverlay();
+  }
+  function installAvailabilityClickListener() {
+    if (availabilityClickListenerInstalled) return;
+    document.addEventListener("click", onPlatformAvailabilityClick, true);
+    availabilityClickListenerInstalled = true;
+  }
+  function setStatusText(selector, value) {
+    if (!autoAnswerStatusRoot) return;
+    var node = autoAnswerStatusRoot.querySelector(selector);
+    if (node && node.textContent !== String(value || "")) node.textContent = String(value || "");
+  }
+  function removeAutoAnswerStatusOverlay() {
+    if (autoAnswerStatusHost && autoAnswerStatusHost.isConnected) autoAnswerStatusHost.remove();
+    autoAnswerStatusHost = null;
+    autoAnswerStatusRoot = null;
+  }
+  function renderAutoAnswerStatusOverlay() {
+    var callId = currentCallId();
+    var shouldShow = isTarget() && (isAuthorizedProfilePage() || !!callId);
+    if (!shouldShow || !document.documentElement) {
+      removeAutoAnswerStatusOverlay();
+      return;
+    }
+    if (!autoAnswerStatusHost || !autoAnswerStatusHost.isConnected || !autoAnswerStatusRoot) {
+      removeAutoAnswerStatusOverlay();
+      autoAnswerStatusHost = document.createElement("div");
+      autoAnswerStatusHost.id = "signal-interpreter-autoanswer-status";
+      autoAnswerStatusHost.setAttribute("aria-label", "Estado de Signal Interpreter Auto-Answer");
+      autoAnswerStatusHost.style.cssText = "all:initial;position:fixed;z-index:2147483638;top:162px;right:18px;width:292px;max-width:calc(100vw - 24px);pointer-events:none;display:block;";
+      autoAnswerStatusRoot = autoAnswerStatusHost.attachShadow({ mode: "closed" });
+      autoAnswerStatusRoot.innerHTML =
+        '<style>' +
+        ':host{all:initial;color-scheme:light}' +
+        '.card{box-sizing:border-box;display:flex;flex-direction:column;gap:8px;padding:12px 14px;border:1px solid #ece6f7;border-radius:13px;background:rgba(255,255,255,.97);color:#24183b;box-shadow:0 8px 28px rgba(48,27,77,.14);font:12px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;pointer-events:none;backdrop-filter:blur(10px)}' +
+        '.head{display:flex;align-items:center;justify-content:space-between;gap:10px}' +
+        '.brand{font-size:10px;font-weight:850;letter-spacing:.11em;color:#6941a5}' +
+        '.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:999px;background:#f4f0fa;color:#6941a5;font-size:9px;font-weight:850;letter-spacing:.06em}' +
+        '.dot{width:7px;height:7px;border-radius:50%;background:#a78bfa;box-shadow:0 0 0 3px rgba(167,139,250,.14)}' +
+        '.pill.active{background:#e9f8f0;color:#087b50}.pill.active .dot{background:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.13)}' +
+        '.pill.warn{background:#fff6e6;color:#9a6200}.pill.warn .dot{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.13)}' +
+        '.pill.block{background:#fff0f0;color:#b42335}.pill.block .dot{background:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.13)}' +
+        '.title{font-size:16px;line-height:1.2;font-weight:780;letter-spacing:-.02em;color:#2b1c45}' +
+        '.detail{font-size:11px;color:#786b8b;min-height:15px}' +
+        '.foot{display:flex;justify-content:space-between;align-items:center;padding-top:7px;border-top:1px solid #f0ebf7;color:#80748f;font-size:9px;font-weight:750;letter-spacing:.06em}' +
+        '@media(max-width:720px){.card{padding:10px 11px}.title{font-size:14px}}' +
+        '</style>' +
+        '<section class="card" role="status" aria-live="polite">' +
+        '<div class="head"><span class="brand">SIGNAL INTERPRETER</span><span class="pill warn"><i class="dot"></i><span class="state">PAUSADO</span></span></div>' +
+        '<div class="title">Auto-Answer pausado</div>' +
+        '<div class="detail">Solo llamadas telefónicas elegibles · vídeo manual</div>' +
+        '<div class="foot"><span class="availability">CLOUD INTERPRETER</span><span class="call-state">NO CALL</span></div>' +
+        '</section>';
+      (document.documentElement || document.body).appendChild(autoAnswerStatusHost);
+    }
+    var snapshot = autoAnswerReadiness();
+    var availability = snapshot.availability;
+    var tone = "warn", chip = "PAUSADO", title = "Auto-Answer pausado";
+    var detail = "Solo llamadas telefónicas elegibles · vídeo manual";
+    if (callId) {
+      tone = "active"; chip = "LLAMADA"; title = "Llamada en curso";
+      detail = "Auto-Answer no inicia otra llamada mientras esta sesión está activa.";
+    } else if (labSafetyLock) {
+      tone = "block"; chip = "BLOQUEADO"; title = "Laboratorio protegido";
+      detail = "Auto-Answer está bloqueado mientras el laboratorio está activo.";
+    } else if (availability === "offline") {
+      chip = "OFFLINE"; title = "Desconectado de la plataforma";
+      detail = "Al volver a pulsar Online se comprobará la disponibilidad automáticamente.";
+    } else if (availability === "unknown") {
+      chip = "SIN CONFIRMAR"; title = "Disponibilidad no confirmada";
+      detail = "No se observa un estado Online verificable en Cloud Interpreter.";
+    } else if (snapshot.ready) {
+      tone = "active"; chip = "ACTIVO"; title = "Disponible";
+      detail = "Contestador preparado · solo OPI verificada · vídeo manual";
+    } else if (!allowedPresenceIdleSeconds(config.presenceIdleSeconds)) {
+      chip = "CONFIGURAR"; title = "Selecciona inactividad";
+      detail = "Elige una pausa de 1, 3, 5 o 10 minutos en la extensión.";
+    } else if (!snapshot.presenceArmed) {
+      chip = "ESPERANDO"; title = "Confirma Online";
+      detail = "Pulsa Online en Cloud Interpreter para activar Auto-Answer.";
+    } else if (!snapshot.configEnabled) {
+      chip = "DESACTIVADO"; title = "Auto-Answer desactivado";
+      detail = "La disponibilidad de la plataforma no elimina el control manual.";
+    }
+    if (platformActivationMessage) detail = platformActivationMessage;
+    var pill = autoAnswerStatusRoot.querySelector(".pill");
+    if (pill) pill.className = "pill " + tone;
+    setStatusText(".state", chip);
+    setStatusText(".title", title);
+    setStatusText(".detail", detail);
+    setStatusText(".availability", availability === "online" ? "YOU ARE ONLINE" : availability === "offline" ? "YOU ARE OFFLINE" : "CLOUD INTERPRETER");
+    setStatusText(".call-state", callId ? "LLAMADA ACTIVA" : "NO CALL");
+  }
+  function allowedPresenceIdleSeconds(value) {
+    return [60, 180, 300, 600].includes(Number(value));
+  }
+  function startAvailabilityMonitor() {
+    if (!isTarget() || !isAuthorizedProfilePage()) {
+      renderAutoAnswerStatusOverlay();
+      return;
+    }
+    installAvailabilityClickListener();
+    if (!observer && !availabilityObserver && document.documentElement) {
+      availabilityObserver = new MutationObserver(function () {
+        detectAvailability();
+        renderAutoAnswerStatusOverlay();
+      });
+      availabilityObserver.observe(document.documentElement, {
+        subtree: true, childList: true, characterData: true, attributes: true,
+        attributeFilter: ["class", "style", "hidden", "aria-hidden", "aria-label", "disabled"]
+      });
+    }
+    if (!autoAnswerStatusTimer) autoAnswerStatusTimer = setInterval(renderAutoAnswerStatusOverlay, 1200);
+    renderAutoAnswerStatusOverlay();
+  }
+  function stopAvailabilityMonitor() {
+    if (availabilityObserver) { availabilityObserver.disconnect(); availabilityObserver = null; }
+    if (autoAnswerStatusTimer) { clearInterval(autoAnswerStatusTimer); autoAnswerStatusTimer = null; }
+    if (availabilityClickListenerInstalled) {
+      document.removeEventListener("click", onPlatformAvailabilityClick, true);
+      availabilityClickListenerInstalled = false;
+    }
+    if (platformOnlineActivationTimer) { clearTimeout(platformOnlineActivationTimer); platformOnlineActivationTimer = null; }
+    platformOnlineActivationPending = false;
+    removeAutoAnswerStatusOverlay();
+  }
+  function activateAutoAnswerFromPlatform() {
+    platformOnlineActivationPending = false;
+    if (platformOnlineActivationTimer) { clearTimeout(platformOnlineActivationTimer); platformOnlineActivationTimer = null; }
+    platformActivationMessage = "Comprobando actividad del equipo y autorización…";
+    renderAutoAnswerStatusOverlay();
+    chrome.runtime.sendMessage({
+      type: "SIGNAL_PRESENCE_PLATFORM_ONLINE",
+      availability: "online",
+      userGesture: true
+    }).then(function (result) {
+      if (result && result.state) presenceState = result.state;
+      if (result && result.ok) {
+        platformActivationMessage = "";
+        emit("PLATFORM_ONLINE_AUTOANSWER_ARMED", { source: "trusted-platform-click", idleSeconds: result.state && result.state.idleSeconds || null });
+      } else {
+        var messages = {
+          "choose-idle-limit": "Selecciona primero un límite de inactividad en la extensión.",
+          "laboratory": "Bloqueado por el laboratorio aislado.",
+          "presence-unavailable-confirm-again": "El equipo no está activo; Auto-Answer permanece pausado.",
+          "idle-unavailable": "No se pudo verificar la actividad del equipo.",
+          "sender-not-authorized": "Esta ruta de Cloud Interpreter no está autorizada."
+        };
+        platformActivationMessage = messages[result && result.error] || "No se pudo activar Auto-Answer; permanece pausado.";
+        emit("PLATFORM_ONLINE_AUTOANSWER_BLOCKED", { reason: result && result.error || "unknown" }, "warn");
+      }
+      syncPageFavicon();
+      emitAutoAnswerReadiness("platform-online-activation");
+      autoAnswer();
+      renderAutoAnswerStatusOverlay();
+    }).catch(function () {
+      platformActivationMessage = "No se verificó la autorización; Auto-Answer permanece pausado.";
+      renderAutoAnswerStatusOverlay();
+    });
   }
   function syncPageFavicon() {
     var existing = document.querySelector("link[" + PAGE_FAVICON_MARKER + "]");
@@ -491,6 +683,7 @@
       (document.head || document.documentElement).appendChild(existing);
     }
     existing.href = href;
+    renderAutoAnswerStatusOverlay();
   }
   function autoAnswerReadiness() {
     var availability = readAvailabilityState();
@@ -1214,13 +1407,24 @@
   }
   function detectAvailability() {
     var next = readAvailabilityState();
+    var previous = lastAvailability;
+    if (next !== previous) {
+      if (next !== "unknown" || previous !== "unknown") {
+        lastAvailability = next;
+        if (next === "offline" || (next === "unknown" && previous === "online")) {
+          platformOnlineActivationPending = false;
+          if (platformOnlineActivationTimer) { clearTimeout(platformOnlineActivationTimer); platformOnlineActivationTimer = null; }
+          chrome.runtime.sendMessage({ type: "SIGNAL_PRESENCE_END" }).catch(function () {});
+          platformActivationMessage = next === "offline" ? "" : "La disponibilidad no se pudo confirmar; Auto-Answer se pausó.";
+        } else if (next === "online" && platformOnlineActivationPending) {
+          activateAutoAnswerFromPlatform();
+        }
+        if (next !== "unknown") emit("AVAILABILITY_STATE", { state: next });
+      }
+    }
     syncPageFavicon();
     emitAutoAnswerReadiness("availability");
-    if (next !== "unknown" && next !== lastAvailability) {
-      lastAvailability = next;
-      if (next === "offline") chrome.runtime.sendMessage({ type: "SIGNAL_PRESENCE_END" }).catch(function () {});
-      emit("AVAILABILITY_STATE", { state: next });
-    }
+    renderAutoAnswerStatusOverlay();
     return next;
   }
   function mediaSnapshot(reason) {
@@ -2247,6 +2451,7 @@
     });
     window.addEventListener("pageshow", function () {
       if (isTarget() && (config.autoAnswerEnabled || config.observationEnabled) && !observer) start();
+      if (isAuthorizedProfilePage()) startAvailabilityMonitor();
       if (isTarget() && earningsOverlayEnabled()) startOverlayActivationWatchdog("pageshow");
       observePlatformUrl("pageshow");
       emitAutoAnswerReadiness("pageshow");
@@ -2264,6 +2469,8 @@
 
   function start() {
     if (observer || !isTarget() || (!config.autoAnswerEnabled && !config.observationEnabled)) return;
+    if (availabilityObserver) { availabilityObserver.disconnect(); availabilityObserver = null; }
+    installAvailabilityClickListener();
     if (!document.documentElement) {
       document.addEventListener("DOMContentLoaded", start, { once: true });
       return;
@@ -2315,6 +2522,7 @@
     if (mirrorTimer) { clearTimeout(mirrorTimer); mirrorTimer = null; }
     if (mediaTimer) { clearInterval(mediaTimer); mediaTimer = null; }
     if (integrityTimer) { clearInterval(integrityTimer); integrityTimer = null; }
+    stopAvailabilityMonitor();
     stopOverlay(stopReason);
     stop(stopReason);
   }
@@ -2335,6 +2543,8 @@
     else stopOverlayActivationWatchdog(!earningsOverlayEnabled() ? (config.overlaysGlobalEnabled === false ? "global-overlays-hidden" : "preference-disabled") : "host-mismatch");
     if (isTarget() && (config.autoAnswerEnabled || config.observationEnabled)) start();
     else stop("disabled-or-host-mismatch");
+    if (isAuthorizedProfilePage()) startAvailabilityMonitor();
+    else renderAutoAnswerStatusOverlay();
     detectAvailability();
     syncPageFavicon();
     autoAnswer();
