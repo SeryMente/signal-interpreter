@@ -184,8 +184,9 @@ const micStart=content.slice(content.indexOf("async function startInterpreterMic
   content.indexOf("function toggleInterpreterMicCapture()"));
 assert.ok(micStart.includes("navigator.mediaDevices.getUserMedia") && micStart.includes("new MediaRecorder(stream"),
   "the interpreter mic is acquired only by the in-call content control");
-assert.ok(micStart.indexOf("SIGNAL_INTERPRETER_MIC_POLICY_GET") < micStart.indexOf("navigator.mediaDevices.getUserMedia"),
-  "ZDR/key/call preflight precedes microphone permission");
+const micPermissionCall=micStart.indexOf("stream = await navigator.mediaDevices.getUserMedia(");
+assert.ok(micStart.indexOf("SIGNAL_INTERPRETER_MIC_POLICY_GET") < micPermissionCall && micPermissionCall>=0,
+  "ZDR/key/call preflight precedes the actual microphone permission request");
 assert.ok(content.includes("voiceControl.addEventListener(\"click\", toggleInterpreterMicCapture)"),
   "microphone capture requires an explicit in-call user gesture");
 assert.ok(content.includes("stopInterpreterMicCapture(\"call-route-left\",true)") &&
