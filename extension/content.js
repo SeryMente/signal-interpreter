@@ -2542,13 +2542,10 @@
       trackRoute("mutation");
       detectAvailability();
       autoAnswer();
-      mediaSnapshot("mutation");
-      mapScreen("mutation");
+      // Heavy diagnostics and visual refreshes use their own slower cadence/route hooks.
+      // Do not rescan media, recount the full DOM, or repaint overlays on every mutation batch.
       schedulePlatformMirror("mutation");
-      renderAutoAnswerStatusOverlay();
-      renderCallOverlayControl();
-      if (currentCallId()) renderOverlay();
-    }, 100);
+    }, 150);
   }
 
   function start() {
