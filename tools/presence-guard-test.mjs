@@ -74,4 +74,40 @@ const duringCall=harness();await duringCall.guard.arm(60);duringCall.chrome.tabs
 const end=harness();await end.guard.arm(60);await end.message({type:'SIGNAL_PRESENCE_END'},end.sender);eq(end.guard.snapshot().armed,false,'ending work session revokes');
 // Current media is untouched: the module has no call/hangup/audio mutation surface.
 assert(!/\.click\(|hangup|\.pause\(|\.stop\(|getUserMedia|tabCapture/.test(code));checks++;
+const platform = harness({ effectifConfig: { autoAnswerEnabled: false, presenceIdleSeconds: 180 } });
+const logsUrl = PROFILE + "/logs";
+platform.chrome.tabs.get = async () => ({ url: logsUrl });
+const logsSender = { ...platform.sender, url: logsUrl, tab: { id: 7, url: logsUrl } };
+const platformArm = await platform.message({
+  type: "SIGNAL_PRESENCE_PLATFORM_ONLINE", availability: "online", userGesture: true
+}, logsSender);
+eq(platformArm.ok, true, "trusted Online button arms from the authorized Statistics subroute");
+eq(platformArm.state.armed, true, "platform Online event creates ephemeral armed state");
+eq(platform.data.effectifConfig.autoAnswerEnabled, true, "platform Online activates the Auto-Answer preference");
+eq(platform.data.effectifConfig.presenceIdleSeconds, 180, "platform activation preserves the explicitly selected idle threshold");
+eq((await platform.guard.authorize({ modality: "OPI", requestId: "platform-opi" }, logsSender)).ok, true, "OPI authorization accepts the same authorized profile subroute");
+
+const untrustedPlatform = harness({ effectifConfig: { autoAnswerEnabled: false, presenceIdleSeconds: 60 } });
+const untrustedResult = await untrustedPlatform.message({
+  type: "SIGNAL_PRESENCE_PLATFORM_ONLINE", availability: "online", userGesture: false
+}, untrustedPlatform.sender);
+eq(untrustedResult.ok, false, "platform state without a trusted user gesture cannot arm");
+eq(untrustedPlatform.guard.snapshot().armed, false, "untrusted Online state remains disarmed");
+
+const noThreshold = harness({ effectifConfig: { autoAnswerEnabled: false, presenceIdleSeconds: null } });
+const noThresholdResult = await noThreshold.message({
+  type: "SIGNAL_PRESENCE_PLATFORM_ONLINE", availability: "online", userGesture: true
+}, noThreshold.sender);
+eq(noThresholdResult.error, "choose-idle-limit", "platform activation never invents an idle threshold");
+eq(noThreshold.guard.snapshot().armed, false, "missing idle policy remains fail-closed");
+
+const foreignProfile = harness({ effectifConfig: { autoAnswerEnabled: false, presenceIdleSeconds: 60 } });
+const foreignSender = { ...foreignProfile.sender, url: "https://example.org/profile/logs", tab: { id: 7, url: "https://example.org/profile/logs" } };
+eq((await foreignProfile.message({
+  type: "SIGNAL_PRESENCE_PLATFORM_ONLINE", availability: "online", userGesture: true
+}, foreignSender)).error, "sender-not-authorized", "foreign origin cannot arm from a lookalike route");
+
+await platform.message({ type: "SIGNAL_PRESENCE_END" }, logsSender);
+eq(platform.guard.snapshot().armed, false, "Offline/session end from Statistics subroute revokes presence");
+
 console.log(JSON.stringify({suite:'presence-guard',environment:'Node VM / synthetic Chrome APIs',checks,result:'PASS',windowsAccepted:false}));
