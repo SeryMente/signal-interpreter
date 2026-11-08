@@ -1,32 +1,36 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-757409a2-6403-4b9a-9d18-2ba1e4ad4f45",
-  "createdAt": "2026-11-08T18:17:40.797Z",
-  "trigger": "event-window",
+  "batchId": "batch-f6779de3-176f-408f-805b-75dd755849ef",
+  "createdAt": "2026-11-08T18:18:18.538Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.45",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "bc2e0e91-c0e7-4c01-af6e-c0c193bdd690",
-      "sequence": 1819,
-      "timestamp": "2026-11-08T18:17:32.249Z",
-      "ingestedAt": "2026-11-08T18:17:32.249Z",
+      "id": "6833345b-66b5-4600-b14d-f4d2f2b49329",
+      "sequence": 1820,
+      "timestamp": "2026-11-08T18:18:10.275Z",
+      "ingestedAt": "2026-11-08T18:18:10.357Z",
       "level": "info",
-      "category": "PORTAL",
-      "component": "webRequest",
+      "category": "RUNTIME",
+      "component": "content",
       "extensionVersion": "0.10.45",
-      "host": "",
-      "url": "",
+      "host": "app.cloudinterpreter.com",
+      "url": "https://app.cloudinterpreter.com/profile/<ID>",
       "phase": "event",
-      "action": "NETWORK_ACTIVITY_WINDOW",
+      "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "cfaa7105-64de-4051-8e43-4c1662031246",
+      "traceId": "e662f3ee-c486-471f-8566-8762b722520b",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": null,
-      "session": {},
+      "tabId": 1600161561,
+      "session": {
+        "sessionId": "d925942e-cbff-4e[PHONE]c52b77b8e6d",
+        "pageLifecycleId": "7b6db408-dee4-4624-9d30-9ddcd26ebc9c",
+        "callId": null
+      },
       "environment": {
         "extensionVersion": "0.10.45",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -34,50 +38,189 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "heartbeat",
       "error": null,
       "metrics": {},
-      "context": {},
+      "context": {
+        "route": "/profile/<ID>",
+        "visibility": "hidden",
+        "focused": false,
+        "online": true,
+        "monotonicMs": 3632101,
+        "callId": null,
+        "pageLifecycleId": "7b6db408-dee4-4624-9d30-9ddcd26ebc9c",
+        "sourceTabId": 1600161561,
+        "sourceWindowId": 1600160883,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz"
+      },
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "windowSeconds": 15,
-        "endpointCount": 1,
-        "endpoints": [
-          {
-            "method": "POST",
-            "type": "xmlhttprequest",
-            "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
-            "statusCode": 200,
-            "count": 1,
-            "totalDurationMs": 759,
-            "maxDurationMs": 759,
-            "avgDurationMs": 759
-          }
-        ]
+        "ready": false,
+        "attemptId": null,
+        "availability": "online",
+        "authorizedProfile": true,
+        "configEnabled": true,
+        "labSafetyLock": false,
+        "presenceArmed": false,
+        "presenceReason": "idle-or-locked-confirm-again",
+        "presenceGeneration": 2,
+        "blockedReasons": [
+          "IDLE_OR_LOCKED_CONFIRM_AGAIN"
+        ],
+        "route": "/profile/<ID>",
+        "exactUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz",
+        "runtimeVersion": "0.10.45",
+        "reason": "heartbeat"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "3288e6ce-6bd6-45ff-bc9c-dea64e67df35",
+      "sequence": 1821,
+      "timestamp": "2026-11-08T18:18:10.276Z",
+      "ingestedAt": "2026-11-08T18:18:10.859Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "content",
+      "extensionVersion": "0.10.45",
+      "host": "app.cloudinterpreter.com",
+      "url": "https://app.cloudinterpreter.com/profile/<ID>",
+      "phase": "event",
+      "action": "PERFORMANCE_HEARTBEAT",
+      "outcome": "observed",
+      "traceId": "4d722df8-4bea-417f-96e0-42711f40990d",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 1600161561,
+      "session": {
+        "sessionId": "d925942e-cbff-4e[PHONE]c52b77b8e6d",
+        "pageLifecycleId": "7b6db408-dee4-4624-9d30-9ddcd26ebc9c",
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.45",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "heartbeat",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/profile/<ID>",
+        "visibility": "hidden",
+        "focused": false,
+        "online": true,
+        "monotonicMs": 3632101,
+        "callId": null,
+        "pageLifecycleId": "7b6db408-dee4-4624-9d30-9ddcd26ebc9c",
+        "sourceTabId": 1600161561,
+        "sourceWindowId": 1600160883,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "reason": "heartbeat",
+        "route": "/profile/<ID>",
+        "uptimeMs": 3632101,
+        "callId": null,
+        "document": {
+          "readyState": "complete",
+          "visibility": "hidden",
+          "focused": false,
+          "online": true,
+          "title": "My Profile - Cloud Interpreter",
+          "nodes": 518
+        },
+        "viewport": {
+          "width": 1920,
+          "height": 911,
+          "devicePixelRatio": 1
+        },
+        "navigation": {
+          "type": "reload",
+          "durationMs": 4416,
+          "domInteractiveMs": 346,
+          "domContentLoadedMs": 4415,
+          "loadMs": 4416,
+          "transferBytes": 14288
+        },
+        "connection": {
+          "effectiveType": "4g",
+          "downlinkMbps": 10,
+          "rttMs": 150,
+          "saveData": false
+        },
+        "memory": {
+          "usedBytes": 36116139,
+          "totalBytes": 39306835,
+          "limitBytes": 4395630592
+        },
+        "performance": {
+          "longTasks": 1,
+          "longTaskTotalMs": 4063,
+          "longestTaskMs": 4063,
+          "layoutShifts": 1,
+          "layoutShiftScore": 0.001617510413945087
+        },
+        "mutations": {
+          "batches": 0,
+          "addedNodes": 0,
+          "removedNodes": 0,
+          "attributes": 0,
+          "textChanges": 0
+        },
+        "resources": {
+          "newResources": 0,
+          "byType": {},
+          "totalDurationMs": 0,
+          "transferBytes": 0,
+          "slowest": []
+        },
+        "controls": {
+          "buttons": 4,
+          "inputs": 7,
+          "selects": 0,
+          "dialogs": 0,
+          "media": 0,
+          "iframes": 0
+        }
       }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 1819,
-    "lastSequence": 1819,
-    "firstTimestamp": "2026-11-08T18:17:32.249Z",
-    "lastTimestamp": "2026-11-08T18:17:32.249Z",
+    "firstSequence": 1820,
+    "lastSequence": 1821,
+    "firstTimestamp": "2026-11-08T18:18:10.275Z",
+    "lastTimestamp": "2026-11-08T18:18:10.276Z",
     "actions": {
-      "NETWORK_ACTIVITY_WINDOW": 1
+      "AUTO_ANSWER_READINESS": 1,
+      "PERFORMANCE_HEARTBEAT": 1
     },
     "categories": {
-      "PORTAL": 1
+      "RUNTIME": 2
     }
   }
 }
