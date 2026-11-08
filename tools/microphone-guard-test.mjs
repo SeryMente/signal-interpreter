@@ -6,7 +6,7 @@ if(background.includes("if(config.soundEnabled!==false){"))throw Error("micropho
 if(!background.includes("function requestKeyboardMicrophoneToggle(source)"))throw Error("hotkey-command-and-fallback-dispatch-missing");
 if(!background.includes("never-reapply-stale-mute-on-unmute-failure"))throw Error("stale-remute-regression");
 if(!fs.readFileSync("extension/mic-guard-main.js","utf8").includes("recoveryBaselineAttempted"))throw Error("pre-unmute-baseline-recovery-missing");
-if(!fs.readFileSync("extension/mic-guard-main.js","utf8").includes("recoveredBaseline:recoveredBaseline"))throw Error("pre-unmute-recovery-observability-missing");
+if(!fs.readFileSync("extension/mic-guard-main.js","utf8").includes("recoveredBaseline: recoveredBaseline"))throw Error("pre-unmute-recovery-observability-missing");
 if(background.includes("var recoveryMuted=previousMuted;"))throw Error("previous-muted-state-can-lock-an-unmute");
 if(!content.includes("EXTENSION_MICROPHONE_KEYBOARD_FALLBACK_TRIGGERED"))throw Error("content-hotkey-fallback-missing");
 class E{constructor(){this.l=new Map()}addEventListener(t,f){let a=this.l.get(t)||[];a.push(f);this.l.set(t,a)}removeEventListener(t,f){this.l.set(t,(this.l.get(t)||[]).filter(x=>x!==f))}dispatchEvent(e){for(const f of(this.l.get(e.type)||[]).slice())f(e)}}
