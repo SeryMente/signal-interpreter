@@ -33,7 +33,7 @@ assert(clickHandler.includes("event.isTrusted === false"), "synthetic/scripted c
 assert(clickHandler.includes("click\\s+to\\s+go\\s+online"), "only explicit platform Online control starts activation");
 assert(clickHandler.includes("platformOnlineActivationPending = true"), "activation intent is held pending platform confirmation");
 
-const detectStart = source.indexOf("  function detectAvailability() {");
+const detectStart = source.indexOf("  function detectAvailability(");
 const detectEnd = source.indexOf("  function mediaSnapshot(", detectStart);
 assert(detectStart >= 0 && detectEnd > detectStart, "availability transition boundaries");
 const detection = source.slice(detectStart, detectEnd);
