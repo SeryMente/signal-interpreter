@@ -1,90 +1,33 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-08T17:29:52.387Z",
-  "windowStartAt": "2026-11-08T17:19:52.387Z",
-  "windowEndAt": "2026-11-08T17:29:52.387Z",
+  "generatedAt": "2026-11-08T17:30:19.031Z",
+  "windowStartAt": "2026-11-08T17:20:19.031Z",
+  "windowEndAt": "2026-11-08T17:30:19.031Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 219
+    "client-clock-unverified": 210
   },
-  "sourceBatchCount": 22,
+  "sourceBatchCount": 20,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 11598,
+  "receiptUnverifiedBatchCount": 11599,
   "medianClientClockSkewMs": null,
-  "eventCount": 219,
+  "eventCount": 210,
   "summary": {
-    "attempts": 1,
+    "attempts": 0,
     "answered": 0,
     "missed": 0,
-    "connectFailedNoRoute": 1,
+    "connectFailedNoRoute": 0,
     "ringUnmatched": 0,
     "unresolved": 0,
     "ringSignals": 0,
     "dialogsDetected": 0,
     "buttonsFound": 0,
     "buttonsNotFound": 0,
-    "readinessSamples": 162,
+    "readinessSamples": 156,
     "blocked": 0,
     "clicks": 0
   },
-  "attempts": [
-    {
-      "attemptId": "e4ab9e7d-ca95-4c0e-9bc7-d19df25a1e65",
-      "status": "connect_failed_no_route",
-      "modality": null,
-      "tabId": 0,
-      "detectedAt": "2026-11-08T17:19:53.723Z",
-      "closedAt": "2026-11-08T17:19:53.723Z",
-      "clickedAt": null,
-      "answeredAt": null,
-      "missedAt": null,
-      "outcomeReason": "connect_clicked_no_call_route",
-      "button": {
-        "found": false,
-        "notFound": false,
-        "disabled": false
-      },
-      "readiness": {
-        "samples": 0,
-        "last": null
-      },
-      "blockedEvents": [],
-      "ringSignalCount": 0,
-      "clickToAnswerLatencyMs": null,
-      "detectionToAnswerLatencyMs": null,
-      "callRefs": [],
-      "missingSignals": [
-        "INCOMING_DIALOG_DETECTED"
-      ],
-      "eventCount": 2,
-      "timeline": [
-        {
-          "at": "2026-11-08T17:19:53.723Z",
-          "action": "INCOMING_DIALOG_CLOSED_OBSERVED",
-          "level": "info",
-          "reasonCode": "dialog-removed",
-          "details": {
-            "reason": "dialog-removed",
-            "reasonCode": "dialog-removed"
-          },
-          "eventId": "31838121-f09d-49da-9a91-8ba1e03b34af",
-          "sequence": 736
-        },
-        {
-          "at": "2026-11-08T17:20:00.464Z",
-          "action": "CONNECT_FLOW_FAILED_NO_CALL_ROUTE",
-          "level": "warn",
-          "reasonCode": "connect_clicked_no_call_route",
-          "details": {
-            "reason": "connect_clicked_no_call_route",
-            "reasonCode": "connect_clicked_no_call_route"
-          },
-          "eventId": "85ccd933-c6a0-4400-84a3-46b9a8d480b2",
-          "sequence": 743
-        }
-      ]
-    }
-  ],
+  "attempts": [],
   "privacy": {
     "rawTranscriptIncluded": false,
     "rawAudioIncluded": false,
