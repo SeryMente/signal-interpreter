@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-bbd85b73-00dd-46df-b997-11a86c46829d",
-  "createdAt": "2026-11-08T19:31:56.010Z",
+  "batchId": "batch-56d07338-303b-4f54-8bf2-9b34ac0dd374",
+  "createdAt": "2026-11-08T19:32:39.654Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.40",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "092e58f1-e77b-4c03-a4fe-f708f294da77",
-      "sequence": 842,
-      "timestamp": "2026-11-08T19:31:34.212Z",
-      "ingestedAt": "2026-11-08T19:31:34.279Z",
+      "id": "0c7b32af-55b6-4d89-9169-69c6403fca4f",
+      "sequence": 845,
+      "timestamp": "2026-11-08T19:32:34.220Z",
+      "ingestedAt": "2026-11-08T19:32:34.282Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -20,7 +20,7 @@
       "phase": "event",
       "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "f0e1f3ff-c164-45ee-9e12-c3b7cde63814",
+      "traceId": "4916b686-c9d4-46b9-8501-1b2cbcb3d160",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +46,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 313455,
+        "monotonicMs": 373463,
         "callId": null,
         "pageLifecycleId": "e6d6c72c-26ca-460c-9e7b-8d24b1b9b42c",
         "sourceTabId": 1680554836,
@@ -79,10 +79,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "c1ad509a-e724-4a9b-9f14-5e62d7038c5e",
-      "sequence": 843,
-      "timestamp": "2026-11-08T19:31:34.213Z",
-      "ingestedAt": "2026-11-08T19:31:34.792Z",
+      "id": "62826075-a9bc-4197-9355-15638149be03",
+      "sequence": 846,
+      "timestamp": "2026-11-08T19:32:34.220Z",
+      "ingestedAt": "2026-11-08T19:32:34.759Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -92,7 +92,7 @@
       "phase": "event",
       "action": "PERFORMANCE_HEARTBEAT",
       "outcome": "observed",
-      "traceId": "f47158a7-9208-46c1-83d2-3c108268b67a",
+      "traceId": "1af67106-f61d-4da3-a95f-f810f37a762a",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -118,7 +118,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 313456,
+        "monotonicMs": 373464,
         "callId": null,
         "pageLifecycleId": "e6d6c72c-26ca-460c-9e7b-8d24b1b9b42c",
         "sourceTabId": 1680554836,
@@ -135,7 +135,7 @@
       "payload": {
         "reason": "heartbeat",
         "route": "/profile/<ID>",
-        "uptimeMs": 313455,
+        "uptimeMs": 373463,
         "callId": null,
         "document": {
           "readyState": "complete",
@@ -165,8 +165,8 @@
           "saveData": false
         },
         "memory": {
-          "usedBytes": 25337313,
-          "totalBytes": 29743809,
+          "usedBytes": 28647960,
+          "totalBytes": 32968168,
           "limitBytes": 4395630592
         },
         "performance": {
@@ -199,71 +199,26 @@
           "iframes": 0
         }
       }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "27264f84-48e1-4e64-aaee-5811579b97ec",
-      "sequence": 844,
-      "timestamp": "2026-11-08T19:31:41.051Z",
-      "ingestedAt": "2026-11-08T19:31:41.051Z",
-      "level": "warn",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.40",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "OBSERVATION_SYNC_RETRY_SCHEDULED",
-      "outcome": "observed",
-      "traceId": "032334e3-b304-411e-9b6a-8ddf81dfbe0a",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.40",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": "Error: Relay HTTP 409",
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "retryMs": 15000,
-        "error": "Error: Relay HTTP 409",
-        "sequence": null
-      }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 2,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 842,
-    "lastSequence": 844,
-    "firstTimestamp": "2026-11-08T19:31:34.212Z",
-    "lastTimestamp": "2026-11-08T19:31:41.051Z",
+    "firstSequence": 845,
+    "lastSequence": 846,
+    "firstTimestamp": "2026-11-08T19:32:34.220Z",
+    "lastTimestamp": "2026-11-08T19:32:34.220Z",
     "actions": {
       "AUTO_ANSWER_READINESS": 1,
-      "PERFORMANCE_HEARTBEAT": 1,
-      "OBSERVATION_SYNC_RETRY_SCHEDULED": 1
+      "PERFORMANCE_HEARTBEAT": 1
     },
     "categories": {
-      "RUNTIME": 3
+      "RUNTIME": 2
     }
   }
 }
