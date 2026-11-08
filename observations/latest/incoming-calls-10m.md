@@ -1,38 +1,20 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-08T19:26:07.941Z → 2026-11-08T19:36:07.941Z
-- Generado: 2026-11-08T19:36:07.941Z
-- Eventos: 404 · lotes fuente: 36
+- Ventana UTC: 2026-11-08T19:26:39.194Z → 2026-11-08T19:36:39.194Z
+- Generado: 2026-11-08T19:36:39.194Z
+- Eventos: 278 · lotes fuente: 31
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 404
+- Reloj cliente sin verificación de recibo: 278
 
 ## Resumen
-- Intentos observados: 2
+- Intentos observados: 1
 - Contestadas: 0 · perdidas confirmadas: 1
-- Clic sin ruta: 0 · timbrados sin diálogo correlacionado: 1
-- Sin desenlace concluyente: 1
+- Clic sin ruta: 0 · timbrados sin diálogo correlacionado: 0
+- Sin desenlace concluyente: 0
 - Detecciones de diálogo/botón: 1 / 1
 - Bloqueos de autocontestación: 2 · clics: 0
 
 ## Intentos
-
-### ring-56f6d1b1f131f3d576e0402a — ring_unmatched
-- Detectada: 2026-11-08T19:26:13.576Z · modalidad: desconocida
-- Tab: 1680554836 · eventos: 11
-- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: null
-- Desenlace/motivo: null
-- Señales ausentes: INCOMING_DIALOG_DETECTED, TERMINAL_CALL_OUTCOME
-  - 2026-11-08T19:26:08.821Z · PLATFORM_SURFACE_SNAPSHOT · info
-  - 2026-11-08T19:26:09.320Z · PAGE_LIFECYCLE · info
-  - 2026-11-08T19:26:10.159Z · PAGE_LIFECYCLE · info
-  - 2026-11-08T19:26:11.551Z · PAGE_LIFECYCLE · info
-  - 2026-11-08T19:26:12.312Z · AUTO_ANSWER_BOOTSTRAP_REQUESTED · info
-  - 2026-11-08T19:26:12.559Z · AUTO_ANSWER_BOOTSTRAP_INJECTED · info
-  - 2026-11-08T19:26:13.576Z · INCOMING_RING_SIGNAL · info
-  - 2026-11-08T19:26:14.527Z · PAGE_LIFECYCLE · info
-  - 2026-11-08T19:26:16.508Z · PAGE_LIFECYCLE · info
-  - 2026-11-08T19:26:17.907Z · PAGE_LIFECYCLE · info
-  - 2026-11-08T19:26:18.458Z · PAGE_LIFECYCLE · info
 
 ### 471263e4-f995-429c-9358-eed8ed6b94b6 — missed
 - Detectada: 2026-11-08T19:33:37.927Z · modalidad: OPI
