@@ -20,6 +20,7 @@ assert.ok(interpreterPublish.includes("appendCaptionOverlayHistory")&&interprete
 assert.doesNotMatch(interpreterPublish,/persistSignalSegment|KhoraTelemetryDB|appendEvent\(/,"interpreter text streams without persistence/telemetry");
 const hydrate=bodyBetween(live,'chrome.runtime.sendMessage({type:"GET_SIGNAL_INTERPRETER_STATE"})','window.addEventListener("beforeunload"',"LIVE session hydration");
 assert.ok(hydrate.includes("r.captionHistory||[]")&&hydrate.includes("s.segments"));
+assert.ok(hydrate.includes("r.transcript"),"persisted manual transcript rows are rehydrated before session-only captions");
 assert.doesNotMatch(hydrate,/UPDATE_SIGNAL_SESSION|ADD_SIGNAL_SESSION_SEGMENT|persistSignalSegment|KhoraTelemetryDB/,"hydration does not persist transcript text");
 const addSegment=bodyBetween(live,"function addSegment(e)","function handle(e)","LIVE segment upsert");
 assert.ok(addSegment.includes("existing>=0"),"revised partial captions update the same row id");
