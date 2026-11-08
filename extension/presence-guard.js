@@ -90,8 +90,12 @@
       var url = new URL(String(raw || ""));
       var profile = new URL(PROFILE);
       var basePath = profile.pathname.replace(/\/+$/, "");
-      var path = url.pathname.replace(/\/+$/, "");
-      return url.origin === profile.origin && (path === basePath || path.indexOf(basePath + "/") === 0);
+      var path = decodeURIComponent(url.pathname).replace(/\/+$/, "");
+      if (url.origin !== profile.origin) return false;
+      if (path !== basePath && path.indexOf(basePath + "/") !== 0) return false;
+      var suffix = path.slice(basePath.length);
+      if (/(^|\/)call(?:\/|$)/i.test(suffix)) return false;
+      return true;
     } catch (_) { return false; }
   }
   function profileDiagnostics(sender) {
