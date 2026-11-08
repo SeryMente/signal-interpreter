@@ -63,7 +63,7 @@
   }
 
   function stopMuteEnforcement() {
-    if (timer) clearInterval(timer);
+    if (timer !== null) clearInterval(timer);
     timer = null;
     state.timer = null;
   }
