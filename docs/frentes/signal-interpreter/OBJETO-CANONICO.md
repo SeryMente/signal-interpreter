@@ -99,7 +99,7 @@ Sandbox Linux: lógica real y DOM Chromium con eventos sintéticos para candidat
 
 ### SI-OP-01 — El puente Chrome Native Messaging forma parte de la materialización Windows
 
-<text>Estado: PROVISIONAL · Regla de operación del frente · 2026-11-08</text>
+**Estado:** PROVISIONAL · Regla de operación del frente · 2026-11-08
 
 Cuando el operador solicite materializar Signal Interpreter en el Escritorio del usuario operativo de Windows, el procedimiento estándar debe instalar y verificar el puente Chrome Native Messaging como parte de la misma materialización. No debe dejarse como paso opcional ni como tarea posterior.
 
