@@ -105,15 +105,31 @@
       "evento_actualizacion": "SIGNAL-INTERPRETER-TRANSFER-20261108-G13-D8FB3E62"
     },
     "revision_objeto_observada": "SeryMente/signal-interpreter/main:docs/frentes/signal-interpreter/OBJETO-CANONICO.md; blob 6d1aeb99f3f710986b032a03073e02ee0f55d578; main HEAD ce66327fe8395ed5c9ba0ff7991cd96ea9beef2b.",
-    "resultado_mutacion": "COMMIT_PENDING",
+    "resultado_mutacion": "COMMITTED_AND_READBACK_VERIFIED",
     "verificacion": {
-      "estado": "pending",
+      "estado": "read_back_verified",
       "readback_required": true,
-      "readback_verified": false,
-      "initial_commit_sha": "PENDING",
-      "verified_blob_sha": "PENDING",
-      "verified_at_utc": "PENDING",
-      "method": "Lectura de CONTROL-RESPONSABILIDAD.json desde main y cotejo de generación, propietarios, autorización, UUIDv7 local y SHA."
+      "readback_verified": true,
+      "initial_commit_sha": "62482844b28cba2d6633e7e12d9325609aa50cc5",
+      "verified_blob_sha": "f6d6c0658f8450eb16bfbd20d04e0a6532b5ccb6",
+      "verified_at_utc": "2026-11-08T19:30:31.278Z",
+      "method": "Fetch main CONTROL-RESPONSABILIDAD.json; compare blob SHA, generation, current/previous owner, explicit authorization, event, UUIDv7 version/variant, pending FOL1 state and archived G12 transfer.",
+      "fields_verified": [
+        "titular anterior G12 y condición SUSTITUIDO",
+        "titular nuevo G13, rol agente_unico y condición ACTIVO",
+        "evento SIGNAL-INTERPRETER-TRANSFER-20261108-G13-D8FB3E62",
+        "autorización literal «Si transfer repsonsiblkity»",
+        "UUIDv7 local versión 7 y variante RFC 9562",
+        "folio no asignado porque FOL1 no está activa",
+        "transferencia G12 anterior archivada en transferencias_anteriores",
+        "precondición SHA y generación 12"
+      ],
+      "uuidv7_validation": {
+        "version_nibble": "7",
+        "variant_nibble": "8",
+        "format": "UUIDv7 local conforme a RFC 9562",
+        "status": "PASS"
+      }
     },
     "scope_limit": "Transferencia exclusiva de Signal Interpreter. Autoriza análisis, diseño, desarrollo offline, pruebas automatizadas, CI, documentación/persistencia y preparación del paquete íntegro en EP/Signal-Interpreter/extension en PC-13 mediante RDC de terminal. No autoriza llamadas reales, intervención en conversaciones, GUI de Chrome, recarga/reinicio de Chrome, despliegue, release ni aceptación funcional; estos permanecen reservados al operador."
   },
@@ -984,7 +1000,7 @@
       "chrome": "No recargar/reiniciar desde RDC."
     },
     "modo_operativo_actual": "AGENTE_UNICO",
-    "estado": "TRANSFERENCIA_G12_A_G13_COMMIT_PENDING",
+    "estado": "TRANSFERENCIA_G12_A_G13_COMMITTED_AND_READBACK_VERIFIED",
     "alcance": "Signal Interpreter solamente; no se propaga a otros frentes."
   },
   "modo_operativo_actual": "AGENTE_UNICO",
