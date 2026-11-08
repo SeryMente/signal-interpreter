@@ -7,7 +7,7 @@ const content = read("../extension/content.js");
 const background = read("../extension/background.js");
 const manifest = JSON.parse(read("../manifest.json"));
 
-assert.equal(manifest.version, "0.10.40");
+assert.equal(manifest.version, "0.10.43");
 assert.match(content, /location\.pathname\.match\(\/\^\\\/call\\/);
 assert.match(content, /signal-interpreter-earnings-overlay/);
 assert.match(content, /var routeCallId = currentCallId\(\);[\s\S]*?if \(!routeCallId\)/);
@@ -34,7 +34,7 @@ assert.match(content, /activeCallEarnings && activeCallEarnings\.callId === stat
 assert.match(content, /reconcileOverlayDateRollover\(\)/);
 assert.match(content, /EFFECTIF_REFRESH_EXCHANGE_RATE/);
 assert.match(content, /totalUsd = baseUsd \+ \(activePeriod \? liveUsd : 0\)/);
-assert.match(content, /setInterval\(renderOverlay, 100\)/);
+assert.match(content, /setInterval\(renderOverlay, 500\)/);
 
 const historicalFn = background.match(/async function syncOfficialEarningsRangeUnsafe\(period\)\{[\s\S]*?\n  \}\n  function syncOfficialPlatformData/);
 assert(historicalFn, "syncOfficialEarningsRangeUnsafe no encontrado");
