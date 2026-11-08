@@ -997,8 +997,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     try {
       var target = console[level === "error" ? "error" : "log"];
       var printable = payload || {};
-      if (printable && typeof printable === "object") {
-        try { printable = JSON.stringify(printable); } catch (_) { printable = String(printable); }
+      if (printable && typeof printable === "object") {        try { printable = JSON.stringify(printable); } catch (_) { printable = String(printable); }
       }
       target.call(console, "[SIGNAL-INTERPRETER]", iso(), action, printable);
     } catch (_) {}
@@ -1963,12 +1962,13 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   }
   async function setActionIndicator(tabId, status) {
     if (!Number.isFinite(Number(tabId))) return;
-    var colors = { active: "#22c55e", waiting: "#f59e0b", offline: "#6b7280", disabled: "#ef4444" };
+    var colors = { active: "#22c55e", waiting: "#f59e0b", offline: "#6b7280", disabled: "#ef4444", blue: "#3b82f6" };
     var titles = {
       active: "Signal Interpreter · AUTO-ANSWER ACTIVO · Profile autorizado · You are Online",
       waiting: "Signal Interpreter · ESPERA · Profile autorizado, disponibilidad no confirmada",
       offline: "Signal Interpreter · BLOQUEADO · You are Offline",
-      disabled: "Signal Interpreter · AUTO-ANSWER DESACTIVADO"
+      disabled: "Signal Interpreter · AUTO-ANSWER DESACTIVADO",
+      blue: "Signal Interpreter · Cloud Interpreter activo · pestaña externa"
     };
     var statusKey = colors[status] ? status : "disabled";
     try {
@@ -1984,32 +1984,58 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       record("ACTION_INDICATOR_ERROR", { tabId: Number(tabId), status: statusKey, error: String(error) }, "warn", "action");
     }
   }
+  function aggregateCloudActionStatus(statuses) {
+    var values = Array.isArray(statuses) ? statuses : [];
+    if (values.indexOf("active") !== -1) return "active";
+    if (values.indexOf("disabled") !== -1) return "disabled";
+    if (values.indexOf("offline") !== -1) return "offline";
+    return "waiting";
+  }
+  function resolveCloudActionStatus(tabId, targetUrl, enabled) {
+    if (!isAuthorizedCloudUrl(targetUrl)) return null;
+    if (!isAuthorizedProfileUrl(targetUrl)) return "waiting";
+    var readiness = tabReadiness.get(Number(tabId));
+    var availability = tabAvailability.get(Number(tabId)) || "unknown";
+    var fresh = readiness && Number.isFinite(Number(readiness.at)) && Date.now() - Number(readiness.at) <= READINESS_MAX_AGE_MS;    var exactReady = !!(readiness && readiness.ready === true &&
+      readiness.authorizedProfile === true &&
+      readiness.exactUrl === AUTHORIZED_ORIGIN + AUTHORIZED_PROFILE_PATH &&
+      readiness.runtimeVersion === chrome.runtime.getManifest().version && fresh);
+    if (!enabled) return "disabled";
+    if (exactReady && availability === "online") return "active";
+    if (availability === "offline") return "offline";
+    return "waiting";
+  }
+  async function getGlobalCloudActionStatus() {
+    var tabs = await chrome.tabs.query({});
+    var cloudTabs = (tabs || []).filter(function (tab) { return tab && isAuthorizedCloudUrl(tab.url); });
+    if (!cloudTabs.length) return "waiting";
+    var stored = await chrome.storage.local.get(["effectifConfig"]);
+    var enabled = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}).autoAnswerEnabled === true &&
+      SignalPresenceGuard.snapshot().armed;
+    var statuses = cloudTabs.map(function (tab) {
+      return resolveCloudActionStatus(tab.id, tab.url, enabled);
+    });
+    return aggregateCloudActionStatus(statuses);
+  }
   async function refreshActionIndicator(tabId, url) {
     if (!Number.isFinite(Number(tabId))) return;
     var tab;
     try { tab = await chrome.tabs.get(Number(tabId)); } catch (_) { return; }
     var targetUrl = url || tab.url || "";
-    var status = isAuthorizedCloudUrl(targetUrl) ? "waiting" : "disabled";
-    if (isAuthorizedProfileUrl(targetUrl)) {
-      var readiness = tabReadiness.get(Number(tabId));
-      var availability = tabAvailability.get(Number(tabId)) || "unknown";
+    var status;
+    if (isAuthorizedCloudUrl(targetUrl)) {
       var stored = await chrome.storage.local.get(["effectifConfig"]);
-      var enabled = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}).autoAnswerEnabled === true && SignalPresenceGuard.snapshot().armed;
-      var fresh = readiness && Number.isFinite(Number(readiness.at)) && Date.now() - Number(readiness.at) <= READINESS_MAX_AGE_MS;
-      var exactReady = !!(readiness && readiness.ready === true &&
-        readiness.authorizedProfile === true &&
-        readiness.exactUrl === AUTHORIZED_ORIGIN + AUTHORIZED_PROFILE_PATH &&
-        readiness.runtimeVersion === chrome.runtime.getManifest().version &&
-        fresh);
-      if (!enabled) status = "disabled";
-      else if (exactReady && availability === "online") status = "active";
-      else if (availability === "offline") status = "offline";
-      else status = "waiting";
+      var enabled = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {}).autoAnswerEnabled === true &&
+        SignalPresenceGuard.snapshot().armed;
+      status = resolveCloudActionStatus(Number(tabId), targetUrl, enabled) || "waiting";
+    } else {
+      var globalStatus = await getGlobalCloudActionStatus();
+      status = globalStatus === "active" ? "blue" : globalStatus;
     }
     await setActionIndicator(Number(tabId), status);
   }
 
-  function isAuthorizedCloudUrl(raw){try{return new URL(String(raw||"")).origin===AUTHORIZED_ORIGIN}catch(_){return false;}}
+function isAuthorizedCloudUrl(raw){try{return new URL(String(raw||"")).origin===AUTHORIZED_ORIGIN}catch(_){return false;}}
   function readVisibleOfficialSummaryFromPage() {
     function normalize(value){return String(value||"").replace(/\s+/g," ").trim();}
     function parseMoney(value){
@@ -2826,7 +2852,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   });
   async function refreshAllActionIndicators() {
     try {
-      var tabs = await chrome.tabs.query({ url: ["https://app.cloudinterpreter.com/*"] });
+      var tabs = await chrome.tabs.query({});
       await Promise.all((tabs || []).map(function (tab) {
         return refreshActionIndicator(tab.id, tab.url).catch(function () {});
       }));
@@ -2840,7 +2866,8 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         tabAvailability.delete(Number(tabId));
         tabReadiness.delete(Number(tabId));
       }
-      refreshActionIndicator(tabId, changeInfo.url || tab.url).catch(function () {});
+      if (changeInfo.url || isAuthorizedCloudUrl(tab.url)) refreshAllActionIndicators().catch(function () {});
+      else refreshActionIndicator(tabId, tab.url).catch(function () {});
       if (changeInfo.url || changeInfo.status === "complete") {
         try { SignalPlatformScreenshot.request(changeInfo.url ? "tab-url-changed" : "tab-loaded").catch(function () {}); } catch (_) {}
       }
@@ -2848,6 +2875,12 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   });
   chrome.tabs.onRemoved.addListener(function (tabId) {
     tabAvailability.delete(Number(tabId));
+    refreshAllActionIndicators().catch(function () {});
+  });
+  chrome.storage.onChanged.addListener(function (changes, areaName) {
+    if (areaName === "local" && (changes.effectifConfig || changes.signalPresenceGuard)) {
+      refreshAllActionIndicators().catch(function () {});
+    }
   });
 
   chrome.runtime.onConnect.addListener(function(port){if(!port||port.name!=="signal-live-console")return;signalLivePort=port;signalLiveConsoleOpen=true;port.onDisconnect.addListener(function(){if(signalLivePort===port){signalLivePort=null;signalLiveConsoleOpen=false;}});});
@@ -2962,8 +2995,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     if (message.type === "ADD_SIGNAL_SESSION_SEGMENT") { addSignalSessionSegment(message,sendResponse);return true; }
     if (message.type === "EFFECTIF_EVENT") {
       var event = Object.assign({
-        timestamp: iso(), tabId: sender.tab ? sender.tab.id : null,
-        source: "content", level: "info"
+        timestamp: iso(), tabId: sender.tab ? sender.tab.id : null,        source: "content", level: "info"
       }, message.event || {});
       if (sender.tab) {
         event.tabId = Number(sender.tab.id);
@@ -2982,7 +3014,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         var eventTabId = sender.tab && sender.tab.id;
         if (Number.isFinite(Number(eventTabId))) tabAvailability.set(Number(eventTabId), event.payload && event.payload.state || "unknown");
         handleAvailability(event);
-        if (Number.isFinite(Number(eventTabId))) refreshActionIndicator(Number(eventTabId), sender.tab && sender.tab.url).catch(function () {});
+        if (Number.isFinite(Number(eventTabId))) refreshAllActionIndicators().catch(function () {});
       }
       if (event.action === "AUTO_ANSWER_READINESS") {
         var readinessTabId = sender.tab && sender.tab.id;
@@ -2997,7 +3029,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
           if (event.payload && event.payload.availability) {
             tabAvailability.set(Number(readinessTabId), String(event.payload.availability));
           }
-          refreshActionIndicator(Number(readinessTabId), sender.tab && sender.tab.url).catch(function () {});
+          refreshAllActionIndicators().catch(function () {});
         }
       }
       if (event.action === "INCOMING_DIALOG_DETECTED") markIncoming(event);
@@ -3539,6 +3571,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     if (command !== "toggle-auto-answer") return;
     SignalPresenceGuard.toggleFromKeyboard().then(function (result) {
       record(result.ok && result.state && result.state.armed ? "AUTO_ANSWER_ENABLED" : "AUTO_ANSWER_PAUSED", { reason: result.error || result.state && result.state.reason || "manual" }, "info", "keyboard");
+      refreshAllActionIndicators().catch(function () {});
     });
   });
   function routeShape(url) {

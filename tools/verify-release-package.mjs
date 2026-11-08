@@ -5,7 +5,7 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const expectedVersion = "0.10.43";
+const expectedVersion = "0.10.46";
 const readText = (p) => readFileSync(resolve(root, p), "utf8");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex").toUpperCase();
 const manifest = JSON.parse(readText("manifest.json"));
@@ -73,6 +73,18 @@ assert.ok(match, "native host expected SHA-256 is missing");
 const embeddedExe = Buffer.from(readText("extension/native/SignalInterpreter.CaptionHost.exe.b64").trim(), "base64");
 assert.equal(sha256(embeddedExe), match[1].toUpperCase(), "embedded native host executable hash mismatch");
 
+const actionStart = background.indexOf("async function setActionIndicator");
+const actionEnd = background.indexOf("function isAuthorizedCloudUrl", actionStart);
+const actionBlock = background.slice(actionStart, actionEnd);
+assert.ok(actionBlock.includes('blue: "#3b82f6"'), "blue context icon is absent");
+assert.ok(actionBlock.includes("function aggregateCloudActionStatus"), "global Cloud Interpreter status aggregator is absent");
+assert.ok(actionBlock.includes('values.indexOf("disabled") !== -1) return "disabled"'), "red Cloud status must propagate globally");
+assert.ok(actionBlock.includes('globalStatus === "active" ? "blue" : globalStatus'), "external tabs may be blue only when Cloud Interpreter is green");
+assert.ok(!actionBlock.includes('isAuthorizedCloudUrl(targetUrl) ? "waiting" : "blue"'), "external tabs must not default to blue");
+assert.ok(actionBlock.includes('exactReady && availability === "online"'), "green state is not gated by verified availability");
+const refreshStart = background.indexOf("async function refreshAllActionIndicators");
+const refreshEnd = background.indexOf("chrome.tabs.onUpdated.addListener", refreshStart);
+assert.ok(background.slice(refreshStart, refreshEnd).includes("chrome.tabs.query({})"), "startup refresh must cover all tabs");
 console.log("PASS: package inventory and SHA-256 (" + entries.length + " files)");
 console.log("PASS: manifest identity/version and native host binary hash");
 console.log("PASS: global overlay switch/shortcut and hotload-disposal guards");
