@@ -1,50 +1,20 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-08T17:14:19.443Z → 2026-11-08T17:24:19.443Z
-- Generado: 2026-11-08T17:24:19.443Z
-- Eventos: 420 · lotes fuente: 44
+- Ventana UTC: 2026-11-08T17:16:00.379Z → 2026-11-08T17:26:00.379Z
+- Generado: 2026-11-08T17:26:00.379Z
+- Eventos: 326 · lotes fuente: 34
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 420
+- Reloj cliente sin verificación de recibo: 326
 
 ## Resumen
-- Intentos observados: 3
-- Contestadas: 0 · perdidas confirmadas: 1
-- Clic sin ruta: 1 · timbrados sin diálogo correlacionado: 1
-- Sin desenlace concluyente: 1
+- Intentos observados: 1
+- Contestadas: 0 · perdidas confirmadas: 0
+- Clic sin ruta: 1 · timbrados sin diálogo correlacionado: 0
+- Sin desenlace concluyente: 0
 - Detecciones de diálogo/botón: 1 / 1
 - Bloqueos de autocontestación: 0 · clics: 1
 
 ## Intentos
-
-### ring-b3fde5e3bea6a377821f0481 — ring_unmatched
-- Detectada: 2026-11-08T17:14:21.347Z · modalidad: desconocida
-- Tab: 1600161561 · eventos: 2
-- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: null
-- Desenlace/motivo: null
-- Señales ausentes: INCOMING_DIALOG_DETECTED, TERMINAL_CALL_OUTCOME
-  - 2026-11-08T17:14:20.325Z · PAGE_LIFECYCLE · info
-  - 2026-11-08T17:14:21.347Z · INCOMING_RING_SIGNAL · info
-
-### 1971ec[PHONE]b-a238-2e9ab15a4102 — missed
-- Detectada: 2026-11-08T17:14:21.683Z · modalidad: OPI
-- Tab: 1600161561 · eventos: 14
-- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: null
-- Desenlace/motivo: "dialog_closed_without_connect"
-- Señales ausentes: INCOMING_DIALOG_DETECTED
-  - 2026-11-08T17:14:21.683Z · INCOMING_ATTEMPT_REGISTERED · info
-  - 2026-11-08T17:14:22.208Z · PLATFORM_SESSION_ENDED · info · pagehide
-  - 2026-11-08T17:14:22.209Z · PERFORMANCE_HEARTBEAT · info · pagehide
-  - 2026-11-08T17:14:22.209Z · OBSERVER_STOPPED · info · pagehide
-  - 2026-11-08T17:14:22.209Z · PAGE_LIFECYCLE · info
-  - 2026-11-08T17:14:22.210Z · PAGE_VISIBILITY_CHANGED · info
-  - 2026-11-08T17:14:22.396Z · PERFORMANCE_HEARTBEAT · info · telemetry-start
-  - 2026-11-08T17:14:22.396Z · PLATFORM_SESSION_STARTED · info
-  - 2026-11-08T17:14:22.396Z · OBSERVER_STARTED · info
-  - 2026-11-08T17:14:22.404Z · PLATFORM_SURFACE_SNAPSHOT · info
-  - 2026-11-08T17:14:23.992Z · INCOMING_DIALOG_CLOSED_OBSERVED · info · dialog-removed
-  - 2026-11-08T17:14:26.614Z · PAGE_LIFECYCLE · info
-  - 2026-11-08T17:14:26.623Z · PAGE_LIFECYCLE · info
-  - 2026-11-08T17:14:29.661Z · MISSED_CALL_CLASSIFIED · warn · dialog_closed_without_connect
 
 ### e4ab9e7d-ca95-4c0e-9bc7-d19df25a1e65 — connect_failed_no_route
 - Detectada: 2026-11-08T17:19:33.750Z · modalidad: OPI
