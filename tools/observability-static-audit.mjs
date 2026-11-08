@@ -39,7 +39,7 @@ const callLifecycleSyncTest=read("tools/observability-call-lifecycle-sync-test.m
 const relayBatchApi=read("tools/observability-relay/api/batch.js");
 const freshnessWorkflow=read(".github/workflows/observability-freshness.yml");
 
-assert.equal(manifest.version,"0.10.40");
+assert.equal(manifest.version,"0.10.44");
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
@@ -214,7 +214,9 @@ assert.ok(micGuard.includes("replaceTrack"));
 assert.ok(micGuard.includes("setInterval"));
 assert.ok(micGuard.includes("stableReport"));
 assert.ok(micGuard.includes("stableSamples"));
-assert.ok(micGuard.includes("},50);"));
+assert.ok(micGuard.includes("}, 250);"), "the microphone guard enforces mute at a bounded 250 ms interval");
+assert.equal(micGuard.includes("},50);"),false,"the previous 20 Hz microphone polling loop is removed");
+assert.ok(micGuard.includes("if (!liveTracks().length) {\n      stopMuteEnforcement();"),"no mute polling remains when there are no live audio tracks");
 assert.ok(globalMouse.includes("left+right-hold"));
 assert.ok(globalMouse.includes("__SIGNAL_INTERPRETER_GLOBAL_MOUSE_GESTURE_V2__"));
 assert.ok(globalMouse.includes("240"));
