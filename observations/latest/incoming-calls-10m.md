@@ -1,28 +1,20 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-08T17:11:13.466Z → 2026-11-08T17:21:13.466Z
-- Generado: 2026-11-08T17:21:13.466Z
-- Eventos: 394 · lotes fuente: 47
+- Ventana UTC: 2026-11-08T17:13:48.086Z → 2026-11-08T17:23:48.086Z
+- Generado: 2026-11-08T17:23:48.086Z
+- Eventos: 455 · lotes fuente: 48
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 394
+- Reloj cliente sin verificación de recibo: 455
 
 ## Resumen
-- Intentos observados: 3
+- Intentos observados: 2
 - Contestadas: 0 · perdidas confirmadas: 1
-- Clic sin ruta: 1 · timbrados sin diálogo correlacionado: 1
-- Sin desenlace concluyente: 1
+- Clic sin ruta: 1 · timbrados sin diálogo correlacionado: 0
+- Sin desenlace concluyente: 0
 - Detecciones de diálogo/botón: 2 / 2
 - Bloqueos de autocontestación: 1 · clics: 1
 
 ## Intentos
-
-### ring-b002e12edb33233518173a28 — ring_unmatched
-- Detectada: 2026-11-08T17:11:32.287Z · modalidad: desconocida
-- Tab: 1600161561 · eventos: 1
-- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: null
-- Desenlace/motivo: null
-- Señales ausentes: INCOMING_DIALOG_DETECTED, TERMINAL_CALL_OUTCOME
-  - 2026-11-08T17:11:32.287Z · INCOMING_RING_SIGNAL · info
 
 ### 1971ec[PHONE]b-a238-2e9ab15a4102 — missed
 - Detectada: 2026-11-08T17:14:14.789Z · modalidad: OPI
