@@ -137,6 +137,10 @@ jobs:
         run: |
           node --check tools/microphone-call-lifecycle-test.mjs
           node tools/microphone-call-lifecycle-test.mjs
+      - name: LIVE session history and ephemeral transcript regression
+        run: |
+          node --check tools/live-caption-session-history-test.mjs
+          node tools/live-caption-session-history-test.mjs
       - name: Independent call preview runtime regression
         run: node tools/call-caption-runtime-test.mjs
       - name: Automatic call export and privacy runtime regression

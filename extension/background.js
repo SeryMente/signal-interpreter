@@ -301,12 +301,14 @@ try { importScripts("groq-secret.local.js"); } catch (_) {}
     var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
     if (config.liveCaptionOverlayEnabled === false) return {forwarded:false};
     var session = await appendCaptionOverlayHistory(caption, sourceTabId);
+    var latestRow = session.rows && session.rows.length ? session.rows[session.rows.length - 1] : null;
     await dispatchCaptionOverlayMessage("SIGNAL_CAPTION_UPDATE", {
       caption: Object.assign({}, caption, {
         text: String(caption.text).slice(0, 1500),
         timestamp: Date.now()
       })
     }, session.sourceTabId);
+    if (latestRow) broadcastSignalEvent({type:"signal.transcript.segment",sessionId:signalActiveSessionId,segment:{id:String(latestRow.id),speaker:"CLIENTE",text:String(latestRow.text||""),timestamp:new Date(Number(latestRow.at)||Date.now()).toISOString(),source:"chrome-live-caption",reason:"native-live-caption"}});
     return {forwarded:true};
   }
 
@@ -349,6 +351,7 @@ try { importScripts("groq-secret.local.js"); } catch (_) {}
     var tab = await chrome.tabs.get(tabId).catch(function () { return null; });
     if (!tab || !isCloudCallUrl(tab.url)) return false;
     var session = await appendCaptionOverlayHistory(caption, tabId);
+    var latestRow = session.rows && session.rows.length ? session.rows[session.rows.length - 1] : null;
     var normalizedCaption = {
       text: String(caption.text).slice(0, 1500),
       language: interpreterLanguageCode(caption.language, caption.text),
@@ -361,9 +364,9 @@ try { importScripts("groq-secret.local.js"); } catch (_) {}
     broadcastSignalEvent({
       type: "signal.transcript.segment", sessionId: signalActiveSessionId,
       segment: {
-        id: String(caption.id || uid()), speaker: "YO",
-        text: normalizedCaption.text,
-        timestamp: new Date(normalizedCaption.timestamp).toISOString(),
+        id: String(latestRow && latestRow.id || caption.id || uid()), speaker: "YO",
+        text: String(latestRow && latestRow.text || normalizedCaption.text),
+        timestamp: new Date(Number(latestRow && latestRow.at) || normalizedCaption.timestamp).toISOString(),
         source: "groq-interpreter", reason: "groq-whisper"
       }
     });
@@ -3586,9 +3589,12 @@ try { importScripts("groq-secret.local.js"); } catch (_) {}
      if(message.type==="SIGNAL_LIVE_CONSOLE_OPEN"){signalLiveConsoleOpen=true;sendResponse({ok:true});return false;}
     if(message.type==="SIGNAL_LIVE_CONSOLE_CLOSE"){signalLiveConsoleOpen=false;sendResponse({ok:true});return false;}
     if(message.type==="GET_SIGNAL_INTERPRETER_STATE"){
-      Promise.all([chrome.storage.local.get(["effectifState"]),loadSignalSessions()]).then(function(results){
-        var state=Object.assign(baseState(),results[0].effectifState||{}),data=results[1],active=data.sessions.find(function(s){return s.id===data.activeSessionId})||null;
-        sendResponse({ok:true,groq:state.groqCapture||null,transcription:state.groqTranscript||null,sessions:data.sessions.map(function(s){return signalSessionCopy(s,false)}),activeSessionId:data.activeSessionId,transcript:active?active.segments.slice(-100):[],diagnostics:{runtimeStartedAt:state.telemetryHealth&&state.telemetryHealth.lastWriteAt||null,signalLiveConsoleOpen:signalLiveConsoleOpen}})
+      var liveConsoleUrl=chrome.runtime.getURL(extensionResource("ui/live.html"));
+      if(!sender || sender.id!==chrome.runtime.id || sender.url!==liveConsoleUrl){sendResponse({ok:false,reasonCode:"live-console-sender-required"});return false;}
+      Promise.all([chrome.storage.local.get(["effectifState"]),loadSignalSessions(),readCaptionSession()]).then(function(results){
+        var state=Object.assign(baseState(),results[0].effectifState||{}),data=results[1],active=data.sessions.find(function(s){return s.id===data.activeSessionId})||null,captionSession=results[2]||{rows:[]};
+        var captionHistory=(captionSession.rows||[]).filter(function(row){return row&&row.text&&(row.source==="chrome-live-caption"||(row.source==="yo"&&row.speaker==="INTÉRPRETE"))}).slice(-200).map(function(row){return{id:String(row.id||""),text:String(row.text||"").slice(0,1500),language:String(row.language||"unknown"),speaker:row.source==="yo"&&row.speaker==="INTÉRPRETE"?"YO":"CLIENTE",timestamp:new Date(Number(row.at)||Date.now()).toISOString(),source:row.source==="yo"?"groq-interpreter":"chrome-live-caption",reason:row.source==="yo"?"groq-whisper":"native-live-caption"}});
+        sendResponse({ok:true,groq:state.groqCapture||null,transcription:state.groqTranscript||null,sessions:data.sessions.map(function(s){return signalSessionCopy(s,false)}),activeSessionId:data.activeSessionId,transcript:active?active.segments.slice(-100):[],captionHistory:captionHistory,captionHistoryCallId:captionSession.callId||null,diagnostics:{runtimeStartedAt:state.telemetryHealth&&state.telemetryHealth.lastWriteAt||null,signalLiveConsoleOpen:signalLiveConsoleOpen}})
       }).catch(function(error){sendResponse({ok:false,error:String(error)})});return true;
     }
     if(message.type==="CLEAR_SIGNAL_INTERPRETER_TRANSCRIPT"){loadSignalSessions().then(async function(data){var id=message.sessionId||data.activeSessionId,s=data.sessions.find(function(x){return x.id===id});if(!s)throw new Error("Sesión no encontrada");await KhoraTelemetryDB.clearSignalSession(id);s.segments=[];s.segmentCount=0;return saveSignalSessions(data.sessions,id).then(function(){broadcastSignalEvent({type:"signal.transcript.clear",sessionId:id,timestamp:iso()});return{ok:true,session:signalSessionCopy(s,true)}})}).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)})});return true;}
