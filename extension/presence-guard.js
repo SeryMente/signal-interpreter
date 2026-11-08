@@ -48,10 +48,52 @@
     threshold = seconds; lastCheck = Date.now(); armed = true; reason = "explicit-availability";
     await publish(); return { ok: true, state: snapshot() };
   }
+  async function armFromPlatform(message, sender) {
+    continuity();
+    if (!profile(sender)) return { ok: false, error: "sender-not-authorized", state: snapshot() };
+    if (!message || message.availability !== "online" || message.userGesture !== true) {
+      return { ok: false, error: "platform-online-not-user-confirmed", state: snapshot() };
+    }
+    var values;
+    try { values = await chrome.storage.local.get(["signalLabLock", "effectifConfig"]); }
+    catch (_) { disarm("verification-error-confirm-again"); return { ok: false, error: reason, state: snapshot() }; }
+    if (values.signalLabLock === true) {
+      disarm("laboratory"); return { ok: false, error: "laboratory", state: snapshot() };
+    }
+    var cfg = values.effectifConfig || {};
+    var seconds = Number(cfg.presenceIdleSeconds);
+    if (!allowedSeconds.includes(seconds)) {
+      disarm("choose-idle-limit-confirm-again");
+      return { ok: false, error: "choose-idle-limit", state: snapshot() };
+    }
+    var armedResult = await arm(seconds);
+    if (!armedResult.ok) return armedResult;
+    try {
+      await chrome.storage.local.set({
+        effectifConfig: Object.assign({}, cfg, { autoAnswerEnabled: true, presenceIdleSeconds: seconds })
+      });
+      if (!armed || generation !== armedResult.state.generation) {
+        return { ok: false, error: "platform-state-changed", state: snapshot() };
+      }
+      return { ok: true, source: "platform-online-click", autoAnswerEnabled: true, state: snapshot() };
+    } catch (_) {
+      disarm("settings-write-failed-confirm-again");
+      return { ok: false, error: reason, state: snapshot() };
+    }
+  }
+  function authorizedProfileUrl(raw) {
+    try {
+      var url = new URL(String(raw || "").split(/[?#]/)[0]);
+      var profile = new URL(PROFILE);
+      var basePath = profile.pathname.replace(/\/+$/, "");
+      var path = url.pathname.replace(/\/+$/, "");
+      return url.origin === profile.origin && (path === basePath || path.indexOf(basePath + "/") === 0);
+    } catch (_) { return false; }
+  }
   function profile(sender) {
     return sender && sender.id === chrome.runtime.id && sender.frameId === 0 && sender.tab &&
-      Number.isInteger(sender.tab.id) && String(sender.url || "").split(/[?#]/)[0] === PROFILE &&
-      String(sender.tab.url || "").split(/[?#]/)[0] === PROFILE;
+      Number.isInteger(sender.tab.id) && authorizedProfileUrl(sender.url) &&
+      authorizedProfileUrl(sender.tab.url);
   }
   function releaseSender(sender) {
     if (!sender || sender.id !== chrome.runtime.id || sender.frameId !== 0 || !sender.tab ||
@@ -62,9 +104,9 @@
     function allowedPage(raw) {
       try {
         var url = new URL(normalizedPage(raw));
+        if (authorizedProfileUrl(url.href)) return true;
         if (url.origin !== "https://app.cloudinterpreter.com") return false;
         var path = url.pathname.replace(/\/+$/, "");
-        if (path === "/profile/cmu2wuz1v0uwr07adbzb9djfz") return true;
         if (path.indexOf("/call/") !== 0) return false;
         var callId = path.slice("/call/".length);
         return !!callId && callId.indexOf("/") === -1;
@@ -107,7 +149,7 @@
       var activeCalls = await chrome.tabs.query({ url: "https://app.cloudinterpreter.com/call/*" });
       if (activeCalls.length) return { ok: false, error: "call-already-open" };
       var tab = await chrome.tabs.get(sender.tab.id);
-      if (String(tab.url || "").split(/[?#]/)[0] !== PROFILE) return { ok: false, error: "route-changed" };
+      if (!authorizedProfileUrl(tab.url)) return { ok: false, error: "route-changed" };
       var key = sender.tab.id + ":" + requestId;
       if (consumed.has(key) || !armed || epoch !== generation || Date.now() - started > 1000) return { ok: false, error: "stale-or-used" };
       consumed.add(key);
@@ -128,7 +170,7 @@
     if (result.ok) await chrome.storage.local.set({ effectifConfig: Object.assign({}, cfg, { autoAnswerEnabled: true }) });
     return result;
   }
-  root.SignalPresenceGuard = { snapshot: snapshot, disarm: disarm, arm: arm, authorize: authorize, releaseAuthorization: releaseAuthorization, toggleFromKeyboard: toggleFromKeyboard };
+  root.SignalPresenceGuard = { snapshot: snapshot, disarm: disarm, arm: arm, armFromPlatform: armFromPlatform, authorize: authorize, releaseAuthorization: releaseAuthorization, toggleFromKeyboard: toggleFromKeyboard };
   disarm("worker-start-confirm-again");
   if (chrome.idle && chrome.idle.onStateChanged) chrome.idle.onStateChanged.addListener(function (state) {
     // Returning/unlocking never re-arms. A current call is deliberately untouched.
@@ -151,6 +193,7 @@
     var work;
     if (message.type === "SIGNAL_PRESENCE_RELEASE") work = Promise.resolve(releaseAuthorization(message, sender));
     else if (message.type === "SIGNAL_PRESENCE_AUTHORIZE") work = authorize(message, sender);
+    else if (message.type === "SIGNAL_PRESENCE_PLATFORM_ONLINE") work = armFromPlatform(message, sender);
     else if (message.type === "SIGNAL_PRESENCE_END" && profile(sender)) work = Promise.resolve({ ok: true, state: disarm("session-ended-confirm-again") });
     else if (!popup(sender)) work = Promise.resolve({ ok: false, error: "popup-only" });
     else if (message.type === "SIGNAL_PRESENCE_ARM") work = arm(Number(message.idleSeconds));
