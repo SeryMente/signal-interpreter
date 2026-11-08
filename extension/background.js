@@ -2943,7 +2943,25 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   function updateSignalSession(message,sendResponse){loadSignalSessions().then(function(data){var s=data.sessions.find(function(x){return x.id===message.sessionId});if(!s)throw new Error("Sesión no encontrada");var p=message.patch||{};if(["CLIENTE","YO"].indexOf(p.activeSpeaker)>=0)s.activeSpeaker=p.activeSpeaker;if(p.view==="timeline"||p.view==="triptych")s.view=p.view;if(p.fontSize!=null)s.fontSize=Math.max(14,Math.min(34,Number(p.fontSize)||20));if(typeof p.autoScroll==="boolean")s.autoScroll=p.autoScroll;if(typeof p.compactDensity==="boolean")s.compactDensity=p.compactDensity;return saveSignalSessions(data.sessions,data.activeSessionId).then(function(){return{ok:true,session:signalSessionCopy(s)}})}).then(function(r){broadcastSignalEvent({type:"signal.session.updated",sessionId:message.sessionId,session:r.session,timestamp:iso()});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})});}
   async function deleteSignalSession(message,sendResponse){try{var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId,idx=data.sessions.findIndex(function(x){return x.id===id}),session=idx>=0?data.sessions[idx]:null;if(!session)throw new Error("Sesión no encontrada");if(data.activeSessionId===id)await stopGroqCapture("session-delete");await KhoraTelemetryDB.clearSignalSession(id);data.sessions.splice(idx,1);var nextId=data.sessions.length?data.sessions[Math.max(0,Math.min(idx-1,data.sessions.length-1))].id:null;await saveSignalSessions(data.sessions,nextId);recordSignalDiagnostic("SIGNAL_SESSION_DELETED",{deletedSessionId:id,remainingSessions:data.sessions.length,activeSessionId:nextId});broadcastSignalEvent({type:"signal.session.deleted",sessionId:id,activeSessionId:nextId,session:nextId?signalSessionCopy(data.sessions.find(function(x){return x.id===nextId}),true):null,timestamp:iso()});sendResponse({ok:true,deletedSessionId:id,activeSessionId:nextId});}catch(error){recordSignalDiagnostic("SIGNAL_SESSION_DELETE_ERROR",{sessionId:message.sessionId||signalActiveSessionId,error:String(error)},"error");sendResponse({ok:false,error:String(error)})}}
   function addSignalSessionSegment(message,sendResponse){loadSignalSessions().then(function(data){var id=message.sessionId||data.activeSessionId,s=data.sessions.find(function(x){return x.id===id});if(!s)throw new Error("Sesión no encontrada");var text=String(message.text||"").trim();if(!text)throw new Error("Texto vacío");var seg={id:"manual-"+uid(),text:text.slice(0,12000),timestamp:iso(),reason:"manual",source:"manual",speaker:message.speaker==="YO"?"YO":"CLIENTE"};return persistSignalSegment(id,seg).then(function(x){if(!x.ok)throw new Error(x.dbError||x.cacheError||"No se pudo persistir");return{ok:true,session:x.session,segment:seg}})}).then(function(r){broadcastSignalEvent({type:"signal.transcript.segment",sessionId:r.session.id,manual:true,segment:r.segment,timestamp:r.segment.timestamp});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})});}
-  async function openSignalLiveWindow(audioStreamId,tabId,sourceUrl,sourceTitle){var targetUrl=chrome.runtime.getURL(extensionResource("ui/live.html"));try{var session=await ensureSignalSession({tabId:tabId,sourceUrl:sourceUrl,title:sourceTitle}),windows=await chrome.windows.getAll({populate:true,windowTypes:["popup"]}),existing=windows.find(function(w){return Array.isArray(w.tabs)&&w.tabs.some(function(t){return String(t.url||"").split("#")[0].split("?")[0]===targetUrl})}),windowId=null;if(existing&&existing.id!=null){windowId=existing.id;await chrome.windows.update(windowId,{focused:true,state:"normal"})}else{var stored=await chrome.storage.local.get(["signalLiveBounds"]),b=stored.signalLiveBounds||{},d={url:targetUrl,type:"popup",focused:true,width:Number.isFinite(b.width)?b.width:760,height:Number.isFinite(b.height)?b.height:760};if(Number.isFinite(b.left))d.left=b.left;if(Number.isFinite(b.top))d.top=b.top;var created=await chrome.windows.create(d);windowId=created&&created.id||null}var activation=await activateSignalSession(session.id,audioStreamId||null);return{ok:!!windowId,windowId:windowId,reused:!!existing,session:activation.session||signalSessionCopy(session,true),audio:null,capture:activation};}catch(error){return{ok:false,error:String(error)}}}
+  async function openSignalLiveWindow(audioStreamId,tabId,sourceUrl,sourceTitle){
+    var targetUrl=chrome.runtime.getURL(extensionResource("ui/live.html"));
+    try {
+      var session=await ensureSignalSession({tabId:tabId,sourceUrl:sourceUrl,title:sourceTitle});
+      var matches=await chrome.tabs.query({url:targetUrl});
+      var existing=(matches||[]).find(function(tab){return Number.isFinite(Number(tab.id));})||null;
+      var tab=null;
+      if(existing){
+        tab=await chrome.tabs.update(existing.id,{active:true});
+        if(existing.windowId!=null) await chrome.windows.update(existing.windowId,{focused:true});
+      } else {
+        tab=await chrome.tabs.create({url:targetUrl,active:true});
+      }
+      var activation=await activateSignalSession(session.id,audioStreamId||null);
+      return {ok:!!(tab&&tab.id!=null),tabId:tab&&tab.id!=null?tab.id:null,windowId:tab&&tab.windowId!=null?tab.windowId:null,reused:!!existing,session:activation.session||signalSessionCopy(session,true),audio:null,capture:activation};
+    } catch(error) {
+      return {ok:false,error:String(error)};
+    }
+  }
   signalGroqQueue=Promise.resolve();
   chrome.tabs.onActivated.addListener(function (activeInfo) {
     refreshActionIndicator(activeInfo.tabId).catch(function () {});
@@ -3080,7 +3098,21 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_AUDIO_CHUNK") { handleGroqAudioChunk(message); return false; }
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK") { handleGroqCaptionPreviewChunk(message); return false; }
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_CAPTURE_STATUS") { record("SIGNAL_CAPTION_NON_NATIVE_BLOCKED", {reasonCode:"native-text-only",captureScope:"native-text-only"}, "warn", "caption"); return false; }
-    if (message.type === "OPEN_SIGNAL_LIVE_WINDOW") { recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_REQUESTED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",hasSuppliedStream:!!message.audioStreamId}); openSignalLiveWindow(message.audioStreamId||null,message.tabId||null,message.sourceUrl||"",message.sourceTitle||"").then(function(response){if(response&&response.ok)recordSignalDiagnostic("SIGNAL_CONSOLE_OPENED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",windowId:response.windowId,reused:!!response.reused,sessionId:response.session&&response.session.id||null,audioOk:!!(response.audio&&response.audio.ok)});else recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_ERROR",{tabId:message.tabId||null,error:response&&response.error||"unknown"},"error");sendResponse(response)}).catch(function(error){recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_EXCEPTION",{tabId:message.tabId||null,error:String(error)},"error");sendResponse({ok:false,error:String(error)});});return true; }
+    if (message.type === "OPEN_SIGNAL_LIVE_WINDOW") {
+      var liveTabId = message.tabId != null ? message.tabId : (sender && sender.tab ? sender.tab.id : null);
+      var liveSourceUrl = message.sourceUrl || (sender && sender.tab && sender.tab.url) || "";
+      var liveSourceTitle = message.sourceTitle || (sender && sender.tab && sender.tab.title) || "";
+      recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_REQUESTED", {tabId:liveTabId, sourceUrl:liveSourceUrl, hasSuppliedStream:!!message.audioStreamId});
+      openSignalLiveWindow(message.audioStreamId || null, liveTabId, liveSourceUrl, liveSourceTitle).then(function(response) {
+        if(response && response.ok) recordSignalDiagnostic("SIGNAL_CONSOLE_OPENED", {tabId:response.tabId, windowId:response.windowId, sourceUrl:liveSourceUrl, reused:!!response.reused, sessionId:response.session&&response.session.id||null, audioOk:!!(response.audio&&response.audio.ok)});
+        else recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_ERROR", {tabId:liveTabId, error:response&&response.error||"unknown"}, "error");
+        sendResponse(response);
+      }).catch(function(error) {
+        recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_EXCEPTION", {tabId:liveTabId,error:String(error)}, "error");
+        sendResponse({ok:false,error:String(error)});
+      });
+      return true;
+    }
     if (message.type === "ACTIVATE_SIGNAL_SESSION") { activateSignalSession(message.sessionId,null).then(sendResponse);return true; }
     if (message.type === "UPDATE_SIGNAL_SESSION") { updateSignalSession(message,sendResponse);return true; }
     if (message.type === "DELETE_SIGNAL_SESSION") { deleteSignalSession(message,sendResponse);return true; }
