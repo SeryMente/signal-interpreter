@@ -39,7 +39,7 @@ const callLifecycleSyncTest=read("tools/observability-call-lifecycle-sync-test.m
 const relayBatchApi=read("tools/observability-relay/api/batch.js");
 const freshnessWorkflow=read(".github/workflows/observability-freshness.yml");
 
-assert.equal(manifest.version,"0.10.40");
+assert.equal(manifest.version,"0.10.43");
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
