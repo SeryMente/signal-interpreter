@@ -112,6 +112,18 @@
   var callOverlayControlHost = null;
   var callOverlayControlRoot = null;
   var callOverlayToggleBusy = false;
+  var interpreterMicStream = null;
+  var interpreterMicRecorder = null;
+  var interpreterMicActive = false;
+  var interpreterMicStarting = false;
+  var interpreterMicStopping = false;
+  var interpreterMicCallId = null;
+  var interpreterMicCaptureId = null;
+  var interpreterMicSequence = 0;
+  var interpreterMicChunkStartedAt = 0;
+  var interpreterMicChunkQueue = Promise.resolve();
+  var interpreterMicQueuedChunks = 0;
+  var interpreterMicStartToken = 0;
   var platformActivationMessage = "";
   var readinessTimer = null;
   var lastSpokenCallId = "";
@@ -609,32 +621,253 @@
     callOverlayControlHost = null;
     callOverlayControlRoot = null;
   }
+  function interpreterMicStatusText(reasonCode) {
+    var labels = {
+      "zdr-not-confirmed":"Confirma ZDR en las preferencias",
+      "groq-key-missing":"Falta configurar la clave Groq local",
+      "call-not-active":"La llamada ya no está activa",
+      "call-tab-not-authorized":"Pestaña de llamada no autorizada",
+      "transcription-backlog":"Transcripción retrasada; captura detenida",
+      "groq-auth-failed":"Groq rechazó la clave",
+      "groq-rate-limited":"Límite de Groq alcanzado",
+      "groq-timeout":"Groq agotó el tiempo de espera",
+      "groq-request-failed":"Falló la solicitud a Groq",
+      "capture-not-active":"La captura ya no está activa"
+    };
+    return labels[reasonCode] || "No se pudo iniciar la transcripción";
+  }
+
+  function stopInterpreterMicCapture(reason, notifyBackground) {
+    var captureId = interpreterMicCaptureId;
+    var callId = interpreterMicCallId;
+    interpreterMicStartToken += 1;
+    interpreterMicStopping = true;
+    try {
+      if (interpreterMicRecorder && interpreterMicRecorder.state !== "inactive") interpreterMicRecorder.stop();
+    } catch (_) {}
+    try {
+      if (interpreterMicStream) interpreterMicStream.getTracks().forEach(function(track){ try { track.stop(); } catch (_) {} });
+    } catch (_) {}
+    interpreterMicRecorder = null;
+    interpreterMicStream = null;
+    interpreterMicActive = false;
+    interpreterMicStarting = false;
+    interpreterMicCallId = null;
+    interpreterMicCaptureId = null;
+    interpreterMicSequence = 0;
+    interpreterMicChunkStartedAt = 0;
+    interpreterMicQueuedChunks = 0;
+    interpreterMicChunkQueue = Promise.resolve();
+    interpreterMicStopping = false;
+    if (notifyBackground !== false && captureId) {
+      try {
+        chrome.runtime.sendMessage({
+          type:"SIGNAL_INTERPRETER_MIC_CAPTURE_STOP",callId:callId,captureId:captureId,
+          reason:String(reason || "user-stop")
+        }).catch(function(){});
+      } catch (_) {}
+    }
+    if (String(reason || "") !== "pagehide") renderCallOverlayControl();
+  }
+
+  async function sendInterpreterMicChunk(blob, callId, captureId, sequence, chunkStartedAt, durationMs) {
+    if (!blob || !blob.size || interpreterMicStopping || !interpreterMicActive ||
+        currentCallId() !== callId || interpreterMicCaptureId !== captureId) return;
+    var buffer = await blob.arrayBuffer();
+    var bytes = new Uint8Array(buffer);
+    var binary = "";
+    for (var offset=0;offset<bytes.length;offset+=0x8000) {
+      binary += String.fromCharCode.apply(null,bytes.subarray(offset,Math.min(offset+0x8000,bytes.length)));
+    }
+    var base64 = btoa(binary);
+    bytes = null;
+    buffer = null;
+    binary = null;
+    var response = await chrome.runtime.sendMessage({
+      type:"SIGNAL_INTERPRETER_MIC_AUDIO_CHUNK",
+      callId:callId,captureId:captureId,sequence:sequence,
+      base64:base64,mimeType:blob.type || "audio/webm",
+      chunkStartedAt:chunkStartedAt,durationMs:durationMs
+    }).catch(function(){return {ok:false,reasonCode:"background-unavailable"};});
+    base64 = null;
+    if (!response || response.ok !== true) {
+      var reason = response && response.reasonCode || "transcription-failed";
+      stopInterpreterMicCapture(reason,true);
+      var button = callOverlayControlRoot && callOverlayControlRoot.querySelector("#interpreterVoice");
+      if (button) button.title = interpreterMicStatusText(reason);
+    }
+  }
+
+  async function startInterpreterMicCapture() {
+    if (interpreterMicStarting || interpreterMicActive) return;
+    var callId = currentCallId();
+    if (!callId || !isTarget() || config.liveCaptionInterpreterEnabled !== true) return;
+    if (config.groqZeroDataRetentionConfirmed !== true) {
+      var blockedButton = callOverlayControlRoot && callOverlayControlRoot.querySelector("#interpreterVoice");
+      if (blockedButton) blockedButton.title = interpreterMicStatusText("zdr-not-confirmed");
+      renderCallOverlayControl();
+      return;
+    }
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function" ||
+        typeof MediaRecorder !== "function") {
+      var unsupportedButton = callOverlayControlRoot && callOverlayControlRoot.querySelector("#interpreterVoice");
+      if (unsupportedButton) unsupportedButton.title = "Este navegador no permite la captura de micrófono requerida";
+      return;
+    }
+    interpreterMicStarting = true;
+    var startToken = ++interpreterMicStartToken;
+    renderCallOverlayControl();
+    var stream = null;
+    try {
+      var policy = await chrome.runtime.sendMessage({type:"SIGNAL_INTERPRETER_MIC_POLICY_GET"}).catch(function(){
+        return {ok:false,canCapture:false,reasonCode:"policy-unavailable"};
+      });
+      if (startToken !== interpreterMicStartToken || currentCallId() !== callId) return;
+      if (!policy || policy.canCapture !== true) {
+        interpreterMicStarting = false;
+        var policyButton = callOverlayControlRoot && callOverlayControlRoot.querySelector("#interpreterVoice");
+        if (policyButton) policyButton.title = interpreterMicStatusText(policy && policy.reasonCode || "policy-unavailable");
+        renderCallOverlayControl();
+        return;
+      }
+      // getUserMedia is invoked only after the explicit in-call click and policy preflight.
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
+      });
+      if (startToken !== interpreterMicStartToken) {
+        stream.getTracks().forEach(function(track){try{track.stop();}catch(_){}});
+        return;
+      }
+      if (currentCallId() !== callId || config.liveCaptionInterpreterEnabled !== true ||
+          config.groqZeroDataRetentionConfirmed !== true) {
+        stream.getTracks().forEach(function(track){try{track.stop();}catch(_){}});
+        interpreterMicStarting = false;
+        renderCallOverlayControl();
+        return;
+      }
+      var captureId = window.crypto && typeof window.crypto.randomUUID === "function"
+        ? window.crypto.randomUUID()
+        : "mic-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+      var ready = await chrome.runtime.sendMessage({
+        type:"SIGNAL_INTERPRETER_MIC_CAPTURE_STARTED",callId:callId,captureId:captureId
+      }).catch(function(){return {ok:false,reasonCode:"background-unavailable"};});
+      if (startToken !== interpreterMicStartToken) {
+        stream.getTracks().forEach(function(track){try{track.stop();}catch(_){}});
+        if (ready && ready.ok) chrome.runtime.sendMessage({
+          type:"SIGNAL_INTERPRETER_MIC_CAPTURE_STOP",callId:callId,captureId:captureId,reason:"start-cancelled"
+        }).catch(function(){});
+        return;
+      }
+      if (!ready || ready.ok !== true) {
+        stream.getTracks().forEach(function(track){try{track.stop();}catch(_){}});
+        interpreterMicStarting = false;
+        var failedButton = callOverlayControlRoot && callOverlayControlRoot.querySelector("#interpreterVoice");
+        if (failedButton) failedButton.title = interpreterMicStatusText(ready && ready.reasonCode || "capture-start-failed");
+        renderCallOverlayControl();
+        return;
+      }
+      interpreterMicStream = stream;
+      interpreterMicCallId = callId;
+      interpreterMicCaptureId = captureId;
+      interpreterMicSequence = 0;
+      interpreterMicQueuedChunks = 0;
+      interpreterMicChunkStartedAt = Date.now();
+      interpreterMicChunkQueue = Promise.resolve();
+      var preferredType = "audio/webm;codecs=opus";
+      var recorder = MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(preferredType)
+        ? new MediaRecorder(stream,{mimeType:preferredType})
+        : new MediaRecorder(stream);
+      interpreterMicRecorder = recorder;
+      recorder.ondataavailable = function(event) {
+        if (!event.data || !event.data.size || interpreterMicStopping || !interpreterMicActive) return;
+        var now = Date.now();
+        var startAt = interpreterMicChunkStartedAt || now;
+        interpreterMicChunkStartedAt = now;
+        var sequence = ++interpreterMicSequence;
+        interpreterMicQueuedChunks += 1;
+        if (interpreterMicQueuedChunks > 2) {
+          interpreterMicQueuedChunks = Math.max(0,interpreterMicQueuedChunks - 1);
+          stopInterpreterMicCapture("transcription-backlog",true);
+          return;
+        }
+        interpreterMicChunkQueue = interpreterMicChunkQueue.then(function(){
+          return sendInterpreterMicChunk(event.data,callId,captureId,sequence,startAt,Math.max(0,now-startAt));
+        }).catch(function(){
+          stopInterpreterMicCapture("chunk-processing-failed",true);
+        }).finally(function(){
+          interpreterMicQueuedChunks = Math.max(0,interpreterMicQueuedChunks - 1);
+        });
+      };
+      recorder.onerror = function() { stopInterpreterMicCapture("media-recorder-error",true); };
+      stream.getAudioTracks().forEach(function(track){
+        track.addEventListener("ended",function(){if(interpreterMicActive)stopInterpreterMicCapture("microphone-track-ended",true);},{once:true});
+      });
+      recorder.start(5000);
+      interpreterMicActive = true;
+      interpreterMicStarting = false;
+      renderCallOverlayControl();
+    } catch (error) {
+      if (typeof captureId === "string") {
+        try { chrome.runtime.sendMessage({type:"SIGNAL_INTERPRETER_MIC_CAPTURE_STOP",callId:callId,captureId:captureId,reason:"recorder-start-failed"}).catch(function(){}); } catch (_) {}
+      }
+      try { if (stream) stream.getTracks().forEach(function(track){track.stop();}); } catch (_) {}
+      interpreterMicStream = null;
+      interpreterMicRecorder = null;
+      interpreterMicCallId = null;
+      interpreterMicCaptureId = null;
+      interpreterMicActive = false;
+      interpreterMicStarting = false;
+      var errorButton = callOverlayControlRoot && callOverlayControlRoot.querySelector("#interpreterVoice");
+      if (errorButton) errorButton.title = "No se pudo obtener el micrófono; no se inició la transcripción";
+      renderCallOverlayControl();
+    }
+  }
+
+  function toggleInterpreterMicCapture() {
+    if (interpreterMicActive || interpreterMicStarting) stopInterpreterMicCapture("user-stop",true);
+    else startInterpreterMicCapture();
+  }
+
   function renderCallOverlayControl() {
     var callId = currentCallId();
     var shouldShow = isTarget() && !!callId && config.callOverlayControlVisible !== false;
     if (!shouldShow || !document.documentElement) { removeCallOverlayControl(); return; }
+    if ((!config.liveCaptionInterpreterEnabled || !config.groqZeroDataRetentionConfirmed) &&
+        (interpreterMicActive || interpreterMicStarting)) stopInterpreterMicCapture("capture-preference-disabled",true);
     if (!callOverlayControlHost || !callOverlayControlHost.isConnected || !callOverlayControlRoot) {
       removeCallOverlayControl();
       callOverlayControlHost = document.createElement("div");
       callOverlayControlHost.id = "signal-interpreter-call-overlay-control";
-      callOverlayControlHost.setAttribute("aria-label", "Control global de overlays de Signal Interpreter");
+      callOverlayControlHost.setAttribute("aria-label", "Control global de overlays y transcripción del intérprete");
       callOverlayControlHost.style.cssText = "all:initial;position:fixed;z-index:2147483647;top:12px;left:12px;display:block;pointer-events:auto;";
       callOverlayControlRoot = callOverlayControlHost.attachShadow({ mode: "closed" });
       callOverlayControlRoot.innerHTML =
-        '<style>:host{all:initial;pointer-events:auto}button{appearance:none;border:1px solid rgba(148,190,220,.55);border-radius:999px;padding:9px 13px;background:rgba(9,22,36,.96);color:#eaf6ff;box-shadow:0 4px 18px rgba(0,0,0,.32);font:750 11px/1.1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.035em;cursor:pointer;pointer-events:auto;backdrop-filter:blur(10px)}button:hover{background:#17324a;border-color:#8fcfff}button:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}button[aria-busy="true"]{opacity:.7;cursor:wait}@media(max-width:720px){button{min-height:42px;padding:10px 14px;font-size:12px}}</style>' +
-        '<button type="button" aria-pressed="false" title="Ocultar todos los overlays de Signal Interpreter">OCULTAR OVERLAYS</button>';
-      var control = callOverlayControlRoot.querySelector("button");
+        '<style>:host{all:initial;pointer-events:auto}.bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap}button{appearance:none;border:1px solid rgba(148,190,220,.55);border-radius:999px;padding:9px 13px;background:rgba(9,22,36,.96);color:#eaf6ff;box-shadow:0 4px 18px rgba(0,0,0,.32);font:750 11px/1.1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.035em;cursor:pointer;pointer-events:auto;backdrop-filter:blur(10px)}button:hover{background:#17324a;border-color:#8fcfff}button:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}button[aria-busy="true"]{opacity:.7;cursor:wait}button:disabled{opacity:.55;cursor:not-allowed}@media(max-width:720px){button{min-height:42px;padding:10px 14px;font-size:12px}}</style>' +
+        '<div class="bar"><button id="overlayToggle" type="button" aria-pressed="false" title="Ocultar todos los overlays de Signal Interpreter">OCULTAR OVERLAYS</button>' +
+        '<button id="interpreterVoice" type="button" hidden title="Transcribir mi voz solo durante esta llamada">TRANSCRIBIR MI VOZ</button></div>';
+      var control = callOverlayControlRoot.querySelector("#overlayToggle");
       if (control) control.addEventListener("click", toggleGlobalOverlaysFromCall);
+      var voiceControl = callOverlayControlRoot.querySelector("#interpreterVoice");
+      if (voiceControl) voiceControl.addEventListener("click", toggleInterpreterMicCapture);
       document.documentElement.appendChild(callOverlayControlHost);
     }
-    var button = callOverlayControlRoot.querySelector("button");
-    if (!button) return;
+    var button = callOverlayControlRoot.querySelector("#overlayToggle");
+    var voiceButton = callOverlayControlRoot.querySelector("#interpreterVoice");
+    if (!button || !voiceButton) return;
     var visible = config.overlaysGlobalEnabled !== false;
     button.textContent = callOverlayToggleBusy ? "APLICANDO…" : (visible ? "OCULTAR OVERLAYS" : "MOSTRAR OVERLAYS");
     button.title = visible ? "Ocultar todos los overlays de Signal Interpreter" : "Mostrar los overlays de Signal Interpreter";
     button.setAttribute("aria-pressed", visible ? "true" : "false");
     button.setAttribute("aria-busy", callOverlayToggleBusy ? "true" : "false");
     button.disabled = callOverlayToggleBusy;
+    voiceButton.hidden = config.liveCaptionInterpreterEnabled !== true;
+    voiceButton.disabled = config.groqZeroDataRetentionConfirmed !== true || interpreterMicStarting;
+    voiceButton.textContent = interpreterMicActive ? "DETENER MI VOZ" : (interpreterMicStarting ? "PREPARANDO…" : "TRANSCRIBIR MI VOZ");
+    voiceButton.title = config.groqZeroDataRetentionConfirmed !== true
+      ? "Bloqueado: confirma Zero Data Retention en la consola Groq"
+      : "Transcribir español/inglés desde el micrófono durante esta llamada";
+    voiceButton.setAttribute("aria-pressed",interpreterMicActive?"true":"false");
+    voiceButton.setAttribute("aria-busy",interpreterMicStarting?"true":"false");
   }
   async function toggleGlobalOverlaysFromCall() {
     if (callOverlayToggleBusy) return;
@@ -1040,6 +1273,7 @@
     var ratingMatch = next.match(/^\/call\/([^/?#]+)\/rate\/?$/);
     var nextCallId = currentCallId();
     var leavingCall = previousCallId && previousCallId !== nextCallId;
+    if (leavingCall && (interpreterMicActive || interpreterMicStarting)) stopInterpreterMicCapture("call-route-left",true);
     var endMeasurement = lastCallEndMeasurement && lastCallEndMeasurement.callId === previousCallId
       ? lastCallEndMeasurement.platformSeconds : null;
     route = next;
@@ -2681,6 +2915,14 @@
        if (sendResponse) sendResponse({ok:true});
        return true;
      }
+    if (message && message.type === "SIGNAL_INTERPRETER_MIC_CAPTURE_STOP") {
+      if ((!message.captureId || message.captureId === interpreterMicCaptureId) &&
+          (!message.callId || message.callId === interpreterMicCallId)) {
+        stopInterpreterMicCapture(message.reason || "background-stop",false);
+      }
+      if (sendResponse) sendResponse({ok:true,active:false});
+      return true;
+    }
     if (message && message.type === "EFFECTIF_HOTLOAD_REPLACE") {
       deactivateForHotload(message.reason || "hotload-replace");
       if (sendResponse) sendResponse({ ok: true, reason: "deactivated-for-hotload" });
@@ -2753,10 +2995,21 @@
       });
     }
   }, true);
+  try {
+    chrome.storage.onChanged.addListener(function(changes,area){
+      if(area!=="local" || !changes.effectifConfig) return;
+      config=Object.assign({},config,changes.effectifConfig.newValue||{});
+      if(config.liveCaptionInterpreterEnabled!==true || config.groqZeroDataRetentionConfirmed!==true) {
+        if(interpreterMicActive || interpreterMicStarting) stopInterpreterMicCapture("capture-preference-disabled",true);
+      }
+      renderCallOverlayControl();
+    });
+  } catch (_) {}
   scheduleReadinessHeartbeat();
   emitAutoAnswerReadiness("initial-route");
   installNavigationObservers();
   window.addEventListener("pagehide", function () {
+    stopInterpreterMicCapture("pagehide",true);
     stopOverlayActivationWatchdog("pagehide");
     if (readinessTimer) { clearInterval(readinessTimer); readinessTimer = null; }
     var activeCallId = currentCallId();

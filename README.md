@@ -5,7 +5,7 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
-## Uso portable — Windows + Chrome · 0.10.39
+## Uso portable — Windows + Chrome · 0.10.45
 
 El ZIP de `main` contiene la extensión cargable: `manifest.json` está en la **raíz** de la carpeta extraída, no dentro de `extension/`.
 

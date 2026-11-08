@@ -234,17 +234,17 @@
       '.tool:hover{background:#20364a;border-color:#55738b}' +
       '.tool:focus-visible,.move:focus-visible,.unread:focus-visible,.resize:focus-visible{outline:2px solid #7dd3fc;outline-offset:2px}' +
       '.transcript{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#4a6377 #0c141f;padding:8px 12px 18px;display:flex;flex-direction:column;gap:7px;overflow-anchor:auto}' +
-      '.row{display:grid;grid-template-columns:3px minmax(0,1fr);align-items:stretch;gap:9px;padding:6px 0 7px;border-bottom:1px solid rgba(83,111,135,.22)}' +
+      '.row{display:grid;grid-template-columns:3px minmax(0,1fr);align-items:stretch;gap:6px;padding:3px 0 4px;border-bottom:1px solid rgba(83,111,135,.22)}' +
       '.row:last-child{border-bottom:0}' +
       '.accent{display:block;width:3px;min-height:100%;border-radius:4px;background:#76d5ff}' +
       '.row.es .accent{background:#7fe0ad}' +
       '.body{min-width:0}' +
-      '.meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:7px;margin-bottom:3px}' +
+      '.meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;margin-bottom:1px}' +
       '.role{color:#79d5ff;font-size:10px;font-weight:800;letter-spacing:.07em}' +
       '.row.es .role{color:#84e8b0}' +
       '.lang{color:#8197aa;font-size:9px;font-weight:700;letter-spacing:.07em}' +
       '.time{margin-left:auto;color:#687d90;font-size:9px;font-variant-numeric:tabular-nums}' +
-      '.text{color:#eaf2f8;font-size:13px;line-height:1.52;overflow-wrap:anywhere;white-space:pre-wrap;user-select:text}' +
+      '.text{color:#eaf2f8;font-size:14px;line-height:1.4;overflow-wrap:anywhere;white-space:pre-wrap;user-select:text}' +
       '.row.live .text{color:#fff}' +
       '.smart-token{display:inline;border:0;border-bottom:1px dotted #8fcfff;border-radius:2px;padding:0 1px;background:rgba(64,143,190,.10);color:inherit;font:inherit;cursor:pointer;user-select:text}' +
       '.smart-token[data-smart-type="phone"]{border-bottom-color:#8ae2b1;background:rgba(75,187,126,.10)}' +
@@ -905,7 +905,7 @@
   }
 
   function addRow(text, language, source, isLive, timestamp, speaker) {
-    if (source !== "chrome-live-caption") return;
+    if (source !== "chrome-live-caption" && !(source === "yo" && speaker === "INTÉRPRETE")) return;
     var clean = core.normalizeText(text).slice(0, 1500);
     if (!clean) return;
     lastCaptionAt = Date.now();
@@ -961,11 +961,12 @@
   function hydrateHistory(history) {
     if (!Array.isArray(history)) return;
     var previousScroll = root && root.querySelector(".transcript") ? root.querySelector(".transcript").scrollTop : 0;
-    rows = history.filter(function (item) { return item && item.source === "chrome-live-caption"; }).slice(-MAX_HISTORY).map(function (item) {
+    rows = history.filter(function (item) { return item && (item.source === "chrome-live-caption" || (item.source === "yo" && item.speaker === "INTÉRPRETE")); }).slice(-MAX_HISTORY).map(function (item) {
       return {
         text: core.normalizeText(item && item.text).slice(0, 1500),
         language: core.resolveLanguage(item && item.language, item && item.text),
         source: item && item.source === "yo" ? "yo" : (item && item.source === "chrome-live-caption" ? "chrome-live-caption" : "cliente"),
+        speaker: item && item.source === "yo" && item.speaker === "INTÉRPRETE" ? "INTÉRPRETE" : "unknown",
         live: !!(item && item.live),
         at: Number(item && (item.timestamp || item.at)) || Date.now(),
         id: item && item.id || null
@@ -1268,7 +1269,11 @@
       }
     } else if (message.type === "SIGNAL_CAPTION_UPDATE") {
       var caption = message.caption || {};
-      if (!caption.text || caption.source !== "chrome-live-caption" || caption.native !== true || !canShowOnThisPage()) return;
+      var nativeCaption = caption.source === "chrome-live-caption" && caption.native === true;
+      var interpreterCaption = caption.source === "yo" && caption.speaker === "INTÉRPRETE" &&
+        message.callId === currentCloudCallId() && !!sender && sender.id === chrome.runtime.id &&
+        isCloudCallRoute() && callActive;
+      if (!caption.text || (!nativeCaption && !interpreterCaption) || !canShowOnThisPage()) return;
       active = true;
       sessionEnded = false;
       addRow(caption.text, caption.language, caption.source, caption.live, caption.timestamp, caption.speaker);

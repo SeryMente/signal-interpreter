@@ -21,8 +21,10 @@
   async function transcribe(blob,options){
     var opts=options||{},token=getToken(opts);
     var model=String(opts.model||DEFAULT_MODEL),language=opts.language===null||opts.language===undefined?"":String(opts.language).trim(),context=String(opts.prompt||""),timeoutMs=Number(opts.timeoutMs||30000);
-    if(!token)return{ok:false,error:"Falta GROQ_API_KEY."};
-    if(!blob||typeof blob.size!=="number"||blob.size<=0)return{ok:false,error:"Audio vacío."};
+    if(!token)return{ok:false,reasonCode:"groq-key-missing",error:"Falta GROQ_API_KEY."};
+    if(opts.zeroDataRetentionConfirmed!==true)return{ok:false,reasonCode:"zdr-required",error:"Zero Data Retention no está confirmado."};
+    if(!blob||typeof blob.size!=="number"||blob.size<=0)return{ok:false,reasonCode:"audio-empty",error:"Audio vacío."};
+    if(blob.size>4*1024*1024)return{ok:false,reasonCode:"audio-chunk-too-large",error:"Fragmento de audio demasiado grande."};
     var started=Date.now(),timer=null;
     try{
       var form=new FormData();
@@ -40,13 +42,13 @@
       if(timer)clearTimeout(timer);
       var raw=await response.text(),data=null;
       try{data=raw?JSON.parse(raw):null}catch(_){}
-      if(!response.ok)return{ok:false,error:"Groq HTTP "+response.status+": "+cleanError(data&&data.error&&data.error.message||raw),httpStatus:response.status,latencyMs:Date.now()-started};
+      if(!response.ok)return{ok:false,reasonCode:response.status===401||response.status===403?"groq-auth-failed":response.status===429?"groq-rate-limited":"groq-request-failed",error:"Groq HTTP "+response.status,httpStatus:response.status,latencyMs:Date.now()-started};
       var text=String(data&&data.text||"").trim();
       var segments=Array.isArray(data&&data.segments)?data.segments.map(function(s){return{id:s.id,start:Number(s.start||0),end:Number(s.end||0),text:String(s.text||"").trim()}}).filter(function(s){return s.text}):[];
       return{ok:true,text:text,segments:segments,language:String(data&&data.language||language||"unknown"),model:String(data&&data.model||model),latencyMs:Date.now()-started,bytes:blob.size};
     }catch(error){
       if(timer)clearTimeout(timer);
-      return{ok:false,error:cleanError(error&&error.name==="AbortError"?"Tiempo agotado al consultar Groq":error),latencyMs:Date.now()-started};
+      return{ok:false,reasonCode:error&&error.name==="AbortError"?"groq-timeout":"groq-network-error",error:error&&error.name==="AbortError"?"Tiempo agotado al consultar Groq":"No se pudo completar la solicitud Groq.",latencyMs:Date.now()-started};
     }
   }
   root.SignalGroqTranscriber={endpoint:ENDPOINT,model:DEFAULT_MODEL,ready:ready,transcribe:transcribe};
