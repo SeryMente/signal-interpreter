@@ -21,6 +21,7 @@
     billingRule: "pro_rata_by_second_assumed",
     overlayEnabled: true,
     overlaysGlobalEnabled: true,
+    callOverlayControlVisible: true,
     overlayCompact: true,
     liveCaptionOverlayEnabled: true,
     liveCaptionOverlayScope: "source-only",
@@ -156,6 +157,7 @@
     $("telemetryHeartbeatSeconds").value = String(config.telemetryHeartbeatSeconds || 30);
     $("overlayEnabled").checked = !!config.overlayEnabled;
     if ($("overlaysGlobalEnabled")) $("overlaysGlobalEnabled").checked = config.overlaysGlobalEnabled !== false;
+    if ($("callOverlayControlVisible")) $("callOverlayControlVisible").checked = config.callOverlayControlVisible !== false;
     if ($("captionOverlayEnabled")) $("captionOverlayEnabled").checked = config.liveCaptionOverlayEnabled !== false;
     if ($("captionOverlayScope")) $("captionOverlayScope").value = config.liveCaptionOverlayScope === "all-tabs" ? "all-tabs" : "source-only";
     if ($("captionInterpreterEnabled")) { $("captionInterpreterEnabled").checked = false; $("captionInterpreterEnabled").disabled = true; }
@@ -317,6 +319,7 @@
   $("telemetryHeartbeatSeconds").addEventListener("change", function () { save({ telemetryHeartbeatSeconds: Math.max(10, Math.min(300, Number(this.value) || 30)) }); });
   $("overlayEnabled").addEventListener("change", function () { save({ overlayEnabled: this.checked }); });
   if ($("overlaysGlobalEnabled")) $("overlaysGlobalEnabled").addEventListener("change", function () { save({ overlaysGlobalEnabled: this.checked }); });
+  if ($("callOverlayControlVisible")) $("callOverlayControlVisible").addEventListener("change", function () { save({ callOverlayControlVisible: this.checked }); });
   if ($("captionOverlayEnabled")) $("captionOverlayEnabled").addEventListener("change", function () { save({ liveCaptionOverlayEnabled: this.checked }); });
   if ($("captionOverlayScope")) $("captionOverlayScope").addEventListener("change", function () { save({ liveCaptionOverlayScope: this.value === "all-tabs" ? "all-tabs" : "source-only" }); });
   $("volume").addEventListener("input", function () {
