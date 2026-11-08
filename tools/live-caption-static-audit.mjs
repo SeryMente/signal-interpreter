@@ -11,7 +11,6 @@ const background=read("extension/background.js");
 const content=read("extension/content.js");
 const offscreen=read("extension/offscreen.js");
 const groq=read("extension/groq-transcriber.js");
-const groq=read("extension/groq-transcriber.js");
 const overlay=read("extension/live-caption-overlay.js");
 const core=read("extension/live-caption-core.js");
 const bridge=read("extension/live-caption-bridge.js");
