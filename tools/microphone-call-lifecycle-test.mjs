@@ -88,6 +88,13 @@ assert.ok(content.includes("navigator.mediaDevices.getUserMedia") &&
           content.includes("new MediaRecorder(stream") &&
           content.includes('voiceControl.addEventListener("click", toggleInterpreterMicCapture)'),
   "capture is initiated only by an explicit click in the call control");
+const micStart=bodyBetween(content,
+  "  async function startInterpreterMicCapture() {",
+  "  function toggleInterpreterMicCapture()",
+  "interpreter mic start");
+const permissionCall=micStart.indexOf("stream = await navigator.mediaDevices.getUserMedia(");
+assert.ok(micStart.indexOf("SIGNAL_INTERPRETER_MIC_POLICY_GET") < permissionCall && permissionCall>=0,
+  "policy preflight occurs before the actual microphone permission request");
 assert.ok(content.includes('stopInterpreterMicCapture("call-route-left",true)') &&
           content.includes('stopInterpreterMicCapture("pagehide",true)'),
   "call-route exit and pagehide stop the local microphone stream");
