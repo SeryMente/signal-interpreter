@@ -208,10 +208,11 @@
     return "INTERVENCIÓN";
   }
 
-  function roleForSource(source, language) {
-    if (source === "yo") return "INTÉRPRETE";
-    if (source === "cliente" || source === "chrome-live-caption") return roleForLanguage(language); // Tab mix: language lane, not physical microphone or speaker verification.
-    return roleForLanguage(language);
+  function roleForSource(source, language, speaker) {
+    if (source === "yo" || speaker === "INTÉRPRETE") return "INTÉRPRETE";
+    if (source === "chrome-live-caption") return speaker === "CLIENTE" ? "CLIENTE" : "HABLANTE NO VERIFICADO";
+    if (source === "cliente") return roleForLanguage(language);
+    return "HABLANTE NO VERIFICADO";
   }
 
   function languageLabel(language) {
