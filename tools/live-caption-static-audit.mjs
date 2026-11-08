@@ -23,8 +23,8 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.44");
-assert.ok(background.includes('liveCaptionInterpreterEnabled: false'), "el micrófono está fuera del alcance actual");
+assert.equal(manifest.version,"0.10.45");
+assert.ok(background.includes('liveCaptionInterpreterEnabled: false'), "el canal de voz INTÉRPRETE permanece desactivado por defecto");
 assert.equal(background.includes('if (language === "es") source = "yo"'), false, "el historial del service worker no debe convertir idioma en identidad del hablante");
 assert.ok(overlay.includes('core.roleForSource(item.source, language, item.speaker)'), "el render conserva la fuente y el hablante explícito");
 assert.ok(core.includes('return speaker === "CLIENTE" ? "CLIENTE" : "HABLANTE NO VERIFICADO"'), "el idioma de un caption nativo no se convierte en identidad de hablante");
