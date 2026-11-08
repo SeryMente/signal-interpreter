@@ -17,5 +17,7 @@ const manual={Promise,Date,Number,String,Object,Array,JSON,Blob,setTimeout(){},U
 vm.createContext(manual);vm.runInContext(live.slice(live.indexOf("function exportDiagnostic()"),live.indexOf("function setView")),manual);
 manual.exportDiagnostic();await new Promise(resolve=>setImmediate(resolve));assert.equal(clicked,true);
 const diagnostic=await exportedBlob.text();for(const secret of ["PRIVATE_SPEECH","PRIVATE_CALL","PRIVATE_KEY"])assert.equal(diagnostic.includes(secret),false);
-assert.equal(JSON.parse(diagnostic).captureScope,"native-text-only");
+assert.equal(JSON.parse(diagnostic).captureScope,"native-caption-and-ephemeral-interpreter-mic");
+assert.equal(JSON.parse(diagnostic).rawTranscriptIncluded,false);
+assert.equal(JSON.parse(diagnostic).rawAudioIncluded,false);
 console.log("MANUAL_DIAGNOSTIC_METADATA_ONLY_TEST=PASS");
