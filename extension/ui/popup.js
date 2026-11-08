@@ -137,15 +137,22 @@
       "worker-start-confirm-again": "Chrome se reinició o el worker arrancó; confirma de nuevo",
       "observation-gap-confirm-again": "Se perdió continuidad de presencia; confirma de nuevo",
       "presence-unavailable-confirm-again": "No se pudo verificar presencia activa",
-      "idle-or-locked-confirm-again": "Equipo inactivo o bloqueado; confirma al volver",
+      "idle-or-locked-confirm-again": "Equipo inactivo o bloqueado (registro anterior); confirma al volver",
+      "idle-confirm-again": "Windows confirmó inactividad tras el límite elegido; confirma al volver",
+      "locked-confirm-again": "Windows confirmó bloqueo; confirma al desbloquear",
+      "presence-unavailable-confirm-again": "No se pudo verificar presencia; confirma cuando el equipo esté activo",
+      "presence-verification-pending": "Verificación de presencia pendiente; reintentando",
       "manual-pause": "Pausado manualmente",
       "settings-changed-confirm-again": "Cambió la configuración; confirma de nuevo",
       "laboratory": "Bloqueado por el laboratorio aislado",
       "verification-error-confirm-again": "Falló la verificación de presencia",
       "confirmation-required": "Requiere confirmación explícita"
     };
+    var presenceCheck = presenceState.lastPresenceCheck || {};
     $("presenceStatus").textContent = presenceState.armed
-      ? "Disponible · solo teléfono; vídeo manual"
+      ? (presenceCheck.state === "unavailable"
+        ? "Disponible · verificación pendiente; las nuevas llamadas esperan resultado válido"
+        : "Disponible · solo teléfono; vídeo manual")
       : "Pausado · " + (presenceReasonLabels[presenceReason] || presenceReason.replace(/-/g, " "));
     $("observation").checked = !!config.observationEnabled;
     $("networkTelemetryEnabled").checked = !!config.networkTelemetryEnabled;

@@ -5,7 +5,7 @@
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
-- Revision documental: SI-OBJ-v1.18-retoma-G11-20261107-03; ancla: C-SIGNAL-RETOMA-20261107-G11-6495BAA5, integración 0.10.40 y actualización local verificada para recarga manual de Chrome del 2026-11-07. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
+- Revision documental: SI-OBJ-v1.19-autoanswer-0.10.43-G12-20261107-06; ancla: C-SIGNAL-AUTOANSWER-01043-G12-20261107, instrumentación diagnóstica de revalidación previa a Connect. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
 - Estado de producto: `main` contiene Signal Interpreter **0.10.40**, integrada por PR [#71](https://github.com/SeryMente/signal-interpreter/pull/71) mediante merge commit `2546d967f15759c2eabac7b4026cc5b4f1cbd081`. CI de PR (auditoría, integridad de paquete 59/59 y host nativo) y CI post-merge (auditoría y host nativo) pasaron. La carpeta que Chrome tiene registrada ya contiene el manifiesto anidado **0.10.40**, con ID conservado. La distribución local se cotejó: 48/48 archivos de la candidata coinciden con el destino; 55/59 hashes canónicos coinciden y cuatro archivos tienen adaptaciones locales explícitas para el layout anidado. El host Native Messaging preexistente conserva su registro y SHA. Respaldo previo 0.10.39 verificado 50/50. Chrome no se recargó; aceptación funcional, E2E y liberación siguen pendientes. No hay release.
@@ -19,13 +19,13 @@ Leer este núcleo y adquirir gobierno vigente antes de actuar. Consultar despué
 
 Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metacanon pertinentes → gobierno particular de este frente. [Entrada del gobierno distribuido](https://github.com/SeryMente/metodologia/blob/main/INICIO.md). El repositorio metodológico requiere acceso autorizado; no copiar su contenido privado a este repositorio público ni pedir credenciales en el chat. Revalidar fuente y revisiones desde `main`; una referencia histórica no prueba frescura, autorización o ejecución. Fuente indispensable ausente bloquea solo la acción dependiente.
 
-**Modo operativo vigente:** una instancia única G12 tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva decisiones humanas, uso real, llamadas reales, aceptación funcional y liberación. Esta disposición no se propaga a otros proyectos. G10 quedó SUSTITUIDA por G11 mediante transferencia condicionada por SHA/generación; generaciones anteriores permanecen en el historial. M34/M35 son antecedentes históricos cerrados; PC-14 está expresamente excluido por el operador.
+**Modo operativo vigente:** una instancia única G12 tiene titularidad y responsabilidad integral de Signal Interpreter. El operador conserva decisiones humanas, uso real, llamadas reales, aceptación funcional y liberación. Esta disposición no se propaga a otros proyectos. G11 quedó SUSTITUIDA por G12 mediante transferencia condicionada por SHA/generación; G10 y G11 permanecen en el historial. M34/M35 son antecedentes históricos cerrados; PC-14 está expresamente excluido por el operador.
 
 ## Referencia metodológica
 
-- **Metacanon adquirido: 1.28**; DUG **v377 · NX-377m**; GOW **2.17**.
-- Fuente canónica releída desde `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, commit `8ee2482866b3dd085e58e05006727256d0274376`, blob `54064c8fe00f872023a455f06596061ed69062ae`. `INICIO.md` confirma DUG v377, Metacanon 1.28 y GOW 2.17.
-- Control vigente: CONTROL-RESPONSABILIDAD.json, G11 ACTIVO agente_unico; folio SES-20261107-6495BAA5; alias chatgpt-signal-interpreter-SES-20261107-6495BAA5; UUIDv7 local 01a1b703-181f-7838-a492-0d21cf717013. Blob `f7e75f74961184c38e0a35955896099230bf061e`; read-back remoto PASS. G10 queda SUSTITUIDO.
+- **Metacanon adquirido: 1.28**; DUG **v378 · NX-378m**; GOW **2.17**.
+- Fuente canónica releída desde SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html, commit 7601d73549dfdfe28d2081f63004a841829873f2, blob ab64924bdf64dce8155a0be1655b92bfaa2bae01. DUG v378, Metacanon 1.28 y GOW 2.17.
+- Control histórico G11 SUSTITUIDO. Control vigente G12 ACTIVO agente_unico; folio PENDIENTE/NO ASIGNADO por FOL1 no activa; alias chatgpt-signal-interpreter-01a1b793-ab9f-70bc-bd23-03e83dc1e417; UUIDv7 local 01a1b793-ab9f-70bc-bd23-03e83dc1e417. Control main blob 309b3ae07d1fb6b2398787d1c9f3c25d858899f4; read-back PASS. G10 y G11 quedan SUSTITUIDOS.
 - Se revisaron manualmente P001/P004/P005/P037/P038/P043, §42 de Metacanon y vocabulario GOW relativo a Arranque en Frío, MDP, SPDF, Persistencia documental, Registro conversacional, FT y Control de responsabilidad. `INICIO.md` refiere §ARR; no se localizó un encabezado literal §ARR en las secciones humanas recuperadas, por lo que su ubicación exacta queda NO VERIFICADA. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
 
 ### Constancia de adquisición y aplicación
@@ -221,9 +221,9 @@ Cada ciclo sustantivo conserva originales realmente disponibles y salida visible
 
 ## Persistencia y revisión
 
-Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control G11 ACTIVO; blob `3461d073fe8c76d9aa0a7d472d8f0a7b1e54846b`; read-back remoto PASS. G10 queda SUSTITUIDO con histórico preservado.
+Releer base y método antes de escribir; ante delta/concurrencia conciliar, no sobrescribir. Control G12 ACTIVO; blob main 309b3ae07d1fb6b2398787d1c9f3c25d858899f4; read-back PASS. G11 SUSTITUIDO con histórico preservado.
 
-Gobernanza actual releída: DUG v377 · NX-377m, Metodología `main` commit `b66789064c7e6efed4b712f3b2e7bfab9744f4d9`, HTML canónico blob `54064c8fe00f872023a455f06596061ed69062ae`; Metacanon 1.28; GOW 2.17. MCP normativo desactivado. La localización precisa de §ARR queda NO VERIFICADA.
+Gobernanza actual releída: DUG v378 · NX-378m, Metodología main commit 7601d73549dfdfe28d2081f63004a841829873f2, HTML canónico blob ab64924bdf64dce8155a0be1655b92bfaa2bae01; Metacanon 1.28; GOW 2.17. §ARR adquirido. MCP normativo desactivado.
 
 Prompt operativo único G11 blob `ca9e4f1e25aca92717778772418181477a5c025a`; crónica de retoma G11 blob `02b81140201a7235474dda787477a8a74d101cc2`; recibo del export G11 blob `9f08e7eb9de4650427741e886e5099b3f477b404`. Persistencia y read-back verificados.
 
@@ -248,7 +248,25 @@ Esta adenda es el checkpoint vigente y supersede cualquier mención anterior de 
 - **Foliación:** FOL1 PREPARADA, NO ACTIVA. Folios CV/CY/A/B permanecen PENDIENTES/NO ASIGNADOS.
 - **Gobierno:** DUG v378 · NX-378m; Metacanon 1.28; GOW 2.17. §ARR adquirido; MCP normativo DESACTIVADO.
 - **Producto:** `main/manifest.json` 0.10.40. El export reporta una candidata local 0.10.42, no reconciliada con main en esta retoma. No declarar integración ni aceptación.
-- **Incidente:** la última llamada perdida fue detectada; se encontró el botón Connect. La revalidación posterior a la autorización se bloqueó con `post-authorization-revalidation-failed`; no consta `CONNECT_CLICKED`. El predicado individual fallido sigue DESCONOCIDO.
+- **Incidente:** la última llamada perdida fue detectada; se encontró el botón Connect. La revalidación posterior a la autorización se bloqueó con `post-authorization-revalidation-failed`; no consta `CONNECT_CLICKED`. El predicado individual fallido sigue DESCONOCIDO; la candidata 0.10.43 añade el código de cada guarda al siguiente bloqueo.
 - **Trabajo siguiente:** instrumentar por separado los predicados de revalidación en `content.js` y añadir pruebas sin audio, transcripción ni texto de llamada; mantener fail-closed. No recargar Chrome ni actuar sobre llamadas reales durante una ventana activa.
 - **Custodia:** el original 1350 está copiado localmente con SHA exacto y excluido de Git; recibo y crónica saneados están en main. Original no publicado ni almacenado remotamente por esta operación.
 - **Estado local:** clon observado 29 commits detrás y con cuatro archivos modificados y dos no seguidos. Preservar; usar base aislada para el desarrollo siguiente.
+
+## Checkpoint vivo G12 · candidata diagnóstica 0.10.43
+
+La crónica técnica G12 y la nota de versión 0.10.43 registran la instrumentación de content.js. La candidata emite códigos enumerados para cada predicado de revalidación; no incorpora texto/audio/transcripción de llamada y no relaja el bloqueo fail-closed. El clasificador tiene 16 casos; suites runtime 31, conexión 33, guard 65 e integridad de paquete 59/59 PASS. PR #73 está abierta; package integrity CI SUCCESS y los workflows de host nativo/auditoría estaban IN_PROGRESS en la última lectura. El audit estático local de observabilidad no se ejecutó por workflow ausente. PR #72 permanece abierta como antecedente 0.10.42, no fusionar. main sigue en 0.10.40. Sin instalación, recarga de Chrome, llamada real, aceptación funcional ni release.
+
+## Actualización viva G12 · revalidación de presencia 0.10.46 · 2026-11-08
+
+Esta actualización sustituye el checkpoint diagnóstico 0.10.43 como estado vivo; el historial anterior se conserva.
+
+- **Responsabilidad:** G12 ACTIVO, generación 12, agente único; evento `SIGNAL-INTERPRETER-TRANSFER-20261107-G12-3DC1E417`; UUIDv7 local `01a1b793-ab9f-70bc-bd23-03e83dc1e417`. FOL1 PREPARADA, NO ACTIVA; CV/CY/A/B y OCP PENDIENTES/NO ASIGNADOS.
+- **Gobernanza releída:** DUG `v383 · NX-383m · C-GOBERNANZA-ART013-PC8-OBSERVACION-01`, fuente `SeryMente/metodologia/main`, commit `d732fe5bbcabbfcedbcdc6151a779cccef282086`, blob HTML `cad464717c43733aa84b49f8c9c3af0875597fbd`. `INICIO.md` aún declara v377 y no se toma como versión actual del DUG. MCP normativo DESACTIVADO.
+- **Producto:** candidata `manifest.json` 0.10.46 sobre `work/g12-autoanswer-revalidation`, PR #73 abierta, no fusionada. Mantiene el cambio del indicador global 0.10.45 y añade revalidación de presencia 0.10.46.
+- **Incidente correlacionado:** a las 11:53:55.810 (hora local de Ciudad de México) el diálogo OPI fue detectado y Connect se encontró habilitado. No hubo CONNECT_CLICKED; el cierre fue clasificado `dialog_closed_without_connect`. El guard se había desarmado con `IDLE_OR_LOCKED_CONFIRM_AGAIN`, mientras configEnabled=true, availability=online y labSafetyLock=false. `presenceIdleSeconds=60`. La instrumentación anterior no permite distinguir si el motivo provino de idle, locked o unavailable; la consulta Security Log de Windows 4800/4801 en el intervalo no devolvió eventos y no se usa como prueba de ausencia de bloqueo.
+- **Corrección:** estados `idle`, `locked` y `unavailable` separados. Idle/locked confirmado continúa revocando y retorno active no rearma. Unavailable bloquea el intento actual, conserva la autorización explícita en `chrome.storage.session`, registra estado/origen/fecha/código saneado y reintenta restauración. Excepciones transitorias de storage/tabs bloquean ese intento sin confundirse con ausencia confirmada. No se relaja OPI-only, profile allowlist, lease, lab lock, consentimiento ni fail-closed.
+- **Umbral:** 60 segundos mide ausencia de entrada de teclado/ratón; puede activarse durante escucha/lectura pasivas. El control no es una medición física de presencia. Se mantienen opciones 1/3/5/10 min sin nuevo valor predeterminado; el operador conserva la selección.
+- **Verificación local de staging:** presence guard 81/81; presence-connect 33/33; node --check 25/25; inventario de paquete y manifiesto PASS 59/59 SHA-256; instalador e indicador global PASS; call export, caption lab, cloud-login bootstrap, hotload active call, live caption static audit, microphone feedback, overlay activation, pipeline hotkey y portable root PASS. `observability-static-audit` local NO EJECUTADO por workflow no incluido en el ZIP; `earnings-overlay-tests` mantiene fallo preexistente no relacionado (`syncOfficialEarningsRangeUnsafe`).
+- **Límites:** pruebas Node/VM y DOM sintético; no son aceptación Windows/Chrome ni llamada real. Chrome no fue recargado y no se ejecutaron acciones sobre llamadas. La candidata permanece no fusionada, sin release ni aceptación funcional. La política no promete que toda llamada se conteste: idle/locked real, perfil o modalidad no elegibles continúan bloqueados.
+- **Persistencia:** nueva nota `docs/versions/0.10.46-presence-state-revalidation.md` y crónica `docs/frentes/signal-interpreter/cronica/C-SIGNAL-PRESENCE-01046-G12-20261108.md`; recibo saneado `CHANGE-RECEIPT-01046.json`. Actualización local a Escritorio y read-back final pendientes de concluir la transferencia del paquete.

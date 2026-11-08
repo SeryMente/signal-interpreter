@@ -2,8 +2,12 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const content=fs.readFileSync('extension/content.js','utf8');
+const diagnosticStart=content.indexOf('  function postAuthorizationRevalidationFailureCodes(');
+const diagnosticEnd=content.indexOf('  function currentCallId()',diagnosticStart);
+assert(diagnosticStart>=0&&diagnosticEnd>diagnosticStart,'post-authorization classifier boundaries');
+const diagnosticHelper=content.slice(diagnosticStart,diagnosticEnd);
 const helper=content.slice(content.indexOf('  function clearAuthorizationRetry('),content.indexOf('  async function autoAnswer() {'));
-const fn=helper+content.slice(content.indexOf('  async function autoAnswer() {'),content.indexOf('  function emitAutoAnswerReadiness'));
+const fn=diagnosticHelper+helper+content.slice(content.indexOf('  async function autoAnswer() {'),content.indexOf('  function emitAutoAnswerReadiness'));
 let checks=0;
 function harness({mode='Audio interpreting',grant=true,grantError='not-authorized',labLocked=false,presenceArmed=true,autoEnabled=true,availability='online',buttonPresent=true}={}){
  let clicks=0,release=null,route=false,visible=true,dialogVisible=true,events=[],releaseRequests=[],timers=[],authorizationRequests=0,grantValue=grant;
@@ -23,7 +27,7 @@ function harness({mode='Audio interpreting',grant=true,grantError='not-authorize
   authorizationRetryCounts:new Map(),authorizationRetryTimers:new Map(),authorizationRetryExhausted:new Set(),
   lastIncomingSignature:'',incomingAttemptId:null,lastIncomingDialogElement:null,lastIncomingBlockedSignature:'',
   answerFlow:{},ANSWER_LEASE_MARKER:'lease',window:{},integrity:{permittedConnectClicks:0},
-  answerWatchdog:null,RUNTIME_VERSION:'0.10.40',DIALOG:'dialog',runtimeMarker:{active:true},
+  answerWatchdog:null,RUNTIME_VERSION:'0.10.46',DIALOG:'dialog',runtimeMarker:{active:true},
   syncPageFavicon(){},currentCallId:()=>route?'active':null,
   normalized:s=>String(s||''),safe:s=>String(s||''),visibleElement:()=>visible,
   emit(action,payload,level){events.push({action,payload:payload||{},level:level||'info'});},
