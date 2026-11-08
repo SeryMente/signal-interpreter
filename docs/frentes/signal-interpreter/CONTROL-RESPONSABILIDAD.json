@@ -1105,6 +1105,32 @@
       "zona_horaria": "America/Mexico_City",
       "alcance": "Diagnóstico de rendimiento de Chrome/Signal Interpreter en PC-13 mediante comandos RDC de solo lectura: inventario de procesos y uso CPU/memoria, versión/ruta/estado registrado de la extensión, lectura de archivos de perfil estrictamente necesarios y análisis estático de mecanismos de carga/temporizadores. No incluye modificar, deshabilitar o recargar la extensión, cambiar ajustes, leer contenido de navegación, abrir pestañas, usar GUI ni intervenir llamadas/audio reales.",
       "acceso_remoto": "RDC solo en PC-13. Lecturas CLI de diagnóstico; no escrituras fuera del registro de esta autorización. No ejecutar pruebas de audio ni llamadas reales. No abrir ni manipular Chrome GUI."
+    },
+    {
+      "evento": "SIGNAL-INTERPRETER-GROQ-AUTH-20261108-G13",
+      "autorizacion_explicita": true,
+      "literal_operador": "Sigue resolviendo todo el backlog, este. y sí se autorizó eso que dices que tengo que autorizar.",
+      "pregunta_confirmada": "¿Autorizas que la transcripción del micrófono del intérprete utilice Groq Whisper, enviando audio únicamente durante /call/:id, sin conservar audio crudo ni incluir audio o texto clínico en telemetría?",
+      "fecha_local": "2026-11-08",
+      "hora_exacta": "NO VERIFICADA",
+      "zona_horaria": "America/Mexico_City",
+      "generacion": 13,
+      "titular": "chatgpt-signal-interpreter-01a1bca3-e123-74f7-b884-5792d8fb3e62",
+      "alcance": "Implementar el canal de transcripción del micrófono INTÉRPRETE mediante Groq Whisper; abrir captura solo tras acción explícita del usuario en ruta de llamada confirmada /call/:id; cesar y liberar pistas al salir de la llamada, al terminar o ante cualquier pérdida de contexto; no conservar audio crudo, no persistir texto clínico en telemetría ni repositorios. La transmisión real queda bloqueada hasta confirmar Zero Data Retention (ZDR) habilitado en la consola Groq; no inferir esa configuración.",
+      "limites": "No incluye llamada real, intervención de conversación, recarga/reinicio de Chrome, despliegue, release ni aceptación funcional. No incluye introducir/gestionar una clave API en PC-13 ni cambiar credenciales fuera de la ruta autorizada. La autorización no acredita instalación ni configuración efectiva de ZDR.",
+      "estado": "AUTORIZADA_PENDIENTE_IMPLEMENTACION_Y_VERIFICACION",
+      "acceso_remoto": "Se mantiene el alcance RDC preexistente: terminal únicamente en PC-13 y dentro de EP/Signal-Interpreter/extension. El dispositivo PC-13 fue observado OFFLINE; ninguna acción local queda autorizada ni ejecutada en otro dispositivo.",
+      "privacidad": {
+        "proveedor": "Groq Whisper",
+        "endpoint": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "llamada_activa_requerida": true,
+        "accion_explicita_inicio": true,
+        "audio_crudo_persistido": false,
+        "texto_clinico_en_telemetria": false,
+        "texto_clinico_en_repositorio": false,
+        "zero_data_retention_required": true,
+        "zero_data_retention_status": "PENDIENTE_DE_CONFIRMACION_EN_CONSOLA_GROQ"
+      }
     }
   ]
 }
