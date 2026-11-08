@@ -2651,14 +2651,17 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   function applyCallMicrophonePolicy(callId, tabId, muted, source) {
     var desiredMuted = !!muted;
     var targetTabId = Number(tabId);
+    var validTabId = tabId != null && Number.isInteger(targetTabId);
     var run = callMicrophonePolicyQueue.then(async function () {
-      if (!Number.isInteger(targetTabId)) {
+      if (!validTabId) {
         return { ok: false, verified: false, muted: desiredMuted, error: "No hay una pestaña de llamada controlable." };
       }
       if (!desiredMuted) {
         var stored = await chrome.storage.local.get(["effectifState"]);
         var state = normalizeStateShape(Object.assign(baseState(), stored.effectifState || {}));
-        if (!hasActiveCall(state) || state.callId !== callId || Number(state.callSourceTabId) !== targetTabId) {
+        var sourceTab = null;
+        try { sourceTab = await chrome.tabs.get(targetTabId); } catch (_) {}
+        if (!hasActiveCall(state) || state.callId !== callId || Number(state.callSourceTabId) !== targetTabId || !sourceTab || !isCloudCallUrl(sourceTab.url)) {
           record("CALL_MICROPHONE_UNMUTE_BLOCKED", {
             callId: callId || null, tabId: targetTabId, source: source || "call-policy",
             reasonCode: "call-not-active-or-source-mismatch", invariant: "unmute-only-after-confirmed-call-route"
@@ -2702,20 +2705,33 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var previousMuteStatus=String(state.microphoneMuteStatus||"unapplied");
     var previousOutputStatus=String(state.microphoneOutputStatus||"unapplied");
     var captureActive=!!(state.groqCapture&&state.groqCapture.status==="connected");
-    var outputRequired=hasActiveCall(state);
-    if (!desired && !outputRequired) {
+    var outputRequired = hasActiveCall(state);
+    var unmuteRouteValid = false;
+    if (!desired && outputRequired && state.callSourceTabId != null) {
+      try {
+        var currentCallTab = await chrome.tabs.get(Number(state.callSourceTabId));
+        unmuteRouteValid = !!currentCallTab && isCloudCallUrl(currentCallTab.url);
+      } catch (_) {}
+    }
+    if (!desired && (!outputRequired || !unmuteRouteValid)) {
       state.microphoneMuted = true;
       state.microphoneMuteRequested = true;
       if (state.microphoneMuteStatus !== "error") state.microphoneMuteStatus = "applied";
       state.microphoneOutputMuted = true;
-      state.microphoneOutputStatus = "unapplied";
+      state.microphoneOutputStatus = outputRequired ? "error" : "unapplied";
       state.groqCapture = Object.assign({}, state.groqCapture || {}, { microphoneMuted: true });
       await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
+      var blockReason = outputRequired ? "call-route-not-active" : "call-not-active";
       record("EXTENSION_MICROPHONE_UNMUTE_BLOCKED", {
-        desired: false, source: source || "unknown", reasonCode: "call-not-active",
-        policy: "mute-is-invariant-outside-accepted-call"
+        desired: false, source: source || "unknown", reasonCode: blockReason,
+        callId: state.callId || null, tabId: state.callSourceTabId || null,
+        policy: "mute-is-invariant-outside-confirmed-active-call-route"
       }, "warn", "microphone");
-      return { ok: false, muted: true, requestedMuted: false, verified: true, reasonCode: "call-not-active", error: "El micrófono solo puede activarse durante una llamada aceptada." };
+      return {
+        ok: false, muted: true, requestedMuted: false, verified: true,
+        reasonCode: blockReason,
+        error: "El micrófono solo puede activarse durante una llamada aceptada y confirmada."
+      };
     }
     state.microphoneMuted=desired;
     state.microphoneMuteRequested=desired;
