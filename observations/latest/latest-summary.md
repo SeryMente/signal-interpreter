@@ -1,29 +1,26 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-5b60df9e-00a2-481e-a132-c6e26a55d305
-- Creado: 2026-11-08T20:20:58.185Z
-- Trigger: startup
+- Batch: batch-8f1cd6db-cc36-46e8-b4cb-be22b39e71b7
+- Creado: 2026-11-08T20:24:56.863Z
+- Trigger: critical
 - Extensión: 0.10.41
-- Eventos: 4
+- Eventos: 3
 - Errores: 0
 - Warnings: 0
-- Secuencia: 1606 → 1609
+- Secuencia: 1771 → 1773
 - Identidades de plataforma: 14
-- Snapshots de plataforma: 2062
-- Deltas de plataforma: 2041
+- Snapshots de plataforma: 2065
+- Deltas de plataforma: 2044
 
 ## Categorías
 
 {
-  "BILLING": 2,
-  "LIVE_CAPTION": 1,
-  "RUNTIME": 1
+  "RUNTIME": 3
 }
 
 ## Acciones
 
 {
-  "EXCHANGE_RATE_UPDATED": 2,
-  "SIGNAL_CAPTION_NATIVE_ONLY_AUDIO_ISOLATED": 1,
-  "AUTO_ANSWER_READINESS": 1
+  "AUTO_ANSWER_READINESS": 2,
+  "PLATFORM_SESSION_RECONCILED_STARTED": 1
 }
