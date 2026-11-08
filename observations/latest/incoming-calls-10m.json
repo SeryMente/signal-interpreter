@@ -1,194 +1,33 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-08T19:43:41.362Z",
-  "windowStartAt": "2026-11-08T19:33:41.362Z",
-  "windowEndAt": "2026-11-08T19:43:41.362Z",
+  "generatedAt": "2026-11-08T19:44:39.840Z",
+  "windowStartAt": "2026-11-08T19:34:39.840Z",
+  "windowEndAt": "2026-11-08T19:44:39.840Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 131
+    "client-clock-unverified": 66
   },
-  "sourceBatchCount": 21,
+  "sourceBatchCount": 11,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 11769,
+  "receiptUnverifiedBatchCount": 11770,
   "medianClientClockSkewMs": null,
-  "eventCount": 131,
+  "eventCount": 66,
   "summary": {
-    "attempts": 2,
+    "attempts": 0,
     "answered": 0,
-    "missed": 1,
+    "missed": 0,
     "connectFailedNoRoute": 0,
-    "ringUnmatched": 1,
-    "unresolved": 1,
-    "ringSignals": 1,
+    "ringUnmatched": 0,
+    "unresolved": 0,
+    "ringSignals": 0,
     "dialogsDetected": 0,
     "buttonsFound": 0,
     "buttonsNotFound": 0,
-    "readinessSamples": 82,
+    "readinessSamples": 46,
     "blocked": 0,
     "clicks": 0
   },
-  "attempts": [
-    {
-      "attemptId": "ring-c240a577a499c09dc7d02df4",
-      "status": "ring_unmatched",
-      "modality": null,
-      "tabId": 1680554836,
-      "detectedAt": "2026-11-08T19:33:43.349Z",
-      "closedAt": null,
-      "clickedAt": null,
-      "answeredAt": null,
-      "missedAt": null,
-      "outcomeReason": null,
-      "button": {
-        "found": false,
-        "notFound": false,
-        "disabled": false
-      },
-      "readiness": {
-        "samples": 0,
-        "last": null
-      },
-      "blockedEvents": [],
-      "ringSignalCount": 1,
-      "clickToAnswerLatencyMs": null,
-      "detectionToAnswerLatencyMs": null,
-      "callRefs": [],
-      "missingSignals": [
-        "INCOMING_DIALOG_DETECTED",
-        "TERMINAL_CALL_OUTCOME"
-      ],
-      "eventCount": 2,
-      "timeline": [
-        {
-          "at": "2026-11-08T19:33:43.349Z",
-          "action": "INCOMING_RING_SIGNAL",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "signal": "ring.mp3",
-            "statusCode": 206,
-            "durationMs": 264
-          },
-          "eventId": "91e01c09-4432-4585-a3bc-30db10b21f5d",
-          "sequence": 891
-        },
-        {
-          "at": "2026-11-08T19:33:44.076Z",
-          "action": "AUTO_ANSWER_BOOTSTRAP_INJECTED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "trigger": "ring.mp3-start"
-          },
-          "eventId": "3a4b0b7b-0935-42f7-ad62-fe59c195be60",
-          "sequence": 892
-        }
-      ]
-    },
-    {
-      "attemptId": "471263e4-f995-429c-9358-eed8ed6b94b6",
-      "status": "missed",
-      "modality": "OPI",
-      "tabId": 1680554836,
-      "detectedAt": "2026-11-08T19:33:45.323Z",
-      "closedAt": "2026-11-08T19:33:51.289Z",
-      "clickedAt": null,
-      "answeredAt": null,
-      "missedAt": "2026-11-08T19:33:53.940Z",
-      "outcomeReason": "dialog_closed_without_connect",
-      "button": {
-        "found": false,
-        "notFound": false,
-        "disabled": false
-      },
-      "readiness": {
-        "samples": 0,
-        "last": null
-      },
-      "blockedEvents": [],
-      "ringSignalCount": 0,
-      "clickToAnswerLatencyMs": null,
-      "detectionToAnswerLatencyMs": null,
-      "callRefs": [],
-      "missingSignals": [
-        "INCOMING_DIALOG_DETECTED"
-      ],
-      "eventCount": 6,
-      "timeline": [
-        {
-          "at": "2026-11-08T19:33:45.323Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "3a1c72f5-c610-491b-81ad-0096b9f3fd60",
-          "sequence": 914
-        },
-        {
-          "at": "2026-11-08T19:33:45.325Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "325a81ed-add7-4842-9a02-53b82251cbc8",
-          "sequence": 915
-        },
-        {
-          "at": "2026-11-08T19:33:46.042Z",
-          "action": "INCOMING_ATTEMPT_REGISTERED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "OPI",
-            "connectFound": true,
-            "connectDisabled": false
-          },
-          "eventId": "5c463200-356d-4f3a-95bc-02c50690dc5a",
-          "sequence": 895
-        },
-        {
-          "at": "2026-11-08T19:33:51.024Z",
-          "action": "PERFORMANCE_HEARTBEAT",
-          "level": "info",
-          "reasonCode": "heartbeat",
-          "details": {
-            "reason": "heartbeat",
-            "reasonCode": "heartbeat"
-          },
-          "eventId": "fe4cbfe4-d657-4c23-b33a-9619097e6f1c",
-          "sequence": 919
-        },
-        {
-          "at": "2026-11-08T19:33:51.289Z",
-          "action": "INCOMING_DIALOG_CLOSED_OBSERVED",
-          "level": "info",
-          "reasonCode": "dialog-removed",
-          "details": {
-            "reason": "dialog-removed",
-            "reasonCode": "dialog-removed"
-          },
-          "eventId": "2cf1ffee-603a-4c32-8a79-24cc50682077",
-          "sequence": 906
-        },
-        {
-          "at": "2026-11-08T19:33:53.940Z",
-          "action": "MISSED_CALL_CLASSIFIED",
-          "level": "warn",
-          "reasonCode": "dialog_closed_without_connect",
-          "details": {
-            "modality": "OPI",
-            "connectFound": true,
-            "connectDisabled": false,
-            "reason": "dialog_closed_without_connect",
-            "status": "missed",
-            "reasonCode": "dialog_closed_without_connect"
-          },
-          "eventId": "94cff0ee-334b-4a85-b09f-99efd2784cb3",
-          "sequence": 912
-        }
-      ]
-    }
-  ],
+  "attempts": [],
   "privacy": {
     "rawTranscriptIncluded": false,
     "rawAudioIncluded": false,
