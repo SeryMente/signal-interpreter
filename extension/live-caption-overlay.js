@@ -212,7 +212,7 @@
     host = document.createElement("div");
     host.id = "signal-interpreter-live-caption-overlay";
     host.setAttribute("aria-hidden", "true");
-    host.style.cssText = "all:initial;position:fixed;z-index:2147483647;pointer-events:none;display:none;left:12px;top:12px;width:560px;height:400px;overflow:visible";
+    host.style.cssText = "all:initial;position:fixed;z-index:2147483630;pointer-events:none;display:none;left:12px;top:12px;width:560px;height:400px;overflow:visible";
 
     root = host.attachShadow({ mode: "closed" });
     root.innerHTML =
