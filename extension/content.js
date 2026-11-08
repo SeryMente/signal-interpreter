@@ -2329,7 +2329,7 @@
         renderOverlay();
       });
     });
-    overlayTimer = setInterval(renderOverlay, 100);
+    overlayTimer = setInterval(renderOverlay, 500);
     reportOverlayLifecycle("EARNINGS_OVERLAY_MOUNTED", {
       requestedCallId: overlayLifecycleCallId, mountReason: "ensure-overlay",
       controlsReady: !!(overlayRoot.getElementById("amount") && overlayRoot.getElementById("mic")),
