@@ -110,8 +110,8 @@ const micChunkHandler=bodyBetween(background,
 assert.match(micChunkHandler,/SignalGroqTranscriber\.transcribe/);
 assert.doesNotMatch(micChunkHandler,/KhoraTelemetryDB|persistSignalSegment|addSignalSessionSegment|record\(|storage\.local|recordSignalDiagnostic/,
   "audio and clinical transcript are not written to local storage or telemetry");
-assert.ok(background.includes("interpreterMicQueuedChunks > 2"),
-  "audio chunks have a strict in-memory backpressure limit");
+assert.ok(content.includes("interpreterMicQueuedChunks > 2") && background.includes("interpreterMicPending > 2"),
+  "content and worker each enforce a strict in-memory backpressure limit");
 const segmentClassifier=bodyBetween(background,
   "  function interpreterSegmentLanguage(",
   "  async function publishInterpreterCaption(",
