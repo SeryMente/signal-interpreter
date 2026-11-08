@@ -1,21 +1,21 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-08T18:04:04.926Z",
-  "windowStartAt": "2026-11-08T17:54:04.926Z",
-  "windowEndAt": "2026-11-08T18:04:04.926Z",
+  "generatedAt": "2026-11-08T18:04:58.296Z",
+  "windowStartAt": "2026-11-08T17:54:58.296Z",
+  "windowEndAt": "2026-11-08T18:04:58.296Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 234
+    "client-clock-unverified": 198
   },
-  "sourceBatchCount": 19,
+  "sourceBatchCount": 16,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 11661,
+  "receiptUnverifiedBatchCount": 11663,
   "medianClientClockSkewMs": null,
-  "eventCount": 234,
+  "eventCount": 198,
   "summary": {
-    "attempts": 1,
+    "attempts": 0,
     "answered": 0,
-    "missed": 1,
+    "missed": 0,
     "connectFailedNoRoute": 0,
     "ringUnmatched": 0,
     "unresolved": 0,
@@ -23,109 +23,11 @@
     "dialogsDetected": 0,
     "buttonsFound": 0,
     "buttonsNotFound": 0,
-    "readinessSamples": 166,
+    "readinessSamples": 139,
     "blocked": 0,
     "clicks": 0
   },
-  "attempts": [
-    {
-      "attemptId": "9b953513-e6a7-4740-a075-ea96fdc032f4",
-      "status": "missed",
-      "modality": "OPI",
-      "tabId": 1600161561,
-      "detectedAt": "2026-11-08T17:54:06.632Z",
-      "closedAt": null,
-      "clickedAt": null,
-      "answeredAt": null,
-      "missedAt": "2026-11-08T17:54:09.318Z",
-      "outcomeReason": "dialog_closed_without_connect",
-      "button": {
-        "found": false,
-        "notFound": false,
-        "disabled": false
-      },
-      "readiness": {
-        "samples": 0,
-        "last": null
-      },
-      "blockedEvents": [],
-      "ringSignalCount": 0,
-      "clickToAnswerLatencyMs": null,
-      "detectionToAnswerLatencyMs": null,
-      "callRefs": [],
-      "missingSignals": [
-        "INCOMING_DIALOG_DETECTED"
-      ],
-      "eventCount": 6,
-      "timeline": [
-        {
-          "at": "2026-11-08T17:54:06.632Z",
-          "action": "PLATFORM_SCREENSHOT_CAPTURE_ERROR",
-          "level": "error",
-          "reasonCode": "tab-activated",
-          "details": {
-            "reason": "tab-activated",
-            "reasonCode": "tab-activated",
-            "error": "Error: Tabs cannot be edited right now (user may be dragging a tab)."
-          },
-          "eventId": "72677098-0174-49a1-a739-dbb357477f33",
-          "sequence": 1450
-        },
-        {
-          "at": "2026-11-08T17:54:08.068Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "79e587df-a8ef-4e53-9c32-809d8f57c53d",
-          "sequence": 1469
-        },
-        {
-          "at": "2026-11-08T17:54:08.074Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "4a23b957-0cb8-48e8-a99b-c19e5711342f",
-          "sequence": 1470
-        },
-        {
-          "at": "2026-11-08T17:54:09.236Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "c07607cb-2333-4b9e-8291-ddb8abbc74b0",
-          "sequence": 1473
-        },
-        {
-          "at": "2026-11-08T17:54:09.237Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "c74bf313-686c-476d-a6ee-973107110762",
-          "sequence": 1474
-        },
-        {
-          "at": "2026-11-08T17:54:09.318Z",
-          "action": "MISSED_CALL_CLASSIFIED",
-          "level": "warn",
-          "reasonCode": "dialog_closed_without_connect",
-          "details": {
-            "modality": "OPI",
-            "connectFound": true,
-            "connectDisabled": false,
-            "reason": "dialog_closed_without_connect",
-            "status": "missed",
-            "reasonCode": "dialog_closed_without_connect"
-          },
-          "eventId": "4eef81c8-8ece-41b0-bf3f-43fa77f81f3f",
-          "sequence": 1455
-        }
-      ]
-    }
-  ],
+  "attempts": [],
   "privacy": {
     "rawTranscriptIncluded": false,
     "rawAudioIncluded": false,
