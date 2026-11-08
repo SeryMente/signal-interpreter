@@ -233,6 +233,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         if (relation === "duplicate") {
           candidate.at = now;
           if (language !== "unknown") candidate.language = language;
+          candidate.speaker = source === "yo" ? "INTÉRPRETE" : "unknown";
           candidate.live = caption.live === true;
           return current;
         }
@@ -242,6 +243,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
           candidate.at = now;
           if (language !== "unknown" || candidate.language === "unknown") candidate.language = language;
           candidate.source = source;
+          candidate.speaker = source === "yo" ? "INTÉRPRETE" : "unknown";
           candidate.live = caption.live === true;
           return current;
         }
@@ -251,6 +253,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         text: text,
         language: language,
         source: source,
+        speaker: source === "yo" ? "INTÉRPRETE" : "unknown",
         live: caption.live === true,
         at: now
       });
