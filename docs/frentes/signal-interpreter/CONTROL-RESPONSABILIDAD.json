@@ -1095,6 +1095,16 @@
       "limites": "No relajar OPI verificada; VRI/desconocida y subframes siguen bloqueados. No clic de Connect por fuera de los guards. No llamadas reales, no manipular una llamada entrante, no simular aceptación funcional, no recargar/reiniciar Chrome desde RDC, no desplegar ni crear release. Tras recarga de extensión el operador deberá volver a confirmar disponibilidad; solo una suspensión del worker en la misma sesión conserva la activación.",
       "base_diagnostica": "Telemetría local 0.10.40 posterior a la recarga: sender-not-authorized y presence-disarmed en AUTO_ANSWER_AUTHORIZATION_BLOCKED; readiness con PROFILE_NOT_AUTHORIZED/AVAILABILITY_UNKNOWN en algunos cortes. Código presence-guard.js exigía igualdad literal frameUrl/tabUrl y reiniciaba siempre con disarm(worker-start-confirm-again); continuidad por gap 45 s no tolera suspensión MV3.",
       "estado": "AUTORIZADA_PENDIENTE_EJECUCION"
+    },
+    {
+      "evento": "SIGNAL-INTERPRETER-CHROME-PERFORMANCE-DIAGNOSTICS-20261108-G13",
+      "autorizacion_explicita": true,
+      "literal_operador": "Resuelve backlog, y a ve rpor que desde la ultima actualizacion se puso lentisimo chrome, investiga a ver si tiene algo que ver con signal interpreter. La exstension, hizo que se hiiciera super lento chrome, y la llamad aque cotnestte fallo pro que el audio era choppy",
+      "fecha_autorizacion_local": "2026-11-08",
+      "hora_autorizacion_local": "NO VERIFICADA",
+      "zona_horaria": "America/Mexico_City",
+      "alcance": "Diagnóstico de rendimiento de Chrome/Signal Interpreter en PC-13 mediante comandos RDC de solo lectura: inventario de procesos y uso CPU/memoria, versión/ruta/estado registrado de la extensión, lectura de archivos de perfil estrictamente necesarios y análisis estático de mecanismos de carga/temporizadores. No incluye modificar, deshabilitar o recargar la extensión, cambiar ajustes, leer contenido de navegación, abrir pestañas, usar GUI ni intervenir llamadas/audio reales.",
+      "acceso_remoto": "RDC solo en PC-13. Lecturas CLI de diagnóstico; no escrituras fuera del registro de esta autorización. No ejecutar pruebas de audio ni llamadas reales. No abrir ni manipular Chrome GUI."
     }
   ]
 }
