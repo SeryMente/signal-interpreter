@@ -1,29 +1,29 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-e76b69d3-ff72-40cb-8f25-4ffaffd17982
-- Creado: 2026-11-07T16:27:40.189Z
-- Trigger: call-lifecycle
-- Extensión: 0.10.39
-- Eventos: 5
+- Batch: batch-1936d85a-64f5-424a-9c7d-1beeb37ca4c7
+- Creado: 2026-11-08T17:07:57.880Z
+- Trigger: alarm
+- Extensión: 0.10.43
+- Eventos: 18
 - Errores: 0
-- Warnings: 1
-- Secuencia: 18917 → 18921
+- Warnings: 0
+- Secuencia: 208 → 225
 - Identidades de plataforma: 14
-- Snapshots de plataforma: 1982
-- Deltas de plataforma: 1961
+- Snapshots de plataforma: 1987
+- Deltas de plataforma: 1966
 
 ## Categorías
 
 {
-  "RUNTIME": 5
+  "RUNTIME": 16,
+  "PORTAL": 2
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 1,
-  "INCOMING_DIALOG_DETECTED": 1,
-  "CONNECT_BUTTON_FOUND": 1,
-  "INCOMING_ATTEMPT_REGISTERED": 1,
-  "AUTO_ANSWER_AUTHORIZATION_BLOCKED": 1
+  "AUTO_ANSWER_READINESS": 15,
+  "NETWORK_ACTIVITY_WINDOW": 1,
+  "PERFORMANCE_HEARTBEAT": 1,
+  "PLATFORM_SURFACE_SNAPSHOT": 1
 }
