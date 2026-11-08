@@ -5,7 +5,8 @@
   var COMMAND_EVENT = "__SIGNAL_INTERPRETER_MIC_COMMAND_V1__";
   var ACK_EVENT = "__SIGNAL_INTERPRETER_MIC_ACK_V1__";
   var previous = window[KEY] && window[KEY].version === "1.0" ? window[KEY] : null;
-  var muted = previous ? !!previous.muted : true;
+  var callRouteActive = /^\\/call\\/[^/?#]+\\/?$/.test(String(location.pathname || ""));
+  var muted = previous && callRouteActive ? !!previous.muted : true;
   var tracks = previous && previous.tracks instanceof Map ? previous.tracks : new Map();
   var senders = previous && previous.senders instanceof Set ? previous.senders : new Set();
   var patches = previous && previous.patches
