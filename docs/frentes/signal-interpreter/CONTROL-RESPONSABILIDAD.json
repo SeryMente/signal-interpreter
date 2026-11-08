@@ -102,17 +102,24 @@
       "evento_actualizacion": "SIGNAL-INTERPRETER-TRANSFER-20261108-G14-593ACFE5"
     },
     "revision_objeto_observada": "main:CONTROL-RESPONSABILIDAD.json; cotejo por blob SHA.",
-    "resultado_mutacion": "COMMIT_PENDING_READBACK",
+    "resultado_mutacion": "COMMITTED_AND_READBACK_VERIFIED",
     "verificacion": {
-      "estado": "pending",
+      "estado": "read_back_verified",
       "readback_required": true,
-      "readback_verified": false,
-      "uuidv7_validation": {
-        "version_nibble": "7",
-        "variant_nibble": "2",
-        "format": "UUIDv7 local",
-        "status": "PASS"
-      }
+      "readback_verified": true,
+      "initial_commit_sha": "ded6ac94890d70023e728ab2962df454219e5370",
+      "verified_blob_sha": "b4015ac93fe65e279e41b04e7c14ff5760ac0baf",
+      "verified_at_utc": "NO VERIFICADO",
+      "method": "Fetch CONTROL-RESPONSABILIDAD.json from main and compare owner alias, generation, condition, previous owner, event, authorization, UUIDv7 and precondition blob SHA.",
+      "fields_verified": [
+        "G13 anterior SUSTITUIDO",
+        "G14 actual ACTIVO y agente_unico",
+        "evento de transferencia G13→G14",
+        "autorización literal del operador",
+        "UUIDv7 local versión 7 y variante RFC 9562",
+        "FOL1 permanece PREPARADA; folio de sesión no asignado",
+        "SHA precondición coincide con blob anterior"
+      ]
     }
   },
   "limites": "Control cooperativo; no ofrece fencing de escritores que lo eludan. El folio, UUIDv7 local y la instancia son identificadores operativos, no IDs nativos de plataforma. La transferencia no crea IDs nativos, conectividad ni autoriza llamadas reales, GUI de Chrome, recarga, despliegue o release.",
@@ -1098,8 +1105,9 @@
       "pc13": "OFFLINE"
     },
     "modo_operativo_actual": "AGENTE_UNICO",
-    "estado": "TRANSFERENCIA_G13_A_G14_COMMIT_EN_CURSO",
-    "alcance": "Signal Interpreter solamente."
+    "estado": "TRANSFERENCIA_G13_A_G14_COMMITTED_AND_READBACK_VERIFIED",
+    "alcance": "Signal Interpreter solamente.",
+    "verificacion": "CONTROL LEÍDO DE VUELTA; titular G14 y generación 14 cotejados."
   },
   "modo_operativo_actual": "AGENTE_UNICO",
   "autorizaciones_adicionales": [
