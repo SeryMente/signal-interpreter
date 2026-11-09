@@ -37,6 +37,7 @@
   var cloudInterpreterLoginUsername = DEFAULT_CLOUD_INTERPRETER_LOGIN_USERNAME;
   var presenceState = { armed: false };
   var state = {};
+  var microphoneBlockedReason = null;
   var mirror = {};
   var relayMomentState = { automatic: null, manual: null, model: null };
   var $ = function (id) { return document.getElementById(id); };
@@ -94,13 +95,28 @@
     var muted = !!state.microphoneMuted;
     var muteStatus = String(state.microphoneMuteStatus || "");
     var outputStatus = String(state.microphoneOutputStatus || "");
-    var error = muteStatus === "error" || outputStatus === "error";
+    var callContextReady = !!(state.callId && state.callStartedAt && state.callSourceTabId != null);
+    var blockedReason = microphoneBlockedReason ||
+      (!callContextReady && muted && muteStatus !== "error" && outputStatus !== "error" ? "call-not-active" : null);
+    var policyBlocked = muted && (blockedReason === "call-not-active" || blockedReason === "call-route-not-active");
+    var error = !policyBlocked && (muteStatus === "error" || outputStatus === "error");
     var button = $("micToggle");
     if (!button) return;
     var label = $("micToggleLabel");
     var meta = $("micToggleMeta");
     var unmuteRetryPending = error && state.microphoneMuteRequested === false;
-    if (error) {
+    if (policyBlocked) {
+      if (label) label.textContent = "MIC OFF";
+      if (meta) meta.textContent = blockedReason === "call-route-not-active"
+        ? "Llamada no reconocida · permanece apagado"
+        : "Disponible durante una llamada aceptada";
+      button.classList.add("is-muted");
+      button.classList.remove("is-error");
+      button.setAttribute("aria-pressed", "true");
+      button.title = blockedReason === "call-route-not-active"
+        ? "Signal Interpreter no reconoce la pestaña de llamada. El micrófono permanece bloqueado por seguridad."
+        : "El micrófono se habilita únicamente después de confirmar una llamada activa.";
+    } else if (error) {
       if (label) label.textContent = "MIC ERR";
       if (meta) meta.textContent = unmuteRetryPending
         ? "Activación no verificada · pulsa para reintentar"
@@ -126,9 +142,13 @@
       button.title = "Micrófono activo. Pulsa para silenciar.";
     }
     var statusNode = $("micStatus");
-    if (statusNode) statusNode.textContent = error
-      ? (unmuteRetryPending ? "Activación solicitada; verificación pendiente" : "Mute solicitado; verificación pendiente")
-      : muted ? "Entrada de audio desactivada" : "Entrada de audio activa";
+    if (statusNode) statusNode.textContent = policyBlocked
+      ? (blockedReason === "call-route-not-active"
+        ? "Llamada no reconocida · el micrófono sigue protegido"
+        : "El micrófono solo se activa durante una llamada aceptada")
+      : error
+        ? (unmuteRetryPending ? "Activación solicitada; verificación pendiente" : "Mute solicitado; verificación pendiente")
+        : muted ? "Entrada de audio desactivada" : "Entrada de audio activa";
   }
 
   function render() {
@@ -233,6 +253,7 @@
         });
       });
       if(response&&response.ok&&response.verified===true){
+        microphoneBlockedReason=null;
         state=Object.assign({},state,{
           microphoneMuted:!!response.muted,
           microphoneMuteRequested:!!response.muted,
@@ -241,7 +262,22 @@
           microphoneOutputStatus:"applied"
         });
         status(response.muted ? "MIC OFF · verificado" : "MIC ON · verificado");
-      }else{
+      } else if(response&&response.blocked===true&&response.verified===true&&response.muted===true) {
+        microphoneBlockedReason = response.reasonCode === "call-route-not-active" ? "call-route-not-active" : "call-not-active";
+        state=Object.assign({},state,{
+          microphoneMuted:true,
+          microphoneMuteRequested:true,
+          microphoneMuteStatus:"unapplied",
+          microphoneOutputMuted:true,
+          microphoneOutputStatus:"unapplied",
+          microphoneOutputTrackCount:0,
+          microphoneOutputSenderCount:0
+        });
+        status(microphoneBlockedReason === "call-route-not-active"
+          ? "Llamada no reconocida; el micrófono permanece protegido"
+          : "El micrófono se habilita al confirmar una llamada",false);
+      } else {
+        microphoneBlockedReason=null;
         var requestedMuted = response && typeof response.requestedMuted === "boolean"
           ? response.requestedMuted
           : response && typeof response.muted === "boolean"
@@ -262,10 +298,9 @@
           : "MIC ERR · activación no verificada; pulsa para reintentar",true);
       }
       render();
-    }catch(error){ status("MIC ERR · permanece silenciado",true); }
+    }catch(error){ microphoneBlockedReason=null; status("MIC ERR · permanece silenciado",true); }
     finally{ button.disabled=false; renderMicrophone(); }
-  });
-  if ($("captionInterpreterEnabled")) $("captionInterpreterEnabled").addEventListener("change", function () {
+  });  if ($("captionInterpreterEnabled")) $("captionInterpreterEnabled").addEventListener("change", function () {
     save({ liveCaptionInterpreterEnabled: this.checked });
   });
   if ($("groqZeroDataRetentionConfirmed")) $("groqZeroDataRetentionConfirmed").addEventListener("change", function () {
