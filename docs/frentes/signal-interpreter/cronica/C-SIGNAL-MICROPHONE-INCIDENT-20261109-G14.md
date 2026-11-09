@@ -61,3 +61,8 @@ El próximo evento de bloqueo incluirá booleanos suficientes para determinar si
 - Tras finalizar la llamada/sesión actual, el operador debe recargar la extensión en `chrome://extensions`. Después se verificará: fuera de llamada, MIC OFF protegido sin MIC ERR; dentro de una ruta `/call/:id` reconocida, estado y pista de salida verificados.
 - Si se mantiene MIC OFF/denegación con una llamada real activa, el problema restante será la detección del estado de llamada (`callId/callSourceTabId`), no el puente Native Messaging.
 
+
+
+### Refinamiento de observabilidad · categoría explícita · 2026-11-09
+
+Los eventos cuyo nombre incluye `MICROPHONE` ahora se clasifican como `category=MICROPHONE` en vez de caer en `RUNTIME`. La prueba de regresión también exige esta categoría; el inventario SHA-256 fue recalculado y el verificador local volvió a pasar (62/62 archivos). No se añaden rutas, audio, texto, ni credenciales al evento.
