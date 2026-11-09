@@ -1,0 +1,12 @@
+import assert from "node:assert/strict";import {readFileSync} from "node:fs";
+const read=p=>readFileSync(p,"utf8"),bg=read("extension/background.js"),reader=read("extension/ui/live.js"),html=read("extension/ui/live.html"),css=read("extension/ui/live.css");
+assert.match(bg,/caption\.source !== "chrome-live-caption" \|\| caption\.native !== true/);assert.match(bg,/chrome\.storage\.session/);
+assert.match(bg,/type: "signal\.transcript\.segment"/);assert.match(bg,/captionTabId != null/);assert.match(bg,/live-console-sender-required/);
+assert.match(bg,/captionHistory:captionHistory/);assert.match(bg,/chrome\.tabs\.create\(\{url:targetUrl,active:true\}\)/);
+assert.match(reader,/captionHistory/);assert.match(reader,/reader-fullwidth/);assert.match(reader,/reader-tools-open/);
+assert.match(reader,/originalText/);assert.match(reader,/language/);assert.match(html,/id="toggleTools"/);assert.match(html,/INICIA DESDE LLAMADA/);
+assert.match(css,/body\.reader-fullwidth main/);assert.match(css,/body\.reader-tools-open \.controls/);
+assert.match(reader,/Solo Live Caption nativo/);
+const bridge=bg.slice(bg.indexOf("async function publishCaptionToOverlay"),bg.indexOf("async function getCaptionOverlayContext"));
+assert.doesNotMatch(bridge,/persistSignalSegment|KhoraTelemetryDB\.putSignalSegment/);
+console.log("LIVE_READER_NATIVE_CAPTION_REGRESSION=PASS");
