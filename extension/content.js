@@ -518,6 +518,29 @@
   function isAutoAnswerReady() {
     return autoAnswerReadiness().ready;
   }
+  function postAuthorizationRevalidationFailureCodes(state) {
+    var failures = [];
+    if (!state.grant) failures.push("GRANT_MISSING");
+    else if (state.grant.ok !== true) failures.push("GRANT_NOT_GRANTED");
+    else {
+      if (state.now > Number(state.grant.expiresAt || 0)) failures.push("GRANT_EXPIRED");
+      if (state.grant.generation !== state.presenceGeneration) failures.push("PRESENCE_GENERATION_MISMATCH");
+    }
+    if (!state.runtimeActive) failures.push("RUNTIME_INACTIVE");
+    if (!state.incomingAttemptMatches) failures.push("INCOMING_ATTEMPT_REPLACED");
+    if (!state.presenceArmed) failures.push("PRESENCE_DISARMED");
+    if (!state.readinessReady) failures.push("AUTO_ANSWER_NOT_READY");
+    if (state.hasActiveCall) failures.push("CALL_ALREADY_ACTIVE");
+    if (state.attemptAlreadyClicked) failures.push("ATTEMPT_ALREADY_CLICKED");
+    if (!state.buttonPresent) failures.push("CONNECT_BUTTON_MISSING");
+    else {
+      if (!state.buttonConnected) failures.push("CONNECT_BUTTON_DISCONNECTED");
+      if (state.buttonDisabled) failures.push("CONNECT_BUTTON_DISABLED");
+      if (!state.buttonInDialog) failures.push("CONNECT_BUTTON_DETACHED_FROM_DIALOG");
+      if (!state.buttonVisible) failures.push("CONNECT_BUTTON_NOT_VISIBLE");
+    }
+    return failures;
+  }
   function currentCallId() {
     var match = location.pathname.match(/^\/call\/([^/?#]+)\/?$/);
     return match ? match[1] : null;
@@ -1086,11 +1109,19 @@
     var authorizationLatencyMs = Math.max(0, Math.round((performance.now() - authorizationStartedAt) * 1000) / 1000);
     pendingConnect.delete(button);
     pendingAttempts.delete(attemptIdForAuthorization);
-    if (!grant || grant.ok !== true || Date.now() > Number(grant.expiresAt || 0) ||
-        !runtimeMarker.active || incomingAttemptId !== attemptIdForAuthorization ||
-        !presenceState.armed || grant.generation !== presenceState.generation ||
-        !isAutoAnswerReady() || currentCallId() || !button.isConnected || button.disabled ||
-        clickedAttempts.has(attemptIdForAuthorization) || !incomingDialog.contains(button) || !visibleElement(button)) {
+    var postAuthorizationReadiness = autoAnswerReadiness();
+    var revalidationFailureCodes = postAuthorizationRevalidationFailureCodes({
+      grant: grant, now: Date.now(), runtimeActive: !!runtimeMarker.active,
+      incomingAttemptMatches: incomingAttemptId === attemptIdForAuthorization,
+      presenceArmed: !!presenceState.armed, presenceGeneration: presenceState.generation,
+      readinessReady: postAuthorizationReadiness.ready === true, hasActiveCall: !!currentCallId(),
+      attemptAlreadyClicked: clickedAttempts.has(attemptIdForAuthorization),
+      buttonPresent: !!button, buttonConnected: !!(button && button.isConnected),
+      buttonDisabled: !!(button && button.disabled),
+      buttonInDialog: !!(incomingDialog && button && incomingDialog.contains(button)),
+      buttonVisible: !!(button && visibleElement(button))
+    });
+    if (revalidationFailureCodes.length > 0) {
       var attemptReplaced = incomingAttemptId !== attemptIdForAuthorization;
       if (grant && grant.ok === true) await releasePresenceAuthorization(authorizationRequestId,
         attemptReplaced ? "incoming-attempt-replaced-before-click" : "post-authorization-revalidation-failed",
@@ -1103,7 +1134,9 @@
         grantOk: !!(grant && grant.ok),
         grantGeneration: grant && grant.generation != null ? Number(grant.generation) : null,
         currentPresenceGeneration: Number(presenceState.generation || 0),
-        readiness: autoAnswerReadiness(),
+        readiness: postAuthorizationReadiness,
+        revalidationSchemaVersion: 1,
+        revalidationFailureCodes: revalidationFailureCodes,
         authorizationLatencyMs: authorizationLatencyMs,
         authorizationVerificationMs: grant && Number.isFinite(Number(grant.verificationMs)) ? Number(grant.verificationMs) : null
       }, "warn");
