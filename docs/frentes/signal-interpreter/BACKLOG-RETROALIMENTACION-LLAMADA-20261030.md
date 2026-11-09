@@ -2,13 +2,15 @@
 
 - Frente: **Signal Interpreter**
 - Fecha de incorporación: **2026-10-30** (fecha local del operador)
-- Estado: **PERSISTIDO · PROVISIONAL · NO IMPLEMENTADO**
+- Estado: **PERSISTIDO · PROVISIONAL · IMPLEMENTACIÓN PARCIAL EN CANDIDATA 0.10.45**; no aceptado ni liberado.
 - Base de revisión: Signal Interpreter **0.10.39**; main leído en `5129fd67538bfc2ba62c59ee7c26b785eb132361`
 - Identificador local UUIDv7: `01a18f95-c7b1-7690-abb7-539a6ea430d4`
 - Origen: retroalimentación directa del operador después de una llamada, transcripción pegada en la conversación y captura de pantalla compartida en la conversación.
 - Privacidad: no se conserva en este repositorio público la transcripción cruda, la captura, nombres, domicilios, teléfonos, correos, audio ni identificadores de la llamada. Las observaciones de esta lista están redactadas de forma abstracta.
 
-> Este archivo es un backlog de trabajo provisional. Registra intención, evidencia reportada y criterios de aceptación; no declara cambios de código, pruebas, captura de micrófono, despliegue ni aceptación ya realizados. Las decisiones arquitectónicas de alto nivel se resolverán antes de construirlas. La aceptación de uso real permanece reservada al operador.
+> Este registro conserva los requisitos y criterios originales. La sección 7 documenta la implementación observada en 0.10.45, evidencia automatizada y límites aún abiertos. Código presente o CI verde no equivalen a aceptación funcional Windows/Chrome ni a liberación.
+
+> Las etiquetas de estado originales dentro de las secciones 2–6 describen la línea base al crear el backlog; la sección 7 es la clasificación vigente en G14.
 
 ## 1. Resumen de la retroalimentación
 
@@ -191,8 +193,8 @@ La entrega que incorpore estos cambios debe probar, como mínimo:
 
 ## 5. Límites y decisiones pendientes
 
-- Este backlog no activa captura de micrófono en la versión instalada ni realiza cambios en el equipo PC-14.
-- No autoriza una sesión nueva de RDC, GUI, intervención real en llamadas ni carga/reload de Chrome.
+- La candidata contiene un canal opcional de micrófono del intérprete, pero permanece deshabilitado por defecto. En el perfil fila4 no existe credencial Groq local y el estado ZDR de la consola del proveedor no está verificado.
+- El operador autorizó la operación técnica mediante MantenimientoRCI, con artefactos y destino bajo el usuario Windows fila4. Esa autorización no habilita llamadas reales, recarga de Chrome, envío de audio ni aceptación funcional automática.
 - La solicitud de transcribir el canal propio supersede para el trabajo futuro la exclusión de micrófono que figuraba en el alcance anterior; la exclusión de captura de audio de pestaña y la prohibición de grabación/telemetría cruda permanecen.
 - El estado de llamada debe proceder de una señal verificable de Cloud Interpreter, no de estar online, de recibir timbrado ni de la mera visibilidad del overlay.
 - La calidad de ASR se evaluará con muestras sintéticas o expresamente autorizadas. La muestra clínica compartida en la conversación no se publica ni se convierte en fixture público.
@@ -202,6 +204,30 @@ La entrega que incorpore estos cambios debe probar, como mínimo:
 ## 6. Estado de este registro
 
 **Persistencia:** PERSISTIDO en `main`; commit de creación `02b52c061c8c3c9e22d0a4dbc3e69824f95f2c6c`; lectura de vuelta exacta verificada.  
-**Implementación:** no iniciada.  
-**Prueba de usuario posterior:** pendiente.  
+**Implementación:** parcial en candidata 0.10.45 (PR #75, no fusionada ni liberada).
+**Prueba de usuario posterior:** pendiente; no se inició llamada real ni E2E en Chrome.
 **Clasificación:** backlog provisional del mismo frente Signal Interpreter; no crea un frente ni un responsable paralelo.
+
+
+## 7. Estado de implementación observado · candidata 0.10.45 · G14
+
+Corte del 2026-11-08. La candidata se encuentra en PR #75; main permanece en 0.10.40. El candidato se integró localmente con origin/main, en un worktree aislado, sin conflictos. Esta tabla actualiza el estado del backlog; no redefine los criterios de aceptación originales.
+
+| Ítem | Estado observado en 0.10.45 | Evidencia automatizada | Pendiente para aceptar/cerrar |
+|---|---|---|---|
+| **SI-FB-01 · mute por ciclo de llamada** | **Implementado en candidata**: estados fail-closed fuera de llamada; permite apertura solo con llamada activa confirmada; vuelve a mute ante fin, desconexión, fallo o pérdida de contexto. | microphone-call-lifecycle-test.mjs, microphone-guard-test.mjs, regresores de Auto-Answer/presencia y CI candidato. Prueba local post-merge PASS. | Verificar MediaStreamTrack.enabled y pista saliente en Windows/Chrome durante llamada controlada; no se ha hecho. |
+| **SI-FB-02 · canal de INTÉRPRETE bilingüe** | **Implementado como canal opcional y explícito** mediante Groq Whisper; captura manual dentro de /call/:id, chunks limitados en memoria y cese/liberación al perder contexto. Desactivado por defecto. | groq-transcriber-tests.mjs, microphone-call-lifecycle-test.mjs, auditoría estática de privacidad y CI candidato PASS. | No hay clave local en fila4 (.signal-interpreter/groq-token.dat ausente), ni ZDR confirmado en consola del proveedor; no se pidió permiso de micrófono ni se envió audio real. Probar calidad bilingüe solo después de resolver esas compuertas. |
+| **SI-FB-03 · continuidad, precisión y atribución** | **Parcial**: separación de source, speaker y language; el idioma no identifica hablante; se gestionan revisiones/solapamientos y se rehidrata historial efímero de INTÉRPRETE. | live-caption-core-test.mjs, live-caption-session-history-test.mjs, regresores de mic lifecycle y auditoría estática PASS. | WER/CER, exactitud de nombres/números/direcciones, latencia por idioma y rendimiento con audio real no medidos. |
+| **SI-FB-04 · densidad visual** | **Implementado en candidata**: overlay compacto, etiquetas menos repetitivas, tipografía 14 px y límites de render de 72 spans/800 filas de sesión. | live-caption-performance-budget-test.mjs, live-caption-static-audit.mjs y pruebas de overlay PASS. | Comparativa visual en Chrome fila4, legibilidad, teclado y revisión de accesibilidad por operador pendientes. |
+| **SI-FB-05 · lector en pestaña Chrome** | **Implementado en candidata**: abre/reutiliza pestaña normal, layout de ancho completo, historial de sesión y actualización de filas LIVE; no abre otro canal de captura. | live-caption-session-history-test.mjs, call-caption-runtime-test.mjs, verificador de paquete y CI candidato PASS. | Verificar sincronización y scroll en vivo en una llamada controlada; no probado en sesión real. |
+| **SI-FB-06 · matriz integrada de aceptación** | **Parcial**: 42 scripts de test locales, 25 archivos JS con sintaxis válida y auditorías estáticas/paquete PASS. En el head candidato anterior, 3 workflows GitHub Actions PASS. | QA local post-merge: 48 verificaciones agrupadas PASS, 0 FAIL. Workflow CI del nuevo head reconciliado aún debe ejecutarse tras push. | E2E Windows/Chrome, llamada real controlada, métricas de calidad, telemetría fresca del runtime y aceptación explícita del operador. |
+
+### Evidencia reproducible de esta actualización
+
+- Worktree candidato reconciliado: C:/Users/fila4/Desktop/SeryMente/SI-G14-RECONCILE; commit local 49f18e18e88918575278ed083db31d127d21a892.
+- Pruebas reproducidas desde la raíz del repositorio con Node v24.0.0. Resultado: 42/42 test scripts; 25/25 archivos JS sintácticamente válidos; auditorías estáticas Live Caption/Observability, verificador del paquete, auditoría de observaciones y git diff --check PASS.
+- Log: C:/Users/fila4/Desktop/SI-backups/validation-G14-PR75/windows-node24-g14-postmerge.log.
+- Resultado JSON: C:/Users/fila4/Desktop/SI-backups/validation-G14-PR75/resultados-postmerge.json.
+- Se preservó el checkout original en un ZIP íntegro antes de crear el worktree; SHA-256: 224E9AA78E6B6BE7FF895EAA9030283E9233C74C6391A712461C9025DAFC269C.
+
+**Dictamen:** los cambios de software para SI-FB-01/02/04/05 están presentes en la candidata; SI-FB-03 y SI-FB-06 continúan parciales. No se marca ningún ítem como aceptado por usuario ni se declara backlog cerrado hasta completar E2E y las compuertas humanas descritas.
