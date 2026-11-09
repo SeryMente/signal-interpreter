@@ -1,44 +1,26 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-30bcd6fe-0a9e-40c6-a48a-3687d42ee999
-- Creado: 2026-11-09T18:42:24.732Z
-- Trigger: critical
+- Batch: batch-e89fad99-7370-443a-b65e-a8f69e032fc3
+- Creado: 2026-11-09T18:43:38.615Z
+- Trigger: event-window
 - Extensión: 0.10.46
-- Eventos: 23
-- Errores: 1
-- Warnings: 1
-- Secuencia: 1032 → 1054
+- Eventos: 2
+- Errores: 0
+- Warnings: 0
+- Secuencia: 1074 → 1075
 - Identidades de plataforma: 14
-- Snapshots de plataforma: 2151
-- Deltas de plataforma: 2130
+- Snapshots de plataforma: 2152
+- Deltas de plataforma: 2131
 
 ## Categorías
 
 {
-  "RUNTIME": 18,
-  "PORTAL": 2,
-  "BILLING": 1,
-  "CAPTION": 2
+  "RUNTIME": 2
 }
 
 ## Acciones
 
 {
-  "PERFORMANCE_HEARTBEAT": 1,
-  "PLATFORM_SESSION_STARTED": 1,
-  "OBSERVER_STARTED": 1,
-  "PLATFORM_INTEGRITY_CHECK": 1,
-  "AUTO_ANSWER_READINESS": 5,
-  "PLATFORM_SURFACE_SNAPSHOT": 1,
-  "SCREEN_MAP": 1,
-  "PLATFORM_TELEMETRY_RECONCILED": 2,
-  "PLATFORM_MIRROR_UPDATED": 1,
-  "EXCHANGE_RATE_UPDATED": 1,
-  "PAGE_LIFECYCLE": 2,
-  "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-  "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1,
-  "PAGE_VISIBILITY_CHANGED": 1,
-  "PLATFORM_SESSION_RECONCILED_STARTED": 1,
-  "TAB_LIFECYCLE": 1,
-  "PLATFORM_SCREENSHOT_CAPTURE_ERROR": 1
+  "AUTO_ANSWER_READINESS": 1,
+  "PERFORMANCE_HEARTBEAT": 1
 }
