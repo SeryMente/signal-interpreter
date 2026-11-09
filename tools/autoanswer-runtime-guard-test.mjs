@@ -74,7 +74,8 @@ async function presenceHarness(readPromise) {
       }
     },
     runtimeMarker: { active: true },
-    autoAnswer: () => { answerChecks++; }
+    autoAnswer: () => { answerChecks++; },
+    renderAutoAnswerStatusOverlay: () => {}
   };
   vm.runInNewContext("(function(){\n" + presenceBootstrap + "\nthis.readPresence = () => presenceState;\n}).call(this);", context);
   return {
