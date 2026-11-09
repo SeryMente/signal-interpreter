@@ -95,3 +95,32 @@ La subcarpeta `extension` es el destino de **Cargar descomprimida**; no se debe 
 - La copia antigua `Desktop\\Signal Interpreter` no tiene metadatos Git y declara `0.10.36`; no es el directorio de trabajo normativo.
 
 La regla fija la ruta de trabajo, pero no autoriza por sí sola instalar el host, reemplazar artefactos locales, recargar Chrome, iniciar llamadas ni liberar una versión.
+
+
+
+## SI-OP-03 — Prohibición de raíces duplicadas y reutilización del workspace existente
+
+### Regla obligatoria
+
+**Nunca crear una segunda carpeta raíz de Signal Interpreter si ya existe una carpeta del repositorio dentro del workspace `SeryMente`.** Windows trata los nombres de archivo y directorio sin distinguir mayúsculas/minúsculas en condiciones habituales; por lo tanto, `Signal Interpreter`, `signal-interpreter` y variantes equivalentes no se deben tratar como espacios distintos.
+
+### Procedimiento previo a toda materialización
+
+1. Enumerar las carpetas existentes dentro de `Desktop\\SeryMente` y localizar coincidencias del nombre del repositorio sin distinguir mayúsculas/minúsculas ni guiones/espacios cuando la comparación sea ambigua.
+2. Inspeccionar cada candidato: ruta completa, contenido, metadatos Git, rama, HEAD, estado local y subcarpeta `extension`.
+3. Si ya existe el directorio previsto, **reutilizar exactamente esa ruta**, aunque esté vacío. Materializar dentro de él; nunca crear un hermano con distinta capitalización o formato del nombre.
+4. Si el directorio existente no está vacío, preservar su contenido y reconciliar cuidadosamente; no ejecutar `reset`, `clean`, reemplazos, movimientos ni eliminaciones sobre datos no inspeccionados.
+5. Si existe más de un candidato, detener la creación de carpetas. Comparar inventario, tamaños, hashes, origen y metadatos; determinar cuál conservar antes de actuar. Retirar sólo una duplicación creada durante la operación actual, y únicamente después de probar que el contenido que se conserva está completo.
+6. La única subcarpeta destinada a la carga manual de Chrome es `<raíz única>\\extension`. No crear otra raíz de extensión en el Escritorio.
+7. En instancias Cyber efímeras (por ejemplo, PC-N), reutilizar el workspace existente de esa instancia y tratarlo como temporal. Persistir los cambios que deban sobrevivir en el perfil durable fila4 antes de que termine la sesión. Esta regla no convierte PC-N en identidad ni almacenamiento persistente.
+
+### Estado verificado de la corrección · PC-14 · 2026-11-09
+
+- Antes de materializar, ya existía `C:\\Users\\PC 13\\Desktop\\SeryMente\\signal-interpreter`, vacío.
+- Se creó por error una segunda raíz con capitalización distinta: `...\\Signal Interpreter`.
+- Se identificó la duplicación y se reutilizó el directorio original en minúsculas. Se movieron allí los 193 archivos de la candidata; los conteos y bytes antes/después coincidieron exactamente: **193 archivos · 2,831,513 bytes**.
+- La carpeta con mayúscula creada durante la operación quedó retirada. Lectura posterior confirmó una sola raíz: `C:\\Users\\PC 13\\Desktop\\SeryMente\\signal-interpreter`.
+- La carpeta de carga resultante es `C:\\Users\\PC 13\\Desktop\\SeryMente\\signal-interpreter\\extension`; manifiesto cargable 0.10.45.
+- La regla SI-OP-02 conserva la raíz persistente bajo el usuario fila4; esta SI-OP-03 impide que al operar en una instancia temporal se genere una segunda raíz por diferencias de nombre. En cada dispositivo se respeta y reutiliza el workspace preexistente de ese contexto.
+
+**Prohibición de cierre:** no declarar completada una materialización si no se verificó que existe una sola raíz de Signal Interpreter en el workspace objetivo y que Chrome recibe la ruta `extension` perteneciente a esa raíz.
