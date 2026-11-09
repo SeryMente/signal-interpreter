@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-e291ff57-8a45-4e0d-9227-608836939745",
-  "createdAt": "2026-11-09T21:28:51.290Z",
+  "batchId": "batch-8b3846c4-aa83-4bfa-9cd3-3582b30c2e25",
+  "createdAt": "2026-11-09T21:34:51.266Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.41",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "b5f216f9-8a41-463c-a4cd-19335cb5c5aa",
-      "sequence": 1429,
-      "timestamp": "2026-11-09T21:28:20.864Z",
-      "ingestedAt": "2026-11-09T21:28:20.929Z",
+      "id": "60f15c4b-00ec-4868-b277-0bb1117b44bf",
+      "sequence": 1784,
+      "timestamp": "2026-11-09T21:34:20.861Z",
+      "ingestedAt": "2026-11-09T21:34:20.921Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -20,7 +20,7 @@
       "phase": "event",
       "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "e5f15d32-ec14-4f5c-bb07-7895eb06ba90",
+      "traceId": "cfe61bf4-06d1-4646-8f44-bbb56c6eb477",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +46,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 484696,
+        "monotonicMs": 844694,
         "callId": null,
         "pageLifecycleId": "69dfd6cb-431a-4e44-9cb4-e5739710cc23",
         "sourceTabId": 1800213946,
@@ -61,16 +61,19 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "ready": true,
+        "ready": false,
         "attemptId": null,
-        "availability": "online",
+        "availability": "offline",
         "authorizedProfile": true,
         "configEnabled": true,
         "labSafetyLock": false,
-        "presenceArmed": true,
-        "presenceReason": "explicit-availability",
-        "presenceGeneration": 7,
-        "blockedReasons": [],
+        "presenceArmed": false,
+        "presenceReason": "session-ended-confirm-again",
+        "presenceGeneration": 10,
+        "blockedReasons": [
+          "SESSION_ENDED_CONFIRM_AGAIN",
+          "AVAILABILITY_OFFLINE"
+        ],
         "route": "/profile/<ID>",
         "exactUrl": "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz",
         "runtimeVersion": "0.10.41",
@@ -79,10 +82,10 @@
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "bb43ad68-4f8f-409d-9eba-91fe031fb635",
-      "sequence": 1430,
-      "timestamp": "2026-11-09T21:28:20.865Z",
-      "ingestedAt": "2026-11-09T21:28:21.368Z",
+      "id": "d247fd72-5e3f-42a6-a377-cc09dc707626",
+      "sequence": 1785,
+      "timestamp": "2026-11-09T21:34:20.862Z",
+      "ingestedAt": "2026-11-09T21:34:21.330Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -92,7 +95,7 @@
       "phase": "event",
       "action": "PERFORMANCE_HEARTBEAT",
       "outcome": "observed",
-      "traceId": "2010ea36-ddf6-46da-8111-adfac9d96438",
+      "traceId": "5ab97460-5472-4e33-ae74-c299410b2043",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -118,7 +121,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 484698,
+        "monotonicMs": 844695,
         "callId": null,
         "pageLifecycleId": "69dfd6cb-431a-4e44-9cb4-e5739710cc23",
         "sourceTabId": 1800213946,
@@ -135,7 +138,7 @@
       "payload": {
         "reason": "heartbeat",
         "route": "/profile/<ID>",
-        "uptimeMs": 484697,
+        "uptimeMs": 844695,
         "callId": null,
         "document": {
           "readyState": "complete",
@@ -143,7 +146,7 @@
           "focused": false,
           "online": true,
           "title": "My Profile - Cloud Interpreter",
-          "nodes": 521
+          "nodes": 550
         },
         "viewport": {
           "width": 1920,
@@ -165,16 +168,16 @@
           "saveData": false
         },
         "memory": {
-          "usedBytes": 23291928,
-          "totalBytes": 24630504,
+          "usedBytes": 32619463,
+          "totalBytes": 37907115,
           "limitBytes": 4395630592
         },
         "performance": {
-          "longTasks": 2,
-          "longTaskTotalMs": 106,
-          "longestTaskMs": 56,
-          "layoutShifts": 9,
-          "layoutShiftScore": 0.03919686758183284
+          "longTasks": 3,
+          "longTaskTotalMs": 384,
+          "longestTaskMs": 278,
+          "layoutShifts": 11,
+          "layoutShiftScore": 0.04001807183562593
         },
         "mutations": {
           "batches": 0,
@@ -192,651 +195,33 @@
         },
         "controls": {
           "buttons": 4,
-          "inputs": 7,
+          "inputs": 11,
           "selects": 0,
           "dialogs": 0,
           "media": 0,
           "iframes": 0
         }
       }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "7b7c086d-09b4-437b-995e-bc5f517e3159",
-      "sequence": 1431,
-      "timestamp": "2026-11-09T21:28:28.590Z",
-      "ingestedAt": "2026-11-09T21:28:28.722Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.41",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "fbe2bb68-c479-4c95-8aa6-28af8b884b21",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1800213947,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.41",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/mail",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 1800213947,
-        "sourceWindowId": 1800213849,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://account.proton.me/mail"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/mail",
-        "extensionVersion": "0.10.41",
-        "hostRemoved": true
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "43b14c68-a5d3-44f1-85f6-90ce2ac2b79a",
-      "sequence": 1432,
-      "timestamp": "2026-11-09T21:28:30.050Z",
-      "ingestedAt": "2026-11-09T21:28:30.136Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.41",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "be38a411-312f-44f1-872c-437ffc57627b",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1800213947,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.41",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/u/1/inbox",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 1800213947,
-        "sourceWindowId": 1800213849,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://mail.proton.me/u/1/inbox"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/u/1/inbox",
-        "extensionVersion": "0.10.41",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "f04f8631-aa58-4d05-aba8-2028e78ef42e",
-      "sequence": 1433,
-      "timestamp": "2026-11-09T21:28:30.050Z",
-      "ingestedAt": "2026-11-09T21:28:30.710Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.41",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "b5d1b41a-aa5c-4db9-8003-186fae352884",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1800213947,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.41",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/u/1/inbox",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 1800213947,
-        "sourceWindowId": 1800213849,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://mail.proton.me/u/1/inbox"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/u/1/inbox",
-        "extensionVersion": "0.10.41",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": false,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "2453cae7-10bf-471e-9ad8-ff7f55db604b",
-      "sequence": 1434,
-      "timestamp": "2026-11-09T21:28:30.225Z",
-      "ingestedAt": "2026-11-09T21:28:31.277Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.41",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "95b74dff-5163-4af0-b4e3-79e2458f35e9",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1800213947,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.41",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/u/1/inbox",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 1800213947,
-        "sourceWindowId": 1800213849,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://mail.proton.me/u/1/inbox"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/u/1/inbox",
-        "extensionVersion": "0.10.41",
-        "hostRemoved": true
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "0fc65e4c-8ad5-4604-813f-ad5ea3a51d3c",
-      "sequence": 1435,
-      "timestamp": "2026-11-09T21:28:30.791Z",
-      "ingestedAt": "2026-11-09T21:28:31.852Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.41",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "26c09151-cb40-407f-a318-3bebe111f79b",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1800213947,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.41",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/authorize",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 1800213947,
-        "sourceWindowId": 1800213849,
-        "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://account.proton.me/authorize"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/authorize",
-        "extensionVersion": "0.10.41",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "c1df548c-5956-4b1c-a01e-10001d6a6a9f",
-      "sequence": 1436,
-      "timestamp": "2026-11-09T21:28:30.791Z",
-      "ingestedAt": "2026-11-09T21:28:32.410Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.41",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "a9336554-6229-45bb-adf3-e93524bb66c9",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1800213947,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.41",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/authorize",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 1800213947,
-        "sourceWindowId": 1800213849,
-        "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://account.proton.me/authorize"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/authorize",
-        "extensionVersion": "0.10.41",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": false,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "b2b36b45-af1e-4a5d-8cae-3a0d1c239ec0",
-      "sequence": 1437,
-      "timestamp": "2026-11-09T21:28:32.351Z",
-      "ingestedAt": "2026-11-09T21:28:33.032Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.41",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "26adb603-de68-47d5-a28e-add0b5abc9ed",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1800213947,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.41",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/authorize",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 1800213947,
-        "sourceWindowId": 1800213849,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://account.proton.me/authorize"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/authorize",
-        "extensionVersion": "0.10.41",
-        "hostRemoved": true
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "96deedb3-22a5-45de-9046-80daa6237480",
-      "sequence": 1438,
-      "timestamp": "2026-11-09T21:28:32.983Z",
-      "ingestedAt": "2026-11-09T21:28:33.618Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.41",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "cf1f2ce3-714e-4731-96ff-962a06f0f231",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1800213947,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.41",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/login",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 1800213947,
-        "sourceWindowId": 1800213849,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://mail.proton.me/login#selector=aplvsdz7jwztjxe23qtcaizrj5xa5k5g&sk=gxZt-otKz8rgiIrhrNE0cn5r9r87oxvnzrFfk9chLkM&v=2&state=s-azmduEaM_W1zf7kJ-grTSJj8TNWIDfQhCiBBZYsGc&p=1&tr=1&pv=3&pt=default&source=0"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/login",
-        "extensionVersion": "0.10.41",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "cfdc17df-845a-41aa-9c78-17516ef4b8a7",
-      "sequence": 1439,
-      "timestamp": "2026-11-09T21:28:32.984Z",
-      "ingestedAt": "2026-11-09T21:28:34.138Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.41",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "1a6a4049-d8ff-49e7-aba1-e1d5920ab9d9",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1800213947,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.41",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/login",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 1800213947,
-        "sourceWindowId": 1800213849,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://mail.proton.me/login#selector=aplvsdz7jwztjxe23qtcaizrj5xa5k5g&sk=gxZt-otKz8rgiIrhrNE0cn5r9r87oxvnzrFfk9chLkM&v=2&state=s-azmduEaM_W1zf7kJ-grTSJj8TNWIDfQhCiBBZYsGc&p=1&tr=1&pv=3&pt=default&source=0"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/login",
-        "extensionVersion": "0.10.41",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": false,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "23ce39ef-62ac-45e9-b957-05b1297ce555",
-      "sequence": 1440,
-      "timestamp": "2026-11-09T21:28:36.451Z",
-      "ingestedAt": "2026-11-09T21:28:36.524Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.41",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
-      "outcome": "observed",
-      "traceId": "2c5f9305-b097-4d8b-830d-dbb359c7c6d2",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 1800213947,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.41",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/u/1/inbox",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 1800213947,
-        "sourceWindowId": 1800213849,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://mail.proton.me/u/1/inbox"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/u/1/inbox",
-        "extensionVersion": "0.10.41",
-        "previousRoute": "/login",
-        "currentRoute": "/u/1/inbox",
-        "activeCallRoute": false
-      }
     }
   ],
   "summary": {
-    "eventsTotal": 12,
+    "eventsTotal": 2,
     "errors": 0,
-    "warnings": 3,
+    "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 3,
+    "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 1429,
-    "lastSequence": 1440,
-    "firstTimestamp": "2026-11-09T21:28:20.864Z",
-    "lastTimestamp": "2026-11-09T21:28:36.451Z",
+    "firstSequence": 1784,
+    "lastSequence": 1785,
+    "firstTimestamp": "2026-11-09T21:34:20.861Z",
+    "lastTimestamp": "2026-11-09T21:34:20.862Z",
     "actions": {
       "AUTO_ANSWER_READINESS": 1,
-      "PERFORMANCE_HEARTBEAT": 1,
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 3,
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 3,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 3,
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
+      "PERFORMANCE_HEARTBEAT": 1
     },
     "categories": {
-      "RUNTIME": 2,
-      "CAPTION": 10
+      "RUNTIME": 2
     }
   }
 }
