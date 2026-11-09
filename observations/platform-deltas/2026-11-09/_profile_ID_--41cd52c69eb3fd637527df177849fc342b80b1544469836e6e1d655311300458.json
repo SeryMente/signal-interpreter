@@ -1,0 +1,306 @@
+{
+  "schema": "signal-interpreter-platform-delta/v1",
+  "type": "changed",
+  "identityKey": "https://app.cloudinterpreter.com|/profile/<ID>|",
+  "fromSnapshotId": "snap-ecb1e70e-21bc-4ab3-bacb-50bbffaac228",
+  "toSnapshotId": "snap-7b8cf7fb-cc3b-4cfe-840c-0446c2380b40",
+  "fromHash": "ad2b431732293ef4edfb0e1e85dd0f637eb3efbf681a23806e1030cbde17eb48",
+  "toHash": "41cd52c69eb3fd637527df177849fc342b80b1544469836e6e1d655311300458",
+  "capturedAt": "2026-11-09T20:48:42.872Z",
+  "summary": {
+    "added": 0,
+    "removed": 3,
+    "changed": 14,
+    "sections": [
+      "page",
+      "dom",
+      "controls",
+      "resources"
+    ]
+  },
+  "changes": [
+    {
+      "kind": "changed",
+      "path": "page.nodeCount",
+      "before": 533,
+      "after": 522
+    },
+    {
+      "kind": "changed",
+      "path": "page.visibility",
+      "before": "hidden",
+      "after": "visible"
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.button",
+      "before": 5,
+      "after": 4
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.div",
+      "before": 208,
+      "after": 203
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.path",
+      "before": 11,
+      "after": 9
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.span",
+      "before": 75,
+      "after": 74
+    },
+    {
+      "kind": "changed",
+      "path": "dom.tagCounts.svg",
+      "before": 10,
+      "after": 8
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div#__next>div:nth-child(1)>div:nth-child(4)>div:nth-child(1)>div:nth-child(1)|div]",
+      "value": {
+        "selector": "div#__next>div:nth-child(1)>div:nth-child(4)>div:nth-child(1)>div:nth-child(1)",
+        "tag": "div",
+        "attributes": {
+          "role": "alert"
+        },
+        "classes": [
+          "p-toast-message",
+          "p-toast-message-info",
+          "p-toast-message-enter-done"
+        ],
+        "text": "[TEXT:30:14e9a60c]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 1,
+        "textLength": 30,
+        "textFingerprint": "14e9a60c",
+        "computedStyle": {
+          "display": "block",
+          "position": "static",
+          "overflow": "visible",
+          "width": "400px",
+          "height": "76px",
+          "padding": "0px",
+          "margin": "0px 0px 16px",
+          "color": "rgb(111, 56, 183)",
+          "border": "0px none rgb(111, 56, 183)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 400,
+          "height": 76
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "dom.elements[div:nth-child(1)>div:nth-child(1)>div:nth-child(1)>div:nth-child(3)>button:nth-child(1)|button]",
+      "value": {
+        "selector": "div:nth-child(1)>div:nth-child(1)>div:nth-child(1)>div:nth-child(3)>button:nth-child(1)",
+        "tag": "button",
+        "attributes": {
+          "aria-label": "Close",
+          "type": "button"
+        },
+        "classes": [
+          "p-toast-icon-close",
+          "p-link"
+        ],
+        "text": "[TEXT:5:cd86acc3]",
+        "visible": true,
+        "disabled": false,
+        "childCount": 1,
+        "textLength": 5,
+        "textFingerprint": "cd86acc3",
+        "computedStyle": {
+          "display": "flex",
+          "position": "relative",
+          "overflow": "hidden",
+          "width": "32px",
+          "height": "32px",
+          "padding": "0px",
+          "margin": "0px",
+          "color": "rgb(111, 56, 183)",
+          "border": "0px none rgb(111, 56, 183)",
+          "opacity": "1"
+        },
+        "bbox": {
+          "width": 32,
+          "height": 32
+        }
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "controls.buttons[button||Close]",
+      "value": {
+        "tag": "button",
+        "role": "",
+        "label": "Close",
+        "disabled": false
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/auth/session|fetch]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/api/auth/session",
+        "initiatorType": "fetch",
+        "durationMs": 108,
+        "transferBytes": 634,
+        "encodedBytes": 334,
+        "decodedBytes": 334,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/api/auth/session",
+        "initiatorType": "fetch",
+        "durationMs": 101,
+        "transferBytes": 634,
+        "encodedBytes": 334,
+        "decodedBytes": 334,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/telecom.getClientTokens?input=<VALUE>|fetch]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/telecom.getClientTokens?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 174,
+        "transferBytes": 1116,
+        "encodedBytes": 816,
+        "decodedBytes": 1686,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/telecom.getClientTokens?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 326,
+        "transferBytes": 1111,
+        "encodedBytes": 811,
+        "decodedBytes": 1686,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>|fetch]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 319,
+        "transferBytes": 727,
+        "encodedBytes": 427,
+        "decodedBytes": 781,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 568,
+        "transferBytes": 736,
+        "encodedBytes": 436,
+        "decodedBytes": 789,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/user.getUserProfileInOrganisation?input=<VALUE>|fetch]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.getUserProfileInOrganisation?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 320,
+        "transferBytes": 3333,
+        "encodedBytes": 3033,
+        "decodedBytes": 17538,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.getUserProfileInOrganisation?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 324,
+        "transferBytes": 3335,
+        "encodedBytes": 3035,
+        "decodedBytes": 17538,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/utils.heartbeat|fetch]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
+        "initiatorType": "fetch",
+        "durationMs": 136,
+        "transferBytes": 384,
+        "encodedBytes": 84,
+        "decodedBytes": 71,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/utils.heartbeat",
+        "initiatorType": "fetch",
+        "durationMs": 499,
+        "transferBytes": 384,
+        "encodedBytes": 84,
+        "decodedBytes": 71,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/ring.mp3|audio]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/ring.mp3",
+        "initiatorType": "audio",
+        "durationMs": 526,
+        "transferBytes": 225177,
+        "encodedBytes": 224877,
+        "decodedBytes": 224877,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/ring.mp3",
+        "initiatorType": "audio",
+        "durationMs": 424,
+        "transferBytes": 225177,
+        "encodedBytes": 224877,
+        "decodedBytes": 224877,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://event-bridge.twilio.com|xmlhttprequest]",
+      "before": {
+        "url": "https://event-bridge.twilio.com",
+        "initiatorType": "xmlhttprequest",
+        "durationMs": 317,
+        "transferBytes": 0,
+        "encodedBytes": 0,
+        "decodedBytes": 0,
+        "protocol": ""
+      },
+      "after": {
+        "url": "https://event-bridge.twilio.com",
+        "initiatorType": "xmlhttprequest",
+        "durationMs": 319,
+        "transferBytes": 0,
+        "encodedBytes": 0,
+        "decodedBytes": 0,
+        "protocol": ""
+      }
+    }
+  ],
+  "truncated": false
+}
