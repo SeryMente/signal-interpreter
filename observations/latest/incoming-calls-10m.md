@@ -1,28 +1,20 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-09T20:43:04.088Z → 2026-11-09T20:53:04.088Z
-- Generado: 2026-11-09T20:53:04.088Z
-- Eventos: 249 · lotes fuente: 53
+- Ventana UTC: 2026-11-09T20:43:48.794Z → 2026-11-09T20:53:48.794Z
+- Generado: 2026-11-09T20:53:48.794Z
+- Eventos: 225 · lotes fuente: 47
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 249
+- Reloj cliente sin verificación de recibo: 225
 
 ## Resumen
-- Intentos observados: 5
+- Intentos observados: 4
 - Contestadas: 0 · perdidas confirmadas: 1
-- Clic sin ruta: 4 · timbrados sin diálogo correlacionado: 0
+- Clic sin ruta: 3 · timbrados sin diálogo correlacionado: 0
 - Sin desenlace concluyente: 0
 - Detecciones de diálogo/botón: 4 / 4
 - Bloqueos de autocontestación: 1 · clics: 3
 
 ## Intentos
-
-### dd0fec9a-8ccf-4ae[PHONE]cbadb2add — connect_failed_no_route
-- Detectada: 2026-11-09T20:43:05.525Z · modalidad: desconocida
-- Tab: 1800213946 · eventos: 1
-- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: null
-- Desenlace/motivo: "connect_clicked_no_call_route"
-- Señales ausentes: INCOMING_DIALOG_DETECTED
-  - 2026-11-09T20:43:05.525Z · CONNECT_FLOW_FAILED_NO_CALL_ROUTE · warn · connect_clicked_no_call_route
 
 ### 03502925-c0d3-4cc6-ba83-4cfd066e6320 — connect_failed_no_route
 - Detectada: 2026-11-09T20:44:30.619Z · modalidad: OPI
