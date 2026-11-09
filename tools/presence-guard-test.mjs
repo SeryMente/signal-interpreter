@@ -7,14 +7,15 @@ let checks=0;
 function eq(a,b,label){assert.equal(a,b,label);checks++;}
 function harness(seed={}){
  let now=100000,idle='active',hold=null;
+ const starts={storageGet:0,idleQuery:0,tabsQuery:0,tabsGet:0};
  const events=()=>({listeners:[],addListener(f){this.listeners.push(f)},emit(...args){this.listeners.forEach(f=>f(...args))}});
  const data={effectifConfig:{autoAnswerEnabled:true,presenceIdleSeconds:60},...seed};
  const changed=events(),stateChanged=events(),messages=events(),intervals=[];
- const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},storage:{onChanged:changed,local:{get:async keys=>Object.fromEntries(keys.map(k=>[k,data[k]])),set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}}},tabs:{get:async()=>({url:PROFILE}),query:async()=>[]}};
+ const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{starts.idleQuery++;if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},storage:{onChanged:changed,local:{get:async keys=>{starts.storageGet++;return Object.fromEntries(keys.map(k=>[k,data[k]]));},set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}}},tabs:{get:async()=>{starts.tabsGet++;return {url:PROFILE};},query:async()=>{starts.tabsQuery++;return [];}}};
  const ctx={chrome,Date:class extends Date{static now(){return now}},setInterval:f=>intervals.push(f),setTimeout,clearTimeout,self:{}};
  ctx.self=ctx;ctx.URL=URL;vm.createContext(ctx);vm.runInContext(code,ctx);
  const sender={id:'id',frameId:0,url:PROFILE,tab:{id:7,url:PROFILE}};
- return {guard:ctx.SignalPresenceGuard,chrome,data,sender,stateChanged,intervals,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
+ return {guard:ctx.SignalPresenceGuard,chrome,data,sender,stateChanged,intervals,starts,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
 }
 const h=harness();
 eq(h.guard.snapshot().armed,false,'upgraded stored enabled does not arm');
@@ -28,6 +29,20 @@ eq((await h.guard.authorize({modality:'OPI',requestId:'f'},{...h.sender,frameId:
 eq((await h.guard.authorize({modality:'OPI',requestId:'o'},{...h.sender,url:'https://example.org'})).ok,false,'wrong origin blocks');
 eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,true,'verified phone gets short-lived grant');
 eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,false,'same grant request cannot replay');
+// Regression: all independent validations start before the idle check returns.
+const parallel=harness();await parallel.guard.arm(60);
+Object.keys(parallel.starts).forEach(k=>parallel.starts[k]=0);
+let finishIdle;parallel.hold(cb=>{finishIdle=cb;});
+const parallelGrant=parallel.guard.authorize({modality:'OPI',requestId:'parallel'},parallel.sender);
+await new Promise(r=>setImmediate(r));
+eq(parallel.starts.storageGet,1,'storage validation starts immediately');
+eq(parallel.starts.idleQuery,1,'idle validation starts immediately');
+eq(parallel.starts.tabsQuery,1,'cross-tab validation starts before idle returns');
+eq(parallel.starts.tabsGet,1,'live route validation starts before idle returns');
+finishIdle('active');
+const parallelResult=await parallelGrant;
+eq(parallelResult.ok,true,'all parallel validations must pass');
+eq(Number.isFinite(parallelResult.verificationMs),true,'authorization reports its verification duration');
 eq((await h.guard.authorize({modality:'OPI',requestId:'other'}, {...h.sender,tab:{id:8,url:PROFILE}})).ok,false,'cross-tab reservation blocks double click');
 
 const lease=harness();await lease.guard.arm(60);
