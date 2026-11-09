@@ -80,8 +80,7 @@ La subcarpeta `extension` es el destino de **Cargar descomprimida**; no se debe 
 ### Rutina normativa
 
 1. **Destino canónico.** Materializar y trabajar bajo `Desktop\\SeryMente\\Signal Interpreter` del perfil `fila4`. No crear una copia paralela en `Desktop\\Signal Interpreter` ni confundirla con la raíz del frente.
-2. **Carga de Chrome.** La única ruta de extensión que se debe proporcionar al operador para cargarla manualmente es `...
-Signal Interpreter\\extension`. Antes de indicar una versión, leer `extension\\manifest.json` en ese directorio; no inferirla del manifiesto de la raíz del repositorio.
+2. **Carga de Chrome.** La única ruta de extensión que se debe proporcionar al operador para cargarla manualmente es `C:\\Users\\fila4\\Desktop\\SeryMente\\Signal Interpreter\\extension`. Antes de indicar una versión, leer `extension\\manifest.json` en ese directorio; no inferirla del manifiesto de la raíz del repositorio.
 3. **Separación de identidades.** MantenimientoRCI puede operar RDC, pero los artefactos y rutas de trabajo deben pertenecer al perfil Windows `fila4`. Las instancias `PC-N` de Cyber son efímeras: no son raíces persistentes ni destinos de trabajo.
 4. **Preservación del checkout.** Antes de sincronizar, inspeccionar `git status`, rama, HEAD y divergencia. Si hay modificaciones o archivos no seguidos, no ejecutar reset, clean, checkout destructivo ni reemplazo de carpeta. Reconciliar desde un worktree separado, preservar los cambios originales y sólo integrar después de revisión.
 5. **Instancia existente.** Si la raíz y `extension` ya existen, verificarlas y reutilizarlas; no clonar encima ni crear duplicados. La existencia de la carpeta no prueba que Chrome haya cargado esa versión.
