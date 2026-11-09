@@ -251,3 +251,29 @@ Esta adenda prevalece sobre las referencias anteriores de HEAD/CI para el estado
 - La clasificación funcional permanece: SI-FB-01/02/04/05 implementados en candidata, pendientes de E2E/revisión según cada criterio; SI-FB-03 y SI-FB-06 parciales. Ningún ítem tiene aceptación del operador.
 - El E2E Windows/Chrome, la llamada controlada, WER/CER, la verificación de ZDR y la aceptación explícita continúan pendientes. PR no fusionada; sin release.
 - El export privado de PC-14 sigue fuera del repositorio público y no debe marcarse como trasladado ni verificado hasta obtener la conexión, leer el original y cotejar el SHA-256 previamente registrado `8E48AF0C07D7E576B3CE081F287DB3D7E8486B320D7F1CA2C3EA1A9F5590A3F6` tras la copia autorizada a fila4.
+
+
+
+### Incidente de micrófono · diagnóstico y corrección · 2026-11-09 · G14
+
+**Síntoma reportado:** el popup muestra `MIC OFF`; al solicitar activación cambia a error.
+
+**Evidencia de observabilidad local (Chrome/PC-14, extensión 0.10.45):**
+- Dos eventos `EXTENSION_MICROPHONE_UNMUTE_BLOCKED` desde `popup-button`, a las 2026-11-09T17:00:49.794Z y 17:00:50.670Z.
+- Ambos llevan `reasonCode=call-not-active`, `callId=null` y `tabId=null`.
+- La ruta de código devuelve una denegación verificada y mantiene el mute sin ejecutar control de pista ni pedir permiso de micrófono.
+- En los registros inspeccionados no se encontró un evento `EXTENSION_MICROPHONE_MUTE_ERROR` correlacionado con esos intentos. El puente Native Messaging pasó su prueba independiente; no hay evidencia de que sea causa de este síntoma.
+
+**Suficiencia de observabilidad: LIMITADA, aunque útil para clasificar el incidente.** La instrumentación identificó versión, origen del botón, hora, motivo de bloqueo y ausencia de `callId/tabId`. Eso basta para localizar el punto de denegación. No registra una señal independiente de la ruta de Cloud Interpreter, estado real de `MediaStreamTrack.enabled`, cantidad de senders ni un resultado de permiso/dispositivo; por ello no permite distinguir retrospectivamente entre (a) pulsar fuera de una llamada aceptada y (b) estar en llamada pero no haber registrado el contexto de llamada. Los errores repetidos de screenshot por permiso `activeTab/<all_urls>` son ruido de otra función, no evidencia de fallo de micrófono. El resultado no fue abundancia de observabilidad.
+
+**Diagnóstico:** el control de seguridad fail-closed denegó correctamente el unmute al no existir llamada activa vinculada a una pestaña fuente. El defecto visible era de presentación/estado: el popup trataba la respuesta esperada `ok:false` por política como error de hardware/verificación y mostraba `MIC ERR`. No se concluye que el micrófono físico, permiso de Windows o dispositivo de entrada estén fallando.
+
+**Corrección en candidata 0.10.45 (PR #75, no liberada):**
+- La respuesta de una denegación de política ahora declara `blocked=true`, `applied=false`, `verified=true` y conserva el mute.
+- El popup distingue `call-not-active` / `call-route-not-active` de errores de verificación reales; muestra MIC OFF protegido y explica que se habilita únicamente cuando la llamada está confirmada.
+- El evento futuro `EXTENSION_MICROPHONE_UNMUTE_BLOCKED` registra booleanos saneados: llamada detectada, presencia de callId/tabId, ruta verificada, captura activa, intento de control de pista, solicitud de permiso y confirmación de mute. No registra URL, audio ni texto de llamada.
+- La invariante fail-closed no se relajó. No se abre el micrófono fuera de llamada.
+
+**Verificación local:** 45/45 suites `tools/*test*.mjs` PASS; 25/25 JS de extensión `node --check` PASS; prueba nueva `microphone-popup-policy-test.mjs` PASS (4 escenarios, 12 comprobaciones); `verify-release-package.mjs` PASS con 62 hashes y hash del ejecutable nativo PASS.
+
+**Pendiente para cerrar:** esperar fin seguro de cualquier llamada, recargar manualmente la extensión desde `chrome://extensions`, comprobar que el estado visual no muestre error fuera de llamada y que el unmute se habilite solo en una ruta `/call/:id` efectivamente reconocida. No se realizó llamada ni se obtuvo pista de audio real en esta retoma. Si sigue sin reconocer una llamada activa tras recargar, el siguiente diagnóstico debe instrumentar el ciclo de detección de `callId/callSourceTabId` con metadatos no sensibles.
