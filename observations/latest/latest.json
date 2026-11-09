@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-8a21446f-5a28-4621-a5c3-7f6b42a06ff7",
-  "createdAt": "2026-11-09T20:21:16.425Z",
+  "batchId": "batch-927f9e81-d4bc-4994-ae32-ec22559fbc85",
+  "createdAt": "2026-11-09T20:25:16.441Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.40",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "92520193-da11-45bd-91d7-bf58a4f7abf7",
-      "sequence": 176,
-      "timestamp": "2026-11-09T20:20:47.322Z",
-      "ingestedAt": "2026-11-09T20:20:47.323Z",
+      "id": "40e04d8e-b315-4f0e-a9af-826bf6041b5b",
+      "sequence": 179,
+      "timestamp": "2026-11-09T20:25:15.435Z",
+      "ingestedAt": "2026-11-09T20:25:15.436Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "background",
       "extensionVersion": "0.10.40",
       "host": "",
       "url": "",
-      "phase": "event",
-      "action": "PLATFORM_TELEMETRY_RECONCILED",
-      "outcome": "observed",
-      "traceId": "8a21de08-3b1c-42bd-8c94-ea916654b805",
+      "phase": "started",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
+      "outcome": "success",
+      "traceId": "25c6eef4-faad-464b-a76f-8dc0a37a8e49",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -44,20 +44,15 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "event:PLATFORM_SESSION_ENDED",
-        "tabCount": 1,
-        "authenticatedCount": 0,
-        "onlineCount": 0,
-        "callCount": 0,
-        "probeErrors": 1
+        "trigger": "hourly"
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "5315bf18-65ae-49ec-bb38-8b9cd0a664e9",
-      "sequence": 177,
-      "timestamp": "2026-11-09T20:20:47.376Z",
-      "ingestedAt": "2026-11-09T20:20:47.376Z",
+      "id": "f46c4790-d344-432f-8a17-4848874e28b0",
+      "sequence": 180,
+      "timestamp": "2026-11-09T20:25:15.482Z",
+      "ingestedAt": "2026-11-09T20:25:15.482Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "background",
@@ -65,9 +60,9 @@
       "host": "",
       "url": "",
       "phase": "event",
-      "action": "PLATFORM_TELEMETRY_RECONCILED",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED",
       "outcome": "observed",
-      "traceId": "20e6963d-24fb-4562-ae55-6dc5ec2f34e9",
+      "traceId": "1efd737f-ee33-4b8d-ad05-f087de300174",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -81,7 +76,7 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "CLOUD_TAB_UNAVAILABLE",
       "error": null,
       "metrics": {},
       "context": {},
@@ -91,92 +86,30 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "tab-removed",
-        "tabCount": 0,
-        "authenticatedCount": 0,
-        "onlineCount": 0,
-        "callCount": 0,
-        "probeErrors": 0
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "879e192b-9d62-4255-870e-4756a237e5f2",
-      "sequence": 178,
-      "timestamp": "2026-11-09T20:21:15.440Z",
-      "ingestedAt": "2026-11-09T20:21:15.440Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.40",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "TELEMETRY_MAINTENANCE",
-      "outcome": "observed",
-      "traceId": "e418b188-167d-4731-9b8a-2020284fdb32",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.40",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "pruned": {
-          "cutoff": "[PHONE]T20:21:15.423Z",
-          "expiredEvents": 0,
-          "expiredSnapshots": 0,
-          "expiredSignalSegments": 0,
-          "excessEvents": 0,
-          "excessSignalSegments": 0
-        },
-        "stats": {
-          "database": "signal-interpreter-telemetry",
-          "events": 177,
-          "snapshots": 2,
-          "signalSegments": 0,
-          "oldestEventAt": "[PHONE]T20:20:15.417Z",
-          "newestEventAt": "[PHONE]T20:20:47.376Z",
-          "usageBytes": 868098,
-          "quotaBytes": 1122717499138
-        }
+        "trigger": "hourly",
+        "reasonCode": "CLOUD_TAB_UNAVAILABLE",
+        "policy": "no-tab-create-no-navigation-no-reload; retry-next-hour"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 176,
-    "lastSequence": 178,
-    "firstTimestamp": "2026-11-09T20:20:47.322Z",
-    "lastTimestamp": "2026-11-09T20:21:15.440Z",
+    "firstSequence": 179,
+    "lastSequence": 180,
+    "firstTimestamp": "2026-11-09T20:25:15.435Z",
+    "lastTimestamp": "2026-11-09T20:25:15.482Z",
     "actions": {
-      "PLATFORM_TELEMETRY_RECONCILED": 2,
-      "TELEMETRY_MAINTENANCE": 1
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED": 1
     },
     "categories": {
-      "RUNTIME": 3
+      "RUNTIME": 2
     }
   }
 }
