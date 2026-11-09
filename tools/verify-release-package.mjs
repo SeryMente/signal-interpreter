@@ -15,6 +15,28 @@ const entries = Array.isArray(inventory) ? inventory : inventory.files;
 
 assert.equal(manifest.name, "Signal Interpreter");
 assert.equal(manifest.version, expectedVersion, "manifest version is not the package version");
+const extensionManifest = JSON.parse(readText("extension/manifest.json"));
+const expectedExtensionManifest = JSON.parse(JSON.stringify(manifest));
+const extensionManifestResources = [];
+const rebaseManifestPaths = (value) => {
+  if (Array.isArray(value)) return value.map(rebaseManifestPaths);
+  if (value && typeof value === "object") {
+    for (const key of Object.keys(value)) value[key] = rebaseManifestPaths(value[key]);
+    return value;
+  }
+  if (typeof value === "string" && value.startsWith("extension/")) {
+    extensionManifestResources.push(value.slice("extension/".length));
+    return value.slice("extension/".length);
+  }
+  return value;
+};
+rebaseManifestPaths(expectedExtensionManifest);
+assert.deepEqual(extensionManifest, expectedExtensionManifest, "extension manifest must be the root manifest rebased for direct Chrome loading");
+for (const resource of extensionManifestResources) {
+  assert.ok(existsSync(resolve(root, "extension", resource)), "missing file referenced by extension manifest: " + resource);
+}
+assert.ok(entries.some((entry) => entry.path === "extension/manifest.json"), "extension manifest is not covered by payload integrity");
+
 assert.ok(Array.isArray(entries) && entries.length >= 50, "payload inventory is empty or unexpectedly small");
 assert.ok(installer.includes("'"+expectedVersion+"'"), "installer and manifest versions differ");
 
