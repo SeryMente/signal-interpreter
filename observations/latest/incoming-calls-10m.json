@@ -1,90 +1,33 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-09T21:40:12.527Z",
-  "windowStartAt": "2026-11-09T21:30:12.527Z",
-  "windowEndAt": "2026-11-09T21:40:12.527Z",
+  "generatedAt": "2026-11-09T21:41:12.008Z",
+  "windowStartAt": "2026-11-09T21:31:12.008Z",
+  "windowEndAt": "2026-11-09T21:41:12.008Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 206
+    "client-clock-unverified": 178
   },
-  "sourceBatchCount": 29,
+  "sourceBatchCount": 27,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 12452,
+  "receiptUnverifiedBatchCount": 12453,
   "medianClientClockSkewMs": null,
-  "eventCount": 206,
+  "eventCount": 178,
   "summary": {
-    "attempts": 2,
+    "attempts": 1,
     "answered": 0,
     "missed": 0,
-    "connectFailedNoRoute": 2,
+    "connectFailedNoRoute": 1,
     "ringUnmatched": 0,
     "unresolved": 0,
     "ringSignals": 1,
     "dialogsDetected": 1,
     "buttonsFound": 1,
     "buttonsNotFound": 0,
-    "readinessSamples": 138,
+    "readinessSamples": 116,
     "blocked": 0,
     "clicks": 1
   },
   "attempts": [
-    {
-      "attemptId": "0a03baf8-4e17-44e3-91fd-5ce8b73c0806",
-      "status": "connect_failed_no_route",
-      "modality": null,
-      "tabId": 1800213946,
-      "detectedAt": "2026-11-09T21:30:18.320Z",
-      "closedAt": null,
-      "clickedAt": null,
-      "answeredAt": null,
-      "missedAt": null,
-      "outcomeReason": "connect_clicked_no_call_route",
-      "button": {
-        "found": false,
-        "notFound": false,
-        "disabled": false
-      },
-      "readiness": {
-        "samples": 0,
-        "last": null
-      },
-      "blockedEvents": [],
-      "ringSignalCount": 0,
-      "clickToAnswerLatencyMs": null,
-      "detectionToAnswerLatencyMs": null,
-      "callRefs": [],
-      "missingSignals": [
-        "INCOMING_DIALOG_DETECTED"
-      ],
-      "eventCount": 2,
-      "timeline": [
-        {
-          "at": "2026-11-09T21:30:18.320Z",
-          "action": "PLATFORM_SCREENSHOT_UPLOAD_ERROR",
-          "level": "error",
-          "reasonCode": "tab-activated",
-          "details": {
-            "reason": "tab-activated",
-            "reasonCode": "tab-activated",
-            "error": "Error: Relay HTTP 409"
-          },
-          "eventId": "11dac7a1-34a4-46b9-a17d-3f254b85aa91",
-          "sequence": 1539
-        },
-        {
-          "at": "2026-11-09T21:30:18.829Z",
-          "action": "CONNECT_FLOW_FAILED_NO_CALL_ROUTE",
-          "level": "warn",
-          "reasonCode": "connect_clicked_no_call_route",
-          "details": {
-            "reason": "connect_clicked_no_call_route",
-            "reasonCode": "connect_clicked_no_call_route"
-          },
-          "eventId": "96d9e45e-d579-4ff4-b642-83321df833ac",
-          "sequence": 1540
-        }
-      ]
-    },
     {
       "attemptId": "cf7c04ae-17a6-41dc-8183-193ba4ddcbd0",
       "status": "connect_failed_no_route",

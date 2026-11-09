@@ -1,29 +1,20 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-09T21:30:12.527Z → 2026-11-09T21:40:12.527Z
-- Generado: 2026-11-09T21:40:12.527Z
-- Eventos: 206 · lotes fuente: 29
+- Ventana UTC: 2026-11-09T21:31:12.008Z → 2026-11-09T21:41:12.008Z
+- Generado: 2026-11-09T21:41:12.008Z
+- Eventos: 178 · lotes fuente: 27
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 206
+- Reloj cliente sin verificación de recibo: 178
 
 ## Resumen
-- Intentos observados: 2
+- Intentos observados: 1
 - Contestadas: 0 · perdidas confirmadas: 0
-- Clic sin ruta: 2 · timbrados sin diálogo correlacionado: 0
+- Clic sin ruta: 1 · timbrados sin diálogo correlacionado: 0
 - Sin desenlace concluyente: 0
 - Detecciones de diálogo/botón: 1 / 1
 - Bloqueos de autocontestación: 0 · clics: 1
 
 ## Intentos
-
-### 0a03baf8-4e17-44e3-91fd-5ce8b73c0806 — connect_failed_no_route
-- Detectada: 2026-11-09T21:30:18.320Z · modalidad: desconocida
-- Tab: 1800213946 · eventos: 2
-- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: null
-- Desenlace/motivo: "connect_clicked_no_call_route"
-- Señales ausentes: INCOMING_DIALOG_DETECTED
-  - 2026-11-09T21:30:18.320Z · PLATFORM_SCREENSHOT_UPLOAD_ERROR · error · tab-activated
-  - 2026-11-09T21:30:18.829Z · CONNECT_FLOW_FAILED_NO_CALL_ROUTE · warn · connect_clicked_no_call_route
 
 ### cf7c04ae-17a6-41dc-8183-193ba4ddcbd0 — connect_failed_no_route
 - Detectada: 2026-11-09T21:32:46.046Z · modalidad: OPI
