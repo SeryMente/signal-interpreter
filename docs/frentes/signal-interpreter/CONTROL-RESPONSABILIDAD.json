@@ -16,7 +16,7 @@
     "hora_exacta": "NO VERIFICADA",
     "fecha_autorizacion_utc": "NO VERIFICADA",
     "alcance": "TRANSFER_RESPONSIBILITY de G13 a G14. Titularidad única integral de Signal Interpreter: diagnóstico, análisis, diseño, desarrollo offline, pruebas automatizadas/CI, documentación y persistencia, sujeto a compuertas vigentes.",
-    "acceso_remoto": "No se concede ni hereda acceso RDC. Operaciones locales solo bajo identidad Windows fila4 verificada. PC10RCIF4EI4 ejecuta como central\\\\mantenimientorci; PC-14 ejecuta bajo perfil PC 13; PC-13 está offline."
+    "acceso_remoto": "AUTORIZADO por SIGNAL-INTERPRETER-RDC-FILA4-20261108-G14: MantenimientoRCI opera el agente por RDC en PC10RCIF4EI4; todo repositorio, artefacto, perfil Chrome, respaldo y destino de Signal Interpreter debe estar bajo C:\\Users\\fila4. Chrome se verificó bajo CENTRAL\\fila4. Se mantienen los límites: no llamadas reales, audio real, captura, credenciales, aceptación humana, recarga/reinicio de Chrome, merge, deploy o release."
   },
   "propietario_anterior": {
     "hilo": null,
@@ -1099,15 +1099,18 @@
       "blob": "cad464717c43733aa84b49f8c9c3af0875597fbd"
     },
     "remota": {
-      "autorizacion": "NO CONCEDIDA; requiere identidad Windows fila4 verificada.",
-      "pc10": "NO ELEGIBLE: central\\\\mantenimientorci",
-      "pc14": "NO ELEGIBLE: perfil PC 13",
-      "pc13": "OFFLINE"
+      "autorizacion": "VIGENTE: MantenimientoRCI opera el agente RDC en PC10RCIF4EI4; todos los artefactos y trabajo local SI deben quedar en C:\\Users\\fila4.",
+      "operador": "CENTRAL\\mantenimientorci",
+      "dispositivo": "PC10RCIF4EI4",
+      "identidad_destino": "CENTRAL\\fila4",
+      "chrome": "Perfil fila4 y sesión interactiva verificados. ChatGPT homepage abierto; hilo profundo exacto no identificado.",
+      "limites": "No llamadas/audio reales, no captura real, no credenciales, no recarga/reinicio Chrome, no aceptación humana, no merge, deploy o release."
     },
     "modo_operativo_actual": "AGENTE_UNICO",
-    "estado": "TRANSFERENCIA_G13_A_G14_COMMITTED_AND_READBACK_VERIFIED",
+    "estado": "G14_ACTIVO_RDC_MANTENIMIENTORCI_DESTINO_FILA4",
     "alcance": "Signal Interpreter solamente.",
-    "verificacion": "CONTROL LEÍDO DE VUELTA; titular G14 y generación 14 cotejados."
+    "verificacion": "CONTROL LEÍDO DE VUELTA; titular G14 y generación 14 cotejados.",
+    "autorizacion_rdc": "SIGNAL-INTERPRETER-RDC-FILA4-20261108-G14"
   },
   "modo_operativo_actual": "AGENTE_UNICO",
   "autorizaciones_adicionales": [
@@ -1237,6 +1240,25 @@
         "zero_data_retention_required": true,
         "zero_data_retention_status": "PENDIENTE_DE_CONFIRMACION_EN_CONSOLA_GROQ"
       }
+    },
+    {
+      "evento": "SIGNAL-INTERPRETER-RDC-FILA4-20261108-G14",
+      "autorizacion_explicita": true,
+      "literal_operador": "Mantenimientorci es para operar el agente, todo es para y en fila4, el usuiario de windwos, ahi resuelvelo todo. Quedate trabvajando resolviendo de extremoa a extremo todo el backlog, abre esta covneracion en fila 4, para que este abierta cuando llegue",
+      "fecha_autorizacion_local": "2026-11-08",
+      "hora_autorizacion_local": "NO VERIFICADA",
+      "zona_horaria": "America/Mexico_City",
+      "generacion": 14,
+      "titular": "chatgpt-signal-interpreter-01a1bd8b-8291-7906-b862-6088593acfe5",
+      "operador_rdc": "CENTRAL\\mantenimientorci",
+      "dispositivo_rdc": "PC10RCIF4EI4",
+      "device_id": "d0bbb2a3-d7b4-45e1-8870-652c2c3844fc",
+      "identidad_destino_windows": "CENTRAL\\fila4",
+      "perfil_destino": "C:\\Users\\fila4",
+      "alcance": "Autoriza usar MantenimientoRCI como identidad operadora del agente RDC en PC10RCIF4EI4 para ejecutar el trabajo de Signal Interpreter sobre el perfil, repositorio, respaldo, worktrees, pruebas, documentación y entregables ubicados en C:\\Users\\fila4; incluye inspección/modificación de archivos dentro de ese árbol, comandos Git locales, sincronización de la rama/PR de SI y apertura de ChatGPT en el perfil Chrome de fila4. No autoriza colocar artefactos de trabajo en C:\\Users\\MantenimientoRCI.",
+      "controles_identidad": "RDC ejecuta como CENTRAL\\mantenimientorci; el proceso de Chrome objetivo se observó ejecutándose como CENTRAL\\fila4 en la sesión interactiva 4. Verificar rutas de destino y preservar el checkout original antes de cambios.",
+      "limites": "No autoriza llamadas reales, capturar audio/micrófono real, intervenir conversaciones, confirmar ZDR del proveedor, introducir credenciales, aceptar funcionalmente por el operador, recargar/reiniciar Chrome, desplegar, fusionar o liberar. Estas compuertas permanecen reservadas al operador y a la evidencia/confirmación correspondiente.",
+      "estado": "AUTORIZACION_RDC_FILA4_VIGENTE_PARA_TRABAJO_TECNICO_SI"
     }
   ]
 }
