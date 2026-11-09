@@ -369,3 +369,13 @@ Este corte actualiza únicamente el estado de PR/CI y la custodia pendiente. Las
 - La autorización G14 actualmente persistida conserva como destino operativo `C:\\Users\\fila4`; la nueva conexión RDC de PC-14 aún no se recibió en este corte. Su acceso no amplía por sí mismo el alcance de escritura en PC-14 ni modifica la autorización de destino fila4. Cualquier operación local debe seguir la autorización de control vigente y preservar los originales.
 
 La nueva adenda no altera la versión activa de Chrome fila4 ni autoriza reload/restart, llamada real, captura real, aceptación humana, merge, deploy o release.
+
+
+### Revalidación de origen PC-14 tras nueva autenticación RDC · 2026-11-09
+
+- Nuevo dispositivo remoto registrado: `PC-14`, ID `4fc35a07-2192-4b88-81ec-96cb450d565e`, Online. La identificación de proceso devolvió hostname `PC-14`, usuario `pc-14\\pc 13` y perfil `C:\\Users\\PC 13`.
+- La ubicación de Downloads leída de `HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders` es `C:\\Users\\PC 13\\Downloads`.
+- El archivo esperado `ChatGPT-SI (2)-20261108-1720.md` no existe en esa ruta. Una búsqueda por nombre en Downloads de todos los perfiles tampoco produjo coincidencias. Una búsqueda adicional en el perfil no produjo coincidencias; el recorrido completo del perfil no concluyó y fue detenido. La búsqueda del volumen C: terminó por límite de 3 segundos con cero coincidencias observadas y resultado explícitamente incompleto.
+- Metadatos históricos del export, pendientes de corroboración contra el original accesible: 43,461 bytes, 872 líneas, SHA-256 `8E48AF0C07D7E576B3CE081F287DB3D7E8486B320D7F1CA2C3EA1A9F5590A3F6`.
+- **Resultado de custodia:** NO LOCALIZADO EN LA RUTA REGISTRADA; NO COPIADO; SHA/lectura de origen no revalidados en esta conexión. No sustituirlo con otro archivo parecido ni inferir que fue eliminado.
+- No se escribió ni creó ningún archivo en PC-14. El dispositivo se utilizó únicamente para identificación y lecturas. El destino autorizado para la copia sigue siendo `C:\\Users\\fila4`; la transferencia solo se marcará completada tras localizar el original, leerlo íntegramente, copiarlo allí y cotejar SHA-256/read-back.
