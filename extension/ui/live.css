@@ -31,3 +31,10 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 310px;height:calc(100vh - 
 
 /* Essential controls remain available at every supported window width. */
 .session-source{max-width:100%;white-space:normal;overflow:visible;overflow-wrap:anywhere;font-size:14px;color:#b8c3cf}.brand span,.brand strong,.live-state,.eyebrow,.session-tabs-label,.session-empty,.turn .name,.turn .time,.lane header,.lane-item time,.composer-head span,.mic-head span,.read-options output,.focus-label{font-size:14px;letter-spacing:0;color:#b8c3cf}.tool,.speaker-switch,.send,.live-jump{font-size:14px}.session-tabs{height:auto;min-height:52px}.session-tab{height:56px;min-width:180px;max-width:280px}.session-tab-main{padding-right:48px}.session-tab-main span,.session-tab-main small{font-size:14px}.session-tab-close{top:6px;right:2px;width:44px;height:44px;line-height:44px}.size-panel button,.focus-overlay button{min-height:44px;font-size:14px}.read-options label{min-height:44px}.controls .status-card span{letter-spacing:0;color:#b8c3cf}@media(max-width:700px){.controls{display:block;overflow:visible}.live-state{display:flex;flex-wrap:wrap;white-space:normal}.brand{flex-wrap:wrap}.conversation-head{flex-wrap:wrap}.conversation-head>div:first-child{min-width:0;flex:1}.timeline{min-height:240px}.conversation-shell{min-height:360px}.session-tabs{align-items:flex-start;padding-top:12px;padding-bottom:12px}.session-empty{font-size:14px}.triptych{display:grid;grid-template-columns:1fr}.triptych.hidden{display:none}}
+
+
+/* Full-width transcript reader by default; secondary tools remain user-toggleable. */
+body.reader-fullwidth main{grid-template-columns:minmax(0,1fr)}
+body.reader-fullwidth .controls{display:none}
+body.reader-tools-open main{grid-template-columns:minmax(0,1fr) 280px}
+body.reader-tools-open .controls{display:block}
