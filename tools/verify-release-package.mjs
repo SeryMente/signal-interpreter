@@ -5,7 +5,7 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const expectedVersion = "0.10.41";
+const expectedVersion = "0.10.47";
 const readText = (p) => readFileSync(resolve(root, p), "utf8");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex").toUpperCase();
 const manifest = JSON.parse(readText("manifest.json"));
@@ -66,6 +66,27 @@ assert.ok(installer.includes("$inventory -is [System.Array]"), "installer does n
 assert.ok(installer.includes("signal-interpreter-payload-sha256/v1"), "installer does not validate the current inventory schema");
 assert.ok(existsSync(resolve(root, "PREPARAR-Y-CARGAR.cmd")), "one-step preparation command is missing");
 assert.ok(existsSync(resolve(root, "tools/probe-caption-host.ps1")), "native host protocol probe is missing");
+
+const presenceGuard = readText("extension/presence-guard.js");
+const contentRuntime = readText("extension/content.js");
+const micGuard = readText("extension/mic-guard-main.js");
+const liveReader = readText("extension/ui/live.js");
+const liveHtml = readText("extension/ui/live.html");
+const liveCss = readText("extension/ui/live.css");
+assert.ok(background.includes('blue: "#3b82f6"'), "contextual blue indicator is absent");
+assert.ok(background.includes("function aggregateCloudActionStatus"), "global Cloud status aggregator is absent");
+assert.ok(background.includes('globalStatus==="active"?"blue":globalStatus'), "external blue icon is not gated by Cloud active status");
+assert.ok(background.includes("fail-closed-on-unmute-verification-error"), "microphone unmute error is not fail-closed");
+assert.ok(background.includes("EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL"), "idle unmute guard is missing");
+assert.ok(background.includes('setExtensionMicrophoneMuted(false, "call-accepted")'), "call-accepted unmute is missing");
+assert.ok(background.includes('setMainClientMicrophoneMuted(state.callSourceTabId,true,"call-ended")'), "call-end mute is missing");
+assert.ok(micGuard.includes("var muted=old?!!old.muted:true;"), "main-world microphone default is not muted");
+assert.ok(presenceGuard.includes("signalPresenceGuardSession") && presenceGuard.includes("Promise.all(["), "presence continuity/parallel authorization is missing");
+assert.ok(contentRuntime.includes("postAuthorizationRevalidationFailureCodes") && contentRuntime.includes("revalidationFailureCodes.length > 0"), "pre-click authorization revalidation is missing");
+assert.ok(background.includes("live-console-sender-required") && background.includes("captionHistory:captionHistory"), "protected native caption history hydration is missing");
+assert.ok(background.includes('chrome.tabs.create({url:targetUrl,active:true})'), "live reader is not opened in a normal reusable tab");
+assert.ok(liveReader.includes("reader-fullwidth") && liveReader.includes("captionHistory"), "full-width caption reader hydration is missing");
+assert.ok(liveHtml.includes('id="toggleTools"') && liveCss.includes("body.reader-fullwidth main"), "full-width tools toggle is missing");
 
 const registration = readText("extension/native/register-caption-host.ps1");
 const match = registration.match(/ExpectedSha256\s*=\s*"([a-f0-9]{64})"/i);

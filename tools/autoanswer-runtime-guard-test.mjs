@@ -45,9 +45,9 @@ const oldRuntime = {
   active: true,
   dispose: reason => { upgradeReason = reason; }
 };
-const upgraded = boot("0.10.41", oldRuntime);
+const upgraded = boot("0.10.47", oldRuntime);
 assert.equal(upgradeReason, "runtime-upgrade-replaced", "version upgrade disposes the previous runtime");
-assert.equal(upgraded.marker.version, "0.10.41", "version upgrade starts the new runtime");
+assert.equal(upgraded.marker.version, "0.10.47", "version upgrade starts the new runtime");
 
 let replacedReason = null;
 const otherExtension = {

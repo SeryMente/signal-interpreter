@@ -39,7 +39,7 @@ const callLifecycleSyncTest=read("tools/observability-call-lifecycle-sync-test.m
 const relayBatchApi=read("tools/observability-relay/api/batch.js");
 const freshnessWorkflow=read(".github/workflows/observability-freshness.yml");
 
-assert.equal(manifest.version,"0.10.41");
+assert.equal(manifest.version,"0.10.47");
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
@@ -244,7 +244,9 @@ assert.ok(platformScreenshotTest.includes("PLATFORM_SCREENSHOT_TEST=PASS"));
 assert.ok(auditWorkflow.includes("node tools/platform-screenshot-test.mjs"));
 assert.ok(auditWorkflow.includes("node tools/observability-screenshot-relay-test.mjs"));
 assert.ok(globalMouse.includes('type: "SIGNAL_EXTENSION_MICROPHONE_TOGGLE"'));
-assert.ok(background.includes("never-reapply-stale-mute-on-unmute-failure"));
+assert.ok(background.includes("fail-closed-on-unmute-verification-error"), "unmute verification errors must reapply mute");
+assert.equal(background.includes("never-reapply-stale-mute-on-unmute-failure"), false, "unsafe unmute recovery must remain absent");
+assert.ok(background.includes("EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL"), "idle unmute must remain blocked");
 assert.ok(background.includes("EXTENSION_MICROPHONE_TOGGLE_RECOVERY_RETRY"));
 assert.ok(content.includes("EXTENSION_MICROPHONE_KEYBOARD_FALLBACK_TRIGGERED"));
 assert.ok(content.includes("SIGNAL_EXTENSION_MICROPHONE_KEYBOARD_FALLBACK"));

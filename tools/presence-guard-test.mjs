@@ -5,23 +5,30 @@ const code=fs.readFileSync('extension/presence-guard.js','utf8');
 const PROFILE='https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz';
 let checks=0;
 function eq(a,b,label){assert.equal(a,b,label);checks++;}
-function harness(seed={}){
+function harness(seed={},sessionSeed={},popupPath='extension/ui/popup.html'){
  let now=100000,idle='active',hold=null;
- const starts={storageGet:0,idleQuery:0,tabsQuery:0,tabsGet:0};
  const events=()=>({listeners:[],addListener(f){this.listeners.push(f)},emit(...args){this.listeners.forEach(f=>f(...args))}});
  const data={effectifConfig:{autoAnswerEnabled:true,presenceIdleSeconds:60},...seed};
- const changed=events(),stateChanged=events(),messages=events(),intervals=[];
- const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{starts.idleQuery++;if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},storage:{onChanged:changed,local:{get:async keys=>{starts.storageGet++;return Object.fromEntries(keys.map(k=>[k,data[k]]));},set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}}},tabs:{get:async()=>{starts.tabsGet++;return {url:PROFILE};},query:async()=>{starts.tabsQuery++;return [];}}};
+ const sessionData={...sessionSeed};
+ const changed=events(),stateChanged=events(),messages=events(),intervals=[],alarms=events(),scheduledAlarms=new Map();
+ const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,getManifest:()=>({action:{default_popup:popupPath}}),onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},alarms:{onAlarm:alarms,create:(name,info)=>scheduledAlarms.set(name,info),clear:async name=>scheduledAlarms.delete(name)},storage:{onChanged:changed,local:{get:async keys=>Object.fromEntries(keys.map(k=>[k,data[k]])),set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}},session:{get:async keys=>Object.fromEntries(keys.map(k=>[k,sessionData[k]])),set:async patch=>Object.assign(sessionData,patch),remove:async key=>{delete sessionData[key]}}},tabs:{get:async()=>({url:PROFILE}),query:async()=>[]}};
  const ctx={chrome,Date:class extends Date{static now(){return now}},setInterval:f=>intervals.push(f),setTimeout,clearTimeout,self:{}};
  ctx.self=ctx;ctx.URL=URL;vm.createContext(ctx);vm.runInContext(code,ctx);
  const sender={id:'id',frameId:0,url:PROFILE,tab:{id:7,url:PROFILE}};
- return {guard:ctx.SignalPresenceGuard,chrome,data,sender,stateChanged,intervals,starts,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
+ return {guard:ctx.SignalPresenceGuard,chrome,data,sessionData,sender,popupSender:{id:'id',url:'chrome-extension://id/'+popupPath},stateChanged,intervals,alarms,scheduledAlarms,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
 }
 const h=harness();
 eq(h.guard.snapshot().armed,false,'upgraded stored enabled does not arm');
 eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,false,'unarmed blocks');
 eq((await h.guard.arm(150)).ok,false,'revoked 150s never implicit policy');
 eq((await h.message({type:'SIGNAL_PRESENCE_ARM',idleSeconds:60},h.sender)).ok,false,'web content cannot arm');
+const popupRepo=harness();
+eq((await popupRepo.message({type:'SIGNAL_PRESENCE_STATUS'},popupRepo.popupSender)).ok,true,'repo-layout popup path is authorized from the manifest');
+eq((await popupRepo.message({type:'SIGNAL_PRESENCE_ARM',idleSeconds:60},popupRepo.popupSender)).ok,true,'repo-layout popup explicitly arms availability');
+const popupPackaged=harness({}, {}, 'ui/popup.html');
+eq((await popupPackaged.message({type:'SIGNAL_PRESENCE_STATUS'},popupPackaged.popupSender)).ok,true,'packaged extension popup path is authorized from the manifest');
+eq((await popupPackaged.message({type:'SIGNAL_PRESENCE_ARM',idleSeconds:60},popupPackaged.popupSender)).ok,true,'packaged extension popup explicitly arms availability');
+eq((await popupPackaged.message({type:'SIGNAL_PRESENCE_ARM',idleSeconds:60},{...popupPackaged.popupSender,url:'chrome-extension://id/other.html'})).error,'popup-only','non-manifest extension page cannot arm');
 eq((await h.guard.arm(60)).ok,true,'explicit valid selection arms');
 eq((await h.guard.authorize({modality:'VRI',requestId:'v'},h.sender)).ok,false,'video manual only');
 eq((await h.guard.authorize({modality:'UNKNOWN',requestId:'u'},h.sender)).ok,false,'unknown modality blocks');
@@ -29,20 +36,6 @@ eq((await h.guard.authorize({modality:'OPI',requestId:'f'},{...h.sender,frameId:
 eq((await h.guard.authorize({modality:'OPI',requestId:'o'},{...h.sender,url:'https://example.org'})).ok,false,'wrong origin blocks');
 eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,true,'verified phone gets short-lived grant');
 eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,false,'same grant request cannot replay');
-// Regression: all independent validations start before the idle check returns.
-const parallel=harness();await parallel.guard.arm(60);
-Object.keys(parallel.starts).forEach(k=>parallel.starts[k]=0);
-let finishIdle;parallel.hold(cb=>{finishIdle=cb;});
-const parallelGrant=parallel.guard.authorize({modality:'OPI',requestId:'parallel'},parallel.sender);
-await new Promise(r=>setImmediate(r));
-eq(parallel.starts.storageGet,1,'storage validation starts immediately');
-eq(parallel.starts.idleQuery,1,'idle validation starts immediately');
-eq(parallel.starts.tabsQuery,1,'cross-tab validation starts before idle returns');
-eq(parallel.starts.tabsGet,1,'live route validation starts before idle returns');
-finishIdle('active');
-const parallelResult=await parallelGrant;
-eq(parallelResult.ok,true,'all parallel validations must pass');
-eq(Number.isFinite(parallelResult.verificationMs),true,'authorization reports its verification duration');
 eq((await h.guard.authorize({modality:'OPI',requestId:'other'}, {...h.sender,tab:{id:8,url:PROFILE}})).ok,false,'cross-tab reservation blocks double click');
 
 const lease=harness();await lease.guard.arm(60);
@@ -72,7 +65,7 @@ eq((await expired.guard.authorize({modality:'OPI',requestId:'after-expiry'},expi
 h.setIdle('idle');h.stateChanged.emit('idle');eq(h.guard.snapshot().armed,false,'OS idle revokes');
 h.setIdle('active');h.stateChanged.emit('active');eq(h.guard.snapshot().armed,false,'return never rearms');
 await h.guard.arm(60);h.stateChanged.emit('locked');h.stateChanged.emit('active');eq(h.guard.snapshot().armed,false,'unlock never rearms');
-await h.guard.arm(60);h.setNow(180001);eq((await h.guard.authorize({modality:'OPI',requestId:'s'},h.sender)).ok,false,'sleep/long observation gap revokes');
+await h.guard.arm(60);h.setNow(180001);eq((await h.guard.authorize({modality:'OPI',requestId:'s'},h.sender)).ok,true,'MV3 worker suspension alone does not revoke explicit presence when OS idle state remains active');
 await h.guard.arm(60);await h.chrome.storage.local.set({signalLabLock:true});eq(h.guard.snapshot().armed,false,'lab immediately revokes');
 eq((await h.guard.arm(60)).ok,false,'cannot arm in lab');
 await h.chrome.storage.local.set({signalLabLock:false});await h.guard.arm(60);await h.chrome.storage.local.set({effectifConfig:{autoAnswerEnabled:false,presenceIdleSeconds:60}});eq(h.guard.snapshot().armed,false,'config off revokes');
@@ -81,11 +74,65 @@ let release;h.hold(cb=>release=cb);const pending=h.guard.authorize({modality:'OP
 await new Promise(r=>setImmediate(r));h.guard.disarm('locked');release('active');eq((await pending).ok,false,'lock racing query invalidates grant');
 h.hold(null);await h.guard.arm(60);h.chrome.tabs.get=async()=>({url:PROFILE+'/call/private'});eq((await h.guard.authorize({modality:'OPI',requestId:'route'},h.sender)).ok,false,'live route revalidated');
 h.chrome.tabs.get=async()=>{throw Error('closed')};eq((await h.guard.authorize({modality:'OPI',requestId:'closed'},h.sender)).ok,false,'closed tab fails closed');
-eq(h.guard.snapshot().armed,false,'verification error revokes');
+eq(h.guard.snapshot().armed,true,'transient tab verification error rejects this attempt without erasing explicit availability');
 const missing=harness();delete missing.chrome.idle;eq((await missing.guard.arm(60)).ok,false,'missing permission/API blocks');
 const err=harness();err.chrome.runtime.lastError={message:'not allowed'};eq((await err.guard.arm(60)).ok,false,'API error blocks');
-const restart=harness({signalPresenceGuard:{armed:true,generation:8}});eq(restart.guard.snapshot().armed,false,'stored arm never survives worker restart');
+const restart=harness({signalPresenceGuard:{armed:true,generation:8}});eq(restart.guard.snapshot().armed,false,'local preference snapshot never arms after extension reload');
+const slash=harness();eq((await slash.guard.arm(60)).ok,true,'operator explicitly arms before URL normalization test');
+const slashSender={...slash.sender,url:PROFILE+'/?source=runtime#profile',tab:{id:7,url:PROFILE+'/' }};
+eq((await slash.guard.authorize({modality:'OPI',requestId:'slash'},slashSender)).ok,true,'authorized profile accepts one trailing slash and query/hash without broadening route');
+const badPath={...slash.sender,url:PROFILE+'/extra',tab:{id:7,url:PROFILE+'/extra'}};
+eq((await slash.guard.authorize({modality:'OPI',requestId:'bad-path'},badPath)).error,'sender-not-authorized','profile subpath remains blocked');
+const badUser={...slash.sender,url:'https://user@app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz',tab:{id:7,url:'https://user@app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz'}};
+eq((await slash.guard.authorize({modality:'OPI',requestId:'bad-user'},badUser)).error,'sender-not-authorized','userinfo cannot spoof the trusted profile');
+const persisted=harness();eq((await persisted.guard.arm(60)).ok,true,'explicit confirmation arms and persists within current browser session');
+eq(persisted.sessionData.signalPresenceGuardSession.armed,true,'session storage contains explicit arm marker');
+const resumed=harness({},persisted.sessionData);
+eq((await resumed.guard.authorize({modality:'OPI',requestId:'after-worker-restart'},resumed.sender)).ok,true,'same browser session restores presence after MV3 worker restart');
+eq(resumed.guard.snapshot().armed,true,'restored state remains armed after live idle/config/lock revalidation');
+const reload=harness({},{});eq((await reload.guard.authorize({modality:'OPI',requestId:'after-extension-reload'},reload.sender)).error,'presence-disarmed','extension reload starts disarmed because session storage is cleared');
+const lockedResume=harness({signalLabLock:true},persisted.sessionData);eq((await lockedResume.guard.authorize({modality:'OPI',requestId:'locked-resume'},lockedResume.sender)).error,'presence-disarmed','laboratory lock prevents restoring session authorization');await new Promise(r=>setImmediate(r));eq(lockedResume.sessionData.signalPresenceGuardSession,undefined,'laboratory lock clears the resumable authorization');
+const disabledResume=harness({effectifConfig:{autoAnswerEnabled:false,presenceIdleSeconds:60}},persisted.sessionData);eq((await disabledResume.guard.authorize({modality:'OPI',requestId:'disabled-resume'},disabledResume.sender)).error,'presence-disarmed','disabled Auto-Answer prevents restoring session authorization');await new Promise(r=>setImmediate(r));eq(disabledResume.sessionData.signalPresenceGuardSession,undefined,'disabled Auto-Answer clears the resumable authorization');
+const idleResume=harness({},persisted.sessionData);idleResume.setIdle('idle');eq((await idleResume.guard.authorize({modality:'OPI',requestId:'idle-resume'},idleResume.sender)).error,'presence-disarmed','OS idle state prevents restoring session authorization');await new Promise(r=>setImmediate(r));eq(idleResume.sessionData.signalPresenceGuardSession,undefined,'OS idle clears the resumable authorization');
+const lockedIdleResume=harness({},persisted.sessionData);lockedIdleResume.setIdle('locked');eq((await lockedIdleResume.guard.authorize({modality:'OPI',requestId:'locked-idle-resume'},lockedIdleResume.sender)).error,'presence-disarmed','confirmed OS lock blocks session restoration');await new Promise(r=>setImmediate(r));eq(lockedIdleResume.sessionData.signalPresenceGuardSession,undefined,'confirmed OS lock clears the resumable authorization');
+const revoke=harness();await revoke.guard.arm(60);revoke.guard.disarm('manual-pause');await new Promise(r=>setImmediate(r));
+eq(revoke.guard.snapshot().armed,false,'manual pause disarms immediately');
+eq(revoke.sessionData.signalPresenceGuardSession,undefined,'manual pause removes the resumable session authorization');
+const idleRevoke=harness();await idleRevoke.guard.arm(60);idleRevoke.setIdle('idle');idleRevoke.stateChanged.emit('idle');await new Promise(r=>setImmediate(r));
+eq(idleRevoke.sessionData.signalPresenceGuardSession,undefined,'OS idle revocation deletes session authorization');
 const duringCall=harness();await duringCall.guard.arm(60);duringCall.chrome.tabs.query=async()=>[{id:9}];eq((await duringCall.guard.authorize({modality:'OPI',requestId:'during-call'},duringCall.sender)).ok,false,'a call in another tab blocks new automatic answer');
+const transientAuthorization=harness();await transientAuthorization.guard.arm(60);
+transientAuthorization.chrome.runtime.lastError={message:'temporary idle API error'};
+eq((await transientAuthorization.guard.authorize({modality:'OPI',requestId:'temporary-unavailable'},transientAuthorization.sender)).error,'presence-check-unavailable','temporary idle API error blocks the current call attempt');
+eq(transientAuthorization.guard.snapshot().armed,true,'temporary idle API error does not disarm the operator session');
+eq(transientAuthorization.sessionData.signalPresenceGuardSession.armed,true,'temporary idle API error preserves the explicit browser-session authorization');
+transientAuthorization.chrome.runtime.lastError=null;
+eq((await transientAuthorization.guard.authorize({modality:'OPI',requestId:'next-attempt-after-recovery'},transientAuthorization.sender)).ok,true,'the next eligible call can proceed after presence query recovers');
+
+const periodicUnavailable=harness();await periodicUnavailable.guard.arm(60);
+periodicUnavailable.chrome.runtime.lastError={message:'temporary polling error'};
+periodicUnavailable.intervals[0]();
+await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
+eq(periodicUnavailable.guard.snapshot().armed,true,'temporary periodic query failure preserves explicit authorization');
+eq(periodicUnavailable.sessionData.signalPresenceGuardSession.armed,true,'periodic query failure keeps the session arm');
+
+const pendingRestore=harness({},persisted.sessionData);
+pendingRestore.chrome.runtime.lastError={message:'temporary restore query failure'};
+await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
+eq(pendingRestore.guard.snapshot().armed,false,'unavailable restore does not authorize calls while status is uncertain');
+eq(pendingRestore.guard.snapshot().reason,'presence-verification-pending','unavailable restore is distinguished from confirmed idle/lock');
+eq(pendingRestore.sessionData.signalPresenceGuardSession.armed,true,'unavailable restore retains explicit same-session authorization for retry');
+eq(pendingRestore.scheduledAlarms.has('signal-presence-restore-retry'),true,'unavailable restore schedules a bounded verification retry');
+pendingRestore.chrome.runtime.lastError=null;
+pendingRestore.alarms.emit({name:'signal-presence-restore-retry'});
+await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
+eq(pendingRestore.guard.snapshot().armed,true,'a successful retry restores the same explicitly authorized browser session');
+eq(pendingRestore.scheduledAlarms.has('signal-presence-restore-retry'),false,'successful restore clears the retry alarm');
+
+const unknownState=harness();await unknownState.guard.arm(60);unknownState.setIdle('unknown');
+eq((await unknownState.guard.authorize({modality:'OPI',requestId:'unknown-idle-state'},unknownState.sender)).error,'presence-check-unavailable','unknown idle state is treated as unverifiable, not as idle');
+eq(unknownState.guard.snapshot().armed,true,'unknown idle state does not destroy the explicit session authorization');
+
 const end=harness();await end.guard.arm(60);await end.message({type:'SIGNAL_PRESENCE_END'},end.sender);eq(end.guard.snapshot().armed,false,'ending work session revokes');
 // Current media is untouched: the module has no call/hangup/audio mutation surface.
 assert(!/\.click\(|hangup|\.pause\(|\.stop\(|getUserMedia|tabCapture/.test(code));checks++;

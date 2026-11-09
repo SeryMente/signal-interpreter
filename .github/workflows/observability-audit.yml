@@ -143,6 +143,10 @@ jobs:
         run: node tools/live-caption-bridge-tests.mjs
       - name: Live Caption offscreen preview lifecycle test
         run: node tools/live-caption-offscreen-tests.mjs
+      - name: Longitudinal microphone and overlays regression
+        run: node tools/signal-interpreter-longitudinal-regression-test.mjs
+      - name: Native caption reader privacy regression
+        run: node tools/live-reader-native-caption-regression-test.mjs
       - name: Live Caption static audit
         run: node tools/live-caption-static-audit.mjs
       - name: Observability static audit
