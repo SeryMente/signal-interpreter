@@ -1067,6 +1067,12 @@
     pendingAttempts.add(attemptIdForAuthorization);
     pendingConnect.add(button);
     var authorizationRequestId = crypto.randomUUID();
+    var authorizationStartedAt = performance.now();
+    emit("AUTO_ANSWER_AUTHORIZATION_REQUESTED", {
+      attemptId: attemptIdForAuthorization,
+      modality: modality,
+      verification: "parallel-read-only-checks"
+    });
     var grant;
     try {
       grant = await chrome.runtime.sendMessage({
@@ -1077,6 +1083,7 @@
     } catch (error) {
       grant = { ok: false, error: "authorization-message-failed" };
     }
+    var authorizationLatencyMs = Math.max(0, Math.round((performance.now() - authorizationStartedAt) * 1000) / 1000);
     pendingConnect.delete(button);
     pendingAttempts.delete(attemptIdForAuthorization);
     if (!grant || grant.ok !== true || Date.now() > Number(grant.expiresAt || 0) ||
@@ -1096,7 +1103,9 @@
         grantOk: !!(grant && grant.ok),
         grantGeneration: grant && grant.generation != null ? Number(grant.generation) : null,
         currentPresenceGeneration: Number(presenceState.generation || 0),
-        readiness: autoAnswerReadiness()
+        readiness: autoAnswerReadiness(),
+        authorizationLatencyMs: authorizationLatencyMs,
+        authorizationVerificationMs: grant && Number.isFinite(Number(grant.verificationMs)) ? Number(grant.verificationMs) : null
       }, "warn");
       if (attemptReplaced && runtimeMarker.active && !currentCallId()) {
         Promise.resolve().then(function () { if (runtimeMarker.active && !currentCallId()) autoAnswer(); });
@@ -1126,7 +1135,9 @@
     emit("AUTO_ANSWER_ELIGIBLE", {
       attemptId: attemptIdForAuthorization,
       modality: modality, decision: "click-connect",
-      buttonLabel: safe(button.getAttribute("aria-label") || button.textContent).slice(0, 120)
+      buttonLabel: safe(button.getAttribute("aria-label") || button.textContent).slice(0, 120),
+      authorizationLatencyMs: authorizationLatencyMs,
+      authorizationVerificationMs: Number(grant.verificationMs || 0)
     });
     try {
       var started = performance.now();
@@ -1158,6 +1169,8 @@
         clickLatencyMs: Math.round((performance.now() - started) * 1000) / 1000,
         buttonLabel: safe(button.getAttribute("aria-label") || button.textContent).slice(0, 120),
         buttonDisabledAtClick: !!button.disabled,
+        authorizationLatencyMs: authorizationLatencyMs,
+        authorizationVerificationMs: Number(grant.verificationMs || 0),
         platformInteraction: "permitted-connect-only"
       });
       emitIntegrity("after-connect");
