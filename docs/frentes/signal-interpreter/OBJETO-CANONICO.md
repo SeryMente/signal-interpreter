@@ -379,3 +379,18 @@ La nueva adenda no altera la versión activa de Chrome fila4 ni autoriza reload/
 - Metadatos históricos del export, pendientes de corroboración contra el original accesible: 43,461 bytes, 872 líneas, SHA-256 `8E48AF0C07D7E576B3CE081F287DB3D7E8486B320D7F1CA2C3EA1A9F5590A3F6`.
 - **Resultado de custodia:** NO LOCALIZADO EN LA RUTA REGISTRADA; NO COPIADO; SHA/lectura de origen no revalidados en esta conexión. No sustituirlo con otro archivo parecido ni inferir que fue eliminado.
 - No se escribió ni creó ningún archivo en PC-14. El dispositivo se utilizó únicamente para identificación y lecturas. El destino autorizado para la copia sigue siendo `C:\\Users\\fila4`; la transferencia solo se marcará completada tras localizar el original, leerlo íntegramente, copiarlo allí y cotejar SHA-256/read-back.
+
+
+### Corrección de identidad de equipos Cyber y custodia del export · 2026-11-09
+
+Esta corrección prevalece sobre cualquier frase histórica que trate el nombre de host `PC-14`, `PC-13`, `PC-8` u otra nomenclatura `PC-N` como identidad persistente del origen.
+
+- **Aclaración expresa del operador:** las conexiones que utilizan esas nomenclaturas corresponden a equipos/instancias Cyber efímeros. El nombre visible del equipo no identifica una máquina durable ni garantiza continuidad de sesión, disco, perfil o archivos entre conexiones.
+- La instancia PC-14 autenticada el 2026-11-09 (Device ID `4fc35a07-2192-4b88-81ec-96cb450d565e`, hostname `PC-14`, usuario Windows `pc-14\\pc 13`) es una instancia nueva. No es continuidad demostrada de las sesiones PC-14 anteriores ni recupera su filesystem.
+- La conexión y filesystem de la instancia Cyber anterior deben considerarse perdidos/no disponibles tras su expiración. La sesión nueva no contenía el export en la ruta histórica y no produjo coincidencia por nombre en las ubicaciones de usuario consultadas.
+- **Límite de persistencia:** el OCP conserva únicamente el recibo/metadatos históricos del export (nombre, tamaño, número de líneas y SHA-256 previamente observado). No contiene el archivo original, sus 872 líneas ni una copia byte-exacta en `C:\\Users\\fila4`. El hash registrado no permite reconstruir el contenido.
+- **Clasificación de custodia:** `ORIGINAL_NO_PERSISTIDO_EN_OCP`; `COPIA_DURABLE_FILA4=NO_VERIFICADA/NO_EXISTE_EVIDENCIA`; `ORIGEN_CYBER_ANTERIOR=EFÍMERO_Y_NO_DISPONIBLE`; `RECUPERACIÓN=NO DEMOSTRADA`. Se considera perdido el acceso al original de aquella instancia, no se afirma borrado físico universal del archivo ni se inventa una recuperación.
+- No se ejecutarán más búsquedas sobre una instancia Cyber nueva esperando recuperar los datos de otra instancia anterior. Para recuperar el contenido se requiere una fuente independiente durable o volver a exportarlo desde su sistema de origen; cualquier nueva fuente debe verificarse por contenido y SHA-256 y persistirse directamente en el OCP autorizado bajo `C:\\Users\\fila4`.
+- No se escribió ni creó ningún archivo en la instancia PC-14. La autorización de destino para el frente sigue siendo fila4. Esta corrección se basa en la aclaración del operador y en los resultados de lectura registrados; no cambia la autorización ni los controles de G14.
+
+Aplicación de P041 (DUG v383, firma NX-383m): preservar el original en el OCP autorizado y declarar persistencia solo tras read-back y cotejo. Como el original no quedó preservado, el bloqueo se declara explícitamente y no se sustituye por metadatos ni por un archivo derivado.
