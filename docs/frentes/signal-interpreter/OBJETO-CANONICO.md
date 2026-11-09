@@ -353,3 +353,19 @@ Resultado 3/3 PASS. La PR #75 permanece OPEN/DRAFT y sin merge ni release. Los w
 - ChatGPT está abierto en el perfil Chrome de fila4, pero no se verificó el URL profundo de este hilo; no sustituirlo por otro chat cuyo título/ID no sea inequívoco.
 
 Los tres workflows acreditan el commit exacto indicado. No se realizó llamada real, captura de audio, reload Chrome, merge o release; aceptación humana sigue pendiente.
+
+
+### Actualización de estado remoto y custodia · 2026-11-09
+
+Este corte actualiza únicamente el estado de PR/CI y la custodia pendiente. Las entradas previas con HEAD `48f2798d...` quedan como evidencia histórica del corte anterior.
+
+- PR #75: OPEN/DRAFT, no fusionada; mergeable=true. Rama `fix/performance-overlays-autoanswer-01043-20261108`; HEAD `4f815c3ae22323f2a8a8f355627107e26c68f5de`; base `main` `f3b70adee388d83193aecc9249293d383d3c768f`; 84 commits y 50 archivos modificados.
+- Candidata `manifest.json` 0.10.45, blob `6fe83e4a66742b761dc21f527bd0d33f76c6ef31`. `main/manifest.json` 0.10.40, blob `aa3ccf76d28397086045c61b399e5fdae3c7cd41`.
+- CI del HEAD exacto: `signal-observability-audit` run `42539186029` SUCCESS; `native-caption-host-build` run `42539186039` SUCCESS; `Package integrity` run `42539185985` SUCCESS. 3/3.
+- PR #75 no devolvió reviews ni review threads en la lectura realizada. Esto no equivale a aprobación ni aceptación.
+- SI-FB-01/02/04/05 están implementados en candidata con sus verificaciones automatizadas, pero sus respectivas pruebas humanas/E2E siguen pendientes; SI-FB-03 y SI-FB-06 son parciales. No hay ítems aceptados por el operador.
+- Continúan pendientes E2E Windows/Chrome, llamada controlada, mediciones WER/CER, revisión visual/accesibilidad, confirmación de ZDR y aceptación explícita. No se fusionó ni liberó.
+- Custodia PC-14: el archivo `ChatGPT-SI (2)-20261108-1720.md` sigue pendiente de copia privada verificada bajo `C:\\Users\\fila4`. Origen observado previamente: 43,461 bytes; 872 líneas; SHA-256 `8E48AF0C07D7E576B3CE081F287DB3D7E8486B320D7F1CA2C3EA1A9F5590A3F6`. No registrar transferencia hasta copiar byte a byte y cotejar SHA/read-back.
+- La autorización G14 actualmente persistida conserva como destino operativo `C:\\Users\\fila4`; la nueva conexión RDC de PC-14 aún no se recibió en este corte. Su acceso no amplía por sí mismo el alcance de escritura en PC-14 ni modifica la autorización de destino fila4. Cualquier operación local debe seguir la autorización de control vigente y preservar los originales.
+
+La nueva adenda no altera la versión activa de Chrome fila4 ni autoriza reload/restart, llamada real, captura real, aceptación humana, merge, deploy o release.
