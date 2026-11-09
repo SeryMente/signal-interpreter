@@ -1,44 +1,20 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-09T20:43:48.794Z → 2026-11-09T20:53:48.794Z
-- Generado: 2026-11-09T20:53:48.794Z
-- Eventos: 225 · lotes fuente: 47
+- Ventana UTC: 2026-11-09T20:44:47.888Z → 2026-11-09T20:54:47.888Z
+- Generado: 2026-11-09T20:54:47.888Z
+- Eventos: 197 · lotes fuente: 41
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 225
+- Reloj cliente sin verificación de recibo: 197
 
 ## Resumen
-- Intentos observados: 4
+- Intentos observados: 3
 - Contestadas: 0 · perdidas confirmadas: 1
-- Clic sin ruta: 3 · timbrados sin diálogo correlacionado: 0
+- Clic sin ruta: 2 · timbrados sin diálogo correlacionado: 0
 - Sin desenlace concluyente: 0
-- Detecciones de diálogo/botón: 4 / 4
-- Bloqueos de autocontestación: 1 · clics: 3
+- Detecciones de diálogo/botón: 3 / 3
+- Bloqueos de autocontestación: 1 · clics: 2
 
 ## Intentos
-
-### 03502925-c0d3-4cc6-ba83-4cfd066e6320 — connect_failed_no_route
-- Detectada: 2026-11-09T20:44:30.619Z · modalidad: OPI
-- Tab: 1800213946 · eventos: 17
-- Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":[],"ready":true,"availability":"online","authorizedProfile":true,"configEnabled":true,"labSafetyLock":false,"presenceArmed":true,"presenceReason":"explicit-availability","presenceGeneration":3,"reason":"availability","reasonCode":"availability"}
-- Desenlace/motivo: "connect_clicked_no_call_route"
-- Señales ausentes: ninguna identificada
-  - 2026-11-09T20:44:30.619Z · INCOMING_DIALOG_DETECTED · info
-  - 2026-11-09T20:44:30.619Z · CONNECT_BUTTON_FOUND · info
-  - 2026-11-09T20:44:30.929Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-09T20:44:31.000Z · AUTO_ANSWER_ELIGIBLE · info
-  - 2026-11-09T20:44:31.001Z · CONNECT_CLICKED · info
-  - 2026-11-09T20:44:31.014Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-09T20:44:31.060Z · AUTO_ANSWER_BOOTSTRAP_REQUESTED · info
-  - 2026-11-09T20:44:31.894Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-09T20:44:31.895Z · INCOMING_DIALOG_CLOSED · info · dialog-removed
-  - 2026-11-09T20:44:32.717Z · AUTO_ANSWER_BOOTSTRAP_INJECTED · info
-  - 2026-11-09T20:44:33.114Z · INCOMING_ATTEMPT_REGISTERED · info
-  - 2026-11-09T20:44:35.160Z · CONNECT_ACCEPTED_PENDING · info · await-call-route
-  - 2026-11-09T20:44:35.922Z · INCOMING_RING_SIGNAL · info
-  - 2026-11-09T20:44:36.268Z · INCOMING_RING_SIGNAL · info
-  - 2026-11-09T20:44:37.680Z · INCOMING_DIALOG_CLOSED_OBSERVED · info · dialog-removed
-  - 2026-11-09T20:44:38.011Z · CONNECT_FLOW_FAILED_NO_CALL_ROUTE · warn · connect_clicked_no_call_route
-  - 2026-11-09T20:44:38.860Z · CONNECT_ROUTE_TIMEOUT · error
 
 ### 9cbec5f4-e3b2-432b-ad6f-d318ed231b15 — connect_failed_no_route
 - Detectada: 2026-11-09T20:48:16.766Z · modalidad: OPI
