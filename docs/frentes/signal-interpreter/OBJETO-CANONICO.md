@@ -394,3 +394,25 @@ Esta corrección prevalece sobre cualquier frase histórica que trate el nombre 
 - No se escribió ni creó ningún archivo en la instancia PC-14. La autorización de destino para el frente sigue siendo fila4. Esta corrección se basa en la aclaración del operador y en los resultados de lectura registrados; no cambia la autorización ni los controles de G14.
 
 Aplicación de P041 (DUG v383, firma NX-383m): preservar el original en el OCP autorizado y declarar persistencia solo tras read-back y cotejo. Como el original no quedó preservado, el bloqueo se declara explícitamente y no se sustituye por metadatos ni por un archivo derivado.
+
+
+
+## Incidente P0 · MIC OFF / MIC ERR · 2026-11-09 · G14
+
+En Chrome 156, perfil `PC-14\\pc 13`, extensión 0.10.45, se inspeccionó la observabilidad local de IndexedDB (sin leer ni exportar audio/texto de conversación). Se identificaron dos eventos `EXTENSION_MICROPHONE_UNMUTE_BLOCKED` originados por `popup-button`, a las 17:00:49.794Z y 17:00:50.670Z, con `reasonCode=call-not-active`, `callId=null` y `tabId=null`.
+
+### Dictamen sobre observabilidad
+
+La observabilidad fue **limitada pero útil**: permitió confirmar que la petición fue bloqueada por política porque no había contexto de llamada asociado. No aportó prueba del estado real de la aplicación Cloud Interpreter, de la ruta de llamada ni de `MediaStreamTrack.enabled`; por tanto, no permite decidir retrospectivamente si el operador estaba fuera de llamada o si una llamada vigente no fue reconocida. Los errores `PLATFORM_SCREENSHOT_CAPTURE_ERROR` por falta de permiso `activeTab/<all_urls>` son ruido de captura visual y no sustentan una causa de micrófono.
+
+### Causa y corrección
+
+La política fail-closed hizo lo esperado: bloqueó el unmute con ausencia de llamada confirmada y mantuvo el micrófono apagado. El bug fue que el popup clasificó una respuesta de bloqueo de política (`ok:false`, `reasonCode=call-not-active`) como un error de hardware, mostrando `MIC ERR`. El parche localiza las respuestas `blocked=true`, preserva `MIC OFF` con explicación y deja `MIC ERR` solo para fallos auténticos de verificación. El evento futuro añade únicamente booleanos de diagnóstico saneados; no captura audio, texto, URL ni identificadores de la llamada.
+
+### Verificación y límites
+
+- PC-14 local: 45/45 suites PASS; 25/25 JavaScript PASS; nueva prueba de política (4 casos/12 checks) PASS; verificador de paquete PASS, 62 hashes, Native Host embedded hash PASS.
+- La prueba del Native Messaging host previa a este incidente había dado Protocol PASS (4 frames). No se considera causa del síntoma.
+- No se pidió permiso de micrófono, no se habilitó captura, no se inició ni alteró llamada real, ni se recargó Chrome.
+- El cambio está en candidata 0.10.45 de PR #75; requiere carga manual después de finalizar la llamada actual y validación posterior del operador. Si persiste en ruta activa, instrumentar detección de `callId/callSourceTabId` sin ampliar el registro de datos personales.
+
