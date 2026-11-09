@@ -46,3 +46,54 @@ Solo una instrucción expresa del operador puede dispensar SI-OP-01 para una mat
 En el paquete 0.10.43 revisado, `PREPARAR-Y-CARGAR.cmd` llama directamente a `INSTALAR.ps1` y se detiene si falla; el instalador valida el host, registra bajo `HKCU` y realiza una prueba de protocolo. Este documento formaliza que esa vía debe utilizarse en toda materialización Windows.
 
 **Límite de verificación actual:** la inspección de solo lectura en PC-13 encontró ausente la clave Native Messaging del usuario de esa sesión. No se ejecutó el instalador ni se modificó el registro en esta retoma; por tanto, SI-OP-01 queda documentada, pero la instalación del host en PC-13 permanece **NO EJECUTADA / NO VERIFICADA**.
+
+
+## SI-OP-02 — Workspace SeryMente y ubicación de Signal Interpreter
+
+**Estado:** RATIFICADA por instrucción directa del operador · 2026-11-09 · G14  
+**Ámbito:** directorio local de trabajo del frente Signal Interpreter en Windows.
+
+### Estructura obligatoria
+
+La raíz de trabajo del workspace es:
+
+`%USERPROFILE%\\Desktop\\SeryMente`
+
+Dentro de esa raíz, la carpeta exclusiva del frente/repositorio es:
+
+`%USERPROFILE%\\Desktop\\SeryMente\\signal-interpreter`
+
+La carpeta que el operador destina a cargar como extensión desempaquetada en Chrome es:
+
+`%USERPROFILE%\\Desktop\\SeryMente\\signal-interpreter\\extension`
+
+El nombre de carpeta del repositorio usa el slug `signal-interpreter` ya creado en el workspace; no crear otro clon paralelo llamado `Signal Interpreter` ni una segunda raíz de proyecto por diferencias de mayúsculas/minúsculas. El repositorio completo y sus documentos permanecen en `signal-interpreter`; `extension` es su subdirectorio designado para el paquete que carga Chrome.
+
+### Reglas de identidad, autenticación y persistencia
+
+1. Antes de escribir, verificar hostname, identidad Windows, perfil, ruta real de Desktop, Device ID RDC y contenido existente. No deducir identidad persistente a partir del nombre `PC-N`.
+2. Los equipos `PC-N` de Cyber son instancias efímeras. Una reconexión con el mismo nombre puede ser otra máquina/sesión y no recupera archivos anteriores. El contenido local no se considera durable ni se presume continuidad.
+3. El repositorio remoto GitHub, sus commits y sus lecturas de vuelta son la superficie durable. Antes de que una instancia Cyber expire, sincronizar los cambios autorizados al remoto y verificar SHA/read-back; no dejar la única copia de trabajo en el Escritorio efímero.
+4. Para clonar o sincronizar mediante Git, usar la identidad y autenticación GitHub del usuario Windows propietario. No eludir la compuerta de autenticación, no incrustar PAT/tokens en URL, comandos, scripts o documentación y no copiar credenciales desde otro perfil.
+5. Este workspace de Cyber está materializado en claro y el volumen C: no está cifrado. Se permite código fuente, clones Git y documentación técnica no sensible. Se prohíben contraseñas, tokens, claves API/B2, archivos `.env` con secretos, material DPAPI, bóvedas, notas de custodia, datos personales/sensibles y contenido de llamadas/transcripciones privadas.
+6. Si no existe autenticación, si el repo no es un clon válido o si el destino contiene datos no conciliados, detener la escritura y reportar el bloqueo; nunca inicializar un Git nuevo encima del scaffold ni sobrescribir archivos sin inventario y preservación.
+
+### Compuerta de carga de Chrome
+
+La ruta destinada por el operador es `signal-interpreter\\extension`. Antes de indicar que está lista para **Cargar descomprimida**, comprobar en esa carpeta:
+
+- existe `manifest.json` directamente en la raíz de `extension`;
+- todos los archivos referidos por el manifiesto existen y sus rutas son relativas a esa misma raíz;
+- el ID de extensión, la versión, los hashes y el inventario coinciden con la candidata;
+- se cumplen SI-OP-01 y las comprobaciones del Native Messaging host en el mismo usuario Windows de Chrome.
+
+**Discrepancia observada en el corte 0.10.45:** la rama candidata tiene `manifest.json` en la raíz del repositorio, no en `extension\\manifest.json`; el manifiesto raíz referencia rutas `extension/...` y `INSTALAR.ps1` lee el manifiesto desde la raíz (`$PSScriptRoot\\manifest.json`). Por tanto, aunque `extension/README.md` indica seleccionar `extension/` desde un checkout, el contenido actualmente leído no acredita que esa carpeta sea cargable por sí sola. No declarar la ruta lista ni pedir al operador que la cargue hasta reconciliar el layout/manifest generado y verificar todas las rutas. El manifiesto raíz del paquete y la carpeta fuente `extension` no se confunden.
+
+### Estado de la instancia inspeccionada · 2026-11-09
+
+- Workspace: `C:\\Users\\PC 13\\Desktop\\SeryMente`, equipo observado `PC-14`, identidad `pc-14\\pc 13`; esta identidad corresponde a la instancia Cyber activa y no es persistente.
+- Scaffold: `C:\\Users\\PC 13\\Desktop\\SeryMente\\signal-interpreter` existe y estaba vacío (cero elementos); todavía no es un clon Git.
+- Git for Windows 2.56.0 está instalado en `C:\\Program Files\\Git\\cmd\\git.exe`; GitHub CLI 2.103.3 en `C:\\Program Files\\GitHub CLI\\gh.exe`. `gh auth status` devolvió **NOT LOGGED IN**. No se clonó ni se escribió payload en esa carpeta.
+- La presente regla fija la ubicación futura; no certifica que la extensión esté materializada/cargable, que el host nativo esté instalado ni que Chrome se haya actualizado.
+
+La instrucción autoriza este workspace como superficie provisional para código y documentación técnica no sensible. No autoriza guardar secretos, capturar audio/micrófono real, intervenir llamadas, recargar/reiniciar Chrome, declarar aceptación funcional, fusionar PR, desplegar o crear release.
