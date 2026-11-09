@@ -236,3 +236,18 @@ Corte del 2026-11-08. La candidata se encuentra en PR #75; main permanece en 0.1
 ### Actualización de CI y reconciliación G14 · 2026-11-08
 
 El HEAD actual de PR #75 es 48f2798d3599f6e91f70ec665d3eb26b986d3116, sobre base main f3b70adee388d83193aecc9249293d383d3c768f. GitHub Actions completó 3/3 PASS: signal-observability-audit, Package integrity y native-caption-host-build. PR abierta/draft, 82 commits, 50 archivos; no fusionada ni liberada. El control de autorización RDC para MantenimientoRCI→destino fila4 fue integrado desde main. La clasificación de SI-FB-01–06 y compuertas de aceptación de la sección 7 permanecen sin cambio.
+
+
+### Corte remoto verificado · 2026-11-09
+
+Esta adenda prevalece sobre las referencias anteriores de HEAD/CI para el estado remoto de PR #75; no modifica los criterios funcionales ni convierte las pruebas automatizadas en aceptación.
+
+- PR: https://github.com/SeryMente/signal-interpreter/pull/75
+- Rama: `fix/performance-overlays-autoanswer-01043-20261108`; HEAD observado: `4f815c3ae22323f2a8a8f355627107e26c68f5de`; base `main`: `f3b70adee388d83193aecc9249293d383d3c768f`.
+- Estado observado: OPEN, DRAFT, mergeable=true, merged=false; 84 commits y 50 archivos modificados.
+- Manifiestos leídos de vuelta: candidata `0.10.45` (blob `6fe83e4a66742b761dc21f527bd0d33f76c6ef31`); `main` permanece en `0.10.40` (blob `aa3ccf76d28397086045c61b399e5fdae3c7cd41`).
+- GitHub Actions para el HEAD exacto `4f815c3ae22323f2a8a8f355627107e26c68f5de`: `signal-observability-audit` run `42539186029` SUCCESS; `native-caption-host-build` run `42539186039` SUCCESS; `Package integrity` run `42539185985` SUCCESS. Resultado 3/3 SUCCESS.
+- La lectura de PR no devolvió revisiones ni hilos inline de revisión. No se interpreta como aceptación funcional.
+- La clasificación funcional permanece: SI-FB-01/02/04/05 implementados en candidata, pendientes de E2E/revisión según cada criterio; SI-FB-03 y SI-FB-06 parciales. Ningún ítem tiene aceptación del operador.
+- El E2E Windows/Chrome, la llamada controlada, WER/CER, la verificación de ZDR y la aceptación explícita continúan pendientes. PR no fusionada; sin release.
+- El export privado de PC-14 sigue fuera del repositorio público y no debe marcarse como trasladado ni verificado hasta obtener la conexión, leer el original y cotejar el SHA-256 previamente registrado `8E48AF0C07D7E576B3CE081F287DB3D7E8486B320D7F1CA2C3EA1A9F5590A3F6` tras la copia autorizada a fila4.
