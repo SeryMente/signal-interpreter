@@ -2988,19 +2988,28 @@ try { importScripts("groq-secret.local.js"); } catch (_) {}
     if (!desired && (!outputRequired || !unmuteRouteValid)) {
       state.microphoneMuted = true;
       state.microphoneMuteRequested = true;
-      if (state.microphoneMuteStatus !== "error") state.microphoneMuteStatus = "applied";
+      state.microphoneMuteStatus = "unapplied";
       state.microphoneOutputMuted = true;
-      state.microphoneOutputStatus = outputRequired ? "error" : "unapplied";
+      state.microphoneOutputStatus = "unapplied";
       state.groqCapture = Object.assign({}, state.groqCapture || {}, { microphoneMuted: true });
       await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
       var blockReason = outputRequired ? "call-route-not-active" : "call-not-active";
       record("EXTENSION_MICROPHONE_UNMUTE_BLOCKED", {
         desired: false, source: source || "unknown", reasonCode: blockReason,
         callId: state.callId || null, tabId: state.callSourceTabId || null,
+        activeCallDetected: outputRequired,
+        callIdPresent: !!state.callId,
+        sourceTabIdPresent: state.callSourceTabId != null,
+        routeVerified: unmuteRouteValid,
+        captureActive: captureActive,
+        outputControlAttempted: false,
+        hardwarePermissionRequested: false,
+        micRemainsMuted: true,
         policy: "mute-is-invariant-outside-confirmed-active-call-route"
       }, "warn", "microphone");
       return {
-        ok: false, muted: true, requestedMuted: false, verified: true,
+        ok: false, blocked: true, applied: false,
+        muted: true, requestedMuted: false, outputMuted: true, verified: true,
         reasonCode: blockReason,
         error: "El micrófono solo puede activarse durante una llamada aceptada y confirmada."
       };
