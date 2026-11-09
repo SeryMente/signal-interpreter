@@ -1,127 +1,33 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-09T21:43:00.621Z",
-  "windowStartAt": "2026-11-09T21:33:00.621Z",
-  "windowEndAt": "2026-11-09T21:43:00.621Z",
+  "generatedAt": "2026-11-09T21:44:17.628Z",
+  "windowStartAt": "2026-11-09T21:34:17.628Z",
+  "windowEndAt": "2026-11-09T21:44:17.628Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 51
+    "client-clock-unverified": 22
   },
-  "sourceBatchCount": 15,
+  "sourceBatchCount": 11,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 12456,
+  "receiptUnverifiedBatchCount": 12457,
   "medianClientClockSkewMs": null,
-  "eventCount": 51,
+  "eventCount": 22,
   "summary": {
-    "attempts": 1,
+    "attempts": 0,
     "answered": 0,
     "missed": 0,
-    "connectFailedNoRoute": 1,
+    "connectFailedNoRoute": 0,
     "ringUnmatched": 0,
     "unresolved": 0,
     "ringSignals": 0,
     "dialogsDetected": 0,
     "buttonsFound": 0,
     "buttonsNotFound": 0,
-    "readinessSamples": 33,
+    "readinessSamples": 10,
     "blocked": 0,
     "clicks": 0
   },
-  "attempts": [
-    {
-      "attemptId": "cf7c04ae-17a6-41dc-8183-193ba4ddcbd0",
-      "status": "connect_failed_no_route",
-      "modality": "OPI",
-      "tabId": 0,
-      "detectedAt": "2026-11-09T21:33:02.779Z",
-      "closedAt": "2026-11-09T21:33:03.249Z",
-      "clickedAt": null,
-      "answeredAt": null,
-      "missedAt": null,
-      "outcomeReason": "connect_clicked_no_call_route",
-      "button": {
-        "found": false,
-        "notFound": false,
-        "disabled": false
-      },
-      "readiness": {
-        "samples": 0,
-        "last": null
-      },
-      "blockedEvents": [],
-      "ringSignalCount": 0,
-      "clickToAnswerLatencyMs": null,
-      "detectionToAnswerLatencyMs": null,
-      "callRefs": [],
-      "missingSignals": [
-        "INCOMING_DIALOG_DETECTED"
-      ],
-      "eventCount": 5,
-      "timeline": [
-        {
-          "at": "2026-11-09T21:33:02.779Z",
-          "action": "CONNECT_ACCEPTED_PENDING",
-          "level": "info",
-          "reasonCode": "await-call-route",
-          "details": {
-            "modality": "OPI",
-            "reason": "await-call-route",
-            "reasonCode": "await-call-route"
-          },
-          "eventId": "6e29be21-443c-4a12-b76e-b70a24f2628c",
-          "sequence": 1726
-        },
-        {
-          "at": "2026-11-09T21:33:03.249Z",
-          "action": "INCOMING_DIALOG_CLOSED_OBSERVED",
-          "level": "info",
-          "reasonCode": "dialog-removed",
-          "details": {
-            "reason": "dialog-removed",
-            "reasonCode": "dialog-removed"
-          },
-          "eventId": "4ee5c87a-9a53-4475-a967-0bb27a5f582f",
-          "sequence": 1727
-        },
-        {
-          "at": "2026-11-09T21:33:06.505Z",
-          "action": "PLATFORM_ONLINE_RECONCILED_ENDED",
-          "level": "info",
-          "reasonCode": "explicit-offline-observation",
-          "details": {
-            "reason": "explicit-offline-observation",
-            "trigger": "event:availability:offline",
-            "reasonCode": "explicit-offline-observation"
-          },
-          "eventId": "3939304f-adcf-4b98-9f1f-ee476ee65518",
-          "sequence": 1733
-        },
-        {
-          "at": "2026-11-09T21:33:07.119Z",
-          "action": "PLATFORM_TELEMETRY_RECONCILED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "trigger": "event:availability:offline"
-          },
-          "eventId": "aa9f4887-57d8-4c6c-96db-f41320b5d3b7",
-          "sequence": 1734
-        },
-        {
-          "at": "2026-11-09T21:33:11.970Z",
-          "action": "CONNECT_FLOW_FAILED_NO_CALL_ROUTE",
-          "level": "warn",
-          "reasonCode": "connect_clicked_no_call_route",
-          "details": {
-            "reason": "connect_clicked_no_call_route",
-            "reasonCode": "connect_clicked_no_call_route"
-          },
-          "eventId": "85899b95-2ae7-424b-b987-f7c0ca5291c7",
-          "sequence": 1743
-        }
-      ]
-    }
-  ],
+  "attempts": [],
   "privacy": {
     "rawTranscriptIncluded": false,
     "rawAudioIncluded": false,
