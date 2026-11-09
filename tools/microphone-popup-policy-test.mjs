@@ -78,6 +78,7 @@ assert.equal(activeOn.isError, false);
 
 assert(popup.includes('response.blocked===true&&response.verified===true&&response.muted===true'),
   "popup must distinguish verified policy denials from hardware errors");
+assert(background.includes('if(/MICROPHONE/.test(a))return"MICROPHONE"'), "microphone incidents have a dedicated observability category");
 assert(background.includes("activeCallDetected: outputRequired"));
 assert(background.includes("outputControlAttempted: false"));
 assert(background.includes("hardwarePermissionRequested: false"));
