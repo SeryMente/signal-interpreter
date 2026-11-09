@@ -100,13 +100,22 @@
     busy = true;
     try {
       var epoch = generation, started = Date.now();
-      var values = await chrome.storage.local.get(["signalLabLock", "effectifConfig"]);
+      // Run independent, read-only checks together. The incoming dialog is
+      // short-lived; serial Chrome round-trips used too much of that window.
+      var checks = await Promise.all([
+        chrome.storage.local.get(["signalLabLock", "effectifConfig"]),
+        idleState(threshold),
+        chrome.tabs.query({ url: "https://app.cloudinterpreter.com/call/*" }),
+        chrome.tabs.get(sender.tab.id)
+      ]);
+      var values = checks[0];
+      var idle = checks[1];
+      var activeCalls = checks[2];
+      var tab = checks[3];
       if (values.signalLabLock === true || !values.effectifConfig || values.effectifConfig.autoAnswerEnabled !== true) return { ok: false, error: "disabled-or-lab" };
-      if (await idleState(threshold) !== "active") { disarm("idle-or-locked-confirm-again"); return { ok: false, error: reason }; }
-      // Revalidate the live tab, not just the sender's earlier URL snapshot.
-      var activeCalls = await chrome.tabs.query({ url: "https://app.cloudinterpreter.com/call/*" });
+      if (idle !== "active") { disarm("idle-or-locked-confirm-again"); return { ok: false, error: reason }; }
+      // Revalidate the live tab and all other Cloud calls before granting.
       if (activeCalls.length) return { ok: false, error: "call-already-open" };
-      var tab = await chrome.tabs.get(sender.tab.id);
       if (String(tab.url || "").split(/[?#]/)[0] !== PROFILE) return { ok: false, error: "route-changed" };
       var key = sender.tab.id + ":" + requestId;
       if (consumed.has(key) || !armed || epoch !== generation || Date.now() - started > 1000) return { ok: false, error: "stale-or-used" };
@@ -116,7 +125,7 @@
         requestId: requestId, tabId: sender.tab.id, generation: generation,
         expiresAt: Date.now() + 15000
       };
-      return { ok: true, generation: generation, expiresAt: Date.now() + 500, state: snapshot() };
+      return { ok: true, generation: generation, expiresAt: Date.now() + 500, verificationMs: Date.now() - started, state: snapshot() };
     } catch (_) { disarm("verification-error-confirm-again"); return { ok: false, error: reason }; }
     finally { busy = false; }
   }
