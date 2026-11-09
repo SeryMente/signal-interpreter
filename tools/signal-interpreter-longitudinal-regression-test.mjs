@@ -1,0 +1,11 @@
+import assert from "node:assert/strict";import {readFileSync} from "node:fs";
+const read=p=>readFileSync(p,"utf8"),bg=read("extension/background.js"),mic=read("extension/mic-guard-main.js"),income=read("extension/content.js"),caps=read("extension/live-caption-overlay.js"),reader=read("extension/ui/live.js");
+assert.match(bg,/microphoneMuted:\s*true,/);assert.match(bg,/if \(!hasActiveCall\(state\)\) \{[\s\S]{0,180}state\.microphoneMuted = true;/);
+assert.match(bg,/if \(!desired && !outputRequired\)/);assert.match(bg,/setExtensionMicrophoneMuted\(false, "call-accepted"\)/);
+assert.match(bg,/setMainClientMicrophoneMuted\(state\.callSourceTabId,true,"call-ended"\)/);assert.match(bg,/var hotloadMuted=!activeCallTab\|\|hotloadState\.microphoneMuted===true;/);
+assert.match(bg,/chrome\.tabs\.create\(\{url:targetUrl,active:true\}\)/);assert.doesNotMatch(bg,/never-reapply-stale-mute-on-unmute-failure/);
+assert.match(mic,/var muted=old\?!!old\.muted:true;/);assert.match(mic,/live\.length===0&&muted/);assert.match(mic,/No se libera el micrófono/);
+assert.match(income,/overlayMinimized: false/);assert.match(income,/getElementById\("minimize"\)/);assert.match(income,/classList\.toggle\("minimized",config\.overlayMinimized===true\)/);assert.doesNotMatch(income,/getElementById\("close"\)/);
+assert.match(caps,/signalCaptionOverlayCollapsed/);assert.match(reader,/language:seg\.language\|\|e\.language\|\|"und"/);assert.match(reader,/source:seg\.source\|\|e\.source\|\|"unknown"/);
+assert.match(reader,/speaker:seg\.speaker\|\|e\.speaker\|\|"UNKNOWN"/);assert.match(reader,/originalText:seg\.originalText\|\|seg\.rawText\|\|text/);assert.match(reader,/refinedText:seg\.refinedText\|\|null/);
+console.log("SIGNAL_INTERPRETER_LONGITUDINAL_REGRESSION=PASS");
