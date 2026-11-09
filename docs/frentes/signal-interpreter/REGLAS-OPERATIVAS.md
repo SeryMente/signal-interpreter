@@ -61,3 +61,38 @@ El manifiesto leído declara:
 El ejecutable existe y su SHA-256 es 313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE, coincidente con ExpectedSha256 del paquete candidato.
 
 La lectura histórica de PC-13 que informó ausencia de la clave se limita a ese perfil/equipo y no contradice la existencia verificada en fila4. Esta comprobación acredita registro y binario; no acredita que Chrome haya recargado 0.10.45 ni la ejecución funcional del host en una llamada.
+
+
+## SI-OP-02 — Raíz operativa única bajo SeryMente
+
+### Regla
+
+La raíz de trabajo Windows del frente Signal Interpreter para el usuario operativo fila4 queda fijada en:
+
+`C:\\Users\\fila4\\Desktop\\SeryMente\\Signal Interpreter`
+
+El repositorio completo vive directamente en esa carpeta. La carpeta que el operador carga como extensión descomprimida en Chrome es, específicamente:
+
+`C:\\Users\\fila4\\Desktop\\SeryMente\\Signal Interpreter\\extension`
+
+La subcarpeta `extension` es el destino de **Cargar descomprimida**; no se debe seleccionar la raíz del repositorio ni crear otra subcarpeta de extensión dentro de ella.
+
+### Rutina normativa
+
+1. **Destino canónico.** Materializar y trabajar bajo `Desktop\\SeryMente\\Signal Interpreter` del perfil `fila4`. No crear una copia paralela en `Desktop\\Signal Interpreter` ni confundirla con la raíz del frente.
+2. **Carga de Chrome.** La única ruta de extensión que se debe proporcionar al operador para cargarla manualmente es `...
+Signal Interpreter\\extension`. Antes de indicar una versión, leer `extension\\manifest.json` en ese directorio; no inferirla del manifiesto de la raíz del repositorio.
+3. **Separación de identidades.** MantenimientoRCI puede operar RDC, pero los artefactos y rutas de trabajo deben pertenecer al perfil Windows `fila4`. Las instancias `PC-N` de Cyber son efímeras: no son raíces persistentes ni destinos de trabajo.
+4. **Preservación del checkout.** Antes de sincronizar, inspeccionar `git status`, rama, HEAD y divergencia. Si hay modificaciones o archivos no seguidos, no ejecutar reset, clean, checkout destructivo ni reemplazo de carpeta. Reconciliar desde un worktree separado, preservar los cambios originales y sólo integrar después de revisión.
+5. **Instancia existente.** Si la raíz y `extension` ya existen, verificarlas y reutilizarlas; no clonar encima ni crear duplicados. La existencia de la carpeta no prueba que Chrome haya cargado esa versión.
+6. **Aceptación.** El operador realiza la carga/reload desde Chrome salvo autorización independiente. Registrar por separado versión del manifiesto, ruta seleccionada, versión efectivamente cargada y aceptación funcional. La preparación de la carpeta no equivale a aceptación.
+
+### Estado observado al fijar la regla · 2026-11-09 · G14
+
+- La ruta `C:\\Users\\fila4\\Desktop\\SeryMente\\Signal Interpreter` existe y contiene el repositorio y la subcarpeta `extension`.
+- El checkout de esa ruta está en `main`, 892 commits detrás de `origin/main`, con cuatro archivos tracked modificados y dos archivos no seguidos. Se conserva intacto; no se sincronizó ni reemplazó.
+- El manifiesto raíz leído declara `0.10.40`; el manifiesto de `extension` declara `0.10.42`. La carpeta indicada para carga manual es la subcarpeta `extension`.
+- El worktree aislado `Desktop\\SeryMente\\SI-G14-RECONCILE` estaba limpio en el commit `4645281ce204f05d2f824da3bf1ef97dadce8851` al iniciar esta retoma. Se utiliza para reconciliación automatizada sin alterar el checkout operativo.
+- La copia antigua `Desktop\\Signal Interpreter` no tiene metadatos Git y declara `0.10.36`; no es el directorio de trabajo normativo.
+
+La regla fija la ruta de trabajo, pero no autoriza por sí sola instalar el host, reemplazar artefactos locales, recargar Chrome, iniciar llamadas ni liberar una versión.
