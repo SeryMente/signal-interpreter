@@ -1,0 +1,56 @@
+{
+  "schema": "signal-interpreter-platform-delta/v1",
+  "type": "changed",
+  "identityKey": "https://app.cloudinterpreter.com|/profile/<ID>|",
+  "fromSnapshotId": "snap-458f034e-cb5b-4451-ae77-2e7b852cb37d",
+  "toSnapshotId": "snap-d4ecea58-6d2a-4269-84c4-d8e6a7a17285",
+  "fromHash": "da2f1335f5a18e673cb3c2ee84cd2adf5ee9174ee86e196f860dfa38dd3dfac8",
+  "toHash": "ff084945996892e4c169c82784e1287a00e44029bbca4d97776a5e350ae67660",
+  "capturedAt": "2026-11-09T21:24:56.776Z",
+  "summary": {
+    "added": 0,
+    "removed": 1,
+    "changed": 1,
+    "sections": [
+      "resources"
+    ]
+  },
+  "changes": [
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>|fetch]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 1133,
+        "transferBytes": 731,
+        "encodedBytes": 431,
+        "decodedBytes": 784,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 374,
+        "transferBytes": 350,
+        "encodedBytes": 50,
+        "decodedBytes": 33,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "removed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/ring.mp3|audio]",
+      "value": {
+        "url": "https://app.cloudinterpreter.com/ring.mp3",
+        "initiatorType": "audio",
+        "durationMs": 71,
+        "transferBytes": 225177,
+        "encodedBytes": 224877,
+        "decodedBytes": 224877,
+        "protocol": "http/1.1"
+      }
+    }
+  ],
+  "truncated": false
+}
