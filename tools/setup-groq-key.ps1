@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$Reset)
+param([switch]$Reset,[switch]$RequireExisting)
 $ErrorActionPreference="Stop"
 $storeDir=Join-Path $env:USERPROFILE ".signal-interpreter"
 $store=Join-Path $storeDir "groq-token.dat"
@@ -14,6 +14,9 @@ function Read-TokenText {
   } catch { throw "No se pudo descifrar la credencial local con tu cuenta Windows." }
 }
 $token=Read-TokenText
+if($RequireExisting -and -not ($token -and $token -match "^gsk_[A-Za-z0-9_-]{20,}$")){
+  throw "No existe una credencial Groq local válida. La configuración queda pendiente."
+}
 if($Reset -or -not ($token -and $token -match "^gsk_[A-Za-z0-9_-]{20,}$")){
   $secure=Read-Host "Introduce tu Groq API Key (se guardará una sola vez en Windows)" -AsSecureString
   $token=[System.Net.NetworkCredential]::new("",$secure).Password

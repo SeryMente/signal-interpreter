@@ -1,0 +1,27 @@
+import fs from "node:fs";
+import assert from "node:assert/strict";
+const background=fs.readFileSync("extension/background.js","utf8");
+const live=fs.readFileSync("extension/ui/live.js","utf8");
+function bodyBetween(source,startMarker,endMarker,label){const start=source.indexOf(startMarker);const end=source.indexOf(endMarker,start);assert.ok(start>=0&&end>start,label+" boundaries");return source.slice(start,end);}
+const readSession=bodyBetween(background,"async function readCaptionSession()","function resetCaptionOverlaySession","session-only caption reader");
+assert.ok(readSession.includes("chrome.storage.session.get"));
+assert.doesNotMatch(readSession,/chrome\.storage\.local|KhoraTelemetryDB/,"caption history is not read from persistent local storage or telemetry");
+const writeSession=bodyBetween(background,"function withCaptionSession(mutator)","async function readCaptionSession","session-only caption writer");
+assert.ok(writeSession.includes("chrome.storage.session.get")&&writeSession.includes("chrome.storage.session.set"));
+assert.doesNotMatch(writeSession,/chrome\.storage\.local|KhoraTelemetryDB|appendEvent\(/,"caption text is written only to chrome.storage.session");
+const getState=bodyBetween(background,'if(message.type==="GET_SIGNAL_INTERPRETER_STATE"){','if(message.type==="CLEAR_SIGNAL_INTERPRETER_TRANSCRIPT")',"LIVE state request");
+assert.ok(getState.includes("sender.url!==liveConsoleUrl"),"only the internal LIVE page may request caption history");
+assert.ok(getState.includes("readCaptionSession()")&&getState.includes("captionHistory:captionHistory")&&getState.includes(".slice(-200)"));
+const nativePublish=bodyBetween(background,"function publishCaptionToOverlay(caption, sourceTabId)","function interpreterLanguageCode","native caption publisher");
+assert.ok(nativePublish.includes("appendCaptionOverlayHistory")&&nativePublish.includes("broadcastSignalEvent"));
+assert.doesNotMatch(nativePublish,/persistSignalSegment|KhoraTelemetryDB|appendEvent\(/,"native captions stream without persistence/telemetry");
+const interpreterPublish=bodyBetween(background,"async function publishInterpreterCaption(caption, sourceTabId, callId)","async function getCaptionOverlayContext","interpreter caption publisher");
+assert.ok(interpreterPublish.includes("appendCaptionOverlayHistory")&&interpreterPublish.includes("broadcastSignalEvent"));
+assert.doesNotMatch(interpreterPublish,/persistSignalSegment|KhoraTelemetryDB|appendEvent\(/,"interpreter text streams without persistence/telemetry");
+const hydrate=bodyBetween(live,'chrome.runtime.sendMessage({type:"GET_SIGNAL_INTERPRETER_STATE"})','window.addEventListener("beforeunload"',"LIVE session hydration");
+assert.ok(hydrate.includes("r.captionHistory||[]")&&hydrate.includes("s.segments"));
+assert.ok(hydrate.includes("r.transcript"),"persisted manual transcript rows are rehydrated before session-only captions");
+assert.doesNotMatch(hydrate,/UPDATE_SIGNAL_SESSION|ADD_SIGNAL_SESSION_SEGMENT|persistSignalSegment|KhoraTelemetryDB/,"hydration does not persist transcript text");
+const addSegment=bodyBetween(live,"function addSegment(e)","function handle(e)","LIVE segment upsert");
+assert.ok(addSegment.includes("existing>=0"),"revised partial captions update the same row id");
+console.log("LIVE_CAPTION_SESSION_HISTORY_TEST=PASS");

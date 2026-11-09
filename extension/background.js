@@ -1,4 +1,6 @@
 importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js");
+try { importScripts("groq-transcriber.js"); } catch (_) {}
+try { importScripts("groq-secret.local.js"); } catch (_) {}
 (function () {
   "use strict";
 
@@ -25,6 +27,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     transcriptionEnabled: true,
     liveCaptionOverlayEnabled: true,
     liveCaptionInterpreterEnabled: false,
+    groqZeroDataRetentionConfirmed: false,
     liveCaptionBilingualTabEnabled: false,
     instantPreviewEnabled: false,
     audioSafetyMode: true,
@@ -50,6 +53,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   var signalGroqQueue = Promise.resolve();
   var earningsSyncQueue = Promise.resolve();
   var microphoneMuteQueue = Promise.resolve();
+  var callMicrophonePolicyQueue = Promise.resolve();
   var captionPreviewDispatcher = null;
   var captionPreviewLastErrorAt = Object.create(null);
 
@@ -149,7 +153,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       current = {
         callId: current.callId == null ? null : String(current.callId),
         sourceTabId: validCaptionTabId(current.sourceTabId),
-        rows: Array.isArray(current.rows) ? current.rows.filter(function (row) { return row.source === "chrome-live-caption"; }).slice(-CAPTION_HISTORY_LIMIT) : [],
+        rows: Array.isArray(current.rows) ? current.rows.filter(function (row) { return row.source === "chrome-live-caption" || (row.source === "yo" && row.speaker === "INTÉRPRETE"); }).slice(-CAPTION_HISTORY_LIMIT) : [],
         ended: current.ended === true,
         updatedAt: Number(current.updatedAt) || 0
       };
@@ -172,7 +176,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         var stored = await chrome.storage.session.get([CAPTION_SESSION_KEY]);
         if (stored && stored[CAPTION_SESSION_KEY]) {
           captionSessionMemory = stored[CAPTION_SESSION_KEY];
-          captionSessionMemory.rows = (captionSessionMemory.rows || []).filter(function (row) { return row.source === "chrome-live-caption"; });
+          captionSessionMemory.rows = (captionSessionMemory.rows || []).filter(function (row) { return row.source === "chrome-live-caption" || row.source === "yo"; });
           return captionSessionMemory;
         }
       }
@@ -217,7 +221,8 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       if (!text) return current;
       var source = caption.source === "yo" ? "yo" : (caption.source === "chrome-live-caption" ? "chrome-live-caption" : "cliente");
       var language = SignalCaptionCore.resolveLanguage(caption.language, text);
-      var now = Date.now();
+      var suppliedTimestamp = Number(caption && caption.timestamp);
+      var now = Number.isFinite(suppliedTimestamp) && suppliedTimestamp > 0 ? suppliedTimestamp : Date.now();
       var lane = source === "yo" ? "yo" : "cliente";
       var candidate = null;
       for (var i = current.rows.length - 1; i >= 0; i -= 1) {
@@ -232,6 +237,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         if (relation === "duplicate") {
           candidate.at = now;
           if (language !== "unknown") candidate.language = language;
+          candidate.speaker = source === "yo" ? "INTÉRPRETE" : "unknown";
           candidate.live = caption.live === true;
           return current;
         }
@@ -241,6 +247,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
           candidate.at = now;
           if (language !== "unknown" || candidate.language === "unknown") candidate.language = language;
           candidate.source = source;
+          candidate.speaker = source === "yo" ? "INTÉRPRETE" : "unknown";
           candidate.live = caption.live === true;
           return current;
         }
@@ -250,6 +257,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         text: text,
         language: language,
         source: source,
+        speaker: source === "yo" ? "INTÉRPRETE" : "unknown",
         live: caption.live === true,
         at: now
       });
@@ -293,13 +301,76 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
     if (config.liveCaptionOverlayEnabled === false) return {forwarded:false};
     var session = await appendCaptionOverlayHistory(caption, sourceTabId);
+    var latestRow = session.rows && session.rows.length ? session.rows[session.rows.length - 1] : null;
     await dispatchCaptionOverlayMessage("SIGNAL_CAPTION_UPDATE", {
       caption: Object.assign({}, caption, {
         text: String(caption.text).slice(0, 1500),
         timestamp: Date.now()
       })
     }, session.sourceTabId);
+    if (latestRow) broadcastSignalEvent({type:"signal.transcript.segment",sessionId:signalActiveSessionId,segment:{id:String(latestRow.id),speaker:"CLIENTE",text:String(latestRow.text||""),timestamp:new Date(Number(latestRow.at)||Date.now()).toISOString(),source:"chrome-live-caption",reason:"native-live-caption"}});
     return {forwarded:true};
+  }
+
+  function interpreterLanguageCode(value, text) {
+    var language = String(value || "").toLowerCase();
+    if (language === "en" || /^english/.test(language)) return "en";
+    if (language === "es" || /^spanish|^español/.test(language)) return "es";
+    return SignalCaptionCore.resolveLanguage("unknown", String(text || ""));
+  }
+
+  function interpreterSegmentLanguage(text, fallback) {
+    var clean = SignalCaptionCore.normalizeText(text).toLowerCase();
+    var detected = SignalCaptionCore.resolveLanguage("unknown", clean);
+    if (detected === "es" || detected === "en") return detected;
+    var tokens = clean.match(/[a-záéíóúüñ]+/g) || [];
+    var esWords = ["hola","gracias","muchas","buenos","buenas","necesito","necesita","usted","ustedes","dónde","donde","cómo","como","qué","que","está","esta","tengo","puede","señor","señora","doctor","doctora","por","para","con","pero","ahora"];
+    var enWords = ["hello","hi","thanks","thank","please","good","morning","afternoon","evening","need","needs","where","what","how","have","has","your","you","are","was","were","doctor","because","with","for","but","now"];
+    var esScore = /[áéíóúüñ¿¡]/i.test(clean) ? 2 : 0;
+    var enScore = 0;
+    tokens.forEach(function(token) {
+      if (esWords.indexOf(token) >= 0) esScore += 1;
+      if (enWords.indexOf(token) >= 0) enScore += 1;
+    });
+    if (esScore >= 2 && esScore > enScore) return "es";
+    if (enScore >= 2 && enScore > esScore) return "en";
+    return fallback === "es" || fallback === "en" ? fallback : "unknown";
+  }
+
+  async function publishInterpreterCaption(caption, sourceTabId, callId) {
+    if (!caption || !caption.text || caption.source !== "yo" || caption.speaker !== "INTÉRPRETE") return false;
+    var tabId = validCaptionTabId(sourceTabId);
+    if (tabId == null) return false;
+    var stored = await chrome.storage.local.get(["effectifConfig", "effectifState"]);
+    var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    if (config.liveCaptionOverlayEnabled === false || config.liveCaptionInterpreterEnabled !== true ||
+        config.groqZeroDataRetentionConfirmed !== true || !hasActiveCall(state) ||
+        String(state.callId || "") !== String(callId || "") ||
+        Number(state.callSourceTabId) !== Number(tabId)) return false;
+    var tab = await chrome.tabs.get(tabId).catch(function () { return null; });
+    if (!tab || !isCloudCallUrl(tab.url)) return false;
+    var session = await appendCaptionOverlayHistory(caption, tabId);
+    var latestRow = session.rows && session.rows.length ? session.rows[session.rows.length - 1] : null;
+    var normalizedCaption = {
+      text: String(caption.text).slice(0, 1500),
+      language: interpreterLanguageCode(caption.language, caption.text),
+      source: "yo", native: false, speaker: "INTÉRPRETE", live: false,
+      timestamp: Number(caption.timestamp) || Date.now()
+    };
+    await dispatchCaptionOverlayMessage("SIGNAL_CAPTION_UPDATE", {
+      callId: String(callId), caption: normalizedCaption
+    }, session.sourceTabId || tabId);
+    broadcastSignalEvent({
+      type: "signal.transcript.segment", sessionId: signalActiveSessionId,
+      segment: {
+        id: String(latestRow && latestRow.id || caption.id || uid()), speaker: "YO",
+        text: String(latestRow && latestRow.text || normalizedCaption.text),
+        timestamp: new Date(Number(latestRow && latestRow.at) || normalizedCaption.timestamp).toISOString(),
+        source: "groq-interpreter", reason: "groq-whisper"
+      }
+    });
+    return true;
   }
 
   async function getCaptionOverlayContext(senderTab, senderUrl) {
@@ -352,7 +423,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       pageAllowed: pageAllowed,
       history: pageAllowed && !youtubeTarget ? session.rows.slice(-CAPTION_HISTORY_LIMIT) : [],
       nativeStatus: SignalCaptionBridge.getStatus ? SignalCaptionBridge.getStatus() : null,
-      captionMode: "native-text-only"
+      captionMode: "native-client-plus-interpreter-mic-session"
     };
   }
   var captionControlQueue = Promise.resolve();
@@ -1239,10 +1310,18 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         ? { phase: "connected", connected: true, engine: "groq" }
         : Object.assign({}, state.transcriptionStatus || {}, { phase: "recovering", connected: false, engine: "groq" });
     } else {
-      state.transcriptionActive = captureConnected;
-      state.transcriptionTabId = captureConnected ? (state.transcriptionTabId || null) : null;
-      if (!captureConnected) state.transcriptionStatus = { phase: "idle", connected: false, engine: "groq" };
-        if (state.hotLoadLease && state.hotLoadLease.phase === "active-call") state.hotLoadLease.phase = "closed";
+      state.microphoneMuted = true;
+      state.microphoneMuteRequested = true;
+      if (state.microphoneMuteStatus !== "error") state.microphoneMuteStatus = "applied";
+      state.microphoneOutputMuted = true;
+      state.microphoneOutputStatus = "unapplied";
+      state.microphoneOutputTrackCount = 0;
+      state.microphoneOutputSenderCount = 0;
+      state.groqCapture = Object.assign({}, state.groqCapture || {}, { microphoneMuted: true, status: captureConnected ? "stopped" : (state.groqCapture && state.groqCapture.status || "idle") });
+      state.transcriptionActive = false;
+      state.transcriptionTabId = null;
+      state.transcriptionStatus = { phase: "idle", connected: false, engine: "native-text-only" };
+      if (state.hotLoadLease && state.hotLoadLease.phase === "active-call") state.hotLoadLease.phase = "closed";
     }
     if (state.hotLoadUpdate && state.hotLoadUpdate.availableVersion === chrome.runtime.getManifest().version) {
       state.hotLoadUpdate = Object.assign({}, state.hotLoadUpdate, { phase: "steady", availableVersion: null, deferredForCallId: null, applyingAt: null, applyTrigger: null, currentVersion: chrome.runtime.getManifest().version });
@@ -1653,6 +1732,21 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       }, "info", "background");
     }).then(function (state) {
       if (!state || state.callId !== callId) return;
+      applyCallMicrophonePolicy(callId, state.callSourceTabId, false, "call-accepted").then(function (micResult) {
+        return mutateState(function (activeState) {
+          if (activeState.callId !== callId) return;
+          activeState.microphoneMuted = !micResult.ok;
+          activeState.microphoneMuteRequested = !micResult.ok;
+          activeState.microphoneMuteStatus = micResult.ok ? "applied" : "error";
+          activeState.microphoneOutputMuted = !micResult.ok;
+          activeState.microphoneOutputStatus = micResult.ok ? "applied" : "error";
+          activeState.microphoneOutputTrackCount = Number(micResult.trackCount || 0);
+          activeState.microphoneOutputSenderCount = Number(micResult.senderCount || 0);
+          activeState.groqCapture = Object.assign({}, activeState.groqCapture || {}, { microphoneMuted: !micResult.ok });
+        }, "call-accepted-microphone-policy");
+      }).catch(function (error) {
+        record("CALL_ACCEPTED_MICROPHONE_POLICY_ERROR", { callId: callId, error: String(error) }, "error", "microphone");
+      });
       if (cachedConfig.liveCaptionOverlayEnabled !== false && state.callSourceTabId != null) {
         var nativeCaptionStarted = false;
         try { nativeCaptionStarted = SignalCaptionBridge.start(state.callSourceTabId, callId); } catch (_) {}
@@ -1805,17 +1899,30 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       if (!state.callId) return;
       var payload = event.payload || {};
       if (payload.callId && payload.callId !== state.callId) return;
+      var endingCallId = state.callId;
+      var endingTabId = state.callSourceTabId;
       var platformSeconds = Number(payload.platformSeconds);
       state.pendingCallEnd = {
-        callId: state.callId,
+        callId: endingCallId,
         clickedAt: event.timestamp,
         platformSeconds: Number.isFinite(platformSeconds) && platformSeconds >= 0 ? platformSeconds : null,
         signal: "end-button"
       };
       record("CALL_END_SIGNAL_PREPARED", {
-        callId: state.callId, platformSeconds: state.pendingCallEnd.platformSeconds,
+        callId: endingCallId, platformSeconds: state.pendingCallEnd.platformSeconds,
         trigger: "end-button", confirmation: "await-rating-route"
       }, "info", "background");
+      var micResult = await applyCallMicrophonePolicy(endingCallId, endingTabId, true, "end-button");
+      state.microphoneMuted = true;
+      state.microphoneMuteRequested = true;
+      state.microphoneMuteStatus = micResult.ok ? "applied" : "error";
+      state.microphoneOutputMuted = true;
+      state.microphoneOutputStatus = micResult.ok ? "applied" : "error";
+      state.microphoneOutputTrackCount = Number(micResult.trackCount || 0);
+      state.microphoneOutputSenderCount = Number(micResult.senderCount || 0);
+      state.groqCapture = Object.assign({}, state.groqCapture || {}, { microphoneMuted: true });
+    }, "call-end-button-microphone-mute").catch(function (error) {
+      record("CALL_END_MICROPHONE_MUTE_ERROR", { error: String(error) }, "error", "microphone");
     });
   }
   function reconcileOfficialEarningsAfterCall(callId) {
@@ -1838,6 +1945,18 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         if (sendResponse) sendResponse({ ok: false, error: "No hay llamada activa" });
         return;
       }
+      var endingCallId = state.callId;
+      var endingTabId = state.callSourceTabId;
+      if (interpreterMicCapture && interpreterMicCapture.callId === endingCallId) abortInterpreterMicCapture("call-ended").catch(function(){});
+      var microphoneResult = await applyCallMicrophonePolicy(endingCallId, endingTabId, true, "call-ended:" + String(source || "unknown"));
+      state.microphoneMuted = true;
+      state.microphoneMuteRequested = true;
+      state.microphoneMuteStatus = microphoneResult.ok ? "applied" : "error";
+      state.microphoneOutputMuted = true;
+      state.microphoneOutputStatus = microphoneResult.ok ? "applied" : "error";
+      state.microphoneOutputTrackCount = Number(microphoneResult.trackCount || 0);
+      state.microphoneOutputSenderCount = Number(microphoneResult.senderCount || 0);
+      state.groqCapture = Object.assign({}, state.groqCapture || {}, { microphoneMuted: true });
       var endedAt = iso();
       var observedSeconds = Math.max(0, (Date.parse(endedAt) - Date.parse(state.callStartedAt)) / 1000);
       var pendingEnd = state.pendingCallEnd && state.pendingCallEnd.callId === state.callId ? state.pendingCallEnd : null;
@@ -2367,7 +2486,11 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     return {ok:true,method:method,snapshot:mirror.statistics};
   }
   function isCloudCallUrl(raw) {
-    return /^https:\/\/app\.cloudinterpreter\.com\/call\/[^/?#]+(?:[?#].*)?$/.test(String(raw || ""));
+    try {
+      var url = new URL(String(raw || ""));
+      return url.protocol === "https:" && url.hostname.toLowerCase() === "app.cloudinterpreter.com" &&
+        url.username === "" && url.password === "" && /^\/call\/[^/?#]+\/?$/.test(url.pathname);
+    } catch (_) { return false; }
   }
   function isCloudStatisticsUrl(raw) {
     return /^https:\/\/app\.cloudinterpreter\.com\/profile\/[^/]+\/logs\/?(?:[?#].*)?$/.test(String(raw || ""));
@@ -2537,6 +2660,203 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
 
   var signalActiveSessionId=null,signalLiveConsoleOpen=false,signalLivePort=null,signalRuntimeId=uid();
   var signalGroqSeen=new Map();
+  var interpreterMicCapture = null;
+  var interpreterMicQueue = Promise.resolve();
+  var interpreterMicPending = 0;
+  var INTERPRETER_MIC_SESSION_KEY = "signalInterpreterMicCapture";
+
+  async function readInterpreterMicCapture() {
+    if (interpreterMicCapture) return interpreterMicCapture;
+    try {
+      if (!chrome.storage.session) return null;
+      var stored = await chrome.storage.session.get([INTERPRETER_MIC_SESSION_KEY]);
+      var capture = stored && stored[INTERPRETER_MIC_SESSION_KEY];
+      if (capture && capture.captureId && capture.callId && Number.isFinite(Number(capture.tabId))) {
+        interpreterMicCapture = capture;
+        return capture;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  async function validateInterpreterMicCapture(message, sender) {
+    if (!sender || !sender.tab || sender.tab.id == null || !isCloudCallUrl(sender.tab.url)) {
+      return { ok:false, reasonCode:"call-tab-not-authorized" };
+    }
+    if (!message || !message.callId || !message.captureId) return { ok:false, reasonCode:"capture-identity-missing" };
+    var stored = await chrome.storage.local.get(["effectifConfig", "effectifState"]);
+    var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    if (!hasActiveCall(state) || String(state.callId || "") !== String(message.callId)) {
+      return { ok:false, reasonCode:"call-not-active" };
+    }
+    if (Number(state.callSourceTabId) !== Number(sender.tab.id)) return { ok:false, reasonCode:"call-tab-mismatch" };
+    if (config.liveCaptionInterpreterEnabled !== true) return { ok:false, reasonCode:"interpreter-channel-disabled" };
+    if (config.groqZeroDataRetentionConfirmed !== true) return { ok:false, reasonCode:"zdr-not-confirmed" };
+    if (!SignalGroqTranscriber || typeof SignalGroqTranscriber.transcribe !== "function" ||
+        typeof SignalGroqTranscriber.ready !== "function" || !(await SignalGroqTranscriber.ready())) {
+      return { ok:false, reasonCode:"groq-key-missing" };
+    }
+    return { ok:true, config:config, state:state, tabId:Number(sender.tab.id) };
+  }
+
+  async function beginInterpreterMicCapture(message, sender) {
+    var checked = await validateInterpreterMicCapture(message, sender);
+    if (!checked.ok) return checked;
+    var existing = await readInterpreterMicCapture();
+    if (existing && (existing.captureId !== message.captureId || existing.callId !== message.callId)) {
+      await abortInterpreterMicCapture("replaced-by-new-capture");
+    }
+    interpreterMicCapture = {
+      captureId:String(message.captureId), callId:String(message.callId), tabId:checked.tabId,
+      startedAt:Date.now(), lastSequence:0, status:"connected"
+    };
+    try {
+      if (chrome.storage.session) await chrome.storage.session.set({ [INTERPRETER_MIC_SESSION_KEY]:interpreterMicCapture });
+    } catch (_) {}
+    await updateGroqCaptureState({
+      status:"connected", tabAudio:false, microphone:true, microphoneMuted:false,
+      startedAt:new Date(interpreterMicCapture.startedAt).toISOString(), lastChunkAt:null, error:null
+    }).catch(function(){});
+    broadcastSignalEvent({type:"signal.groq.status",sessionId:signalActiveSessionId,status:"connected",source:"interpreter-microphone",timestamp:iso()});
+    return {ok:true,reasonCode:"capture-ready",captureId:interpreterMicCapture.captureId};
+  }
+
+  async function abortInterpreterMicCapture(reason) {
+    var capture = await readInterpreterMicCapture();
+    if (!capture) return {ok:true,active:false};
+    interpreterMicCapture = null;
+    try {
+      if (chrome.storage.session) await chrome.storage.session.remove(INTERPRETER_MIC_SESSION_KEY);
+    } catch (_) {}
+    try {
+      await chrome.tabs.sendMessage(capture.tabId, {
+        type:"SIGNAL_INTERPRETER_MIC_CAPTURE_STOP",
+        callId:capture.callId,captureId:capture.captureId,reason:String(reason || "stopped")
+      });
+    } catch (_) {}
+    await updateGroqCaptureState({
+      status:"stopped",tabAudio:false,microphone:false,microphoneMuted:true,
+      lastChunkAt:null,error:null
+    }).catch(function(){});
+    broadcastSignalEvent({type:"signal.groq.status",sessionId:signalActiveSessionId,status:"stopped",source:"interpreter-microphone",reason:String(reason || "stopped"),timestamp:iso()});
+    return {ok:true,active:false};
+  }
+
+  async function stopInterpreterMicCapture(message, sender) {
+    var capture = await readInterpreterMicCapture();
+    if (!capture) return {ok:true,active:false};
+    if (!sender || !sender.tab || Number(sender.tab.id) !== Number(capture.tabId) ||
+        String(message && message.captureId || "") !== String(capture.captureId)) {
+      return {ok:false,reasonCode:"capture-sender-mismatch"};
+    }
+    interpreterMicCapture = null;
+    try {
+      if (chrome.storage.session) await chrome.storage.session.remove(INTERPRETER_MIC_SESSION_KEY);
+    } catch (_) {}
+    await updateGroqCaptureState({
+      status:"stopped",tabAudio:false,microphone:false,microphoneMuted:true,
+      lastChunkAt:null,error:null
+    }).catch(function(){});
+    broadcastSignalEvent({type:"signal.groq.status",sessionId:signalActiveSessionId,status:"stopped",source:"interpreter-microphone",reason:String(message.reason || "user-stop"),timestamp:iso()});
+    return {ok:true,active:false};
+  }
+
+  async function processInterpreterMicChunk(message, sender) {
+    var capture = await readInterpreterMicCapture();
+    if (!capture || capture.captureId !== String(message.captureId || "") ||
+        capture.callId !== String(message.callId || "") || Number(sender && sender.tab && sender.tab.id) !== Number(capture.tabId)) {
+      return {ok:false,reasonCode:"capture-not-active"};
+    }
+    var checked = await validateInterpreterMicCapture(message, sender);
+    if (!checked.ok) {
+      await abortInterpreterMicCapture(checked.reasonCode);
+      return checked;
+    }
+    var sequence = Number(message.sequence);
+    if (!Number.isInteger(sequence) || sequence <= Number(capture.lastSequence || 0)) {
+      return {ok:false,reasonCode:"chunk-sequence-invalid"};
+    }
+    if (typeof message.base64 !== "string" || message.base64.length < 8 || message.base64.length > 5500000) {
+      return {ok:false,reasonCode:"chunk-size-invalid"};
+    }
+    capture.lastSequence = sequence;
+    try {
+      if (chrome.storage.session) await chrome.storage.session.set({ [INTERPRETER_MIC_SESSION_KEY]:capture });
+    } catch (_) {}
+    var binary;
+    try { binary = atob(message.base64); } catch (_) { return {ok:false,reasonCode:"chunk-encoding-invalid"}; }
+    var bytes = new Uint8Array(binary.length);
+    for (var bi=0;bi<binary.length;bi+=1) bytes[bi]=binary.charCodeAt(bi);
+    if (!bytes.length || bytes.length > 4*1024*1024) return {ok:false,reasonCode:"chunk-size-invalid"};
+    var audioBlob = new Blob([bytes], {type:String(message.mimeType || "audio/webm")});
+    bytes = null;
+    binary = null;
+    var result = await SignalGroqTranscriber.transcribe(audioBlob, {
+      model:GROQ_MODEL,
+      zeroDataRetentionConfirmed:true,
+      timeoutMs:25000,
+      prompt:"Transcribe la voz del intérprete médico. Reconoce español e inglés automáticamente. Conserva nombres, direcciones y números literalmente; no completes palabras dudosas."
+    });
+    audioBlob = null;
+    capture = await readInterpreterMicCapture();
+    if (!capture || capture.captureId !== String(message.captureId) || capture.callId !== String(message.callId)) {
+      return {ok:false,reasonCode:"capture-ended-during-transcription"};
+    }
+    if (!result || result.ok !== true) {
+      return {ok:false,reasonCode:result && result.reasonCode || "groq-transcription-failed",httpStatus:result && result.httpStatus || null};
+    }
+    var language = interpreterLanguageCode(result.language, result.text);
+    var segments = Array.isArray(result.segments) && result.segments.length
+      ? result.segments
+      : (String(result.text || "").trim() ? [{id:"full",start:0,text:result.text}] : []);
+    var chunkStart = Number(message.chunkStartedAt) || Date.now();
+    var delivered = 0;
+    for (var si=0;si<segments.length;si+=1) {
+      var segment = segments[si] || {};
+      var text = SignalCaptionCore.normalizeText(segment.text).slice(0,1500);
+      if (!text) continue;
+      var timestamp = chunkStart + Math.max(0,Number(segment.start)||0)*1000;
+      var segmentLanguage = interpreterSegmentLanguage(text, language);
+      var caption = {
+        id:String(capture.captureId)+":"+sequence+":"+si,
+        text:text,language:segmentLanguage,source:"yo",native:false,speaker:"INTÉRPRETE",
+        live:false,timestamp:timestamp
+      };
+      var published = await publishInterpreterCaption(caption,capture.tabId,capture.callId);
+      if (published) delivered += 1;
+    }
+    return {ok:true,reasonCode:"transcribed",language:language,segments:delivered};
+  }
+
+  function enqueueInterpreterMicChunk(message, sender) {
+    interpreterMicPending += 1;
+    if (interpreterMicPending > 2) {
+      interpreterMicPending -= 1;
+      abortInterpreterMicCapture("transcription-backlog").catch(function(){});
+      return Promise.resolve({ok:false,reasonCode:"transcription-backlog"});
+    }
+    var operation = interpreterMicQueue.then(function(){ return processInterpreterMicChunk(message,sender); });
+    interpreterMicQueue = operation.catch(function(){});
+    return operation.finally(function(){ interpreterMicPending=Math.max(0,interpreterMicPending-1); });
+  }
+
+  async function getInterpreterMicPolicy(sender) {
+    var stored = await chrome.storage.local.get(["effectifConfig","effectifState"]);
+    var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    var callValid = !!(sender && sender.tab && sender.tab.id != null && isCloudCallUrl(sender.tab.url) &&
+      hasActiveCall(state) && String(state.callId || "") && Number(state.callSourceTabId) === Number(sender.tab.id));
+    var ready = !!(SignalGroqTranscriber && await SignalGroqTranscriber.ready().catch(function(){return false;}));
+    var enabled = config.liveCaptionInterpreterEnabled===true;
+    var zdrConfirmed = config.groqZeroDataRetentionConfirmed===true;
+    return {
+      ok:true,enabled:enabled,zdrConfirmed:zdrConfirmed,keyReady:ready,callActive:callValid,
+      reasonCode:!enabled?"interpreter-channel-disabled":!zdrConfirmed?"zdr-not-confirmed":!ready?"groq-key-missing":!callValid?"call-not-active":"ready",
+      canCapture:enabled && zdrConfirmed && ready && callValid
+    };
+  }
+
   function recordSignalDiagnostic(action,payload,level,source){record(action,Object.assign({sessionId:signalActiveSessionId},payload||{}),level||"info",source||"groq");}
   function normalizeSignalSourceUrl(rawUrl){try{var u=new URL(String(rawUrl||""));u.hash="";return u.toString()}catch(_){return String(rawUrl||"")}}
   function normalizeSignalSessionUrl(rawUrl){try{return new URL(String(rawUrl||"")).origin.toLowerCase()}catch(_){return String(rawUrl||"").split("/").slice(0,3).join("/").toLowerCase()}}
@@ -2600,6 +2920,53 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     return{ok:false,muted:!!muted,verified:false,inactive:false,error:lastError||"verification-failed",attempts:3};
   }
 
+  function applyCallMicrophonePolicy(callId, tabId, muted, source) {
+    var desiredMuted = !!muted;
+    var targetTabId = Number(tabId);
+    var validTabId = tabId != null && Number.isInteger(targetTabId);
+    var run = callMicrophonePolicyQueue.then(async function () {
+      if (!validTabId) {
+        return { ok: false, verified: false, muted: desiredMuted, error: "No hay una pestaña de llamada controlable." };
+      }
+      if (!desiredMuted) {
+        var stored = await chrome.storage.local.get(["effectifState"]);
+        var state = normalizeStateShape(Object.assign(baseState(), stored.effectifState || {}));
+        var sourceTab = null;
+        try { sourceTab = await chrome.tabs.get(targetTabId); } catch (_) {}
+        if (!hasActiveCall(state) || state.callId !== callId || Number(state.callSourceTabId) !== targetTabId || !sourceTab || !isCloudCallUrl(sourceTab.url)) {
+          record("CALL_MICROPHONE_UNMUTE_BLOCKED", {
+            callId: callId || null, tabId: targetTabId, source: source || "call-policy",
+            reasonCode: "call-not-active-or-source-mismatch", invariant: "unmute-only-after-confirmed-call-route"
+          }, "warn", "microphone");
+          return { ok: false, verified: false, muted: true, error: "El micrófono solo puede habilitarse después de confirmar la llamada activa.", reasonCode: "call-not-active-or-source-mismatch" };
+        }
+      }
+      var result = await setMainClientMicrophoneMuted(targetTabId, desiredMuted, source || "call-policy");
+      if (!result || result.verified !== true || !!result.muted !== desiredMuted) {
+        record(desiredMuted ? "CALL_MICROPHONE_MUTE_UNVERIFIED" : "CALL_MICROPHONE_UNMUTE_UNVERIFIED", {
+          callId: callId || null, tabId: targetTabId, source: source || "call-policy",
+          error: result && result.error || "verification-failed",
+          invariant: desiredMuted ? "end-call-fails-closed" : "unmute-requires-verified-call-route"
+        }, "error", "microphone");
+        return Object.assign({ ok: false, muted: desiredMuted, verified: false }, result || {});
+      }
+      record(desiredMuted ? "CALL_MICROPHONE_MUTED" : "CALL_MICROPHONE_UNMUTED", {
+        callId: callId || null, tabId: targetTabId, source: source || "call-policy",
+        trackCount: Number(result.trackCount || 0), senderCount: Number(result.senderCount || 0),
+        stable: result.stable !== false
+      }, "info", "microphone");
+      return Object.assign({}, result, { ok: true, muted: desiredMuted, verified: true });
+    });
+    callMicrophonePolicyQueue = run.catch(function (error) {
+      record("CALL_MICROPHONE_POLICY_QUEUE_ERROR", {
+        callId: callId || null, tabId: Number.isInteger(targetTabId) ? targetTabId : null,
+        source: source || "call-policy", error: String(error)
+      }, "error", "microphone");
+      return { ok: false, verified: false, muted: desiredMuted, error: String(error) };
+    });
+    return run;
+  }
+
   async function setExtensionMicrophoneMutedInternal(muted, source) {
     var desired=!!muted;
     var stored=await chrome.storage.local.get(["effectifState"]);
@@ -2610,7 +2977,34 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var previousMuteStatus=String(state.microphoneMuteStatus||"unapplied");
     var previousOutputStatus=String(state.microphoneOutputStatus||"unapplied");
     var captureActive=!!(state.groqCapture&&state.groqCapture.status==="connected");
-    var outputRequired=hasActiveCall(state);
+    var outputRequired = hasActiveCall(state);
+    var unmuteRouteValid = false;
+    if (!desired && outputRequired && state.callSourceTabId != null) {
+      try {
+        var currentCallTab = await chrome.tabs.get(Number(state.callSourceTabId));
+        unmuteRouteValid = !!currentCallTab && isCloudCallUrl(currentCallTab.url);
+      } catch (_) {}
+    }
+    if (!desired && (!outputRequired || !unmuteRouteValid)) {
+      state.microphoneMuted = true;
+      state.microphoneMuteRequested = true;
+      if (state.microphoneMuteStatus !== "error") state.microphoneMuteStatus = "applied";
+      state.microphoneOutputMuted = true;
+      state.microphoneOutputStatus = outputRequired ? "error" : "unapplied";
+      state.groqCapture = Object.assign({}, state.groqCapture || {}, { microphoneMuted: true });
+      await chrome.storage.local.set({ effectifState: cloneStateForStorage(state) });
+      var blockReason = outputRequired ? "call-route-not-active" : "call-not-active";
+      record("EXTENSION_MICROPHONE_UNMUTE_BLOCKED", {
+        desired: false, source: source || "unknown", reasonCode: blockReason,
+        callId: state.callId || null, tabId: state.callSourceTabId || null,
+        policy: "mute-is-invariant-outside-confirmed-active-call-route"
+      }, "warn", "microphone");
+      return {
+        ok: false, muted: true, requestedMuted: false, verified: true,
+        reasonCode: blockReason,
+        error: "El micrófono solo puede activarse durante una llamada aceptada y confirmada."
+      };
+    }
     state.microphoneMuted=desired;
     state.microphoneMuteRequested=desired;
     state.microphoneMuteStatus="pending";
@@ -2818,7 +3212,25 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   function updateSignalSession(message,sendResponse){loadSignalSessions().then(function(data){var s=data.sessions.find(function(x){return x.id===message.sessionId});if(!s)throw new Error("Sesión no encontrada");var p=message.patch||{};if(["CLIENTE","YO"].indexOf(p.activeSpeaker)>=0)s.activeSpeaker=p.activeSpeaker;if(p.view==="timeline"||p.view==="triptych")s.view=p.view;if(p.fontSize!=null)s.fontSize=Math.max(14,Math.min(34,Number(p.fontSize)||20));if(typeof p.autoScroll==="boolean")s.autoScroll=p.autoScroll;if(typeof p.compactDensity==="boolean")s.compactDensity=p.compactDensity;return saveSignalSessions(data.sessions,data.activeSessionId).then(function(){return{ok:true,session:signalSessionCopy(s)}})}).then(function(r){broadcastSignalEvent({type:"signal.session.updated",sessionId:message.sessionId,session:r.session,timestamp:iso()});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})});}
   async function deleteSignalSession(message,sendResponse){try{var data=await loadSignalSessions(),id=message.sessionId||data.activeSessionId,idx=data.sessions.findIndex(function(x){return x.id===id}),session=idx>=0?data.sessions[idx]:null;if(!session)throw new Error("Sesión no encontrada");if(data.activeSessionId===id)await stopGroqCapture("session-delete");await KhoraTelemetryDB.clearSignalSession(id);data.sessions.splice(idx,1);var nextId=data.sessions.length?data.sessions[Math.max(0,Math.min(idx-1,data.sessions.length-1))].id:null;await saveSignalSessions(data.sessions,nextId);recordSignalDiagnostic("SIGNAL_SESSION_DELETED",{deletedSessionId:id,remainingSessions:data.sessions.length,activeSessionId:nextId});broadcastSignalEvent({type:"signal.session.deleted",sessionId:id,activeSessionId:nextId,session:nextId?signalSessionCopy(data.sessions.find(function(x){return x.id===nextId}),true):null,timestamp:iso()});sendResponse({ok:true,deletedSessionId:id,activeSessionId:nextId});}catch(error){recordSignalDiagnostic("SIGNAL_SESSION_DELETE_ERROR",{sessionId:message.sessionId||signalActiveSessionId,error:String(error)},"error");sendResponse({ok:false,error:String(error)})}}
   function addSignalSessionSegment(message,sendResponse){loadSignalSessions().then(function(data){var id=message.sessionId||data.activeSessionId,s=data.sessions.find(function(x){return x.id===id});if(!s)throw new Error("Sesión no encontrada");var text=String(message.text||"").trim();if(!text)throw new Error("Texto vacío");var seg={id:"manual-"+uid(),text:text.slice(0,12000),timestamp:iso(),reason:"manual",source:"manual",speaker:message.speaker==="YO"?"YO":"CLIENTE"};return persistSignalSegment(id,seg).then(function(x){if(!x.ok)throw new Error(x.dbError||x.cacheError||"No se pudo persistir");return{ok:true,session:x.session,segment:seg}})}).then(function(r){broadcastSignalEvent({type:"signal.transcript.segment",sessionId:r.session.id,manual:true,segment:r.segment,timestamp:r.segment.timestamp});sendResponse(r)}).catch(function(e){sendResponse({ok:false,error:String(e)})});}
-  async function openSignalLiveWindow(audioStreamId,tabId,sourceUrl,sourceTitle){var targetUrl=chrome.runtime.getURL(extensionResource("ui/live.html"));try{var session=await ensureSignalSession({tabId:tabId,sourceUrl:sourceUrl,title:sourceTitle}),windows=await chrome.windows.getAll({populate:true,windowTypes:["popup"]}),existing=windows.find(function(w){return Array.isArray(w.tabs)&&w.tabs.some(function(t){return String(t.url||"").split("#")[0].split("?")[0]===targetUrl})}),windowId=null;if(existing&&existing.id!=null){windowId=existing.id;await chrome.windows.update(windowId,{focused:true,state:"normal"})}else{var stored=await chrome.storage.local.get(["signalLiveBounds"]),b=stored.signalLiveBounds||{},d={url:targetUrl,type:"popup",focused:true,width:Number.isFinite(b.width)?b.width:760,height:Number.isFinite(b.height)?b.height:760};if(Number.isFinite(b.left))d.left=b.left;if(Number.isFinite(b.top))d.top=b.top;var created=await chrome.windows.create(d);windowId=created&&created.id||null}var activation=await activateSignalSession(session.id,audioStreamId||null);return{ok:!!windowId,windowId:windowId,reused:!!existing,session:activation.session||signalSessionCopy(session,true),audio:null,capture:activation};}catch(error){return{ok:false,error:String(error)}}}
+  async function openSignalLiveWindow(audioStreamId,tabId,sourceUrl,sourceTitle){
+    var targetUrl=chrome.runtime.getURL(extensionResource("ui/live.html"));
+    try {
+      var session=await ensureSignalSession({tabId:tabId,sourceUrl:sourceUrl,title:sourceTitle});
+      var matches=await chrome.tabs.query({url:targetUrl});
+      var existing=(matches||[]).find(function(tab){return Number.isFinite(Number(tab.id));})||null;
+      var tab=null;
+      if(existing){
+        tab=await chrome.tabs.update(existing.id,{active:true});
+        if(existing.windowId!=null) await chrome.windows.update(existing.windowId,{focused:true});
+      } else {
+        tab=await chrome.tabs.create({url:targetUrl,active:true});
+      }
+      var activation=await activateSignalSession(session.id,audioStreamId||null);
+      return {ok:!!(tab&&tab.id!=null),tabId:tab&&tab.id!=null?tab.id:null,windowId:tab&&tab.windowId!=null?tab.windowId:null,reused:!!existing,session:activation.session||signalSessionCopy(session,true),audio:null,capture:activation};
+    } catch(error) {
+      return {ok:false,error:String(error)};
+    }
+  }
   signalGroqQueue=Promise.resolve();
   chrome.tabs.onActivated.addListener(function (activeInfo) {
     refreshActionIndicator(activeInfo.tabId).catch(function () {});
@@ -2880,6 +3292,22 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     }
     if (message && message.type === "EFFECTIF_EVENT" && SignalCaptionLab.isSender(sender)) { sendResponse({ok:true,environment:"lab",published:false}); return false; }
     if (!message) return false;
+    if (message.type === "SIGNAL_INTERPRETER_MIC_CAPTURE_STARTED") {
+      beginInterpreterMicCapture(message,sender).then(sendResponse).catch(function(){sendResponse({ok:false,reasonCode:"capture-start-failed"});});
+      return true;
+    }
+    if (message.type === "SIGNAL_INTERPRETER_MIC_AUDIO_CHUNK") {
+      enqueueInterpreterMicChunk(message,sender).then(sendResponse).catch(function(){sendResponse({ok:false,reasonCode:"transcription-failed"});});
+      return true;
+    }
+    if (message.type === "SIGNAL_INTERPRETER_MIC_CAPTURE_STOP") {
+      stopInterpreterMicCapture(message,sender).then(sendResponse).catch(function(){sendResponse({ok:false,reasonCode:"capture-stop-failed"});});
+      return true;
+    }
+    if (message.type === "SIGNAL_INTERPRETER_MIC_POLICY_GET") {
+      getInterpreterMicPolicy(sender).then(sendResponse).catch(function(){sendResponse({ok:false,canCapture:false,reasonCode:"policy-unavailable"});});
+      return true;
+    }
     if (message.type === "SIGNAL_CAPTION_OPEN_LOOKUP") {
       openCaptionLookup(message.kind, message.query).then(sendResponse).catch(function (error) {
         sendResponse({ ok: false, error: String(error && error.message || error).slice(0, 160) });
@@ -2955,7 +3383,21 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_AUDIO_CHUNK") { handleGroqAudioChunk(message); return false; }
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_CAPTION_PREVIEW_CHUNK") { handleGroqCaptionPreviewChunk(message); return false; }
     if (message.target === "offscreen" && message.type === "SIGNAL_GROQ_CAPTURE_STATUS") { record("SIGNAL_CAPTION_NON_NATIVE_BLOCKED", {reasonCode:"native-text-only",captureScope:"native-text-only"}, "warn", "caption"); return false; }
-    if (message.type === "OPEN_SIGNAL_LIVE_WINDOW") { recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_REQUESTED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",hasSuppliedStream:!!message.audioStreamId}); openSignalLiveWindow(message.audioStreamId||null,message.tabId||null,message.sourceUrl||"",message.sourceTitle||"").then(function(response){if(response&&response.ok)recordSignalDiagnostic("SIGNAL_CONSOLE_OPENED",{tabId:message.tabId||null,sourceUrl:message.sourceUrl||"",windowId:response.windowId,reused:!!response.reused,sessionId:response.session&&response.session.id||null,audioOk:!!(response.audio&&response.audio.ok)});else recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_ERROR",{tabId:message.tabId||null,error:response&&response.error||"unknown"},"error");sendResponse(response)}).catch(function(error){recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_EXCEPTION",{tabId:message.tabId||null,error:String(error)},"error");sendResponse({ok:false,error:String(error)});});return true; }
+    if (message.type === "OPEN_SIGNAL_LIVE_WINDOW") {
+      var liveTabId = message.tabId != null ? message.tabId : (sender && sender.tab ? sender.tab.id : null);
+      var liveSourceUrl = message.sourceUrl || (sender && sender.tab && sender.tab.url) || "";
+      var liveSourceTitle = message.sourceTitle || (sender && sender.tab && sender.tab.title) || "";
+      recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_REQUESTED", {tabId:liveTabId, sourceUrl:liveSourceUrl, hasSuppliedStream:!!message.audioStreamId});
+      openSignalLiveWindow(message.audioStreamId || null, liveTabId, liveSourceUrl, liveSourceTitle).then(function(response) {
+        if(response && response.ok) recordSignalDiagnostic("SIGNAL_CONSOLE_OPENED", {tabId:response.tabId, windowId:response.windowId, sourceUrl:liveSourceUrl, reused:!!response.reused, sessionId:response.session&&response.session.id||null, audioOk:!!(response.audio&&response.audio.ok)});
+        else recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_ERROR", {tabId:liveTabId, error:response&&response.error||"unknown"}, "error");
+        sendResponse(response);
+      }).catch(function(error) {
+        recordSignalDiagnostic("SIGNAL_CONSOLE_OPEN_EXCEPTION", {tabId:liveTabId,error:String(error)}, "error");
+        sendResponse({ok:false,error:String(error)});
+      });
+      return true;
+    }
     if (message.type === "ACTIVATE_SIGNAL_SESSION") { activateSignalSession(message.sessionId,null).then(sendResponse);return true; }
     if (message.type === "UPDATE_SIGNAL_SESSION") { updateSignalSession(message,sendResponse);return true; }
     if (message.type === "DELETE_SIGNAL_SESSION") { deleteSignalSession(message,sendResponse);return true; }
@@ -3147,9 +3589,12 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
      if(message.type==="SIGNAL_LIVE_CONSOLE_OPEN"){signalLiveConsoleOpen=true;sendResponse({ok:true});return false;}
     if(message.type==="SIGNAL_LIVE_CONSOLE_CLOSE"){signalLiveConsoleOpen=false;sendResponse({ok:true});return false;}
     if(message.type==="GET_SIGNAL_INTERPRETER_STATE"){
-      Promise.all([chrome.storage.local.get(["effectifState"]),loadSignalSessions()]).then(function(results){
-        var state=Object.assign(baseState(),results[0].effectifState||{}),data=results[1],active=data.sessions.find(function(s){return s.id===data.activeSessionId})||null;
-        sendResponse({ok:true,groq:state.groqCapture||null,transcription:state.groqTranscript||null,sessions:data.sessions.map(function(s){return signalSessionCopy(s,false)}),activeSessionId:data.activeSessionId,transcript:active?active.segments.slice(-100):[],diagnostics:{runtimeStartedAt:state.telemetryHealth&&state.telemetryHealth.lastWriteAt||null,signalLiveConsoleOpen:signalLiveConsoleOpen}})
+      var liveConsoleUrl=chrome.runtime.getURL(extensionResource("ui/live.html"));
+      if(!sender || sender.id!==chrome.runtime.id || sender.url!==liveConsoleUrl){sendResponse({ok:false,reasonCode:"live-console-sender-required"});return false;}
+      Promise.all([chrome.storage.local.get(["effectifState"]),loadSignalSessions(),readCaptionSession()]).then(function(results){
+        var state=Object.assign(baseState(),results[0].effectifState||{}),data=results[1],active=data.sessions.find(function(s){return s.id===data.activeSessionId})||null,captionSession=results[2]||{rows:[]};
+        var captionHistory=(captionSession.rows||[]).filter(function(row){return row&&row.text&&(row.source==="chrome-live-caption"||(row.source==="yo"&&row.speaker==="INTÉRPRETE"))}).slice(-200).map(function(row){return{id:String(row.id||""),text:String(row.text||"").slice(0,1500),language:String(row.language||"unknown"),speaker:row.source==="yo"&&row.speaker==="INTÉRPRETE"?"YO":"CLIENTE",timestamp:new Date(Number(row.at)||Date.now()).toISOString(),source:row.source==="yo"?"groq-interpreter":"chrome-live-caption",reason:row.source==="yo"?"groq-whisper":"native-live-caption"}});
+        sendResponse({ok:true,groq:state.groqCapture||null,transcription:state.groqTranscript||null,sessions:data.sessions.map(function(s){return signalSessionCopy(s,false)}),activeSessionId:data.activeSessionId,transcript:active?active.segments.slice(-100):[],captionHistory:captionHistory,captionHistoryCallId:captionSession.callId||null,diagnostics:{runtimeStartedAt:state.telemetryHealth&&state.telemetryHealth.lastWriteAt||null,signalLiveConsoleOpen:signalLiveConsoleOpen}})
       }).catch(function(error){sendResponse({ok:false,error:String(error)})});return true;
     }
     if(message.type==="CLEAR_SIGNAL_INTERPRETER_TRANSCRIPT"){loadSignalSessions().then(async function(data){var id=message.sessionId||data.activeSessionId,s=data.sessions.find(function(x){return x.id===id});if(!s)throw new Error("Sesión no encontrada");await KhoraTelemetryDB.clearSignalSession(id);s.segments=[];s.segmentCount=0;return saveSignalSessions(data.sessions,id).then(function(){broadcastSignalEvent({type:"signal.transcript.clear",sessionId:id,timestamp:iso()});return{ok:true,session:signalSessionCopy(s,true)}})}).then(sendResponse).catch(function(error){sendResponse({ok:false,error:String(error)})});return true;}

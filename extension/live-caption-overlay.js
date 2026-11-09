@@ -49,6 +49,7 @@
   }
 
   var MAX_HISTORY = 800;
+  var MAX_RENDERED_ROWS = 72;
   var rows = [];
   var host = null;
   var root = null;
@@ -212,7 +213,7 @@
     host = document.createElement("div");
     host.id = "signal-interpreter-live-caption-overlay";
     host.setAttribute("aria-hidden", "true");
-    host.style.cssText = "all:initial;position:fixed;z-index:2147483647;pointer-events:none;display:none;left:12px;top:12px;width:560px;height:400px;overflow:visible";
+    host.style.cssText = "all:initial;position:fixed;z-index:2147483630;pointer-events:none;display:none;left:12px;top:12px;width:560px;height:400px;overflow:visible";
 
     root = host.attachShadow({ mode: "closed" });
     root.innerHTML =
@@ -233,17 +234,17 @@
       '.tool:hover{background:#20364a;border-color:#55738b}' +
       '.tool:focus-visible,.move:focus-visible,.unread:focus-visible,.resize:focus-visible{outline:2px solid #7dd3fc;outline-offset:2px}' +
       '.transcript{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#4a6377 #0c141f;padding:8px 12px 18px;display:flex;flex-direction:column;gap:7px;overflow-anchor:auto}' +
-      '.row{display:grid;grid-template-columns:3px minmax(0,1fr);align-items:stretch;gap:9px;padding:6px 0 7px;border-bottom:1px solid rgba(83,111,135,.22)}' +
+      '.row{display:grid;grid-template-columns:3px minmax(0,1fr);align-items:stretch;gap:6px;padding:3px 0 4px;border-bottom:1px solid rgba(83,111,135,.22)}' +
       '.row:last-child{border-bottom:0}' +
       '.accent{display:block;width:3px;min-height:100%;border-radius:4px;background:#76d5ff}' +
       '.row.es .accent{background:#7fe0ad}' +
       '.body{min-width:0}' +
-      '.meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:7px;margin-bottom:3px}' +
+      '.meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;margin-bottom:1px}' +
       '.role{color:#79d5ff;font-size:10px;font-weight:800;letter-spacing:.07em}' +
       '.row.es .role{color:#84e8b0}' +
       '.lang{color:#8197aa;font-size:9px;font-weight:700;letter-spacing:.07em}' +
       '.time{margin-left:auto;color:#687d90;font-size:9px;font-variant-numeric:tabular-nums}' +
-      '.text{color:#eaf2f8;font-size:13px;line-height:1.52;overflow-wrap:anywhere;white-space:pre-wrap;user-select:text}' +
+      '.text{color:#eaf2f8;font-size:14px;line-height:1.4;overflow-wrap:anywhere;white-space:pre-wrap;user-select:text}' +
       '.row.live .text{color:#fff}' +
       '.smart-token{display:inline;border:0;border-bottom:1px dotted #8fcfff;border-radius:2px;padding:0 1px;background:rgba(64,143,190,.10);color:inherit;font:inherit;cursor:pointer;user-select:text}' +
       '.smart-token[data-smart-type="phone"]{border-bottom-color:#8ae2b1;background:rgba(75,187,126,.10)}' +
@@ -257,6 +258,8 @@
       '.collapsed .header{border-bottom:0;border-radius:13px}' +
       '@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}' +
       '.card{border-radius:12px;background:rgba(20,23,28,.98);border-color:#53667b;box-shadow:0 4px 16px rgba(0,0,0,.2);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}.header{padding:8px;gap:8px;flex-shrink:0;background:#1d2632}.move{flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-height:44px}.title{font-size:14px;line-height:1.4;letter-spacing:0}.subtitle{font-size:14px;line-height:1.4;color:#bac8d6}.state{font-size:14px;line-height:1.4;letter-spacing:0;max-width:100%;overflow-wrap:anywhere}.stateLabel{min-width:0}.toolbar{gap:4px}.tool{min-width:44px;min-height:44px;font-size:14px}.transcript{padding:12px 12px 48px;gap:8px}.row{padding:8px 0}.role,.lang,.time{font-size:14px;letter-spacing:0}.lang,.time{color:#b3c1cf}.text{font-size:16px;line-height:1.55}.empty{font-size:14px;color:#bac8d6}.action-toast{font-size:14px}.unread{min-height:44px;font-size:14px;bottom:8px;border-radius:8px}.resize{width:44px;height:44px;min-width:44px;min-height:44px;background:transparent}.collapsed{min-height:0}.collapsed .subtitle,.collapsed .state{display:none}.collapsed .header{min-height:44px;padding:0 8px;border-radius:11px}' +
+      '.history{min-width:72px;padding-left:8px;padding-right:8px}' +
+      '.role[hidden],.lang[hidden]{display:none!important}' +
       '</style>' +
       '<section class="card" role="region" aria-label="Subtítulos en vivo de Signal Interpreter">' +
         '<header class="header">' +
@@ -264,7 +267,7 @@
             '<span class="brand"><span class="title">Signal Interpreter</span><span class="subtitle" title="Clic: copiar teléfono/dirección · Ctrl+clic: verificar · Ctrl+Mayús+clic: Linguee">Copiar · Verificar · Linguee</span></span>' +
             '<span class="state"><i class="dot idle"></i><span class="stateLabel">EN ESPERA</span></span>' +
           '</button>' +
-          '<div class="toolbar"><button class="tool auto" type="button" title="Restablecer posición y tamaño automáticos">Auto</button><button class="tool collapse" type="button" aria-expanded="true" title="Contraer o expandir el historial">−</button></div>' +
+          '<div class="toolbar"><button class="tool history" type="button" title="Abrir transcripción completa" aria-label="Abrir transcripción completa">HISTORIAL</button><button class="tool auto" type="button" title="Restablecer posición y tamaño automáticos">Auto</button><button class="tool collapse" type="button" aria-expanded="true" title="Contraer o expandir el historial">−</button></div>' +
         '</header>' +
         '<div class="transcript" role="log" aria-label="Historial completo de subtítulos" aria-live="off" tabindex="0"><div class="empty">Esperando la primera intervención…</div></div>' +
         '<button class="unread" type="button" hidden>Nuevas intervenciones ↓</button>' +
@@ -448,6 +451,7 @@
     var move = root.querySelector(".move");
     var auto = root.querySelector(".auto");
     var collapseButton = root.querySelector(".collapse");
+    var historyButton = root.querySelector(".history");
     var resize = root.querySelector(".resize");
     var unread = root.querySelector(".unread");
     if (isLabPage) {if (move){move.disabled=true;move.style.cursor="default";move.setAttribute("aria-label","Panel de prueba anclado");}if(resize)resize.hidden=true;}
@@ -485,6 +489,34 @@
       applyCollapsedState();
       if (!collapsed) schedulePosition();
       else if (host) host.style.height = "46px";
+    });
+    if (historyButton) listen(historyButton, "click", function () {
+      if (!chrome.runtime || typeof chrome.runtime.sendMessage !== "function") {
+        showActionToast("No se pudo abrir la transcripción", true);
+        return;
+      }
+      historyButton.disabled = true;
+      try {
+        chrome.runtime.sendMessage({
+          type: "OPEN_SIGNAL_LIVE_WINDOW",
+          tabId: sourceTabId != null ? sourceTabId : null,
+          sourceUrl: String(location.href || ""),
+          sourceTitle: String(document.title || "")
+        }, function (response) {
+          historyButton.disabled = false;
+          var runtimeError = chrome.runtime.lastError;
+          if (runtimeError || !response || response.ok !== true) {
+            showActionToast("No se pudo abrir la transcripción", true);
+            reportLifecycle("LIVE_CAPTION_TRANSCRIPT_OPEN_FAILED", { reasonCode: runtimeError ? "runtime-message-error" : "open-failed" }, "warn");
+            return;
+          }
+          showActionToast("Transcripción abierta en pestaña independiente");
+          reportLifecycle("LIVE_CAPTION_TRANSCRIPT_OPENED", { reused: !!response.reused, destination: "tab" });
+        });
+      } catch (_) {
+        historyButton.disabled = false;
+        showActionToast("No se pudo abrir la transcripción", true);
+      }
     });
     if (resize) {
       listen(resize, "pointerdown", startResize);
@@ -791,12 +823,12 @@
 
     var wasNearBottom = nearBottom(container);
     var data = [];
-    rows.slice(-MAX_HISTORY).forEach(function (item) {
+    rows.slice(-MAX_RENDERED_ROWS).forEach(function (item) {
       var spans = item.source === "chrome-live-caption" && typeof core.segmentCaptionText === "function"
         ? core.segmentCaptionText(item.text) : [{ text: item.text, language: item.language || "unknown" }];
-      spans.forEach(function (span) { if (span.text.trim()) data.push(Object.assign({}, item, span)); });
+      spans.forEach(function (span) { if (span.text.trim()) data.push(Object.assign({}, item, span, { speaker: item.speaker || "unknown" })); });
     });
-    data = data.slice(-MAX_HISTORY);
+    data = data.slice(-MAX_RENDERED_ROWS);
     var routingKey = rows.length + ":" + data.map(function (item) { return item.language + ":" + item.text.length; }).join("|");
     if (routingKey !== lastLanguageRoutingKey) {
       lastLanguageRoutingKey = routingKey;
@@ -809,10 +841,12 @@
       });
     }
     var rendered = container.querySelectorAll(".row");
-    while (rendered.length > data.length) {
-      rendered[rendered.length - 1].remove();
-      rendered = container.querySelectorAll(".row");
+    for (var removeIndex = rendered.length - 1; removeIndex >= data.length; removeIndex -= 1) {
+      rendered[removeIndex].remove();
     }
+    rendered = container.querySelectorAll(".row");
+    var previousRole = null;
+    var previousLanguageLabel = null;
     data.forEach(function (item, index) {
       var node = rendered[index];
       if (!node) {
@@ -826,11 +860,24 @@
       var time = node.querySelector(".time");
       var text = node.querySelector(".text");
       var nextText = String(item.text || "");
-      var speakerRole = typeof core.roleForSource === "function" ? core.roleForSource(item.source, language) : core.roleForLanguage(language);
-      if (role && role.textContent !== speakerRole) role.textContent = speakerRole;
-      if (lang && lang.textContent !== core.languageLabel(language)) lang.textContent = core.languageLabel(language);
+      var speakerRole = typeof core.roleForSource === "function" ? core.roleForSource(item.source, language, item.speaker) : core.roleForLanguage(language);
+      var languageText = core.languageLabel(language);
+      var showRole = index === 0 || speakerRole !== previousRole;
+      var showLanguage = index === 0 || languageText !== previousLanguageLabel;
+      if (role) {
+        var roleText = showRole ? speakerRole : "";
+        if (role.textContent !== roleText) role.textContent = roleText;
+        role.hidden = !showRole;
+      }
+      if (lang) {
+        var langText = showLanguage ? languageText : "";
+        if (lang.textContent !== langText) lang.textContent = langText;
+        lang.hidden = !showLanguage;
+      }
       if (time) time.textContent = formatTime(item.at);
       if (text && text.textContent !== nextText) renderSmartText(text, nextText);
+      previousRole = speakerRole;
+      previousLanguageLabel = languageText;
     });
 
     var empty = container.querySelector(".empty");
@@ -857,13 +904,14 @@
     if (collapsed) applyCollapsedState();
   }
 
-  function addRow(text, language, source, isLive, timestamp) {
-    if (source !== "chrome-live-caption") return;
+  function addRow(text, language, source, isLive, timestamp, speaker) {
+    if (source !== "chrome-live-caption" && !(source === "yo" && speaker === "INTÉRPRETE")) return;
     var clean = core.normalizeText(text).slice(0, 1500);
     if (!clean) return;
     lastCaptionAt = Date.now();
     source = source === "yo" || source === "chrome-live-caption" ? source : "cliente";
     language = core.resolveLanguage(language, clean);
+    speaker = source === "yo" && speaker === "INTÉRPRETE" ? "INTÉRPRETE" : "unknown";
     var now = Number(timestamp);
     if (!Number.isFinite(now) || now <= 0) now = Date.now();
     var lane = laneForSource(source);
@@ -881,6 +929,7 @@
       if (relation === "duplicate") {
         candidate.at = Math.max(Number(candidate.at || 0), now);
         if (language !== "unknown") candidate.language = language;
+        candidate.speaker = speaker;
         if (source === "chrome-live-caption") { candidate.source = source; candidate.live = true; }
         else if (candidate.source !== "chrome-live-caption") { candidate.source = source; candidate.live = !!isLive; }
         render();
@@ -893,6 +942,7 @@
         candidate.text = core.mergeCaptionText(candidate.text, clean).slice(0, 4000);
         candidate.at = Math.max(previousAt, now);
         if (language !== "unknown" || candidate.language === "unknown") candidate.language = language;
+        candidate.speaker = speaker;
         if (source === "chrome-live-caption") { candidate.source = source; candidate.live = true; }
         else if (previousSource !== "chrome-live-caption" || now - previousAt > 4500) {
           candidate.source = source;
@@ -903,7 +953,7 @@
       }
     }
 
-    rows.push({ text: clean, language: language, source: source, live: !!isLive, at: now });
+    rows.push({ text: clean, language: language, source: source, speaker: speaker, live: !!isLive, at: now });
     if (rows.length > MAX_HISTORY) rows.splice(0, rows.length - MAX_HISTORY);
     render();
   }
@@ -911,11 +961,12 @@
   function hydrateHistory(history) {
     if (!Array.isArray(history)) return;
     var previousScroll = root && root.querySelector(".transcript") ? root.querySelector(".transcript").scrollTop : 0;
-    rows = history.filter(function (item) { return item && item.source === "chrome-live-caption"; }).slice(-MAX_HISTORY).map(function (item) {
+    rows = history.filter(function (item) { return item && (item.source === "chrome-live-caption" || (item.source === "yo" && item.speaker === "INTÉRPRETE")); }).slice(-MAX_HISTORY).map(function (item) {
       return {
         text: core.normalizeText(item && item.text).slice(0, 1500),
         language: core.resolveLanguage(item && item.language, item && item.text),
         source: item && item.source === "yo" ? "yo" : (item && item.source === "chrome-live-caption" ? "chrome-live-caption" : "cliente"),
+        speaker: item && item.source === "yo" && item.speaker === "INTÉRPRETE" ? "INTÉRPRETE" : "unknown",
         live: !!(item && item.live),
         at: Number(item && (item.timestamp || item.at)) || Date.now(),
         id: item && item.id || null
@@ -1218,10 +1269,14 @@
       }
     } else if (message.type === "SIGNAL_CAPTION_UPDATE") {
       var caption = message.caption || {};
-      if (!caption.text || caption.source !== "chrome-live-caption" || caption.native !== true || !canShowOnThisPage()) return;
+      var nativeCaption = caption.source === "chrome-live-caption" && caption.native === true;
+      var interpreterCaption = caption.source === "yo" && caption.speaker === "INTÉRPRETE" &&
+        message.callId === currentCloudCallId() && !!sender && sender.id === chrome.runtime.id &&
+        isCloudCallRoute() && callActive;
+      if (!caption.text || (!nativeCaption && !interpreterCaption) || !canShowOnThisPage()) return;
       active = true;
       sessionEnded = false;
-      addRow(caption.text, caption.language, caption.source, caption.live, caption.timestamp);
+      addRow(caption.text, caption.language, caption.source, caption.live, caption.timestamp, caption.speaker);
     } else if (message.type === "SIGNAL_CAPTION_NATIVE_STATUS") {
       nativeStatus = message;
       active = message.captionFresh === false

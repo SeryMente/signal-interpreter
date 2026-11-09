@@ -46,3 +46,18 @@ Solo una instrucción expresa del operador puede dispensar SI-OP-01 para una mat
 En el paquete 0.10.43 revisado, `PREPARAR-Y-CARGAR.cmd` llama directamente a `INSTALAR.ps1` y se detiene si falla; el instalador valida el host, registra bajo `HKCU` y realiza una prueba de protocolo. Este documento formaliza que esa vía debe utilizarse en toda materialización Windows.
 
 **Límite de verificación actual:** la inspección de solo lectura en PC-13 encontró ausente la clave Native Messaging del usuario de esa sesión. No se ejecutó el instalador ni se modificó el registro en esta retoma; por tanto, SI-OP-01 queda documentada, pero la instalación del host en PC-13 permanece **NO EJECUTADA / NO VERIFICADA**.
+
+
+## Verificación fila4 · SI-OP-01 · 2026-11-08 · G14
+
+La lectura de vuelta del perfil Windows CENTRAL\\fila4 confirma que la clave HKU/<SID fila4>/Software/Google/Chrome/NativeMessagingHosts/com.signalinterpreter.captionhost existe y apunta a C:/Users/fila4/AppData/Local/SignalInterpreter/NativeMessagingHost/com.signalinterpreter.captionhost.json.
+
+El manifiesto leído declara:
+- name: com.signalinterpreter.captionhost
+- type: stdio
+- path: C:/Users/fila4/AppData/Local/SignalInterpreter/NativeMessagingHost/SignalInterpreter.CaptionHost.exe
+- allowed_origins: chrome-extension://ldpbjhobnfgmhdoehehdmnbhhjckebmj/
+
+El ejecutable existe y su SHA-256 es 313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE, coincidente con ExpectedSha256 del paquete candidato.
+
+La lectura histórica de PC-13 que informó ausencia de la clave se limita a ese perfil/equipo y no contradice la existencia verificada en fila4. Esta comprobación acredita registro y binario; no acredita que Chrome haya recargado 0.10.45 ni la ejecución funcional del host en una llamada.

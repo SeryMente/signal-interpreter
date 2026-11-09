@@ -5,7 +5,7 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const expectedVersion = "0.10.40";
+const expectedVersion = "0.10.45";
 const readText = (p) => readFileSync(resolve(root, p), "utf8");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex").toUpperCase();
 const manifest = JSON.parse(readText("manifest.json"));
@@ -66,6 +66,10 @@ assert.ok(installer.includes("$inventory -is [System.Array]"), "installer does n
 assert.ok(installer.includes("signal-interpreter-payload-sha256/v1"), "installer does not validate the current inventory schema");
 assert.ok(existsSync(resolve(root, "PREPARAR-Y-CARGAR.cmd")), "one-step preparation command is missing");
 assert.ok(existsSync(resolve(root, "tools/probe-caption-host.ps1")), "native host protocol probe is missing");
+assert.ok(existsSync(resolve(root, "tools/setup-groq-key.ps1")), "local Groq credential helper is missing");
+assert.ok(entries.some((entry) => entry.path === "tools/setup-groq-key.ps1"), "local Groq credential helper is not covered by payload integrity");
+assert.ok(background.includes("validateInterpreterMicCapture") && background.includes("groqZeroDataRetentionConfirmed"), "interpreter capture gate is missing");
+assert.ok(earnings.includes("navigator.mediaDevices.getUserMedia") && earnings.includes("toggleInterpreterMicCapture"), "in-call microphone capture control is missing");
 
 const registration = readText("extension/native/register-caption-host.ps1");
 const match = registration.match(/ExpectedSha256\s*=\s*"([a-f0-9]{64})"/i);

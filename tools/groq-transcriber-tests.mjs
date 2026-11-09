@@ -31,13 +31,22 @@ const ctx={
 vm.createContext(ctx);
 vm.runInContext(source,ctx);
 
-const noKey=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{});
+const noKey=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{zeroDataRetentionConfirmed:true});
 assert.equal(noKey.ok,false);
 assert.match(noKey.error,/GROQ_API_KEY/);
 
+const beforeZdrCalls=calls.length;
+const noZdr=await ctx.SignalGroqTranscriber.transcribe(
+  new Blob(["audio"],{type:"audio/webm"}),
+  {__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",model:"whisper-large-v3-turbo"}
+);
+assert.equal(noZdr.ok,false);
+assert.equal(noZdr.reasonCode,"zdr-required");
+assert.equal(calls.length,beforeZdrCalls,"audio is never sent without ZDR confirmation");
+
 const result=await ctx.SignalGroqTranscriber.transcribe(
   new Blob(["audio"],{type:"audio/webm"}),
-  {__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",model:"whisper-large-v3-turbo",language:"es",prompt:"Interpretación médica"}
+  {__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true,model:"whisper-large-v3-turbo",language:"es",prompt:"Interpretación médica"}
 );
 assert.equal(result.ok,true);
 assert.equal(result.text,"Hola doctor, buenos días.");
@@ -52,7 +61,7 @@ assert.equal(sent.get("response_format"),"verbose_json");
 assert.equal(sent.get("prompt"),"Transcripción en español para interpretación médica. Interpretación médica");
 
 ctx.fetch=async()=>({ok:false,status:401,text:async()=>JSON.stringify({error:{message:"invalid key gsk_abcdefghijklmnopqrstuvwxyz"}})});
-const failed=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{__testToken:"gsk_abcdefghijklmnopqrstuvwxyz"});
+const failed=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true});
 assert.equal(failed.ok,false);
 assert.doesNotMatch(failed.error,/gsk_abcdefghijklmnopqrstuvwxyz/);
 console.log("GROQ_TRANSCRIBER_TEST=PASS");

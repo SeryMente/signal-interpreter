@@ -15,12 +15,12 @@
     </div>
     <div class="live-state"><i id="groqDot"></i><span id="groqStatus">HISTORIAL · SIN CAPTURA</span><span class="sep">·</span><span id="participantSummary">2 PARTICIPANTES</span></div>
     <div class="toolbar">
-      <button id="sizeMenu" class="tool" title="Tamaño">TAMAÑO</button>
+      <button id="toggleTools" class="tool" aria-expanded="false" title="Mostrar controles secundarios">CONTROLES</button><button id="sizeMenu" class="tool" title="Tamaño">TAMAÑO</button>
       <button data-view="timeline" class="tool active">TIMELINE</button>
       <button data-view="triptych" class="tool">TRÍPTICO</button>
       <button id="focusBtn" class="tool">FOCO</button>
       <button id="exportDiagnostic" class="tool">DESCARGAR LOG</button><button id="syncDiagnostic" class="tool">SINCRONIZAR LOG</button>
-      <button id="captureToggle" class="tool">CAPTURA DESHABILITADA</button>
+      <button id="captureToggle" class="tool" disabled title="La voz se inicia desde el control flotante de la llamada">INICIA DESDE LLAMADA</button>
       <button id="clear" class="tool danger">LIMPIAR</button>
     </div>
   </header>
@@ -64,16 +64,16 @@
     <aside class="controls">
       <section class="status-card"><div><span>MICRÓFONO</span><b id="micText">Esperando</b></div><div><span>AUDIO DE PESTAÑA</span><b id="audioText">Esperando</b></div>
         <div><span>CAPTURA</span><b id="groqText">Desconectado</b></div>
-        <div><span>FUENTE</span><b>Historial conservado</b></div>
-        <div><span>ENTRADA</span><b>Texto; sin adquisición de audio</b></div>
+        <div><span>FUENTE</span><b>Captions nativos + voz efímera</b></div>
+        <div><span>ENTRADA</span><b>Texto de sesión; audio no conservado</b></div>
         <div><span>SEGMENTOS</span><b id="segmentCount">0</b></div>
       </section>
 
       <section class="speaker-card">
         <span class="eyebrow">ASIGNACIÓN RÁPIDA</span>
-        <p>Esta ventana conserva sesiones históricas y notas manuales. Los subtítulos nativos nuevos aparecen en el overlay de la llamada; no se graba audio.</p>
+        <p>Esta ventana muestra historial y notas. La voz propia solo se inicia desde el botón de la llamada confirmada; los bloques de audio no se guardan y el texto de voz no entra a telemetría.</p>
         <div class="hotkeys"><kbd>1</kbd> CLIENTE <kbd>2</kbd> YO</div>
-        <div id="participantDetection" class="detection">Captura de audio deshabilitada</div>
+        <div id="participantDetection" class="detection">Voz del intérprete: inicia desde la llamada confirmada</div>
       </section>
 
       <section class="composer"><div class="mic-head"><span class="eyebrow">NOTA MANUAL</span><span class="eyebrow">SIN AUDIO</span></div>

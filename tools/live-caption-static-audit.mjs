@@ -8,6 +8,7 @@ const read=(p)=>fs.readFileSync(path.join(root,p),"utf8");
 const exists=(p)=>fs.existsSync(path.join(root,p));
 const manifest=JSON.parse(read("manifest.json"));
 const background=read("extension/background.js");
+const content=read("extension/content.js");
 const offscreen=read("extension/offscreen.js");
 const groq=read("extension/groq-transcriber.js");
 const overlay=read("extension/live-caption-overlay.js");
@@ -22,10 +23,11 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.40");
-assert.ok(background.includes('liveCaptionInterpreterEnabled: false'), "el micrófono está fuera del alcance actual");
+assert.equal(manifest.version,"0.10.45");
+assert.ok(background.includes('liveCaptionInterpreterEnabled: false'), "el canal de voz INTÉRPRETE permanece desactivado por defecto");
 assert.equal(background.includes('if (language === "es") source = "yo"'), false, "el historial del service worker no debe convertir idioma en identidad del hablante");
-assert.ok(overlay.includes('core.roleForSource(item.source, language)'), "el render respeta la fuente del hablante");
+assert.ok(overlay.includes('core.roleForSource(item.source, language, item.speaker)'), "el render conserva la fuente y el hablante explícito");
+assert.ok(core.includes('return speaker === "CLIENTE" ? "CLIENTE" : "HABLANTE NO VERIFICADO"'), "el idioma de un caption nativo no se convierte en identidad de hablante");
 assert.equal(overlay.includes('if (language === "es") source = "yo"'), false, "el idioma no debe reasignar una fuente de audio verificada");
 assert.ok(popup.includes("captionBilingualTabEnabled"), "el popup permite configurar la transcripción bilingüe paralela");
 assert.ok(background.includes("SIGNAL_CAPTION_OPEN_LOOKUP"), "las búsquedas externas pasan por un router acotado");
@@ -43,6 +45,8 @@ assert.ok(popup.includes("youtubeCaptionCapture"), "el popup permite iniciar y d
 assert.ok(manifest.key && manifest.key.length > 300);
 assert.ok(manifest.key);
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
+assert.equal(manifest.host_permissions.includes("https://api.groq.com/*"),true);
+assert.match(manifest.content_security_policy.extension_pages,/https:\/\/api\.groq\.com/);
 assert.ok(manifest.content_scripts.some((e)=>e.matches?.includes("https://app.cloudinterpreter.com/*")&&Array.isArray(e.js)&&e.js.includes("extension/live-caption-core.js")&&e.js.includes("extension/live-caption-overlay.js")&&e.js.includes("extension/content.js")));
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 
@@ -168,15 +172,42 @@ assert.equal(/127\\.0\\.0\\.1:\\d+/.test(obsSync),false);
 assert.equal(/localhost:\\d+/.test(obsSync),false);
 
 console.log("LIVE_CAPTION_STATIC_AUDIT=PASS");
-assert.equal(/getUserMedia\(\{\s*audio:\s*true/.test(offscreen),false,"offscreen must never request a microphone");
-
+assert.equal(/getUserMedia|MediaRecorder|createMediaStreamSource/.test(offscreen),false,
+  "offscreen must not acquire or record microphone audio");
 assert.equal(manifest.permissions.includes("tabCapture"),false);
-assert.equal(manifest.host_permissions.includes("https://api.groq.com/*"),false);
 assert.equal(manifest.content_scripts.some(e=>e.js?.includes("extension/youtube-caption-adapter.js")),false);
 for(const code of [background,offscreen,popup]){
- assert.equal(/getUserMedia|MediaRecorder|createMediaStreamSource|tabCapture\.getMediaStreamId/.test(code),false,"no conversational media acquisition or replay");
+ assert.equal(/getUserMedia|MediaRecorder|createMediaStreamSource|tabCapture\.getMediaStreamId/.test(code),false,
+   "media acquisition must not run in the worker, offscreen document or popup");
 }
-assert.ok(background.includes('caption.native !== true'));
-assert.ok(overlay.includes('if (source !== "chrome-live-caption") return;'));
+const micStart=content.slice(content.indexOf("async function startInterpreterMicCapture()"),
+  content.indexOf("function toggleInterpreterMicCapture()"));
+assert.ok(micStart.includes("navigator.mediaDevices.getUserMedia") && micStart.includes("new MediaRecorder(stream"),
+  "the interpreter mic is acquired only by the in-call content control");
+const micPermissionCall=micStart.indexOf("stream = await navigator.mediaDevices.getUserMedia(");
+assert.ok(micStart.indexOf("SIGNAL_INTERPRETER_MIC_POLICY_GET") < micPermissionCall && micPermissionCall>=0,
+  "ZDR/key/call preflight precedes the actual microphone permission request");
+assert.ok(content.includes("voiceControl.addEventListener(\"click\", toggleInterpreterMicCapture)"),
+  "microphone capture requires an explicit in-call user gesture");
+assert.ok(content.includes("stopInterpreterMicCapture(\"call-route-left\",true)") &&
+          content.includes("stopInterpreterMicCapture(\"pagehide\",true)"),
+  "microphone tracks stop when leaving the call or page");
+assert.ok(background.includes("config.groqZeroDataRetentionConfirmed !== true") &&
+          background.includes("config.liveCaptionInterpreterEnabled !== true") &&
+          background.includes("isCloudCallUrl(sender.tab.url)"),
+  "background fails closed unless call, feature and ZDR are valid");
+const chunk=background.slice(background.indexOf("async function processInterpreterMicChunk("),
+  background.indexOf("function enqueueInterpreterMicChunk("));
+assert.ok(chunk.includes("SignalGroqTranscriber.transcribe"));
+assert.doesNotMatch(chunk,/KhoraTelemetryDB|persistSignalSegment|addSignalSessionSegment|record\(|appendEvent\(/,
+  "clinical audio/transcript is excluded from telemetry and persistent session APIs");
+assert.ok(background.includes("chrome.storage.session.set({ [INTERPRETER_MIC_SESSION_KEY]") &&
+          background.includes("chrome.storage.session.set({ [CAPTION_SESSION_KEY]: next })"),
+  "capture metadata and transcript text stay in session-only storage");
+assert.match(groq,/zeroDataRetentionConfirmed!==true/);
+assert.match(groq,/reasonCode:"zdr-required"/);
+assert.ok(overlay.includes('caption.source === "yo" && caption.speaker === "INTÉRPRETE"') &&
+          overlay.includes("message.callId === currentCloudCallId()"),
+  "overlay accepts interpreter captions only for the active call");
 assert.ok(bridge.includes('native-heartbeat-timeout'));
 assert.ok(bridge.includes('Math.min(reconnectAttempt, RECONNECT_DELAYS.length - 1)'));

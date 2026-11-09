@@ -21,10 +21,12 @@
     billingRule: "pro_rata_by_second_assumed",
     overlayEnabled: true,
     overlaysGlobalEnabled: true,
+    callOverlayControlVisible: true,
     overlayCompact: true,
     liveCaptionOverlayEnabled: true,
     liveCaptionOverlayScope: "source-only",
     liveCaptionInterpreterEnabled: false,
+    groqZeroDataRetentionConfirmed: false,
     liveCaptionBilingualTabEnabled: false,
     usdMxnRate: null,
     exchangeRateDate: null,
@@ -156,9 +158,11 @@
     $("telemetryHeartbeatSeconds").value = String(config.telemetryHeartbeatSeconds || 30);
     $("overlayEnabled").checked = !!config.overlayEnabled;
     if ($("overlaysGlobalEnabled")) $("overlaysGlobalEnabled").checked = config.overlaysGlobalEnabled !== false;
+    if ($("callOverlayControlVisible")) $("callOverlayControlVisible").checked = config.callOverlayControlVisible !== false;
     if ($("captionOverlayEnabled")) $("captionOverlayEnabled").checked = config.liveCaptionOverlayEnabled !== false;
     if ($("captionOverlayScope")) $("captionOverlayScope").value = config.liveCaptionOverlayScope === "all-tabs" ? "all-tabs" : "source-only";
-    if ($("captionInterpreterEnabled")) { $("captionInterpreterEnabled").checked = false; $("captionInterpreterEnabled").disabled = true; }
+    if ($("captionInterpreterEnabled")) $("captionInterpreterEnabled").checked = config.liveCaptionInterpreterEnabled === true;
+    if ($("groqZeroDataRetentionConfirmed")) $("groqZeroDataRetentionConfirmed").checked = config.groqZeroDataRetentionConfirmed === true;
     if ($("captionBilingualTabEnabled")) { $("captionBilingualTabEnabled").checked = false; $("captionBilingualTabEnabled").disabled = true; }
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
@@ -167,7 +171,11 @@
     if (loginUsernameInput && document.activeElement !== loginUsernameInput) {
       loginUsernameInput.value = cloudInterpreterLoginUsername;
     }
-    $("groqStatus").textContent = "Live Caption nativo · sin captura de audio";
+    $("groqStatus").textContent = config.liveCaptionInterpreterEnabled !== true
+      ? "Voz propia desactivada"
+      : config.groqZeroDataRetentionConfirmed === true
+        ? "Voz propia habilitada · iniciar desde la llamada"
+        : "Bloqueado · confirma ZDR en la consola Groq";
     if ($("telemetryVersion")) $("telemetryVersion").textContent = BUILD_LABEL;
     $("sessionTimer").textContent = duration(state.sessionStartedAt);
     $("onlineTimer").textContent = duration(state.onlineStartedAt);
@@ -258,7 +266,10 @@
     finally{ button.disabled=false; renderMicrophone(); }
   });
   if ($("captionInterpreterEnabled")) $("captionInterpreterEnabled").addEventListener("change", function () {
-    save({ liveCaptionInterpreterEnabled: false });
+    save({ liveCaptionInterpreterEnabled: this.checked });
+  });
+  if ($("groqZeroDataRetentionConfirmed")) $("groqZeroDataRetentionConfirmed").addEventListener("change", function () {
+    save({ groqZeroDataRetentionConfirmed: this.checked });
   });
   if ($("captionBilingualTabEnabled")) $("captionBilingualTabEnabled").addEventListener("change", function () {
     save({ liveCaptionBilingualTabEnabled: false });
@@ -317,6 +328,7 @@
   $("telemetryHeartbeatSeconds").addEventListener("change", function () { save({ telemetryHeartbeatSeconds: Math.max(10, Math.min(300, Number(this.value) || 30)) }); });
   $("overlayEnabled").addEventListener("change", function () { save({ overlayEnabled: this.checked }); });
   if ($("overlaysGlobalEnabled")) $("overlaysGlobalEnabled").addEventListener("change", function () { save({ overlaysGlobalEnabled: this.checked }); });
+  if ($("callOverlayControlVisible")) $("callOverlayControlVisible").addEventListener("change", function () { save({ callOverlayControlVisible: this.checked }); });
   if ($("captionOverlayEnabled")) $("captionOverlayEnabled").addEventListener("change", function () { save({ liveCaptionOverlayEnabled: this.checked }); });
   if ($("captionOverlayScope")) $("captionOverlayScope").addEventListener("change", function () { save({ liveCaptionOverlayScope: this.value === "all-tabs" ? "all-tabs" : "source-only" }); });
   $("volume").addEventListener("input", function () {

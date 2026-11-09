@@ -59,7 +59,7 @@ assert.equal(core.findSmartTokens("The appointment is on 2026-10-09, call at 555
 assert.equal(core.findSmartTokens("La cita es a las 10:30 y son 3 pacientes.").length, 0,
   "no se deben marcar horas o cifras cortas como teléfonos");
 
-assert.equal(core.roleForSource("chrome-live-caption", "en"), "CLIENTE");
+assert.equal(core.roleForSource("chrome-live-caption", "en"), "HABLANTE NO VERIFICADO");
 assert.equal(core.roleForSource("cliente", "en"), "CLIENTE");
 assert.equal(core.roleForSource("yo", "es"), "INTÉRPRETE");
 assert.equal(core.roleForSource("cliente", "es"), "LEP", "audio entrante español conserva el carril bilingüe solicitado, sin capturar micrófono");
@@ -115,4 +115,6 @@ assert.equal(dispatcher.status().cliente.running, false);
 
 console.log("LIVE_CAPTION_CORE_TEST=PASS");
 
-assert.equal(core.roleForSource("chrome-live-caption", "es"),"LEP","native Spanish captions use the same incoming-audio lane");
+assert.equal(core.roleForSource("chrome-live-caption", "es"),"HABLANTE NO VERIFICADO","language is not speaker identity for native captions");
+assert.equal(core.roleForSource("chrome-live-caption", "es", "CLIENTE"),"CLIENTE","an explicit speaker source may retain a verified label");
+assert.equal(core.roleForSource("yo", "en", "INTÉRPRETE"),"INTÉRPRETE","the explicit interpreter source wins over language");

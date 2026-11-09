@@ -48,8 +48,12 @@
           <span class="switch"><input id="observation" type="checkbox"><i></i></span>
         </label>
         <label class="control-row">
-          <span><strong>Mostrar ambos overlays</strong><small>Oculta ganancias y subtítulos sin detener la llamada</small></span>
+          <span><strong>Mostrar todos los overlays</strong><small>Oculta los overlays de la extensión sin detener la llamada</small></span>
           <span class="switch"><input id="overlaysGlobalEnabled" type="checkbox" checked><i></i></span>
+        </label>
+        <label class="control-row">
+          <span><strong>Control flotante en llamada</strong><small>Permite ocultar/mostrar todos los overlays desde la pantalla de llamada</small></span>
+          <span class="switch"><input id="callOverlayControlVisible" type="checkbox" checked><i></i></span>
         </label>
         <label class="control-row">
           <span><strong>Overlay</strong><small>Resumen de ganancias sobre la llamada</small></span>
@@ -63,7 +67,16 @@
           <div><strong id="caption-preferences-title">Subtítulos en vivo</strong><small>Texto nativo · sin capturar audio</small></div>
           <label class="caption-enable"><input id="captionOverlayEnabled" type="checkbox" checked><span>Visible</span></label>
         </div>
-        <small class="caption-help">Live Caption de Chrome es la única fuente. Si Chrome deja de exponer texto, el panel te lo indicará.</small>
+        <small class="caption-help">Live Caption de Chrome es la fuente de captions entrantes. El canal de voz propio es independiente y solo se inicia con un clic dentro de una llamada activa.</small>
+        <label class="select-row" for="captionInterpreterEnabled">
+          <span>Transcribir mi micrófono durante la llamada</span>
+          <span class="switch"><input id="captionInterpreterEnabled" type="checkbox"><i></i></span>
+        </label>
+        <label class="select-row" for="groqZeroDataRetentionConfirmed">
+          <span>Confirmo que Zero Data Retention está habilitado en mi consola Groq</span>
+          <span class="switch"><input id="groqZeroDataRetentionConfirmed" type="checkbox"><i></i></span>
+        </label>
+        <small class="caption-help">La captura no inicia en espera, timbrado ni fuera de /call/:id. El audio solo se mantiene en memoria mientras se transmite; el texto solo vive en la sesión y no se envía a telemetría. La transmisión queda bloqueada sin esta confirmación ZDR.</small>
         <label class="select-row" for="captionOverlayScope">
           <span>Visibilidad del overlay</span>
           <select id="captionOverlayScope">

@@ -7,7 +7,7 @@ $native = Join-Path $root 'extension\native'
 $manifestFile = Join-Path $root 'manifest.json'
 $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestFile | ConvertFrom-Json
 
-if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.40') {
+if ($manifest.name -ne 'Signal Interpreter' -or $manifest.version -ne '0.10.45') {
     throw 'Unexpected Signal Interpreter package version; nothing was registered.'
 }
 if (-not $env:LOCALAPPDATA) { throw 'LOCALAPPDATA is undefined; no host was installed.' }
@@ -211,6 +211,26 @@ try {
     Remove-Item -LiteralPath $backup -Recurse -Force -ErrorAction SilentlyContinue
 }
 
+$groqCredentialStore = Join-Path $env:USERPROFILE '.signal-interpreter\groq-token.dat'
+$groqKeyStatus = 'NOT_CONFIGURED'
+$groqSetupScript = Join-Path $root 'tools\setup-groq-key.ps1'
+if (Test-Path -LiteralPath $groqCredentialStore -PathType Leaf) {
+    if (-not (Test-Path -LiteralPath $groqSetupScript -PathType Leaf)) {
+        throw 'The Groq key setup helper is missing from this package.'
+    }
+    try {
+        & $groqSetupScript -RequireExisting
+        if (Test-Path -LiteralPath (Join-Path $root 'extension\groq-secret.local.js') -PathType Leaf) {
+            $groqKeyStatus = 'READY'
+        }
+    } catch {
+        $groqKeyStatus = 'NOT_CONFIGURED'
+        Write-Warning 'The saved Groq credential could not be loaded. The extension remains installed with interpreter capture blocked.'
+    }
+} else {
+    Write-Output 'GROQ_KEY=NOT_CONFIGURED | microphone transcription remains blocked until a local key is supplied.'
+}
+
 $receipt = [ordered]@{
     Version = $manifest.version
     Root = $root
@@ -221,6 +241,8 @@ $receipt = [ordered]@{
     NativeHostManifest = $stableManifest
     NativeHostRegistry = 'PASS'
     Sample = 'BUNDLED_VERIFIED'
+    GroqKeyStatus = $groqKeyStatus
+    InterpreterCaptureDefault = 'DISABLED'
     SampleSha256 = $sampleInfo.Sha256
     SampleDurationSeconds = $sampleInfo.DurationSeconds
     ChromeLoaded = 'NO_VERIFICADO'

@@ -23,7 +23,7 @@ function harness({mode='Audio interpreting',grant=true,grantError='not-authorize
   authorizationRetryCounts:new Map(),authorizationRetryTimers:new Map(),authorizationRetryExhausted:new Set(),
   lastIncomingSignature:'',incomingAttemptId:null,lastIncomingDialogElement:null,lastIncomingBlockedSignature:'',
   answerFlow:{},ANSWER_LEASE_MARKER:'lease',window:{},integrity:{permittedConnectClicks:0},
-  answerWatchdog:null,RUNTIME_VERSION:'0.10.40',DIALOG:'dialog',runtimeMarker:{active:true},
+  answerWatchdog:null,RUNTIME_VERSION:'0.10.45',DIALOG:'dialog',runtimeMarker:{active:true},
   syncPageFavicon(){},currentCallId:()=>route?'active':null,
   normalized:s=>String(s||''),safe:s=>String(s||''),visibleElement:()=>visible,
   emit(action,payload,level){events.push({action,payload:payload||{},level:level||'info'});},
@@ -143,6 +143,6 @@ const worker=fs.readFileSync('extension/background.js','utf8'),popup=fs.readFile
 for(const source of [content,worker,popup]){assert(source.includes('autoAnswerEnabled: false'));checks++;}
 assert(worker.includes('SignalPresenceGuard.toggleFromKeyboard()'));checks++;
 assert(!worker.includes('config.autoAnswerEnabled = !config.autoAnswerEnabled'));checks++;
-assert(content.includes('next === "offline"'));checks++;
+assert(content.includes('next === "offline" || (next === "unknown" && previous === "online")'));checks++;
 assert(content.includes('if (readinessTimer) { clearInterval(readinessTimer); readinessTimer = null; }'));checks++;
 console.log(JSON.stringify({suite:'presence-connect',environment:'Node VM / actual content function with synthetic DOM',checks,result:'PASS',windowsAccepted:false}));
