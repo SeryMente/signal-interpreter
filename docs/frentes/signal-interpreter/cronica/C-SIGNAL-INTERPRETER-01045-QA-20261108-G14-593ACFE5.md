@@ -5,7 +5,7 @@
 - Generación responsable: G14 · agente único
 - Alias operativo / UUIDv7 local: chatgpt-signal-interpreter-01a1bd8b-8291-7906-b862-6088593acfe5
 - Evento: SIGNAL-INTERPRETER-TRANSFER-20261108-G14-593ACFE5
-- Estado: CANDIDATA RECONCILIADA LOCALMENTE · QA WINDOWS PASS · CI NUEVO PENDIENTE DE VERIFICACIÓN · ACEPTACIÓN HUMANA PENDIENTE
+- Estado: CANDIDATA RECONCILIADA LOCALMENTE · QA WINDOWS PASS · CI DEL HEAD PUBLICADO 3/3 PASS · ACEPTACIÓN HUMANA PENDIENTE
 
 ## Preservación
 
@@ -20,7 +20,7 @@ El checkout original C:/Users/fila4/Desktop/SeryMente/Signal Interpreter se cons
 - Merge local sin conflictos: 49f18e18e88918575278ed083db31d127d21a892.
 - QA con Node v24.0.0 desde la raíz: 42/42 scripts tools/*test*.mjs PASS; 25/25 archivos JavaScript de extension superaron node --check; auditoría estática Live Caption, auditoría estática Observability, verify-release-package, auditoría observations y git diff --check PASS. Resultado agrupado: 48 PASS, 0 FAIL.
 - Evidencia: C:/Users/fila4/Desktop/SI-backups/validation-G14-PR75/windows-node24-g14-postmerge.log y resultados-postmerge.json.
-- Los tres workflows GitHub Actions del head candidato anterior 38472be... (audit, package integrity y native-caption-host-build) estaban en SUCCESS. La nueva cabeza reconciliada requiere su propio CI al publicarse.
+- Los tres workflows GitHub Actions del head candidato anterior 38472be... (audit, package integrity y native-caption-host-build) estaban en SUCCESS. El HEAD publicado 72a760a46e0d31eee0d5e9f9ae4ef6fbe414d8c7 completó los tres workflows SUCCESS: audit, package integrity y native-caption-host-build.
 
 ## Estado del perfil fila4
 
