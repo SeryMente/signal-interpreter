@@ -56,6 +56,13 @@ Actualiza el núcleo canónico con el delta real, evidencia, SHA/commit, entorno
 
 G14 es la única instancia responsable (generación 14; UUIDv7 local 01a1bd8b-8291-7906-b862-6088593acfe5; evento de transferencia SIGNAL-INTERPRETER-TRANSFER-20261108-G14-593ACFE5). No es ID nativo. FOL1 continúa PREPARADA, NO ACTIVA.
 
-La candidata de producto es 0.10.45 en PR #75, abierta y draft; main permanece en 0.10.40. La reconciliación local con origin/main se completó sin conflictos en work/g14-pr75-reconcile (commit local 49f18e18e88918575278ed083db31d127d21a892). QA Windows/Node 24 del worktree reconciliado: 42/42 test scripts PASS, JS syntax 25/25 PASS, cuatro auditores/verificadores y git diff --check PASS (48 verificaciones agrupadas, 0 fallos). CI del HEAD publicado 72a760a46e0d31eee0d5e9f9ae4ef6fbe414d8c7: 3/3 SUCCESS (audit, package integrity y native-caption-host-build). Cada commit posterior debe volver a verificarse.
+La candidata de producto es 0.10.45 en PR #75, abierta y draft; main permanece en 0.10.40. La reconciliación local con origin/main se completó sin conflictos en work/g14-pr75-reconcile (commit local 49f18e18e88918575278ed083db31d127d21a892). QA Windows/Node 24 del worktree reconciliado: 42/42 test scripts PASS, JS syntax 25/25 PASS, cuatro auditores/verificadores y git diff --check PASS (48 verificaciones agrupadas, 0 fallos). CI del HEAD publicado 48f2798d3599f6e91f70ec665d3eb26b986d3116: 3/3 SUCCESS (audit, package integrity y native-caption-host-build). Cada commit posterior debe volver a verificarse.
 
 Chrome fila4 mantiene cargada versión 0.10.42; el árbol activo no ha sido sustituido ni recargado. Native Messaging fila4 existe y el host coincide por SHA-256. Groq permanece deshabilitado por ausencia de credencial local y ZDR proveedor no verificado. No se ejecutó una llamada real, no se midió WER/CER y no hay aceptación humana ni release.
+
+
+## Actualización de checkpoint G14 · 2026-11-08
+
+Control principal en main: commit f3b70adee388d83193aecc9249293d383d3c768f, blob afd20f31f1518ae69395064509999f84e9b81cae. La autorización SIGNAL-INTERPRETER-RDC-FILA4-20261108-G14 habilita MantenimientoRCI como operador RDC en PC10RCIF4EI4, exclusivamente para trabajo de SI bajo C:/Users/fila4. Chrome se verificó como CENTRAL\fila4.
+
+Rama PR #75 actual: HEAD 48f2798d3599f6e91f70ec665d3eb26b986d3116; base f3b70adee388d83193aecc9249293d383d3c768f; CI 3/3 PASS. PR abierta/draft, sin merge/release. El export fuente de PC-14 no se ha copiado/read-back en fila4; custodia pendiente. ChatGPT home está abierto en Chrome fila4, pero URL profunda de esta conversación no confirmada.

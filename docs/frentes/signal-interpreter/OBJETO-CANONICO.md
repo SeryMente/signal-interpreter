@@ -171,7 +171,7 @@ Resultado: ACTUALIZACIÓN LOCAL 0.10.40 COMPLETADA/VERIFICADA; LISTA PARA QUE EL
 4. **SI-AUTO-03 — Aceptación funcional: PENDIENTE.** OPI realmente contestable debe contestarse automáticamente; VRI, modalidad desconocida, presencia inactiva, perfil no autorizado y demás condiciones no elegibles deben permanecer sin clic. CI sintético no equivale a llamada real ni aceptación del operador.
 5. **SI-P03 — Persistencia observacional E2E: PENDIENTE.** Verificar versión, relayReceivedAt, ACK, drenaje, workflow, freshness e informe latest, sin audio ni texto de llamadas. Último runtime heredado 0.10.37; no hay lectura nueva.
 6. **SI-P04 — Liberación: PENDIENTE.** Requiere pruebas Windows/Chrome, integridad, rollback, evidencia real y aceptación expresa. No liberar por merge o CI.
-7. **SI-FB-01–SI-FB-06 · Retroalimentación 2026-10-30: implementación parcial en candidata 0.10.45; QA local Windows 48 verificaciones PASS y CI GitHub del HEAD 72a760a46e0d31eee0d5e9f9ae4ef6fbe414d8c7 3/3 PASS.** Ver BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md, sección 7. Aún no aceptado: quedan E2E Windows/Chrome, métricas bilingües, verificación ZDR y aceptación humana.
+7. **SI-FB-01–SI-FB-06 · Retroalimentación 2026-10-30: implementación parcial en candidata 0.10.45; QA local Windows 48 verificaciones PASS y CI GitHub del HEAD 48f2798d3599f6e91f70ec665d3eb26b986d3116 3/3 PASS.** Ver BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md, sección 7. Aún no aceptado: quedan E2E Windows/Chrome, métricas bilingües, verificación ZDR y aceptación humana.
 8. **Custodia de exports: PENDIENTE DE COPIA PRIVADA VERIFICADA.** El export ChatGPT-SI (2)-20261108-1720.md fue leído íntegramente en PC-14 en el ciclo previo: 872 líneas, 43,461 bytes, SHA-256 8E48AF0C07D7E576B3CE081F287DB3D7E8486B320D7F1CA2C3EA1A9F5590A3F6. La lectura/copia remota actual desde PC-14 sigue pendiente; no afirmar persistencia en fila4. Los originales 2026-10-31, 2026-11-01 y 2026-11-07 continúan fuera del OCP; recibos derivados saneados. Mantener originales en área privada, nunca en este repositorio público.
 9. **Patch ART-028 local/no aplicado: NO RECUPERADO NI REVALIDADO.** No asumir vigencia ni integrarlo por semejanza.
 
@@ -323,7 +323,7 @@ Esta actualización supersede los checkpoints G13 como estado vigente, preservá
 - **Preservación:** respaldo íntegro del checkout original, incluidos .git, cuatro archivos modificados y dos no seguidos: C:/Users/fila4/Desktop/SI-backups/SI-pre-backlog-G14-20261108-174825.zip; 57,665,641 bytes; SHA-256 224E9AA78E6B6BE7FF895EAA9030283E9233C74C6391A712461C9025DAFC269C; 540 archivos de origen y 729 miembros. El checkout original no fue reseteado ni limpiado.
 - **Reconciliación:** candidata PR #75 (38472be1e12aa9ef8dced668a7a2195138d8adb9) integrada localmente con origin/main (43430424ab5d81ab7cc0ce9d2ae70c63dd4f3fa2) en worktree aislado C:/Users/fila4/Desktop/SeryMente/SI-G14-RECONCILE; merge commit 49f18e18e88918575278ed083db31d127d21a892; cero conflictos; 45 archivos cambiados. El checkout original sigue intacto. El commit local aún no publicado al registrar esta adenda.
 - **Producto:** candidata 0.10.45. main/manifest.json permanece en 0.10.40. PR #75 sigue abierta, en borrador y no fusionada. No se creó release ni despliegue.
-- **QA local Windows:** 42/42 scripts tools/*test*.mjs PASS; sintaxis JavaScript 25/25 PASS; live-caption-static-audit, observability-static-audit, verify-release-package, observability-package-audit observations y git diff --check PASS. Total: 48 verificaciones agrupadas PASS, 0 FAIL. Node v24.0.0. Evidencia local en C:/Users/fila4/Desktop/SI-backups/validation-G14-PR75/windows-node24-g14-postmerge.log y resultados-postmerge.json. CI GitHub del head candidato previo 38472be...: audit, package integrity y native-caption-host-build 3/3 SUCCESS. Para el HEAD publicado 72a760a46e0d31eee0d5e9f9ae4ef6fbe414d8c7, GitHub Actions completó 3/3 PASS: signal-observability-audit, Package integrity y native-caption-host-build.
+- **QA local Windows:** 42/42 scripts tools/*test*.mjs PASS; sintaxis JavaScript 25/25 PASS; live-caption-static-audit, observability-static-audit, verify-release-package, observability-package-audit observations y git diff --check PASS. Total: 48 verificaciones agrupadas PASS, 0 FAIL. Node v24.0.0. Evidencia local en C:/Users/fila4/Desktop/SI-backups/validation-G14-PR75/windows-node24-g14-postmerge.log y resultados-postmerge.json. CI GitHub del head candidato previo 38472be...: audit, package integrity y native-caption-host-build 3/3 SUCCESS. Para el HEAD publicado 48f2798d3599f6e91f70ec665d3eb26b986d3116, GitHub Actions completó 3/3 PASS: signal-observability-audit, Package integrity y native-caption-host-build.
 - **Chrome fila4:** perfil C:/Users/fila4/AppData/Local/Google/Chrome/User Data/Profile; extensión ID ldpbjhobnfgmhdoehehdmnbhhjckebmj, carpeta registrada C:/Users/fila4/Desktop/SeryMente/Signal Interpreter/extension, manifiesto cargado en disco 0.10.42. No se modificó la carpeta activa ni se recargó Chrome. Native Messaging registrado en HKU/HKCU de fila4; manifest com.signalinterpreter.captionhost.json, host exe presente; SHA-256 313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE, coincide con el hash esperado.
 - **Groq:** no hay credencial local C:/Users/fila4/.signal-interpreter/groq-token.dat ni extension/groq-secret.local.js; ZDR en consola del proveedor no verificado. Captura queda deshabilitada por defecto. No se solicitó ni expuso una clave.
 - **ChatGPT en fila4:** se abrió https://chatgpt.com/ en Chrome con el perfil fila4. El ID/URL profunda de esta conversación no está expuesto en el contexto del agente; no se afirma que se haya seleccionado exactamente este hilo.
@@ -334,9 +334,22 @@ Esta actualización supersede los checkpoints G13 como estado vigente, preservá
 
 ### Cierre de CI remoto del HEAD publicado · 2026-11-08
 
-GitHub Actions para 72a760a46e0d31eee0d5e9f9ae4ef6fbe414d8c7 terminó:
+GitHub Actions para 48f2798d3599f6e91f70ec665d3eb26b986d3116 terminó:
 - signal-observability-audit: SUCCESS.
 - Package integrity: SUCCESS.
 - native-caption-host-build: SUCCESS.
 
 Resultado 3/3 PASS. La PR #75 permanece OPEN/DRAFT y sin merge ni release. Los workflows son evidencia de CI del commit indicado; cualquier commit posterior dispara una nueva ejecución y requiere revalidación.
+
+
+### Checkpoint posterior · integración del control RDC fila4 · 2026-11-08
+
+- Control autoritativo en main: commit f3b70adee388d83193aecc9249293d383d3c768f; blob/read-back afd20f31f1518ae69395064509999f84e9b81cae.
+- Evento de autorización: SIGNAL-INTERPRETER-RDC-FILA4-20261108-G14. MantenimientoRCI opera RDC en PC10RCIF4EI4; todos los artefactos, perfiles, worktrees y resultados locales permanecen bajo C:/Users/fila4. Perfil Chrome verificado como CENTRAL\fila4.
+- PR #75 sincronizada con main: HEAD 48f2798d3599f6e91f70ec665d3eb26b986d3116; base f3b70adee388d83193aecc9249293d383d3c768f; 82 commits; 50 archivos; mergeable true; estado OPEN/DRAFT, sin merge.
+- CI del HEAD vigente: signal-observability-audit, Package integrity y native-caption-host-build: 3/3 SUCCESS.
+- El checkout original permanece intacto con los cuatro archivos tracked modificados y dos no seguidos. Respaldo y SHA-256 verificados.
+- El export ChatGPT-SI (2)-20261108-1720.md sigue pendiente de copia privada verificada en fila4; origen PC-14, 872 líneas, 43,461 bytes, SHA-256 8E48AF0C07D7E576B3CE081F287DB3D7E8486B320D7F1CA2C3EA1A9F5590A3F6. La lectura remota PC-14 agotó el tiempo de espera; no se afirma read-back ni persistencia en destino.
+- ChatGPT está abierto en el perfil Chrome de fila4, pero no se verificó el URL profundo de este hilo; no sustituirlo por otro chat cuyo título/ID no sea inequívoco.
+
+Los tres workflows acreditan el commit exacto indicado. No se realizó llamada real, captura de audio, reload Chrome, merge o release; aceptación humana sigue pendiente.

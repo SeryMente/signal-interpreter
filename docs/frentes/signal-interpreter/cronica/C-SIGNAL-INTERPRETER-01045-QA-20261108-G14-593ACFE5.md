@@ -20,7 +20,7 @@ El checkout original C:/Users/fila4/Desktop/SeryMente/Signal Interpreter se cons
 - Merge local sin conflictos: 49f18e18e88918575278ed083db31d127d21a892.
 - QA con Node v24.0.0 desde la raíz: 42/42 scripts tools/*test*.mjs PASS; 25/25 archivos JavaScript de extension superaron node --check; auditoría estática Live Caption, auditoría estática Observability, verify-release-package, auditoría observations y git diff --check PASS. Resultado agrupado: 48 PASS, 0 FAIL.
 - Evidencia: C:/Users/fila4/Desktop/SI-backups/validation-G14-PR75/windows-node24-g14-postmerge.log y resultados-postmerge.json.
-- Los tres workflows GitHub Actions del head candidato anterior 38472be... (audit, package integrity y native-caption-host-build) estaban en SUCCESS. El HEAD publicado 72a760a46e0d31eee0d5e9f9ae4ef6fbe414d8c7 completó los tres workflows SUCCESS: audit, package integrity y native-caption-host-build.
+- Los tres workflows GitHub Actions del head candidato anterior 38472be... (audit, package integrity y native-caption-host-build) estaban en SUCCESS. El HEAD publicado 48f2798d3599f6e91f70ec665d3eb26b986d3116 completó los tres workflows SUCCESS: audit, package integrity y native-caption-host-build.
 
 ## Estado del perfil fila4
 
@@ -44,3 +44,14 @@ El checkout original C:/Users/fila4/Desktop/SeryMente/Signal Interpreter se cons
 main continúa 0.10.40. La candidata 0.10.45 permanece en PR #75, que no se fusionó ni liberó. La fusión local aún no se publicó a GitHub. No hubo llamada real, captura real del micrófono, recarga/reinicio de Chrome, mediciones WER/CER, verificación de ZDR en consola, aceptación del operador ni release. CI verde y tests sintéticos no sustituyen esas compuertas.
 
 **Siguiente paso técnico:** commit documental, push fast-forward a la rama existente de PR #75 y lectura de vuelta de su nuevo HEAD y workflows.
+
+
+## Actualización posterior · control de RDC y CI final · G14
+
+La autorización operativa del operador fue persistida en CONTROL-RESPONSABILIDAD.json: evento SIGNAL-INTERPRETER-RDC-FILA4-20261108-G14, commit main f3b70adee388d83193aecc9249293d383d3c768f, blob read-back afd20f31f1518ae69395064509999f84e9b81cae. MantenimientoRCI opera el agente RDC en PC10RCIF4EI4 y el destino de SI es C:/Users/fila4; Chrome se verificó como CENTRAL\fila4.
+
+La rama PR #75 se actualizó con ese commit de main. HEAD vigente 48f2798d3599f6e91f70ec665d3eb26b986d3116, base f3b70adee388d83193aecc9249293d383d3c768f, 82 commits y 50 archivos. Los workflows signal-observability-audit, Package integrity y native-caption-host-build finalizaron SUCCESS (3/3). PR sigue OPEN/DRAFT; sin merge ni release.
+
+Custodia del export ChatGPT-SI (2)-20261108-1720.md: origen PC-14, 872 líneas, 43,461 bytes, SHA-256 8E48AF0C07D7E576B3CE081F287DB3D7E8486B320D7F1CA2C3EA1A9F5590A3F6; la lectura actual de PC-14 agotó timeout y no se verificó copia privada bajo fila4. No declarar persistencia del original.
+
+ChatGPT fue abierto en el perfil Chrome fila4; no se identificó inequívocamente el URL profundo de esta conversación. El hilo exacto queda pendiente de selección/verificación por el operador.
