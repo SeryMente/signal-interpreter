@@ -1,10 +1,10 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-09T18:11:22.464Z → 2026-11-09T18:21:22.464Z
-- Generado: 2026-11-09T18:21:22.464Z
-- Eventos: 23 · lotes fuente: 10
+- Ventana UTC: 2026-11-09T18:13:18.709Z → 2026-11-09T18:23:18.709Z
+- Generado: 2026-11-09T18:23:18.709Z
+- Eventos: 22 · lotes fuente: 10
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 23
+- Reloj cliente sin verificación de recibo: 22
 
 ## Resumen
 - Intentos observados: 0
