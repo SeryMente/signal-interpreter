@@ -21,7 +21,7 @@
     "source-track-ended":"Una de las fuentes de audio terminó; captura detenida",
     "policy-check-failed":"No se pudo verificar que la llamada siga activa"
   };
-  function callId(){var m=location.pathname.match(/^\\/call\\/([^/?#]+)\\/?$/);return m?m[1]:null;}
+  function callId(){var m=location.pathname.match(/^\/call\/([^/?#]+)\/?$/);return m?m[1]:null;}
   function send(message){return chrome.runtime.sendMessage(message).catch(function(){return{ok:false,reasonCode:"background-unavailable"};});}
   function setStatus(value,error){
     if(statusNode){statusNode.textContent=String(value||"");statusNode.style.color=error?"#ffb4a8":"#cbd5e1";}
