@@ -10,11 +10,30 @@ const readText = (p) => readFileSync(resolve(root, p), "utf8");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex").toUpperCase();
 const manifest = JSON.parse(readText("manifest.json"));
 const installer = readText("INSTALAR.ps1");
+const nestedManifest = JSON.parse(readText("extension/manifest.json"));
+const prepareCommand = readText("PREPARAR-Y-CARGAR.cmd");
+const probeScript = readText("PROBAR.ps1");
 const inventory = JSON.parse(readText("payload-sha256.json"));
 const entries = Array.isArray(inventory) ? inventory : inventory.files;
 
 assert.equal(manifest.name, "Signal Interpreter");
 assert.equal(manifest.version, expectedVersion, "manifest version is not the package version");
+function normalizeManifestPaths(value) {
+  if (Array.isArray(value)) return value.map(normalizeManifestPaths);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [key, item] of Object.entries(value)) out[key] = normalizeManifestPaths(item);
+    return out;
+  }
+  return typeof value === "string" && value.startsWith("extension/") ? value.slice("extension/".length) : value;
+}
+assert.deepEqual(nestedManifest, normalizeManifestPaths(manifest), "extension/manifest.json must be the path-normalized loadable workspace manifest");
+assert.ok(prepareCommand.includes('explorer.exe "%~dp0extension"'), "one-step preparation must open the sole Chrome load folder");
+assert.ok(prepareCommand.includes("subcarpeta extension"), "preparation must instruct the operator to load extension/");
+assert.ok(probeScript.includes("Join-Path $root 'extension'"), "probe must target the extension subfolder");
+assert.ok(probeScript.includes("Join-Path $loadRoot 'manifest.json'"), "probe must read the Chrome-loadable manifest");
+assert.ok(probeScript.includes("$loadRoot"), "probe must match the Chrome extension path to extension/");
+
 assert.ok(Array.isArray(entries) && entries.length >= 50, "payload inventory is empty or unexpectedly small");
 assert.ok(installer.includes("'"+expectedVersion+"'"), "installer and manifest versions differ");
 
@@ -81,7 +100,10 @@ assert.ok(background.includes("EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CAL
 assert.ok(background.includes('setExtensionMicrophoneMuted(false, "call-accepted")'), "call-accepted unmute is missing");
 assert.ok(background.includes('setMainClientMicrophoneMuted(state.callSourceTabId,true,"call-ended")'), "call-end mute is missing");
 assert.ok(micGuard.includes("var muted=old?!!old.muted:true;"), "main-world microphone default is not muted");
-assert.ok(presenceGuard.includes("signalPresenceGuardSession") && presenceGuard.includes("Promise.all(["), "presence continuity/parallel authorization is missing");
+assert.ok(presenceGuard.includes("signalPresenceGuardSession") && presenceGuard.includes("lastPresenceCheckAt") &&
+  presenceGuard.includes("cachedAutoAnswerEnabled") && presenceGuard.includes("cachedLabLock") &&
+  presenceGuard.includes('chrome.tabs.query({ url: "https://app.cloudinterpreter.com/call/*" })'),
+  "presence continuity/cached fast authorization/active-call guard is missing");
 assert.ok(contentRuntime.includes("postAuthorizationRevalidationFailureCodes") && contentRuntime.includes("revalidationFailureCodes.length > 0"), "pre-click authorization revalidation is missing");
 assert.ok(background.includes("live-console-sender-required") && background.includes("captionHistory:captionHistory"), "protected native caption history hydration is missing");
 assert.ok(background.includes('chrome.tabs.create({url:targetUrl,active:true})'), "live reader is not opened in a normal reusable tab");

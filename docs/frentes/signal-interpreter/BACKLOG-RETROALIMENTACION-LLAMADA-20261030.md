@@ -32,7 +32,7 @@
 
 ### SI-FB-01 — Política de mute vinculada al estado de llamada
 
-**Prioridad:** P0 · seguridad del canal de audio  
+**Prioridad:** P0 · seguridad del canal de audio
 **Estado al 2026-11-10:** implementación parcial en main 0.10.47; el operador reportó que el micrófono no enciende. El hotfix local que atendería pistas tardías está reportado, no re-verificado ni integrado en main. Aceptación pendiente.
 
 **Objetivo:** impedir que el micrófono quede abierto antes de que el operador conteste una llamada y asegurar el cierre inmediato al terminarla.
@@ -56,7 +56,7 @@
 
 ### SI-FB-02 — Captura y transcripción bilingüe del canal INTÉRPRETE
 
-**Prioridad:** P1 · funcionalidad central  
+**Prioridad:** P1 · funcionalidad central
 **Estado al 2026-11-10:** no implementado en main. La candidata de PR #75 permanece draft/no mergeable; credencial y confirmación efectiva de ZDR, aislamiento y E2E bilingüe siguen pendientes.
 
 **Objetivo:** transcribir en tiempo real la voz del operador/intérprete capturada desde el micrófono, tanto en español como en inglés, y mostrarla como un canal independiente de los captions del cliente/LEP.
@@ -83,7 +83,7 @@
 
 ### SI-FB-03 — Calidad, continuidad y atribución de la transcripción
 
-**Prioridad:** P1 · calidad funcional  
+**Prioridad:** P1 · calidad funcional
 **Estado al 2026-11-10:** parcial para captions nativos, metadata source/speaker/language e identidad de parciales; métricas WER/CER, corpus autorizado y aceptación del canal INTÉRPRETE pendientes.
 
 **Hallazgos observados en la muestra (sin conservar contenido privado):**
@@ -114,7 +114,7 @@
 
 ### SI-FB-04 — Densidad visual y redistribución del overlay
 
-**Prioridad:** P2 · UX / legibilidad  
+**Prioridad:** P2 · UX / legibilidad
 **Estado al 2026-11-10:** parcial: minimización reversible y preferencia de colapso integradas en main; densidad compacta integral, revisión teclado/viewport y aceptación visual pendientes.
 
 **Objetivo:** maximizar el espacio legible para el contenido transcrito y reducir el espacio consumido por elementos repetitivos.
@@ -138,7 +138,7 @@
 
 ### SI-FB-05 — Lector de transcripción en pestaña independiente de Chrome
 
-**Prioridad:** P2 · UX / lectura extendida  
+**Prioridad:** P2 · UX / lectura extendida
 **Estado al 2026-11-10:** implementado a nivel de código en main 0.10.47 como pestaña LIVE normal/reutilizable y de ancho completo con captions nativos de sesión; sincronización/scroll y aceptación en Chrome real pendientes.
 
 **Objetivo:** añadir un botón visible en el overlay para abrir la transcripción de la llamada en una pestaña independiente de Google Chrome, utilizando el espacio completo de esa pestaña.
@@ -163,7 +163,7 @@
 
 ### SI-FB-06 — Matriz integrada de pruebas y aceptación
 
-**Prioridad:** P1 · compuerta de liberación  
+**Prioridad:** P1 · compuerta de liberación
 **Estado al 2026-11-10:** parcial: CI y pruebas sintéticas disponibles; el operador reportó una batería 27/27 y SHA 59/59 en el ciclo anterior, no re-verificados aquí. La prueba integrada en Chrome/llamada real y aceptación del operador siguen pendientes.
 
 La entrega que incorpore estos cambios debe probar, como mínimo:
@@ -201,9 +201,9 @@ La entrega que incorpore estos cambios debe probar, como mínimo:
 
 ## 6. Estado de este registro
 
-**Persistencia:** PERSISTIDO en `main`; commit de creación `02b52c061c8c3c9e22d0a4dbc3e69824f95f2c6c`; lectura de vuelta exacta verificada.  
-**Implementación:** no iniciada.  
-**Prueba de usuario posterior:** pendiente.  
+**Persistencia:** PERSISTIDO en `main`; commit de creación `02b52c061c8c3c9e22d0a4dbc3e69824f95f2c6c`; lectura de vuelta exacta verificada.
+**Implementación:** no iniciada.
+**Prueba de usuario posterior:** pendiente.
 **Clasificación:** backlog provisional del mismo frente Signal Interpreter; no crea un frente ni un responsable paralelo.
 
 
@@ -312,3 +312,12 @@ Esto no coincide con la política vigente anterior: permanecer silenciado durant
 - No code edits, no stored preference changes, no Chrome reload, no arming, no real call/audio and no human acceptance.
 
 Orden actualizado: (1) SI-REG-05 corregir semántica de micrófono, conservando controles y guards; (2) SI-REG-01 aceptar switch en Chrome sin armar presencia; (3) SI-REG-02 validar pista tardía bajo llamada activa; (4) conservar SI-REG-03 como test permanente; (5) SI-REG-04 solo cierra con aceptación del operador.
+## 10. SI-REG-06 — Auto-Answer: prioridad de latencia bajo competencia · P0
+
+**Premisa de diseño del operador:** puede haber varias personas compitiendo por una llamada y otros intérpretes podrían usar automatización. Se adopta como hipótesis operativa, no como hecho comprobado sobre la plataforma.
+
+**Criterio:** minimizar el tiempo detección→clic y ejecutar una sola activación normal de `Connect` mediante `button.click()` sobre el botón real. No se persiguen eventos de ratón físico, `isTrusted`, CDP ni endpoints privados; no se permiten dobles clics.
+
+**Optimización candidata:** caché en memoria de configuración y candado de laboratorio; reutilización de presencia `active` reciente (máximo 20 s) procedente de eventos, sondeo o restauración; actualización obligatoria y fail-closed si falta, es desconocida o caduca; se mantiene la exclusión por llamadas activas en otras pestañas. La ruta rápida evita lecturas repetidas de almacenamiento, consulta de inactividad y `tabs.get`. Se conserva autorización efímera de un solo uso, generación, expiración, perfil/modalidad permitidos y presencia explícita.
+
+**Verificación offline candidata:** Presence Guard 94/94, Presence Connect 33/33 y Auto-Answer Runtime 15/15 PASS; sintaxis y cotejo SHA-256 de inventario PASS. La aceptación en Chrome/llamada real permanece pendiente; no se habilitó Auto-Answer ni se armó presencia.

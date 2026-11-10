@@ -5,19 +5,20 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
-## Uso portable — Windows + Chrome · 0.10.39
+## Uso del workspace — Windows + Chrome · 0.10.47
 
-El ZIP de `main` contiene la extensión cargable: `manifest.json` está en la **raíz** de la carpeta extraída, no dentro de `extension/`.
+El manifiesto canónico del repositorio permanece en la raíz (manifest.json). Para el workspace SI-OP-02 también existe una variante normalizada en extension/manifest.json. La carpeta que debe cargarse en Chrome es signal-interpreter/extension, no la raíz del repositorio.
 
-1. Descarga el ZIP de `main` y extráelo en una carpeta estable y escribible. No lo extraigas encima de una versión anterior ni mezcles carpetas.
-2. Fuera de una llamada activa y con la misma cuenta de Windows que ejecuta Chrome, ejecuta **`PREPARAR-Y-CARGAR.cmd`**. Este ejecuta `INSTALAR.ps1`, valida la identidad y los SHA-256, prepara y prueba el ejecutable Native Messaging, lo instala en `%LOCALAPPDATA%\SignalInterpreter\NativeMessagingHost` y registra el manifiesto en HKCU. No requiere una instalación separada del puente, Node.js, Python, compilador ni privilegios de administrador. No reinicia Chrome.
-3. En `chrome://extensions`, activa el modo desarrollador y elige **Cargar descomprimida**. Selecciona la **raíz extraída** que contiene `manifest.json`; no selecciones `extension/` ni muevas la carpeta después de cargarla. Desactiva una copia anterior de Signal Interpreter para evitar duplicados.
-4. Comprueba que Chrome muestra la versión `0.10.39`. El atajo global es `Ctrl+Shift+8`; no se incorpora `Ctrl+Shift+Y`.
-5. La prueba en vivo corresponde al operador: confirma que Live Caption nativo de Windows/Chrome está activo y verifica los segmentos inglés/español, la continuidad del overlay y el comportamiento de presencia en una sesión controlada. La prueba del protocolo Native Messaging y el recibo `INSTALACION-RESULTADO.json` **no prueban** captions reales ni aceptación de una llamada.
+1. Mantén el repositorio completo en %USERPROFILE%\Desktop\SeryMente\signal-interpreter.
+2. En chrome://extensions, activa el modo desarrollador y elige Cargar descomprimida. Selecciona %USERPROFILE%\Desktop\SeryMente\signal-interpreter\extension, donde manifest.json está directamente en la raíz.
+3. No extraigas encima de una instalación anterior. Conserva una copia reversible y verifica versión e inventario antes de sustituir archivos.
+4. El Native Messaging host se prepara según SI-OP-01 y debe registrarse en el perfil Windows que ejecuta Chrome. La mera copia del directorio no demuestra que el host esté instalado.
+5. Comprueba que Chrome muestra la versión 0.10.47. La carga/reload es manual del operador y debe hacerse fuera de una llamada activa. No se reinicia Chrome desde RDC.
+6. La aceptación en vivo es del operador: prueba presencia, Auto-Answer y micrófono en una llamada controlada. Los tests sintéticos y el probe Native Messaging no equivalen a aceptación E2E.
 
 ### Puente Native Messaging
 
-No ejecutes por separado `extension/native/register-caption-host.ps1` en la versión 0.10.39. El instalador raíz ya materializa el ejecutable, genera el manifiesto estable, registra HKCU y hace el probe del host instalado. La preparación es por usuario de Windows: debe ser la misma cuenta que utiliza Chrome. Después de preparar el puente, todavía debes cargar la carpeta raíz en Chrome; esa carga no la realiza el instalador.
+En este workspace 0.10.47, el Native Messaging host ya preparado debe permanecer en el perfil Windows que ejecuta Chrome. No ejecutes el instalador bajo otra identidad: el registro HKCU y LOCALAPPDATA pertenecen al usuario. Tras verificar el host, carga manualmente la subcarpeta `extension/` en Chrome; esta preparación no carga ni recarga la extensión.
 
 La extensión utiliza texto nativo de Live Caption → Windows UI Automation → puente Native Messaging → overlay de llamada. No captura audio de pestaña ni del micrófono, no usa Groq como fallback y no reproduce conversación. La segmentación lingüística no identifica hablantes; los fragmentos ambiguos permanecen sin asignar. Windows/Chrome deben exponer el texto nativo para que SI pueda mostrarlo.
 
@@ -29,7 +30,7 @@ Auto-Answer, OPI/VRI, Online/Offline, llamadas perdidas, cronómetros, ingresos,
 
 ## Carga local
 
-En 0.10.39, usa **Cargar descomprimida** sobre la carpeta raíz que contiene `manifest.json`. Ejecuta primero `PREPARAR-Y-CARGAR.cmd` (o `INSTALAR.cmd`) para que `INSTALAR.ps1` prepare y registre automáticamente el puente incluido. No ejecutes manualmente `extension/native/register-caption-host.ps1` en este flujo.
+En el workspace 0.10.47, usa **Cargar descomprimida** sobre extension/, que contiene el manifiesto normalizado. En el ZIP portable de distribución se debe seguir el README incluido en ese paquete específico. Prepara el Native Messaging host conforme a SI-OP-01 y verifica registro y protocolo bajo el mismo usuario Windows de Chrome. No ejecutes el instalador de un paquete antiguo sobre este workspace.
 
 No se instala un servicio de Windows, Scheduled Task, watchdog ni servidor localhost.
 

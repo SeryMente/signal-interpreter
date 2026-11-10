@@ -2,26 +2,23 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
-## Candidata consolidada 0.10.38 — NO liberada
+## Paquete de trabajo 0.10.47 · layout desempaquetado para SI-OP-02
 
-Integra la protección de presencia explícita y segmentación conservadora de subtítulos nativos, junto con las correcciones verificadas de instalación/recarga de main. El manifiesto y las pruebas de la candidata usan 0.10.38; main continúa en 0.10.37 hasta superar las compuertas. El atajo global existente permanece en Ctrl+Shift+8. No activa captura de micrófono, audio de pestaña ni fallback Groq. La aceptación en Windows/Chrome real sigue siendo obligatoria.
-
+El manifiesto canónico del repositorio está en la raíz. Para el workspace, `extension/manifest.json` es su variante normalizada y hace que **esta carpeta `extension/` sea cargable de forma independiente**. El test `tools/unpacked-layout-test.mjs` verifica que ambas variantes coincidan y que las rutas referenciadas existan. Al seguir SI-OP-02, no selecciones la raíz del repositorio.
 
 ## Uso portable — Windows + Chrome
 
-El **ZIP del repositorio** contiene la extensión cargable: `manifest.json` está en la **raíz** de la carpeta extraída, no dentro de `extension/`.
-
-1. Extrae el ZIP en una carpeta estable y escribible. Finaliza cualquier llamada/prueba antes de instalar.
-2. Haz doble clic en **INSTALAR.cmd**, en esa raíz. Verifica huellas/identidad y registra el puente incluido para tu usuario; no requiere Node/Python/compilador ni privilegios de administrador. No reinicia Chrome. `INSTALACION-RESULTADO.json` confirma preparación, no captions en vivo.
-3. En Chrome, activa modo desarrollador y **Cargar descomprimida**: selecciona esa **misma raíz**. Desactiva otra copia anterior; no muevas la carpeta cargada.
-4. Enciende Live Caption, cierra las pestañas Cloud Interpreter y pausa otros audios. Abre **Probar** en el popup; pulsa **Iniciar prueba** y luego reproducir. También puedes usar **PROBAR.cmd** si el perfil cargado se identifica sin ambigüedad.
-5. Comprueba texto nativo y filas del panel, prueba abrir/cerrar la burbuja, y **Finalizar y exportar**. El fin del audio también solicita la descarga. Si cierras abruptamente la página, recupera **Descargar último informe** al reabrir.
+1. Conserva el repositorio en `%USERPROFILE%\\Desktop\\SeryMente\\signal-interpreter`.
+2. En Chrome, activa modo desarrollador y **Cargar descomprimida**: selecciona `%USERPROFILE%\\Desktop\\SeryMente\\signal-interpreter\\extension`, donde `manifest.json` debe estar directamente en esa carpeta.
+3. No muevas la carpeta cargada. Desactiva una copia anterior solo después de preservar su configuración y confirmar su ruta.
+4. La preparación del Native Messaging host se rige por SI-OP-01 y debe realizarse bajo el mismo usuario Windows que ejecuta Chrome. Copiar archivos no demuestra que el host esté instalado.
+5. La carga/recarga y aceptación funcional en Chrome corresponden al operador. No se reinicia Chrome ni se intervienen llamadas reales desde RDC.
 
 Muestra de voz generada localmente al instalar, o archivo local autorizado; no se sube audio/texto. El laboratorio no toma llamadas ni produce ingresos/exportación de producción. Una prueba local no certifica Cloud Interpreter; si Chrome destruye el árbol accesible al cerrar la burbuja, no se fabrica texto ni se captura audio como alternativa. Windows/Chrome deben tener Live Caption disponible; puede requerir sus propios modelos. MacOS y Linux no pertenecen al alcance del producto.
 
 En cada computadora registra/carga la carpeta para su usuario Windows. Sin rutas fijas, servicios ni runtime de desarrollo; las preferencias locales no se sincronizan automáticamente entre equipos. Canon completo y límites: [TRANSCRIPTION-SPRINT-CANONICAL.md](../docs/TRANSCRIPTION-SPRINT-CANONICAL.md), §16.
 
-## Arquitectura vigente 0.10.35 — solo texto nativo
+## Arquitectura vigente 0.10.47 — captions nativos y mute de llamada
 
 **Chrome Live Caption → Windows UI Automation → Native Messaging → overlay de la llamada**
 
