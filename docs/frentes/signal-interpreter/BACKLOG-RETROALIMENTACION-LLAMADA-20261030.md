@@ -321,3 +321,61 @@ Orden actualizado: (1) SI-REG-05 corregir semántica de micrófono, conservando 
 **Optimización candidata:** caché en memoria de configuración y candado de laboratorio; reutilización de presencia `active` reciente (máximo 20 s) procedente de eventos, sondeo o restauración; actualización obligatoria y fail-closed si falta, es desconocida o caduca; se mantiene la exclusión por llamadas activas en otras pestañas. La ruta rápida evita lecturas repetidas de almacenamiento, consulta de inactividad y `tabs.get`. Se conserva autorización efímera de un solo uso, generación, expiración, perfil/modalidad permitidos y presencia explícita.
 
 **Verificación offline candidata:** Presence Guard 94/94, Presence Connect 33/33 y Auto-Answer Runtime 15/15 PASS; sintaxis y cotejo SHA-256 de inventario PASS. La aceptación en Chrome/llamada real permanece pendiente; no se habilitó Auto-Answer ni se armó presencia.
+
+## 11. Retoma G14 — compuertas permanentes de regresión · 2026-11-10
+
+**Procedencia:** continuación del mismo frente y de SI-REG-05/SI-REG-06. Evidencia detallada y salida literal preservada en [crónica G14 de compuertas de regresión](cronica/C-SIGNAL-REGRESSION-GATES-20261110-G14.md).
+
+### SI-REG-05 — Política de unmute previa a llamada · actualización
+
+**Estado candidato:** GUARD FAIL-CLOSED Y ASERCIONES PERSISTIDAS EN PR #82; ejecución de las nuevas aserciones y aceptación Chrome/E2E PENDIENTES.
+
+- El handler de unmute exige llamada activa mediante el estado de llamada; sin ella conserva mute, registra `EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL` y devuelve `call-not-active`.
+- La recuperación de pista tardía exige llamada activa, intención explícita de unmute, pista viva y un probe verificado en mute.
+- La prueba ahora exige que, al cerrar la llamada, se detenga la captura del intérprete, se solicite/verifique el remute y se registre el fallo de verificación antes de borrar `callId`/`callStartedAt`.
+- Se conserva el control manual del usuario y no se crea una ruta paralela de audio.
+
+**Pendiente:** ejecutar suites, comprobar UI/estado físico de la pista y probar transiciones reales autorizadas por el operador.
+
+### SI-REG-06 — Auto-Answer latency-first · actualización
+
+**Estado candidato:** CONSERVA ACTIVACIÓN ÚNICA Y REVALIDACIÓN; una prueba añadida rechaza concesión vencida.
+
+- La suite exige exactamente un punto de invocación normal `button.click()` en `autoAnswer()`.
+- Un permiso expirado debe producir cero clics y liberar la concesión.
+- El watchdog sigue siendo no-retry: distingue `CONNECT_CLICKED` de `CONNECT_ROUTE_TIMEOUT` y no hace un segundo clic.
+- Se mantienen controles contra intento reemplazado, runtime inactivo, presencia desarmada, generación distinta, llamada activa, botón inexistente/desconectado/deshabilitado y autorización no válida.
+- Fuera de alcance: eventos de ratón físico, `isTrusted`, CDP y endpoints privados.
+
+**Pendiente:** ejecutar pruebas y medir latencia/éxito de ruta en una aceptación real dirigida por el operador; ningún clic sintético prueba que la plataforma haya conectado.
+
+### SI-REG-07 — Compuerta CI de audio/Connect/presencia · P1
+
+**Estado:** IMPLEMENTADA EN EL VERIFICADOR DE PAQUETE DE PR #82; ejecución del workflow en el commit actual NO VERIFICADA.
+
+`tools/verify-release-package.mjs` invoca secuencialmente y falla ante código de salida no cero en:
+1. `tools/microphone-guard-test.mjs`
+2. `tools/presence-connect-test.mjs`
+3. `tools/presence-guard-test.mjs`
+4. `tools/autoanswer-runtime-guard-test.mjs`
+
+El workflow existente `.github/workflows/package-integrity.yml` ejecuta el verificador en eventos `pull_request`; por tanto, el gate añadido convierte las cuatro suites en precondición de integridad para el PR. La existencia del código no demuestra por sí sola que Actions se haya ejecutado: para el último commit, el conector no devolvió workflow runs ni status checks. No etiquetar CI como PASS hasta obtener evidencia.
+
+### Evidencia de persistencia del ciclo
+
+- Rama: `candidate/autoanswer-fastpath-ready-20261110`; PR #82 continúa abierta/draft y sin fusionar.
+- `tools/microphone-guard-test.mjs`: commit `39dc6104578bd9074ae93944badcc7fac26c03be`; contenido releído y comparado exactamente.
+- `tools/presence-connect-test.mjs`: commit `4c32d761b2b84320cfc1e0b5ee8fcb2774cf9c9f`; contenido releído y comparado exactamente.
+- `tools/verify-release-package.mjs`: commit `327c2dfa370c1ac2b0bfc929e18f6a2fc4c15011`; contenido releído y comparado exactamente.
+- Crónica: `C-SIGNAL-REGRESSION-GATES-20261110-G14.md`, creada en commit `99847b65537ac33fc46555f4a6300ec2bd1df670`, lectura de vuelta exacta.
+- Las pruebas nuevas NO se ejecutaron en este ciclo; sus estados son implementadas, pendientes de ejecución.
+- No hubo acceso a Chrome GUI/reload, presencia armada, Auto-Answer activado, llamada/audio real, aceptación humana, merge, deploy o release.
+
+### Backlog que permanece abierto
+
+- **P0:** aceptación operativa del switch Auto-Answer; prueba del micrófono en llamada aceptada, pista tardía y cierre/remute; aceptación completa de la candidata. SI-REG-05 queda protegida en código candidato, pero no se cierra sin prueba y revisión.
+- **P1:** SI-FB-02 canal bilingüe INTÉRPRETE (diseño de captura/privacidad/proveedor/ZDR/retención); SI-FB-03 continuidad y precisión de la transcripción; SI-FB-06 matriz integrada y aceptación.
+- **P2:** SI-FB-04 compactación/accesibilidad del overlay; SI-FB-05 sincronización y scroll del lector en pestaña.
+- No se confunde la candidata de respuesta automática con la implementación del canal de transcripción propio.
+
+**Orden de continuación:** (1) ejecutar la compuerta y resolver fallos; (2) conciliar y revisar PR #82 sin fusionar; (3) preparar instrucciones de aceptación real para el operador; (4) continuar SI-FB-02/03 y después SI-FB-04/05; (5) cerrar SI-FB-06 solo con evidencia integrada y aceptación.
