@@ -81,7 +81,10 @@ assert.ok(background.includes("EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CAL
 assert.ok(background.includes('setExtensionMicrophoneMuted(false, "call-accepted")'), "call-accepted unmute is missing");
 assert.ok(background.includes('setMainClientMicrophoneMuted(state.callSourceTabId,true,"call-ended")'), "call-end mute is missing");
 assert.ok(micGuard.includes("var muted=old?!!old.muted:true;"), "main-world microphone default is not muted");
-assert.ok(presenceGuard.includes("signalPresenceGuardSession") && presenceGuard.includes("Promise.all(["), "presence continuity/parallel authorization is missing");
+assert.ok(presenceGuard.includes("signalPresenceGuardSession") && presenceGuard.includes("lastPresenceCheckAt") &&
+  presenceGuard.includes("cachedAutoAnswerEnabled") && presenceGuard.includes("cachedLabLock") &&
+  presenceGuard.includes('chrome.tabs.query({ url: "https://app.cloudinterpreter.com/call/*" })'),
+  "presence continuity/cached fast authorization/active-call guard is missing");
 assert.ok(contentRuntime.includes("postAuthorizationRevalidationFailureCodes") && contentRuntime.includes("revalidationFailureCodes.length > 0"), "pre-click authorization revalidation is missing");
 assert.ok(background.includes("live-console-sender-required") && background.includes("captionHistory:captionHistory"), "protected native caption history hydration is missing");
 assert.ok(background.includes('chrome.tabs.create({url:targetUrl,active:true})'), "live reader is not opened in a normal reusable tab");
