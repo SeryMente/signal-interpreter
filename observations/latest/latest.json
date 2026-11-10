@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-f5ef2688-9da2-443b-b75d-9a034a8728a6",
-  "createdAt": "2026-11-09T23:37:45.602Z",
+  "batchId": "batch-a59a877a-6c53-4396-8859-f0f4ab601af4",
+  "createdAt": "2026-11-10T15:02:59.193Z",
   "trigger": "alarm",
-  "extensionVersion": "0.10.47",
+  "extensionVersion": "0.10.46",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "f902fb65-3ea7-4228-8162-19ee62f6e672",
-      "sequence": 318,
-      "timestamp": "2026-11-09T23:37:44.629Z",
-      "ingestedAt": "2026-11-09T23:37:44.629Z",
+      "id": "d8a3d127-d4be-4c77-a169-131f84dcaede",
+      "sequence": 18943,
+      "timestamp": "2026-11-10T15:02:58.240Z",
+      "ingestedAt": "2026-11-10T15:02:58.241Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "background",
-      "extensionVersion": "0.10.47",
+      "extensionVersion": "0.10.46",
       "host": "",
       "url": "",
-      "phase": "started",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
-      "outcome": "success",
-      "traceId": "1ee8c90f-2a36-4376-8254-d66caa5dfd70",
+      "phase": "event",
+      "action": "TELEMETRY_MAINTENANCE",
+      "outcome": "observed",
+      "traceId": "ecca184f-6e66-4fa2-823d-d7f47ed39fd1",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -28,7 +28,7 @@
       "tabId": null,
       "session": {},
       "environment": {
-        "extensionVersion": "0.10.47",
+        "extensionVersion": "0.10.46",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
         "platform": "Win32"
       },
@@ -44,72 +44,44 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "ef4300be-af52-4076-af37-efcf0ab2e3a4",
-      "sequence": 319,
-      "timestamp": "2026-11-09T23:37:44.823Z",
-      "ingestedAt": "2026-11-09T23:37:44.823Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.47",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED",
-      "outcome": "observed",
-      "traceId": "957b8ee3-dae5-40a7-8fcd-d453ca2075c5",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.47",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "CLOUD_TAB_UNAVAILABLE",
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "hourly",
-        "reasonCode": "CLOUD_TAB_UNAVAILABLE",
-        "policy": "no-tab-create-no-navigation-no-reload; retry-next-hour"
+        "pruned": {
+          "cutoff": "[PHONE]T15:02:58.186Z",
+          "expiredEvents": 0,
+          "expiredSnapshots": 0,
+          "expiredSignalSegments": 0,
+          "excessEvents": 0,
+          "excessSignalSegments": 0
+        },
+        "stats": {
+          "database": "signal-interpreter-telemetry",
+          "events": 21,
+          "snapshots": 0,
+          "signalSegments": 0,
+          "oldestEventAt": "[PHONE]T15:01:58.352Z",
+          "newestEventAt": "[PHONE]T15:02:20.236Z",
+          "usageBytes": 3492208,
+          "quotaBytes": 55724169584
+        }
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 318,
-    "lastSequence": 319,
-    "firstTimestamp": "2026-11-09T23:37:44.629Z",
-    "lastTimestamp": "2026-11-09T23:37:44.823Z",
+    "firstSequence": 18943,
+    "lastSequence": 18943,
+    "firstTimestamp": "2026-11-10T15:02:58.240Z",
+    "lastTimestamp": "2026-11-10T15:02:58.240Z",
     "actions": {
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED": 1
+      "TELEMETRY_MAINTENANCE": 1
     },
     "categories": {
-      "RUNTIME": 2
+      "RUNTIME": 1
     }
   }
 }
