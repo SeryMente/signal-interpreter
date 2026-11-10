@@ -30,7 +30,8 @@ function normalizeManifestPaths(value) {
 assert.deepEqual(nestedManifest, normalizeManifestPaths(manifest), "extension/manifest.json must be the path-normalized loadable workspace manifest");
 assert.ok(prepareCommand.includes('explorer.exe "%~dp0extension"'), "one-step preparation must open the sole Chrome load folder");
 assert.ok(prepareCommand.includes("subcarpeta extension"), "preparation must instruct the operator to load extension/");
-assert.ok(probeScript.includes("Join-Path $root 'extension\\manifest.json'"), "probe must read the Chrome-loadable manifest");
+assert.ok(probeScript.includes("Join-Path $root 'extension'"), "probe must target the extension subfolder");
+assert.ok(probeScript.includes("Join-Path $loadRoot 'manifest.json'"), "probe must read the Chrome-loadable manifest");
 assert.ok(probeScript.includes("$loadRoot"), "probe must match the Chrome extension path to extension/");
 
 assert.ok(Array.isArray(entries) && entries.length >= 50, "payload inventory is empty or unexpectedly small");
