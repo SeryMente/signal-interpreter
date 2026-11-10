@@ -36,7 +36,7 @@ En `extension/content.js`, los eventos de elegibilidad y clic registran `authori
 
 Workspace aislado de prueba: `C:\\Users\\fila4\\Desktop\\SeryMente\\Temporal\\SI-FastPath-20261110`. No es carpeta de instalación ni fue cargado en Chrome.
 
-- Presence Guard: **91/91 PASS** (Node VM, APIs Chrome sintéticas).
+- Presence Guard: **94/94 PASS** (Node VM, APIs Chrome sintéticas).
 - Presence Connect: **33/33 PASS** (Node VM, DOM sintético).
 - Auto-Answer Runtime: **15/15 PASS**.
 - `node --check`: fuentes y suites relacionadas PASS.
@@ -44,7 +44,7 @@ Workspace aislado de prueba: `C:\\Users\\fila4\\Desktop\\SeryMente\\Temporal\\SI
 - SHA-256 contra `payload-sha256.json`: `extension/presence-guard.js`, `extension/content.js` y `tools/verify-release-package.mjs` PASS.
 
 Hashes cotejados:
-- `extension/presence-guard.js`: `975B9AB16C89F0542B5C36FCE64B1EBF430E29A0F1057E353886F8B6C589EA50`
+- `extension/presence-guard.js`: `2357D7A105655617E97626E15B7FC4F53309208691FED84845CC82F972ADB23C`
 - `extension/content.js`: `404C9F3F2250CAEBA3E822EF19739178AC967D99228F16F61E316C8363A23099`
 - `tools/verify-release-package.mjs`: `C09DB2349BB2AF8811D60BDCFE1A2D451C5FF661395FF800E6FB12809FFAF218`
 
