@@ -42,7 +42,7 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
     exchangeRateUpdatedAt: null,
     exchangeRateSource: "Frankfurter / European Central Bank",
     groqModel: GROQ_MODEL,
-    groqDialogueEnabled: true,
+    groqDialogueEnabled: false,
     groqZeroDataRetentionConfirmed: false,
     groqEstimatedUsdPerAudioHour: GROQ_USD_PER_AUDIO_HOUR
   };
