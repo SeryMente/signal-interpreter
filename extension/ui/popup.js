@@ -277,7 +277,7 @@
   function extensionPageUrl(path) {
     var backgroundPath = String((chrome.runtime.getManifest().background || {}).service_worker || "");
     var prefix = backgroundPath.indexOf("extension/") === 0 ? "extension/" : "";
-    return chrome.runtime.getURL(prefix + String(path || "").replace(/^\\/+/, ""));
+    return chrome.runtime.getURL(prefix + String(path || "").replace(/^\/+/, ""));
   }
   if($("openLab"))$("openLab").onclick=function(){chrome.tabs.create({url:extensionPageUrl("ui/lab.html")});};
 
