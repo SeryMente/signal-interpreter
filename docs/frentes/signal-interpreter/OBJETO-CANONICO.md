@@ -375,3 +375,8 @@ La premisa de diseño indicada por el operador es que varias personas pueden com
 - **Backlog prioritario:** P0 aceptación switch/llamada/micrófono; P1 transcripción bilingüe INTÉRPRETE, calidad y matriz integrada; P2 compactación/accesibilidad y lector de pestaña.
 - **Regla de aceptación:** el clic emitido no equivale a llamada conectada; un test sintético no equivale a pista física; el gate CI no equivale a aceptación humana.
 
+### Cierre de CI de las compuertas de regresión · 2026-11-10
+
+La cabeza candidata `b82c813dd3650e9f10fe47ef55a710489d6bad0b` obtuvo 3/3 workflows SUCCESS: observability audit `42906302139`, native-caption-host-build `42906302286`, package-integrity `42906302442`. Package integrity ejecutó y aprobó Mic Guard, Presence Connect 36/36, Presence Guard 94/94 y Auto-Answer Runtime 15/15, con 60/60 hashes de paquete. El smoke test Windows aprobó validación del instalador, compilación/paquete del host y Native Messaging framing/clean shutdown.
+
+Esto cierra el gate automatizado de esta candidata; no constituye aceptación en Chrome ni prueba de micrófono físico, llamada o transcripción real. La PR #82 continúa abierta/draft/no fusionada. No se ejecutaron reload, arming, Auto-Answer, llamada/audio real, merge, deploy ni release. Véase `cronica/C-SIGNAL-REGRESSION-GATES-20261110-G14.md`.
