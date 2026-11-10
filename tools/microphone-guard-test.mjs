@@ -59,4 +59,12 @@ tr.enabled=true;for(const f of ints)if(f)f();if(tr.enabled)throw Error("enforce"
 tr.enabled=true;x=await cmd(false,"2");if(!(x.verified&&!x.muted&&x.stable&&tr.enabled&&se.track.enabled&&x.recoveredBaseline===true))throw Error("unmute-after-reestablishing-muted-baseline");
 const cl=tr.clone();await se.replaceTrack(cl);x=await cmd(true,"3");if(!(x.verified&&x.muted&&x.stable&&!cl.enabled))throw Error("replace");
 se.track=null;preSender.track=null;cl.readyState="ended";preTrack.readyState="ended";tr.readyState="ended";x=await cmd(false,"4");if(x.verified||!x.muted)throw Error("no-live-track-unmute");
+const callEndMuteBoundary=background.indexOf('var endMuteResult=state.callSourceTabId!=null');
+const callEndStateClear=background.indexOf('state.callStartedAt = null; state.callId = null;',callEndMuteBoundary);
+if(callEndMuteBoundary<0||callEndStateClear<=callEndMuteBoundary)throw Error("call-end-mute-must-precede-call-state-cleanup");
+const callEndFlow=background.slice(callEndMuteBoundary,callEndStateClear);
+if(!callEndFlow.includes('setMainClientMicrophoneMuted(state.callSourceTabId,true,"call-ended")'))throw Error("call-end-output-mute-command-missing");
+if(!callEndFlow.includes("CALL_ENDED_MICROPHONE_MUTE_NOT_VERIFIED"))throw Error("call-end-mute-verification-failure-must-be-visible");
+const stopCaptureAt=background.indexOf('stopGroqCapture("call-ended")');
+if(stopCaptureAt<0||stopCaptureAt>callEndMuteBoundary)throw Error("call-end-must-stop-interpreter-capture-before-mute-and-cleanup");
 console.log("MICROPHONE_MAIN_GUARD_TEST=PASS");
