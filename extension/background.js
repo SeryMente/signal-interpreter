@@ -4,11 +4,11 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
 
   function extensionResource(path) { if(path === "manifest.json") return path; var m=chrome.runtime.getManifest(); return m.background && String(m.background.service_worker).indexOf("extension/")===0 ? "extension/"+path : path; }
   function runExtensionScript(spec) { if(spec.files) spec=Object.assign({},spec,{files:spec.files.map(extensionResource)}); return chrome.scripting.executeScript(spec); }
-  var GROQ_MODEL = "whisper-large-v3-turbo";
+  var GROQ_MODEL = "whisper-large-v3";
   var AUTHORIZED_ORIGIN = "https://app.cloudinterpreter.com";
   var AUTHORIZED_PROFILE_PATH = "/profile/cmu2wuz1v0uwr07adbzb9djfz";
   var OFFICIAL_STATS_URL = AUTHORIZED_ORIGIN + "/profile/cmu2wuz1v0uwr07adbzb9djfz/logs";
-  var GROQ_USD_PER_AUDIO_HOUR = 0.04;
+  var GROQ_USD_PER_AUDIO_HOUR = 0.111;
   var DEFAULT_CONFIG = {
     targetHost: "app.cloudinterpreter.com",
     autoAnswerEnabled: false,
