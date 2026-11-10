@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-5a84e1b8-fea6-4552-9f0b-88f5ff209fdb",
-  "createdAt": "2026-11-10T19:15:19.391Z",
+  "batchId": "batch-48d22882-1a4d-4b94-beb0-390ccc2f7415",
+  "createdAt": "2026-11-10T19:16:19.346Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.47",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "68483833-105a-4f39-b3c4-5270c3c38265",
-      "sequence": 21978,
-      "timestamp": "2026-11-10T19:14:49.010Z",
-      "ingestedAt": "2026-11-10T19:14:49.093Z",
+      "id": "50dc93b3-b41b-4ced-8ff7-ef8efce994b9",
+      "sequence": 21979,
+      "timestamp": "2026-11-10T19:15:49.012Z",
+      "ingestedAt": "2026-11-10T19:15:49.074Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -20,7 +20,7 @@
       "phase": "event",
       "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "72a6888d-8108-42b6-8217-3fcc1cf0631c",
+      "traceId": "46a2d86d-f963-453a-8089-f1844aca6306",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +46,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 4335979,
+        "monotonicMs": 4395981,
         "callId": null,
         "pageLifecycleId": "aa55062f-a409-406d-bd03-ec5754f0c2e2",
         "sourceTabId": 220926751,
@@ -80,25 +80,85 @@
         "runtimeVersion": "0.10.47",
         "reason": "heartbeat"
       }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "c7632c26-8f0c-4e9c-8012-e33b25d22359",
+      "sequence": 21980,
+      "timestamp": "2026-11-10T19:16:12.977Z",
+      "ingestedAt": "2026-11-10T19:16:13.049Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.47",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "b4c9b849-d7aa-47d0-8d2f-9048a73d5a98",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220926723,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.47",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/c/local-chatgpt%3A09e05dfd-729a-44bb-be5e-c98ad901378f",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220926723,
+        "sourceWindowId": 220925964,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://chatgpt.com/c/local-chatgpt%3A09e05dfd-729a-44bb-be5e-c98ad901378f"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/c/local-chatgpt%3A09e05dfd-729a-44bb-be5e-c98ad901378f",
+        "extensionVersion": "0.10.47",
+        "previousRoute": "/c/6af33d33-3e88-83e8-b82d-2df856e23ef1",
+        "currentRoute": "/c/local-chatgpt%3A09e05dfd-729a-44bb-be5e-c98ad901378f",
+        "activeCallRoute": false
+      }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 21978,
-    "lastSequence": 21978,
-    "firstTimestamp": "2026-11-10T19:14:49.010Z",
-    "lastTimestamp": "2026-11-10T19:14:49.010Z",
+    "firstSequence": 21979,
+    "lastSequence": 21980,
+    "firstTimestamp": "2026-11-10T19:15:49.012Z",
+    "lastTimestamp": "2026-11-10T19:16:12.977Z",
     "actions": {
-      "AUTO_ANSWER_READINESS": 1
+      "AUTO_ANSWER_READINESS": 1,
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "RUNTIME": 1,
+      "CAPTION": 1
     }
   }
 }
