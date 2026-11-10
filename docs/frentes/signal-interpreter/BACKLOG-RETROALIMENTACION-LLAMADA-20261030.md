@@ -393,3 +393,20 @@ El workflow existente `.github/workflows/package-integrity.yml` ejecuta el verif
 **Cierre limitado:** se cierra la verificación CI de esta candidata, no la aceptación funcional completa. No equivale a transcripción real, llamada contestada en Chrome ni micrófono físico verificado. PR #82 permanece abierta/draft/no fusionada; sin reload, armado de presencia, activación Auto-Answer, llamada/audio real, merge, deploy o release.
 
 Detalle y salida literal preservados en [crónica G14 de compuertas](cronica/C-SIGNAL-REGRESSION-GATES-20261110-G14.md).
+
+
+## 12. SI-FB-02 — precisión de alcance acordada por el operador · 2026-11-10
+
+**Interpretación vinculante del requisito INTÉRPRETE:** capturar la entrada de audio del micrófono del operador/intérprete, transcribirla en vivo y mostrarla como turnos propios en el diálogo de Signal Interpreter. No significa reconocimiento biométrico, identificación de voz ni que el intérprete sea un estándar de diarización. La etiqueta INTÉRPRETE deriva de la fuente de captura (micrófono propio), no del idioma ni de inferencias acústicas.
+
+**Modo predeterminado solicitado:** Whisper mediante API Groq, un único motor activo. El candidato de calidad usa `whisper-large-v3`, salida `verbose_json`, timestamps de segmentos y palabras, idioma automático español/inglés, temperatura 0 y validación de rangos temporales. No usar `whisper-large-v3-turbo` como default cuando la prioridad es máxima fidelidad y no mínima latencia.
+
+**Fuera del modo inicial (backlog de baja prioridad):**
+- **P3 — Live Caption nativo como motor alternativo:** conservar como posibilidad futura, no activarlo como transcriptor paralelo por defecto.
+- **P3 — modo híbrido Whisper + Live Caption:** diferido; solo considerar tras demostrar que la fusión aporta mejora medible sin duplicación, desorden o atribución incorrecta.
+
+**Criterios de calidad obligatorios antes de cerrar:** captura continua del micrófono durante llamada activa con gesto explícito del operador; cola acotada sin pérdida silenciosa; chunks con secuencia y reloj monotónico; timestamps globales y orden determinista; actualización de parciales por identidad; presentación ortográfica conservadora sin reescribir contenido clínico; manejo de números/nombres propios/cambio ES↔EN; cero persistencia de audio/transcripción clínica fuera de memoria/almacenamiento de sesión; parada y liberación de pista en fin de llamada, cambio de ruta, pagehide, mute manual, pérdida de permiso o error; pruebas de regresión del micrófono saliente y Connect.
+
+**Aclaración de atribución:** el micrófono propio es el canal INTÉRPRETE. El audio remoto/Live Caption nativo no debe etiquetarse automáticamente como LEP o proveedor si Cloud Interpreter no ofrece pistas separadas o un mecanismo de diarización verificable. No forma parte del primer corte la grabación de audio remoto.
+
+**Estado:** alcance aclarado; núcleo Whisper large-v3 con timestamps y compuerta ZDR en PR #83; captura en vivo e integración del diálogo aún pendientes. No declarar completado hasta superar CI y pruebas headless de captura/orden/persistencia y después aceptación acústica con corpus autorizado.
