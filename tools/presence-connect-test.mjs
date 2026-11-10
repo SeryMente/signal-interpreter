@@ -149,4 +149,6 @@ assert(worker.includes('SignalPresenceGuard.toggleFromKeyboard()'));checks++;
 assert(!worker.includes('config.autoAnswerEnabled = !config.autoAnswerEnabled'));checks++;
 assert(content.includes('next === "offline"'));checks++;
 assert(content.includes('if (readinessTimer) { clearInterval(readinessTimer); readinessTimer = null; }'));checks++;
+assert(popup.includes("presenceIdleSeconds: 180"), "popup defaults to a supported idle interval");checks++;
+assert(worker.includes("presenceIdleSeconds: 180"), "background and keyboard authorization use the same supported default");checks++;
 console.log(JSON.stringify({suite:'presence-connect',environment:'Node VM / actual content function with synthetic DOM',checks,result:'PASS',windowsAccepted:false}));
