@@ -7,15 +7,16 @@ let checks=0;
 function eq(a,b,label){assert.equal(a,b,label);checks++;}
 function harness(seed={},sessionSeed={},popupPath='extension/ui/popup.html'){
  let now=100000,idle='active',hold=null;
+ const apiCalls={idle:0,storageGet:0,tabsQuery:0,tabsGet:0};
  const events=()=>({listeners:[],addListener(f){this.listeners.push(f)},emit(...args){this.listeners.forEach(f=>f(...args))}});
  const data={effectifConfig:{autoAnswerEnabled:true,presenceIdleSeconds:60},...seed};
  const sessionData={...sessionSeed};
  const changed=events(),stateChanged=events(),messages=events(),intervals=[],alarms=events(),scheduledAlarms=new Map();
- const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,getManifest:()=>({action:{default_popup:popupPath}}),onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},alarms:{onAlarm:alarms,create:(name,info)=>scheduledAlarms.set(name,info),clear:async name=>scheduledAlarms.delete(name)},storage:{onChanged:changed,local:{get:async keys=>Object.fromEntries(keys.map(k=>[k,data[k]])),set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}},session:{get:async keys=>Object.fromEntries(keys.map(k=>[k,sessionData[k]])),set:async patch=>Object.assign(sessionData,patch),remove:async key=>{delete sessionData[key]}}},tabs:{get:async()=>({url:PROFILE}),query:async()=>[]}};
+ const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,getManifest:()=>({action:{default_popup:popupPath}}),onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{apiCalls.idle++;if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},alarms:{onAlarm:alarms,create:(name,info)=>scheduledAlarms.set(name,info),clear:async name=>scheduledAlarms.delete(name)},storage:{onChanged:changed,local:{get:async keys=>{apiCalls.storageGet++;return Object.fromEntries(keys.map(k=>[k,data[k]]))},set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}},session:{get:async keys=>Object.fromEntries(keys.map(k=>[k,sessionData[k]])),set:async patch=>Object.assign(sessionData,patch),remove:async key=>{delete sessionData[key]}}},tabs:{get:async()=>{apiCalls.tabsGet++;return {url:PROFILE}},query:async()=>{apiCalls.tabsQuery++;return []}}};
  const ctx={chrome,Date:class extends Date{static now(){return now}},setInterval:f=>intervals.push(f),setTimeout,clearTimeout,self:{}};
  ctx.self=ctx;ctx.URL=URL;vm.createContext(ctx);vm.runInContext(code,ctx);
  const sender={id:'id',frameId:0,url:PROFILE,tab:{id:7,url:PROFILE}};
- return {guard:ctx.SignalPresenceGuard,chrome,data,sessionData,sender,popupSender:{id:'id',url:'chrome-extension://id/'+popupPath},stateChanged,intervals,alarms,scheduledAlarms,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
+ return {guard:ctx.SignalPresenceGuard,chrome,data,sessionData,sender,apiCalls,popupSender:{id:'id',url:'chrome-extension://id/'+popupPath},stateChanged,intervals,alarms,scheduledAlarms,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
 }
 const h=harness();
 eq(h.guard.snapshot().armed,false,'upgraded stored enabled does not arm');
@@ -49,6 +50,23 @@ eq(released.ok,true,'lease owner can release by exact request identity');
 eq(released.released,true,'matching lease is released');
 eq(lease.guard.snapshot().armed,true,'releasing a failed attempt does not disarm operator presence');
 eq((await lease.guard.authorize({modality:'OPI',requestId:'lease-2'},lease.sender)).ok,true,'next eligible call can obtain a lease immediately after release');
+const fastPath=harness();await fastPath.guard.arm(60);
+const beforeFast={...fastPath.apiCalls};
+const fastGrant=await fastPath.guard.authorize({modality:'OPI',requestId:'fast-path'},fastPath.sender);
+eq(fastGrant.ok,true,'fresh explicit presence grants immediately on the cached authorization path');
+eq(fastGrant.verificationPath,'cached','hot path uses the fresh in-memory presence result');
+eq(fastPath.apiCalls.idle,beforeFast.idle,'hot path does not repeat the OS idle query');
+eq(fastPath.apiCalls.storageGet,beforeFast.storageGet,'hot path does not read storage again');
+eq(fastPath.apiCalls.tabsGet,0,'hot path avoids the redundant tabs.get round-trip');
+eq(fastPath.apiCalls.tabsQuery,beforeFast.tabsQuery+1,'hot path keeps the active-call exclusion check');
+eq(fastGrant.verificationMs<1000,true,'cached authorization remains within the one-second grant bound');
+
+const stalePresence=harness();await stalePresence.guard.arm(60);stalePresence.setIdle('unknown');stalePresence.setNow(121000);
+const idleCallsBefore=stalePresence.apiCalls.idle;
+eq((await stalePresence.guard.authorize({modality:'OPI',requestId:'stale-presence'},stalePresence.sender)).error,'presence-check-unavailable','stale cached presence is refreshed and unknown OS state fails closed');
+eq(stalePresence.apiCalls.idle,idleCallsBefore+1,'stale presence triggers a fresh OS query');
+eq(stalePresence.guard.snapshot().armed,true,'unavailable refresh rejects only the attempt and retains explicit session arm');
+
 const callUrl='https://app.cloudinterpreter.com/call/call-fixture';
 const callSender={...lease.sender,url:callUrl,tab:{id:7,url:callUrl}};
 eq((await lease.message({type:'SIGNAL_PRESENCE_RELEASE',requestId:'lease-2'},callSender)).released,true,'confirmed call route can release its own authorization lease');
@@ -72,8 +90,8 @@ await h.chrome.storage.local.set({signalLabLock:false});await h.guard.arm(60);aw
 h.data.effectifConfig={autoAnswerEnabled:true,presenceIdleSeconds:60};await h.guard.arm(60);
 let release;h.hold(cb=>release=cb);const pending=h.guard.authorize({modality:'OPI',requestId:'race'},h.sender);
 await new Promise(r=>setImmediate(r));h.guard.disarm('locked');release('active');eq((await pending).ok,false,'lock racing query invalidates grant');
-h.hold(null);await h.guard.arm(60);h.chrome.tabs.get=async()=>({url:PROFILE+'/call/private'});eq((await h.guard.authorize({modality:'OPI',requestId:'route'},h.sender)).ok,false,'live route revalidated');
-h.chrome.tabs.get=async()=>{throw Error('closed')};eq((await h.guard.authorize({modality:'OPI',requestId:'closed'},h.sender)).ok,false,'closed tab fails closed');
+h.hold(null);await h.guard.arm(60);const changedRouteSender={...h.sender,url:PROFILE+'/call/private',tab:{...h.sender.tab,url:PROFILE+'/call/private'}};eq((await h.guard.authorize({modality:'OPI',requestId:'route'},changedRouteSender)).error,'sender-not-authorized','changed tab route is rejected from browser-supplied sender metadata');
+h.chrome.tabs.query=async()=>{throw Error('query unavailable')};eq((await h.guard.authorize({modality:'OPI',requestId:'closed'},h.sender)).error,'authorization-verification-unavailable','unavailable active-call check fails closed');
 eq(h.guard.snapshot().armed,true,'transient tab verification error rejects this attempt without erasing explicit availability');
 const missing=harness();delete missing.chrome.idle;eq((await missing.guard.arm(60)).ok,false,'missing permission/API blocks');
 const err=harness();err.chrome.runtime.lastError={message:'not allowed'};eq((await err.guard.arm(60)).ok,false,'API error blocks');
@@ -102,6 +120,7 @@ const idleRevoke=harness();await idleRevoke.guard.arm(60);idleRevoke.setIdle('id
 eq(idleRevoke.sessionData.signalPresenceGuardSession,undefined,'OS idle revocation deletes session authorization');
 const duringCall=harness();await duringCall.guard.arm(60);duringCall.chrome.tabs.query=async()=>[{id:9}];eq((await duringCall.guard.authorize({modality:'OPI',requestId:'during-call'},duringCall.sender)).ok,false,'a call in another tab blocks new automatic answer');
 const transientAuthorization=harness();await transientAuthorization.guard.arm(60);
+transientAuthorization.setNow(121000);
 transientAuthorization.chrome.runtime.lastError={message:'temporary idle API error'};
 eq((await transientAuthorization.guard.authorize({modality:'OPI',requestId:'temporary-unavailable'},transientAuthorization.sender)).error,'presence-check-unavailable','temporary idle API error blocks the current call attempt');
 eq(transientAuthorization.guard.snapshot().armed,true,'temporary idle API error does not disarm the operator session');
@@ -129,7 +148,7 @@ await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));awai
 eq(pendingRestore.guard.snapshot().armed,true,'a successful retry restores the same explicitly authorized browser session');
 eq(pendingRestore.scheduledAlarms.has('signal-presence-restore-retry'),false,'successful restore clears the retry alarm');
 
-const unknownState=harness();await unknownState.guard.arm(60);unknownState.setIdle('unknown');
+const unknownState=harness();await unknownState.guard.arm(60);unknownState.setIdle('unknown');unknownState.setNow(121000);
 eq((await unknownState.guard.authorize({modality:'OPI',requestId:'unknown-idle-state'},unknownState.sender)).error,'presence-check-unavailable','unknown idle state is treated as unverifiable, not as idle');
 eq(unknownState.guard.snapshot().armed,true,'unknown idle state does not destroy the explicit session authorization');
 
