@@ -19,10 +19,10 @@ const ctx={
       ok:true,status:200,
       text:async()=>JSON.stringify({
         text:" Hola doctor, buenos días. ",
-        model:"whisper-large-v3-turbo",
+        model:"whisper-large-v3",
         segments:[
           {id:0,start:0,end:1.2,text:" Hola doctor,"},
-          {id:1,start:1.2,end:2.4,text:" buenos días."}
+          {id:1,start:1.2,end:2.4,text:" buenos días.",avg_logprob:-0.12,no_speech_prob:0.01,compression_ratio:1.2}
         ]
       })
     };
@@ -31,21 +31,31 @@ const ctx={
 vm.createContext(ctx);
 vm.runInContext(source,ctx);
 
-const noKey=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{});
+const noZdr=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true});
+assert.equal(noZdr.ok,false);
+assert.equal(noZdr.reasonCode,"zdr-required");
+assert.equal(calls.length,0,"no audio leaves the client before ZDR confirmation");
+
+const noKey=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{zeroDataRetentionConfirmed:true});
 assert.equal(noKey.ok,false);
 assert.match(noKey.error,/GROQ_API_KEY/);
 
 const result=await ctx.SignalGroqTranscriber.transcribe(
   new Blob(["audio"],{type:"audio/webm"}),
-  {__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",model:"whisper-large-v3-turbo",language:"es",prompt:"Interpretación médica"}
+  {__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true,language:"es",prompt:"Interpretación médica"}
 );
 assert.equal(result.ok,true);
 assert.equal(result.text,"Hola doctor, buenos días.");
-assert.equal(result.segments.length,2);
+assert.equal(result.segments.length,2,"invalid timestamp segments are discarded");
+assert.equal(result.segments[1].avgLogprob,-0.12);
+assert.equal(result.words.length,2,"word timestamps are preserved");
+assert.equal(result.model,"whisper-large-v3");
+assert.equal(ctx.SignalGroqTranscriber.model,"whisper-large-v3","highest-quality default model is selected");
 assert.equal(calls.length,1);
 assert.equal(calls[0].url,"https://api.groq.com/openai/v1/audio/transcriptions");
 const sent=calls[0].options.body;
-assert.equal(sent.get("model"),"whisper-large-v3-turbo");
+assert.equal(sent.get("model"),"whisper-large-v3");
+assert.equal(sent.getAll("timestamp_granularities[]").join(","),"segment,word");
 assert.equal(sent.get("language"),"es");
 assert.equal(sent.get("temperature"),"0");
 assert.equal(sent.get("response_format"),"verbose_json");
