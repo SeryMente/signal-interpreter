@@ -40,7 +40,10 @@ function createHarness(){
   class WorkletNode{
     constructor(context,name,opts){
       this.context=context;this.name=name;this.opts=opts;this.connected=false;
-      this.port={onmessage:null,messages:[],postMessage:(v)=>{this.port.messages.push(v);}};
+      this.port={onmessage:null,messages:[],postMessage:(v)=>{
+        this.port.messages.push(v);
+        if(v&&v.type==="flush")Promise.resolve().then(()=>{if(this.port.onmessage)this.port.onmessage({data:{type:"flushed"}});});
+      }};
       audioNodes.push(this);
     }
     connect(){this.connected=true;}
