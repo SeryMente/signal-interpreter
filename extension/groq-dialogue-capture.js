@@ -71,7 +71,7 @@
     var audio=context.createMediaStreamSource(stream);
     var node=new AudioWorkletNode(context,"signal-whisper-window",{
       numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[1],
-      processorOptions:{windowSeconds:6}
+      processorOptions:{windowSeconds:6.5,overlapMs:500}
     });
     var lane={source:audio,node:node,flushResolve:null};
     node.port.onmessage=function(event){
