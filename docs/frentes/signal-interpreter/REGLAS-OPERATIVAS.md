@@ -108,3 +108,55 @@ La ruta destinada por el operador es `signal-interpreter\\extension`. Antes de i
 - La presente regla fija la ubicación futura; no certifica que la extensión esté materializada/cargable, que el host nativo esté instalado ni que Chrome se haya actualizado.
 
 La instrucción autoriza este workspace como superficie provisional para código y documentación técnica no sensible. No autoriza guardar secretos, capturar audio/micrófono real, intervenir llamadas, recargar/reiniciar Chrome, declarar aceptación funcional, fusionar PR, desplegar o crear release.
+
+
+## SI-OP-03 — Transcripción dual Groq y diálogo cronológico único
+
+**Estado:** PROVISIONAL · decisión operativa del operador · 2026-11-10  
+**Ámbito:** captura y transcripción de la llamada en Signal Interpreter; no sustituye SI-OP-01 ni SI-OP-02.
+
+### Regla
+
+El requisito de transcripción es un único diálogo cronológico que combine:
+1. la salida de audio remota de la pestaña de Cloud Interpreter; y
+2. la entrada del micrófono propio del intérprete.
+
+Ambas fuentes deben mantenerse separadas durante la captura y enviarse simultáneamente al endpoint Groq de transcripción. La fusión ocurre después de recibir segmentos y aplicarles el reloj común. No mezclar pistas antes de Whisper ni serializar una fuente detrás de la otra.
+
+### Motor por defecto
+
+- whisper-large-v3 en ambos canales.
+- verbose_json, temperatura 0, timestamps por segmento.
+- Omitir language para permitir autodetección por fragmento cuando la lengua no esté verificada.
+- No usar Turbo como default ni activar fallback silencioso.
+- Word timestamps fuera del camino crítico por su latencia adicional documentada.
+- Live Caption nativo como alternativa/híbrido queda P3 y desactivado como segundo motor paralelo por defecto.
+
+### Captura y envío
+
+- La fuente remota debe limitarse a la pestaña de la llamada elegida por el operador; el audio no se debe capturar de forma oculta ni fuera de una llamada activa.
+- La fuente propia se captura con getUserMedia en una acción visible y explícita; etiqueta INTÉRPRETE por procedencia, nunca por idioma.
+- Preferir ventanas de audio autónomas, mono, WAV 16 kHz, generadas mediante AudioWorklet. No subir fragmentos timesliced de MediaRecorder como archivos independientes sin verificar que cada uno sea decodificable/autónomo.
+- Dos colas y límites de concurrencia por fuente; backpressure, secuencia, offset de captura, timeout y errores visibles. La ventana/cadencia se decide contra RPM/ASH reales y la factura mínima de 10 s por solicitud.
+- Reloj monotónico común cuando ambas fuentes compartan AudioContext; en contextos distintos, mapear a una época de sesión y medir deriva. Guardar startMs/endMs/source/sequence/requestId/model por segmento.
+- Fusionar por startMs; conservar solapamientos; actualizar parciales por identidad estable; deduplicar solo dentro de la misma fuente/ventana cuando se demuestre que es un duplicado de reconciliación.
+
+### Atribución y presentación
+
+- Micrófono propio → INTÉRPRETE.
+- Salida de pestaña mixta → AUDIO REMOTO · HABLANTE NO VERIFICADO.
+- No asignar LEP/proveedor por idioma, voz aparente, contenido o inferencia. Solo separar roles si Cloud Interpreter expone pistas o metadatos de participante verificables y los tests lo demuestran.
+- Renderizar todas las fuentes en el mismo diálogo; conservar texto bruto; puntuación conservadora; no alterar dosis, cifras, nombres, direcciones ni contenido clínico.
+
+### Privacidad y cierre
+
+- La captura requiere llamada activa reconocida, acción explícita, preflight, clave Groq disponible y confirmación ZDR como compuerta local. La casilla ZDR es una declaración del operador, no prueba independiente de la configuración de la consola.
+- Audio y texto clínico se excluyen de telemetría/observabilidad, exportes diagnósticos, bases generales y logs.
+- Detener y liberar las dos pistas al fin de llamada, cambio de ruta, pagehide, pérdida/denegación de permiso, mute o error de pipeline. No declarar la sesión completa si una fuente falla.
+- Cualquier cambio de permisos de extensión, paquete y hash de distribución requiere actualizar inventarios y pasar todas las suites existentes.
+
+### Compuerta de aceptación
+
+La función no se declara completa hasta que: (a) ambas fuentes operen simultáneamente; (b) ambas transcripciones aparezcan en el mismo diálogo; (c) el orden y los solapamientos sean correctos; (d) los tests sintéticos/headless validen archivos WAV, sincronización, errores y ciclo de vida; (e) CI verde sobre la cabeza exacta; (f) se reporte WER/CER, latencia p50/p95, pérdida, duplicación, RPM y coste sobre corpus autorizado; y (g) el operador acepte la prueba real.
+
+**Procedencia y estado actual:** instrucciones literales A-01/A-02/A-03 y decisiones en el OCP y registro verbatim. Integración dual, captura y diálogo en runtime todavía pendientes.
