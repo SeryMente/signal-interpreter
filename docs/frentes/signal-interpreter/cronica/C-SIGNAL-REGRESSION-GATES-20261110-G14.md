@@ -145,3 +145,33 @@ El texto recibido por el operador incluye una ruta personal de Windows en una re
 ---
 **Procedencia:** reconstrucción documental basada en el tramo que pegó el operador y en lecturas/escrituras del repositorio. No representa exportación nativa de conversación ni afirma que los estados de interfaz sean eventos de ejecución.
 
+## 7. Resultado final de CI tras corregir los fallos · 2026-11-10
+
+**Cabeza candidata probada:** `b82c813dd3650e9f10fe47ef55a710489d6bad0b`.
+
+Las tres ejecuciones de GitHub Actions terminaron `completed / success`:
+
+| Workflow | Run | Resultado |
+|---|---:|---|
+| `signal-observability-audit` | `42906302139` | SUCCESS |
+| `native-caption-host-build` | `42906302286` | SUCCESS |
+| `Package integrity` | `42906302442` | SUCCESS |
+
+El log de Package integrity confirma:
+- Microphone Main Guard: PASS.
+- Presence Connect: **36/36 PASS** (Node VM / DOM sintético).
+- Presence Guard: **94/94 PASS** (Node VM / Chrome APIs sintéticas).
+- Auto-Answer Runtime Guard: **15/15 PASS** (Node VM / Chrome APIs sintéticas).
+- Gate ejecutado: `audio/Connect/presence regression gate (4 suites)` — PASS.
+- Inventario de paquete: **60 archivos SHA-256 PASS**.
+
+El workflow de Windows completó:
+- Parser de scripts y validación de identidad de extensión: PASS.
+- Verificación del archivo raíz e instalación de origen con Windows PowerShell 5.1: PASS.
+- Compilación y empaquetado del host nativo: PASS.
+- Publicación del artefacto: PASS.
+- Verificación de framing Native Messaging y cierre limpio: PASS.
+
+Los dos primeros intentos no se ocultan: el primero detectó el SHA del verificador desactualizado; el segundo detectó el orden incorrecto del caso añadido al harness. Ambos defectos se corrigieron y la ejecución final de los tres workflows pasó.
+
+**Alcance de la evidencia:** CI sintético/automatizado y smoke test del host. No prueba una sesión activa de Chrome, pista física de micrófono, contestación real, transcripción real ni aceptación del operador. PR #82 permanece abierta/draft/sin fusionar; main no se modificó.
