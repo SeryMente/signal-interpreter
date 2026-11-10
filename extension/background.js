@@ -653,8 +653,8 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   function pendingMicrophoneUnmuteEligible(state, probe, activeCall) {
     return activeCall === true && !!state && state.microphoneMuteRequested === false &&
       state.microphoneMuted === true && state.microphoneMuteStatus === "error" &&
-      state.microphoneOutputStatus === "error" && !!probe && probe.verified === true &&
-      probe.muted === true && Number(probe.trackCount || 0) > 0;
+      !!probe && probe.verified === true && probe.muted === true &&
+      Number(probe.trackCount || 0) > 0;
   }
 
   async function hotloadHeartbeat(trigger) {
