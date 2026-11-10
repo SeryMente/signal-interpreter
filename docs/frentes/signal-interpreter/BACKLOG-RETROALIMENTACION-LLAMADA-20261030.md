@@ -312,3 +312,19 @@ Esto no coincide con la política vigente anterior: permanecer silenciado durant
 - No code edits, no stored preference changes, no Chrome reload, no arming, no real call/audio and no human acceptance.
 
 Orden actualizado: (1) SI-REG-05 corregir semántica de micrófono, conservando controles y guards; (2) SI-REG-01 aceptar switch en Chrome sin armar presencia; (3) SI-REG-02 validar pista tardía bajo llamada activa; (4) conservar SI-REG-03 como test permanente; (5) SI-REG-04 solo cierra con aceptación del operador.
+
+## 10. SI-REG-06 — Auto-Answer: prioridad de latencia bajo competencia · P0
+
+**Premisa operativa del operador:** varias personas pueden competir por la misma llamada entrante y otros intérpretes podrían usar bots. Se adopta como hipótesis de diseño; no se presenta como hecho verificado sobre la plataforma.
+
+**Instrucción vigente:** el único objetivo de la ruta automática es ejecutar una sola activación de `Connect` tan pronto como resulte elegible. Se prioriza el menor tiempo detección→clic. El mecanismo de activación es `button.click()` sobre el botón real de la interfaz. No forman parte del alcance simular ratón físico, forzar `isTrusted`, usar CDP Input.dispatchMouseEvent ni invocar APIs/endpoints privados.
+
+**Camino crítico:** MutationObserver → detección OPI/Connect → compuertas síncronas → autorización efímera de un solo uso → `button.click()` → confirmación de ruta. No se permiten dobles clics sobre el mismo intento. Se mantienen configuración habilitada, presencia explícita y reciente, perfil autorizado, modalidad OPI, disponibilidad Online, laboratorio apagado, expiración/generación y exclusión de llamada activa en otras pestañas.
+
+**Optimización candidata:** rama `perf/autoanswer-fast-dispatch-20261110`. El guard reutiliza una muestra de presencia `active` de hasta 20 s procedente de eventos/sondeo/restauración y mantiene Auto-Answer/candado de laboratorio en caché. Evita lectura repetida de almacenamiento, consulta de inactividad y `tabs.get` en el camino caliente; conserva consulta de llamada activa en otras pestañas y refresh fail-closed cuando la muestra está ausente, desconocida o vencida. La telemetría registra ruta `cached/refreshed` y edad de la muestra. `button.click()` no se reemplaza.
+
+**Evidencia sintética de la candidata:** Presence Guard 91/91, Presence Connect 33/33, Auto-Answer Runtime 15/15, sintaxis JS y cotejo SHA-256 de tres objetos del inventario PASS. Detalle y hashes en [crónica G14 de Auto-Answer fast path](cronica/C-SIGNAL-AUTOANSWER-FASTPATH-20261110-G14.md).
+
+**Aceptación pendiente:** no se hizo reload, no se habilitó Auto-Answer ni se armó presencia, no hubo llamada/audio real ni aceptación humana. La prueba sintética no confirma la latencia del Chrome operativo ni que la plataforma complete la conexión. La aceptación solo se cierra con medición real autorizada y confirmación de `CALL_ROUTE_ENTERED`/`ANSWER_FLOW_ROUTE_CONFIRMED`.
+
+La exploración temporal del criterio erróneo de equivalencia de ratón/ `isTrusted` fue retirada; no es criterio de aceptación, diseño ni código del producto.
