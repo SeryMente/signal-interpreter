@@ -37,6 +37,17 @@ assert.equal(noZdr.ok,false);
 assert.equal(noZdr.reasonCode,"zdr-required");
 assert.equal(calls.length,0,"no audio leaves the client before ZDR confirmation");
 
+const preAborted=new AbortController();
+preAborted.abort();
+const beforePreAbort=calls.length;
+const preAbortResult=await ctx.SignalGroqTranscriber.transcribe(
+  new Blob(["audio"],{type:"audio/wav"}),
+  {__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true,signal:preAborted.signal}
+);
+assert.equal(preAbortResult.ok,false);
+assert.equal(preAbortResult.aborted,true);
+assert.equal(calls.length,beforePreAbort,"pre-aborted capture must not send audio");
+
 const noKey=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{zeroDataRetentionConfirmed:true});
 assert.equal(noKey.ok,false);
 assert.match(noKey.error,/GROQ_API_KEY/);
