@@ -67,6 +67,35 @@
       return "["+t+"] "+s.speaker+": "+s.text;
     }).join("\\n\\n");
   }
+  function createConcurrentSourceQueue(maxPendingPerSource){
+    var maxPending=Math.max(1,Math.min(4,Number(maxPendingPerSource)||2));
+    var channels={
+      "groq-remote":{chain:Promise.resolve(),pending:0,lastSequence:0},
+      "groq-interpreter":{chain:Promise.resolve(),pending:0,lastSequence:0}
+    };
+    function status(source){
+      var lane=channels[source];
+      return lane?{pending:lane.pending,lastSequence:lane.lastSequence}:null;
+    }
+    function setSequence(source,sequence){
+      var lane=channels[source];
+      if(!lane||!Number.isInteger(Number(sequence))||Number(sequence)<1)return false;
+      if(Number(sequence)<=lane.lastSequence)return false;
+      lane.lastSequence=Number(sequence);
+      return true;
+    }
+    function enqueue(source,task){
+      var lane=channels[source];
+      if(!lane||typeof task!=="function")return Promise.resolve({ok:false,reasonCode:"audio-source-invalid"});
+      if(lane.pending>=maxPending)return Promise.resolve({ok:false,reasonCode:"transcription-backlog"});
+      lane.pending++;
+      var run=lane.chain.then(task);
+      lane.chain=run.catch(function(){});
+      return run.finally(function(){lane.pending=Math.max(0,lane.pending-1);});
+    }
+    return {status:status,setSequence:setSequence,enqueue:enqueue};
+  }
+
   root.SignalDialogue={
     normalize:normalize,sortSegments:sortSegments,stableSegmentId:stableSegmentId,
     normalizeSegment:normalizeSegment,mergeSegments:mergeSegments,speakerLabel:speakerLabel,
