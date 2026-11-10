@@ -380,3 +380,74 @@ La premisa de diseño indicada por el operador es que varias personas pueden com
 La cabeza candidata `b82c813dd3650e9f10fe47ef55a710489d6bad0b` obtuvo 3/3 workflows SUCCESS: observability audit `42906302139`, native-caption-host-build `42906302286`, package-integrity `42906302442`. Package integrity ejecutó y aprobó Mic Guard, Presence Connect 36/36, Presence Guard 94/94 y Auto-Answer Runtime 15/15, con 60/60 hashes de paquete. El smoke test Windows aprobó validación del instalador, compilación/paquete del host y Native Messaging framing/clean shutdown.
 
 Esto cierra el gate automatizado de esta candidata; no constituye aceptación en Chrome ni prueba de micrófono físico, llamada o transcripción real. La PR #82 continúa abierta/draft/no fusionada. No se ejecutaron reload, arming, Auto-Answer, llamada/audio real, merge, deploy ni release. Véase `cronica/C-SIGNAL-REGRESSION-GATES-20261110-G14.md`.
+
+
+## Actualización viva G14 · transcripción dual Groq y diálogo combinado · 2026-11-10
+
+Esta actualización modifica el OCP heredado del mismo frente Signal Interpreter; no crea otro proyecto, agente, prompt paralelo ni superficie de estado. Este archivo continúa siendo el núcleo operativo único. El backlog y el documento de instrucciones son referencias de navegación/procedencia subordinadas a este OCP.
+
+### Instrucciones fuente del operador
+
+Las instrucciones literales A-01, A-02 y A-03, con erratas originales preservadas, se conservan en [INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md](INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md). El documento indica que no pudo recuperarse el texto íntegro de un mensaje inicial anterior, por lo que no se reconstruye como cita. Las nuevas instrucciones deben añadirse como nuevos bloques verbatim, sin corregir ni reemplazar los anteriores.
+
+### Reglas operativas acordadas
+
+1. **Un diálogo, dos fuentes.** Se capturan por separado (a) la salida remota de audio de la pestaña de llamada y (b) la entrada del micrófono propio. Ambos canales alimentan el mismo diálogo cronológico. No crear conversaciones paralelas ni transcribirlos en una cola serial única.
+2. **Groq para los dos canales.** El modelo de calidad predeterminado es `whisper-large-v3` en ambos, no Turbo. No habilitar Live Caption nativo como segundo transcriptor concurrente ni un fallback silencioso. Live Caption nativo y un eventual modo híbrido quedan en P3, sujetos a evidencia de mejora.
+3. **Velocidad de extremo a extremo.** Priorizar ventanas breves, WAV autónomo 16 kHz mono cuando la captura lo permita, timestamps por segmento, dos colas concurrentes, backpressure explícito y reconciliación determinista. Evitar timestamp por palabra en el camino crítico. No afirmar streaming nativo de Whisper: el endpoint Groq documentado recibe archivos/URLs, no una sesión de audio incremental.
+4. **Control de cuotas.** En la tabla pública de Groq Developer, Whisper Large V3 expone 20 RPM y 7.200 ASH de base; los límites reales dependen de la organización. Groq factura un mínimo de 10 segundos por petición. Dos pistas implican dos peticiones por ventana; la cadencia debe respetar el límite agregado, no calcularse por pista como si fueran cuotas independientes. Ventana/solapamiento final aún por benchmark.
+5. **Identidad por procedencia, nunca por idioma.** El micrófono propio se etiqueta `INTÉRPRETE`. La salida remota mezclada se etiqueta `AUDIO REMOTO · HABLANTE NO VERIFICADO`. No etiquetar LEP/proveedor sin pistas separadas o metadatos confiables; Whisper transcription no equivale a diarización.
+6. **Cronología sin costuras.** Un reloj monotónico común, sequence IDs por fuente, timestamps globales, solapamientos reales conservados, parciales actualizados por identidad estable y reconciliación de ventanas sin eliminar repeticiones legítimas de participantes distintos.
+7. **No perder ni ocultar fallos.** Cuotas 429/Retry-After, timeout, pérdida de fuente, cola saturada, audio no decodificable o error de transcripción deben mostrarse y marcar la sesión parcial. Nunca declarar el diálogo completo si falla una fuente.
+8. **Fidelidad clínica.** No traducir, resumir, completar ni parafrasear contenido. Conservar nombres propios, cifras, dosis, unidades y terminología. Puntuación y presentación conservadoras; cuando exista normalización, preservar texto bruto aparte.
+9. **Privacidad y activación.** Captura solo mediante gesto explícito y dentro de llamada activa reconocida. Preflight de llamada, tab/source, permiso, credencial y configuración ZDR antes de enviar audio. No persistir audio/transcripción clínica en telemetría, observabilidad o almacenamiento general. Detener y liberar ambas fuentes al terminar la llamada, salir de la ruta, pagehide, revocar permiso o fallar el pipeline.
+10. **KHORA como referencia selectiva.** Reutilizar patrones útiles (micrófono y fuente remota separados, reloj común, partes, lifecycle y pruebas sintéticas), pero resolver el diseño según Signal Interpreter y las limitaciones de Groq. KHORA no es estándar normativo de implementación.
+11. **Compuertas vigentes.** Trabajo estático, pruebas sintéticas y CI están autorizados dentro de G14. No llamadas/audio reales, credenciales, reload/reinicio de Chrome, aceptación humana, merge, deploy ni release; quedan reservados al operador y a su autorización correspondiente.
+
+### Decisiones técnicas actuales
+
+- Endpoint: `POST https://api.groq.com/openai/v1/audio/transcriptions`.
+- Default: `whisper-large-v3`, `verbose_json`, temperatura 0, timestamps `segment`, idioma omitido para permitir autodetección ES/EN cuando no se conoce el idioma de cada fragmento.
+- Modelo de calidad y coste ya alineados en `extension/groq-transcriber.js` y `extension/background.js`; el cliente exige la compuerta local ZDR antes de iniciar el fetch.
+- Se excluyeron los timestamps `word` del camino rápido. Groq declara latencia adicional para los timestamps por palabra; los timestamps por segmento no añaden esa latencia. [Fuente técnica Groq](https://console.groq.com/docs/speech-to-text).
+- El endpoint transcribe una sola pista de audio por archivo; cada fuente debe enviarse como petición independiente. La documentación advierte que en archivos multitrack solo procesa la primera pista. [Referencia API](https://console.groq.com/docs/api-reference).
+- Los valores de WER/velocidad publicados por Groq (Large V3 10.3% / 189x; Turbo 12% / 216x) son referencias del proveedor, no medidas de interpretación médica ni garantías de calidad en este producto.
+- Captura candidata a probar: `getDisplayMedia({video:true,audio:true})` para que el operador seleccione/comparta la pestaña de llamada y `getUserMedia()` para el micrófono, ambas separadas; empaquetado independiente de ventanas WAV 16 kHz mono mediante AudioWorklet y upload por fuente. Esta es una arquitectura propuesta, aún no integrada ni validada en Chrome. No asumir que partes `MediaRecorder` timesliced son contenedores autónomos decodificables.
+- Cadencia provisional a evaluar: 6 segundos por fuente para una carga agregada de hasta 20 solicitudes/minuto (dos pistas), sujeto a límites efectivos de la cuenta y coste mínimo de 10 segundos por petición. Se permite ajustar tras benchmark de latencia, throughput, WER/CER, solapamiento, RPM y coste; no queda ratificada como valor óptimo.
+
+### Estado de la candidata / evidencia
+
+- Rama: `candidate/whisper-interpreter-live-20261110`.
+- PR #83 abierta, draft, base `main`, sin merge; cabeza de código verificada en la revisión anterior `057ea41a5a05b1c28854dc2fe72b329eba159b47`; los tres workflows en esa cabeza reportaron SUCCESS (Package integrity, signal-observability-audit, native-caption-host-build).
+- Package Integrity ejecutó la suite Groq y las cinco suites de seguridad; paquete 60/60 SHA-256 PASS. El audit y el build/smoke del Native Messaging host terminaron SUCCESS.
+- La actualización documental OCP/verbatim posterior vuelve a disparar CI; no atribuir automáticamente el resultado de la cabeza anterior al nuevo commit.
+- Código aún incompleto: el runtime actual de la rama todavía no captura salida remota + micrófono ni fusiona ambos resultados; el código de background conserva `startGroqCapture()` en `native-text-only`, y el overlay actual solo acepta captions nativos `chrome-live-caption`. El transcriptor Large V3 unitario no equivale a la función dual.
+- No se cargó/recargó Chrome, no se utilizó micrófono real, no se inició llamada, no se hicieron llamadas Groq reales ni se utilizó una credencial. La calidad de audio real, diarización de remoto, WER/CER y latencia E2E no están verificados.
+
+### Tareas provisionales vigentes
+
+| ID | Trabajo | Estado |
+|---|---|---|
+| SI-GRQ-01 | Alinear Large V3, verbose_json, ZDR y timestamps de segmento | IMPLEMENTADO EN CANDIDATA; pruebas unitarias CI PASS |
+| SI-GRQ-02 | Captura separada de audio remoto de pestaña | PENDIENTE |
+| SI-GRQ-03 | Captura separada del micrófono propio y etiqueta INTÉRPRETE | PENDIENTE |
+| SI-GRQ-04 | Empaquetar ventanas WAV autónomas 16 kHz mono, preservando reloj común | PENDIENTE |
+| SI-GRQ-05 | Enviar ambos canales en paralelo con colas y backpressure independientes | PENDIENTE |
+| SI-GRQ-06 | Fusionar timestamps y solapamientos en un diálogo único sin duplicación artificial | PENDIENTE |
+| SI-GRQ-07 | Adaptar overlay para mostrar micrófono y audio remoto neutral, sin atribución no probada | PENDIENTE |
+| SI-GRQ-08 | Detener/liberar fuentes y estado al terminar llamada, salir de ruta o fallar permiso | PENDIENTE |
+| SI-GRQ-09 | Headless tests de AudioWorklet/WAV, dos fuentes, orden, fallos, backpressure y UI | PENDIENTE |
+| SI-GRQ-10 | Benchmark autorizado de latencia p50/p95, WER/CER, pérdida, duplicación, RPM y coste | PENDIENTE |
+| SI-GRQ-11 | CI verde para la cabeza exacta que integre captura + API + diálogo | PENDIENTE |
+| SI-GRQ-12 | Aceptación funcional en Chrome/llamada controlada por el operador | PENDIENTE · RESERVADA AL OPERADOR |
+
+### Secuencia de trabajo para la continuación
+
+1. Construir motor puro de segmentos y fusión cronológica con pruebas unitarias.
+2. Crear captura dual por AudioWorklet con archivos WAV independientes y metadatos de reloj/sequence.
+3. Integrar mensajes con background; ejecutar dos solicitudes Groq concurrentes, sin almacenar transcripción clínica en telemetry.
+4. Integrar render de ambas fuentes en el overlay existente sin inferir roles por idioma.
+5. Añadir pruebas sintéticas de extremo a extremo, validar package inventory SHA y ejecutar CI.
+6. Documentar resultados, errores y límites reales; mantener PR en draft hasta que pase revisión de arquitectura y aceptación humana.
+
+**Siguiente estado esperado:** un prototipo de pipeline dual de extremo a extremo en entorno sintético/headless, no una declaración de función lista para llamada real.
