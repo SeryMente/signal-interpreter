@@ -264,7 +264,7 @@ La búsqueda de GitHub Issues abiertos devolvió cero. Este archivo sigue siendo
 
 ## Aditamento de verificación de la candidata — 2026-11-10
 
-- Rama: `fix/backlog-p0-switch-mic-late-track-20261110`; HEAD `6cb479481c51e618d085ae09991cad258d6bdc00`; PR #80 abierta como draft, no fusionada. No hay CI runs/statuses reportados para ese commit.
+- Rama: `fix/backlog-p0-switch-mic-late-track-20261110`; HEAD `21db4c472d432e2f33732d3a7206b1f551fdd2ce` (docs); package code snapshot `6cb479481c51e618d085ae09991cad258d6bdc00`; PR #80 abierta como draft, no fusionada. No hay CI runs/statuses reportados para ese commit.
 - Workspace destino: `C:\\Users\\fila4\\Desktop\\SeryMente\\signal-interpreter`; única carpeta de carga Chrome: `extension/`. Se sincronizaron 28 archivos y se preservó el estado anterior en `Temporal\\SI-backup-pre-PR80-20261110.zip`, SHA-256 `24627DF49B53C58B0DC7323EECD3DBE10C98B84346A7B3A67B6D0BC52B284D65`.
 - Inventario SHA-256: 60/60 PASS. `verify-release-package.mjs`: PASS. `unpacked-layout-test.mjs`: PASS (18 referencias). `presence-connect-test.mjs`: 35 checks PASS. `presence-guard-test.mjs`: 83 checks PASS. `microphone-guard-test.mjs`: PASS. `overlay-global-toggle-regression-test.mjs`: PASS. JavaScript syntax: 5/5 PASS. Windows PowerShell 5.1 parser: 7/7 scripts relevantes PASS, BOM verificado donde hay Unicode.
 - Native Messaging host: ya estaba presente y registrado bajo `CENTRAL\\fila4`; registro, manifiesto, origen permitido y SHA-256 del ejecutable se verificaron en solo lectura. No se modificó.
