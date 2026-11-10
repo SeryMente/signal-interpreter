@@ -36,13 +36,32 @@
       form.append("timestamp_granularities[]","segment");
       var prompt=buildPrompt(language,context);
       if(prompt)form.append("prompt",prompt);
-      var controller=new AbortController();
+      var controller=new AbortController(),externalSignal=opts.signal||null,externalAbort=null;
+      if(externalSignal){
+        if(externalSignal.aborted)controller.abort();
+        else if(typeof externalSignal.addEventListener==="function"){
+          externalAbort=function(){controller.abort();};
+          externalSignal.addEventListener("abort",externalAbort,{once:true});
+        }
+      }
       timer=setTimeout(function(){controller.abort()},timeoutMs);
       var response=await fetch(ENDPOINT,{method:"POST",headers:{Authorization:"Bearer "+token},body:form,signal:controller.signal,cache:"no-store"});
       if(timer)clearTimeout(timer);
+      if(externalSignal&&externalAbort&&typeof externalSignal.removeEventListener==="function")externalSignal.removeEventListener("abort",externalAbort);
       var raw=await response.text(),data=null;
       try{data=raw?JSON.parse(raw):null}catch(_){}
-      if(!response.ok)return{ok:false,error:"Groq HTTP "+response.status+": "+cleanError(data&&data.error&&data.error.message||raw),httpStatus:response.status,latencyMs:Date.now()-started};
+      if(!response.ok){
+        var retryAfterMs=null;
+        try{
+          var retryHeader=response.headers&&response.headers.get("retry-after");
+          if(retryHeader){
+            var retrySeconds=Number(retryHeader);
+            retryAfterMs=Number.isFinite(retrySeconds)?Math.max(0,retrySeconds*1000):Math.max(0,Date.parse(retryHeader)-Date.now());
+          }
+        }catch(_){}
+        return{ok:false,error:"Groq HTTP "+response.status+": "+cleanError(data&&data.error&&data.error.message||raw),
+          httpStatus:response.status,retryAfterMs:retryAfterMs,latencyMs:Date.now()-started};
+      }
       var text=String(data&&data.text||"").trim();
       var segments=Array.isArray(data&&data.segments)?data.segments.map(function(s){
         return{id:s.id,start:Number(s.start),end:Number(s.end),text:String(s.text||"").trim(),
@@ -57,7 +76,8 @@
         model:String(data&&data.model||model),latencyMs:Date.now()-started,bytes:blob.size};
     }catch(error){
       if(timer)clearTimeout(timer);
-      return{ok:false,error:cleanError(error&&error.name==="AbortError"?"Tiempo agotado al consultar Groq":error),latencyMs:Date.now()-started};
+      return{ok:false,error:cleanError(error&&error.name==="AbortError"?"Consulta Groq cancelada o agotada":error),
+        aborted:!!(opts.signal&&opts.signal.aborted),latencyMs:Date.now()-started};
     }
   }
   root.SignalGroqTranscriber={endpoint:ENDPOINT,model:DEFAULT_MODEL,ready:ready,transcribe:transcribe};
