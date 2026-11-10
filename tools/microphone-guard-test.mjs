@@ -12,6 +12,16 @@ if(!main.includes("var muted=old?!!old.muted:true;"))throw Error("main-world-def
 if(!main.includes("recoveryBaselineAttempted")||!main.includes("recoveredBaseline:recoveredBaseline"))throw Error("pre-unmute-baseline-recovery-missing");
 if(background.includes("var recoveryMuted=previousMuted;"))throw Error("previous-muted-state-can-lock-an-unmute");
 if(!content.includes("EXTENSION_MICROPHONE_KEYBOARD_FALLBACK_TRIGGERED"))throw Error("content-hotkey-fallback-missing");
+const helperStart=background.indexOf("function pendingMicrophoneUnmuteEligible");
+const helperEnd=background.indexOf("\\n",helperStart);
+if(helperStart<0||helperEnd<0)throw Error("late-track-unmute-eligibility-helper-missing");
+const lateTrackEligible=vm.runInNewContext(background.slice(helperStart,helperEnd)+"; pendingMicrophoneUnmuteEligible");
+const pendingState={microphoneMuteRequested:false,microphoneMuted:true,microphoneMuteStatus:"error",microphoneOutputStatus:"error"};
+if(!lateTrackEligible(pendingState,{verified:true,muted:true,trackCount:1},true))throw Error("explicit-unmute-intent-must-retry-after-live-track-appears");
+if(lateTrackEligible(pendingState,{verified:true,muted:true,trackCount:0},true))throw Error("no-track-must-remain-muted");
+if(lateTrackEligible(pendingState,{verified:true,muted:true,trackCount:1},false))throw Error("late-track-retry-requires-active-call");
+if(lateTrackEligible({...pendingState,microphoneMuteRequested:true},{verified:true,muted:true,trackCount:1},true))throw Error("late-track-retry-requires-explicit-unmute-intent");
+if(!background.includes("EXTENSION_MICROPHONE_LATE_TRACK_UNMUTE_RECOVERED"))throw Error("late-track recovery must be observable without audio/transcript data");
 class E{constructor(){this.l=new Map()}addEventListener(t,f){let a=this.l.get(t)||[];a.push(f);this.l.set(t,a)}removeEventListener(t,f){this.l.set(t,(this.l.get(t)||[]).filter(x=>x!==f))}dispatchEvent(e){for(const f of(this.l.get(e.type)||[]).slice())f(e)}}
 class T extends E{constructor(id){super();this.kind="audio";this.id=id;this.enabled=true;this.readyState="live"}clone(){return new T(this.id+"-clone")}}
 class S{constructor(t){this.t=t}getAudioTracks(){return[this.t]}}
