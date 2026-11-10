@@ -2675,10 +2675,7 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
   function createGroqDialogueCaptureState(meta) {
     return Object.assign({},meta,{
       active:true,
-      queues:{
-        "groq-remote":{chain:Promise.resolve(),pending:0,lastSequence:0},
-        "groq-interpreter":{chain:Promise.resolve(),pending:0,lastSequence:0}
-      }
+      queue:SignalDialogue.createConcurrentSourceQueue(2)
     });
   }
   async function loadGroqDialogueCapture(captureId) {
@@ -2766,7 +2763,7 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
     var policy=await getGroqDialoguePolicy(sender,message.callId);
     if(!policy.canCapture||policy.tabId!==capture.tabId||String(message.callId)!==capture.callId)
       return {ok:false,reasonCode:policy.reasonCode||"capture-policy-revoked"};
-    var sequence=Number(message.sequence),lane=capture.queues[source];
+    var sequence=Number(message.sequence),lane=capture.queue.status(source);
     if(!Number.isInteger(sequence)||sequence<1)return {ok:false,reasonCode:"audio-sequence-invalid"};
     if(sequence<=lane.lastSequence)return {ok:true,duplicate:true,segments:0};
     if(lane.pending>=2)return {ok:false,reasonCode:"transcription-backlog"};
@@ -2777,9 +2774,8 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
     var offset=Number(message.chunkStartOffsetMs);
     if(!Number.isFinite(offset)||offset<0||offset>24*60*60*1000)
       return {ok:false,reasonCode:"audio-offset-invalid"};
-    lane.lastSequence=sequence;
-    lane.pending++;
-    var run=lane.chain.then(async function(){
+    if(!capture.queue.setSequence(source,sequence))return {ok:true,duplicate:true,segments:0};
+    var run=capture.queue.enqueue(source,async function(){
       if(!capture.active)return {ok:false,reasonCode:"capture-not-active"};
       var prompt=source==="groq-interpreter"
         ?"Transcribe the interpreter's own spoken words faithfully. Preserve medical terminology, names, numbers, doses, and units. Do not translate, summarize, or infer missing words."
@@ -2818,9 +2814,7 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
       }
       return {ok:true,segments:sorted.length,latencyMs:result.latencyMs,model:GROQ_MODEL};
     });
-    lane.chain=run.catch(function(){});
-    try{return await run;}
-    finally{lane.pending=Math.max(0,lane.pending-1);}
+    return await run;
   }
   async function loadSignalSessions(){var stored=await chrome.storage.local.get(["signalInterpreterSessions","signalInterpreterActiveSessionId"]);return{sessions:(Array.isArray(stored.signalInterpreterSessions)?stored.signalInterpreterSessions:[]).map(normalizeSignalSession),activeSessionId:stored.signalInterpreterActiveSessionId||null};}
   async function saveSignalSessions(sessions,activeSessionId){await chrome.storage.local.set({signalInterpreterSessions:sessions,signalInterpreterActiveSessionId:activeSessionId||null});signalActiveSessionId=activeSessionId||null;}
