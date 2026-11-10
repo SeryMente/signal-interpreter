@@ -71,6 +71,30 @@ const popupJs = readText("extension/ui/popup.js");
 const background = readText("extension/background.js");
 assert.ok(background.includes('var GROQ_MODEL = "whisper-large-v3";'), "both audio lanes must default to Groq Whisper Large V3");
 assert.ok(background.includes("var GROQ_USD_PER_AUDIO_HOUR = 0.111;"), "Groq cost telemetry must match the configured Large V3 model");
+assert.ok(manifest.host_permissions.includes("https://api.groq.com/*"), "Groq transcription endpoint permission is missing");
+const cloudContentScript = manifest.content_scripts.find((item) =>
+  (item.matches || []).includes("https://app.cloudinterpreter.com/*") &&
+  item.world === "ISOLATED" && (item.js || []).includes("extension/groq-dialogue-capture.js"));
+assert.ok(cloudContentScript, "dual-source capture must load only in the Cloud Interpreter isolated world");
+assert.ok(cloudContentScript.js.includes("extension/dialogue-engine.js"), "dialogue merger is not loaded before the overlay");
+assert.ok(manifest.content_security_policy.extension_pages.includes("https://api.groq.com"), "Groq connect-src is absent");
+const capture = readText("extension/groq-dialogue-capture.js");
+const windowProcessor = readText("extension/whisper-window-processor.js");
+assert.ok(capture.includes("getDisplayMedia") && capture.includes("getUserMedia"), "remote tab and interpreter microphone capture lanes are not independent");
+assert.ok(capture.includes('"groq-remote"') && capture.includes('"groq-interpreter"'), "stable source identifiers are missing");
+assert.ok(capture.includes("context.sampleRate!==16000"), "capture must fail closed unless the WAV clock is exactly 16 kHz");
+assert.ok(capture.includes("track.addEventListener(\"ended\"") && capture.includes("groq-dialogue-control"), "capture lifecycle/visible controls are incomplete");
+assert.ok(windowProcessor.includes("registerProcessor(\"signal-whisper-window\"") && windowProcessor.includes('write(0,"RIFF")'), "self-contained WAV worklet is missing");
+const dialoguePipeline = background.slice(background.indexOf("async function processGroqDialogueChunk"), background.indexOf("async function loadSignalSessions"));
+assert.ok(dialoguePipeline.includes("createConcurrentSourceQueue") || background.includes("createConcurrentSourceQueue(2)"), "independent ordered source queues are missing");
+assert.ok(dialoguePipeline.includes("globalThis.SignalGroqTranscriber.transcribe") && dialoguePipeline.includes("SignalDialogue.mergeSegments"), "Groq-to-dialogue fusion path is incomplete");
+assert.ok(dialoguePipeline.includes("zeroDataRetentionConfirmed:true") && background.includes("groqZeroDataRetentionConfirmed!==true"), "ZDR preflight gate is missing");
+assert.ok(!dialoguePipeline.includes("persistSignalSegment("), "dual-source clinical transcript must not use durable telemetry/session persistence");
+const dialogueOverlay = readText("extension/live-caption-overlay.js");
+assert.ok(dialogueOverlay.includes("groqDialogueMode") && dialogueOverlay.includes("SIGNAL_GROQ_DIALOGUE_SEGMENTS"), "unified Groq transcript overlay is missing");
+const transcriptCore = readText("extension/live-caption-core.js");
+assert.ok(transcriptCore.includes('source === "groq-interpreter") return "INTÉRPRETE"') &&
+  transcriptCore.includes('source === "groq-remote") return "AUDIO REMOTO'), "source-based labels are missing");
 const earnings = readText("extension/content.js");
 const captions = readText("extension/live-caption-overlay.js");
 assert.ok(popup.includes('id="overlaysGlobalEnabled"'), "global overlay switch is absent from popup");
@@ -124,7 +148,10 @@ const safetyRegressionSuites = [
   "tools/presence-connect-test.mjs",
   "tools/presence-guard-test.mjs",
   "tools/autoanswer-runtime-guard-test.mjs",
-  "tools/groq-transcriber-tests.mjs"
+  "tools/groq-transcriber-tests.mjs",
+  "tools/dialogue-engine-dual-source-tests.mjs",
+  "tools/whisper-window-processor-tests.mjs",
+  "tools/groq-dialogue-capture-tests.mjs"
 ];
 for (const suite of safetyRegressionSuites) {
   const result = spawnSync(process.execPath, [resolve(root, suite)], {
