@@ -33,6 +33,7 @@ class SignalWhisperWindowProcessor extends AudioWorkletProcessor {
   }
   flush() {
     if(this.used>0)this.emit(this.used,(this.startFrame||0)+this.used);
+    this.port.postMessage({type:"flushed"});
   }
   process(inputs,outputs) {
     const output=outputs&&outputs[0];
