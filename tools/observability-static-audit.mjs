@@ -51,7 +51,12 @@ assert.ok(manifest.commands["toggle-extension-microphone"].description.includes(
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 assert.match(manifest.content_security_policy.extension_pages,/https:\/\/signal-interpreter-observability-re\.vercel\.app/);
 
-assert.ok(background.includes('importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js")'));
+assert.ok(background.includes('importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","groq-transcriber.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js")'));
+assert.ok(background.includes('try { importScripts("groq-secret.local.js"); } catch (_)'),
+  "optional Groq credential is read only from a local ignored file");
+assert.equal(background.includes("gsk_"),false,"no Groq API credential may be committed to the worker");
+assert.ok(background.includes("globalThis.SignalGroqTranscriber.ready()"),
+  "Groq transcription still requires the local credential readiness gate");
 assert.ok(background.includes('alarm.name==="signal-observation-sync"'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync-retry"'));
 assert.ok(background.includes('SignalObservationSync.flush("startup"'));
