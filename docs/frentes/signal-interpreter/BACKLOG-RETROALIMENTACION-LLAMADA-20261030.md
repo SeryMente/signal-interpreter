@@ -271,3 +271,44 @@ La búsqueda de GitHub Issues abiertos devolvió cero. Este archivo sigue siendo
 - Chrome no se cargó/recargó, no hubo llamada real ni captura de audio y no se declaró aceptación E2E. `git diff --check` no se ejecutó en el workspace materializado porque no contiene metadatos `.git`; la validación de paquete se hizo mediante inventario y tests.
 - El hotfix local reportado previamente sigue clasificado como REPORTADO, NO RE-VERIFICADO; no se le atribuye integración en main.
 
+
+
+## 9. Retoma G14 — repetición de pruebas y salida literal · 2026-11-10
+
+Fuente del tramo literal: texto pegado por el operador en la conversación actual. No se afirma que exista exportación nativa independiente. La reproducción completa está en [crónica de retoma G14](cronica/C-SIGNAL-RETOMA-20261110-G14-CURRENT.md).
+
+### SI-REG-01 — Interruptor Auto-Answer · actualización de evidencia
+
+**Estado:** pruebas locales repetidas: Presence Guard 85/85, Presence Connect 35/35 y Auto-Answer Runtime 15/15 PASS. `presenceIdleSeconds=180` es el default local; el `DEFAULT_CONFIG.autoAnswerEnabled` es `false`. El valor persistido en Chrome no se leyó. El interruptor de función debe permanecer separado de la concesión efímera `SIGNAL_PRESENCE_ARM`; no autoarmar al cambiar Online ni activar presencia en este ciclo. El switch se mantiene P0 hasta aceptación independiente de UI/atajo, read-back y persistencia en Chrome.
+
+### SI-REG-02 — Habilitación tardía del micrófono · actualización de evidencia
+
+**Estado:** prueba sintética `microphone-guard-test.mjs` PASS; el retry del heartbeat exige llamada activa, intención explícita y pista viva silenciada/verificada. La aceptación de Chrome/llamada sigue pendiente. Esta prueba no cubre por sí sola el control de unmute inmediato fuera de llamada; esa discrepancia se separa en SI-REG-05.
+
+### SI-REG-03 — Test permanente de autorización paralela · actualización
+
+**Estado:** `presence-guard-test.mjs` 85/85 PASS en workspace local, incluyendo la prueba de las cuatro consultas diferidas en paralelo. No está integrado en `main`; PR #80 sigue draft.
+
+### SI-REG-04 — Aceptación integrada · actualización
+
+**Estado:** no aceptada. Paquete local 60/60 SHA-256; Chrome no recargado; no se verificó MIC ON físico ni llamada real. CI consultada en head #80: Package integrity, signal-observability-audit y native-caption-host-build SUCCESS; no equivalen a E2E/aceptación del operador.
+
+### SI-REG-05 — Guard de unmute inmediato frente al ciclo de llamada · P0
+
+**Estado:** ABIERTO · conflicto de política identificado por inspección estática en el workspace local; impacto real en dispositivo NO VERIFICADO.
+
+El paquete conserva botón MIC, comando `Ctrl+Shift+Period` (`Ctrl+Shift+.`) y gesto global izquierdo+derecho durante 240 ms. `mic-guard-main.js` inicia silenciado y valida pistas/senders. El reintento de pista tardía de `hotloadHeartbeat()` exige llamada activa. Sin embargo, `setExtensionMicrophoneMutedInternal(false, ...)` no bloquea el unmute inmediato cuando `callActive=false`; despacha la orden a una pestaña autorizada. El test MIC actual exige que no exista `EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL` y contempla toggle previo a llamada.
+
+Esto no coincide con la política vigente anterior: permanecer silenciado durante espera, timbrado, prellamada y estado incierto; habilitar pista solo tras estado confirmado de llamada activa; remute al finalizar/perder ruta. No desactivar ni retirar los controles de usuario: corregir la ejecución de la orden para que pueda conservar intención pendiente, sin habilitar una pista real antes de la llamada activa. Añadir pruebas de prellamada con pista existente/tardía, ringing, active-call, route-loss y end-call.
+
+**Criterios de aceptación:** mantener botón/atajo/gesto y feedback verificado; ninguna pista saliente `enabled=true` fuera de llamada activa; no mostrar MIC ON sin verificación estable; remute antes de limpiar contexto; controles Auto-Answer y pruebas no regresan.
+
+### Evidencia compartida del último ciclo local
+
+- Workspace: `C:\\Users\\fila4\\Desktop\\SeryMente\\signal-interpreter`, versión 0.10.47, propietario verificado de directorio/archivos críticos `CENTRAL\\fila4`.
+- Presence Guard 85/85; Presence Connect 35/35; Auto-Answer Runtime 15/15; Microphone Guard PASS; JS syntax 2/2; package 60/60 SHA-256 PASS.
+- PR #80: draft/no mergeable, tres workflows revisados SUCCESS. No se fusionó.
+- Observabilidad 10m generada `2026-11-10T19:25:00.897Z`: sin intentos/clicks/diálogos; freshness `receipt-unavailable`, sin recibos verificados, 12.907 lotes no verificados. No atribuir las dos llamadas perdidas.
+- No code edits, no stored preference changes, no Chrome reload, no arming, no real call/audio and no human acceptance.
+
+Orden actualizado: (1) SI-REG-05 corregir semántica de micrófono, conservando controles y guards; (2) SI-REG-01 aceptar switch en Chrome sin armar presencia; (3) SI-REG-02 validar pista tardía bajo llamada activa; (4) conservar SI-REG-03 como test permanente; (5) SI-REG-04 solo cierra con aceptación del operador.
