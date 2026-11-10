@@ -691,7 +691,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:expectedMuted});
       record("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFIED",{callId:state.callId,tabId:state.callSourceTabId,muted:expectedMuted,trackCount:state.microphoneOutputTrackCount,senderCount:state.microphoneOutputSenderCount,attempts:Number(micProbe.attempts||1),trigger:trigger||"alarm"},"info","microphone");
     }else{
-      state.microphoneOutputMuted=expectedMuted;
+      state.microphoneOutputMuted=micProbe&&typeof micProbe.muted==="boolean"?!!micProbe.muted:expectedMuted;
       state.microphoneOutputStatus="pending";
       if(state.microphoneMuteStatus!=="error")state.microphoneMuteStatus="pending";
       state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:expectedMuted});
