@@ -214,14 +214,14 @@ Esta sección actualiza los estados operativos de SI-FB-01–SI-FB-06 sin borrar
 ### Nuevas tareas de regresión reportadas
 
 #### SI-REG-01 — Interruptor Auto-Answer · P0
-**Estado:** CORRECCIÓN CANDIDATA en `fix/backlog-p0-switch-mic-late-track-20261110`: se fija `presenceIdleSeconds=180` en popup y worker para evitar enviar `0` al guard; pendiente de CI y read-back. No integrada en main ni aceptada en Chrome.
+**Estado:** CORRECCIÓN CANDIDATA VERIFICADA en `fix/backlog-p0-switch-mic-late-track-20261110`: `presenceIdleSeconds=180` en popup y worker; prueba de presencia 83/83 y suite completa 42/42 PASS; inventario 60/60 SHA-256. PR #80 sigue draft y no está integrada en main; aceptación E2E en Chrome pendiente.
 
 Revisar carga del popup, listener/event handler, estado visible, escritura/lectura de configuración, comunicación con background/service worker y atajo de teclado. El fallback del handler mencionado en la conversación debe cotejarse en los archivos reales antes de promoverlo. No introducir rearme automático al pulsar Online; conservar autorización explícita, presencia revalidada y fail-closed.
 
 **Aceptación:** activar/desactivar desde UI y atajo; estado visual y almacenado coincidentes; revalidación correcta; ningún Connect sin grant vigente; pausa, idle/locked, fin de sesión y reinicio no rearman la autorización.
 
 #### SI-REG-02 — Habilitación tardía del micrófono · P0
-**Estado:** CORRECCIÓN CANDIDATA en `fix/backlog-p0-switch-mic-late-track-20261110`: el heartbeat de llamada reintenta el unmute solo si persiste una intención explícita de activar, la llamada sigue activa y una pista viva aparece ya silenciada y verificada. Pendiente de CI/read-back; no integrada ni aceptada en Chrome.
+**Estado:** CORRECCIÓN CANDIDATA VERIFICADA en `fix/backlog-p0-switch-mic-late-track-20261110`: el heartbeat reintenta unmute solo con intención explícita persistente de activar, llamada activa y pista viva silenciada y verificada; pruebas específicas y suite 42/42 PASS. El retry no depende del estado auxiliar del heartbeat. PR #80 draft; no integrada ni aceptada en Chrome.
 
 Investigar el caso en que la llamada/ruta activa se confirma antes de que Cloud Interpreter cree la pista de audio. Cotejar el tratamiento de pistas que aparecen posteriormente, el estado del botón y `MediaStreamTrack.enabled`/pista saliente. Mantener mute fuera de llamada y remute al terminar, perder la ruta o quedar en estado desconocido.
 
@@ -232,12 +232,12 @@ Esta tarea se refiere al micrófono operativo de la llamada; no equivale a SI-FB
 #### SI-REG-03 — Test permanente de autorización paralela · P1
 **Estado:** COBERTURA POR RESTAURAR.
 
-PR #78 documentó la ejecución simultánea de cuatro validaciones independientes: configuración, inactividad/bloqueo, otra llamada activa y perfil correcto. La revisión posterior detectó que la garantía explícita de paralelismo ya no está en la prueba permanente. Una comprobación temporal independiente fue reportada en conversación, pero no se ha incorporado al repositorio.
+PR #78 documentó la ejecución simultánea de cuatro validaciones independientes: configuración, inactividad/bloqueo, otra llamada activa y perfil correcto. La rama candidata restaura el test permanente con promesas diferidas; `presence-guard-test.mjs` pasa con 83/83 comprobaciones y la suite completa 42/42.
 
 **Aceptación:** test determinista con promesas diferidas que demuestre el inicio de las cuatro consultas antes de resolver la primera; falla si se ejecutan secuencialmente; no modifica guards ni la regla de un único clic autorizado.
 
 #### SI-REG-04 — Aceptación integrada 0.10.47 + corrección de regresiones · P0
-**Estado:** PENDIENTE DEL OPERADOR Y DE VALIDACIÓN DEL PAQUETE INTEGRADO.
+**Estado:** PAQUETE CANDIDATO VALIDADO EN STAGING (42/42 pruebas; 77 archivos JS sin errores de sintaxis; 8 scripts PowerShell parseables; 60/60 SHA-256); falta sincronizar la carpeta activa y la aceptación manual del operador en Chrome/llamada controlada.
 
 Después de cotejar e integrar únicamente el hotfix mínimo y las pruebas, verificar paquete, inventario SHA-256 y respaldo reversible. La recarga manual en Chrome debe hacerla el operador fuera de una llamada activa; verificar versión realmente cargada, switch, presencia y una llamada controlada. No considerar CI o el archivo en disco como aceptación E2E.
 
@@ -269,3 +269,11 @@ La búsqueda de GitHub Issues abiertos devolvió cero. Este archivo sigue siendo
 5. P0 — aceptación del operador en Chrome y llamada controlada.
 6. P1/P2 — continuar SI-FB-02/03/04 y aceptación funcional del lector SI-FB-05.
 
+
+
+## Aditamento de verificación de la candidata — 2026-11-10
+
+- Rama: `fix/backlog-p0-switch-mic-late-track-20261110`; PR #80 abierta como draft, no fusionada.
+- En staging aislado del perfil de trabajo `fila4`: **42/42 pruebas PASS**, **0 FAIL**; **77 archivos JavaScript** pasan `node --check`; **8 scripts PowerShell** pasan Parser; **60/60 archivos del inventario** coinciden en SHA-256.
+- `tools/verify-release-package.mjs` y `tools/portable-root-test.mjs` pasan. El manifiesto derivado `extension/manifest.json` es normalizado respecto del manifiesto raíz y las 18 rutas comprobadas existen.
+- No se cargó ni recargó Chrome, no se manipuló ninguna llamada y no se efectuó aceptación E2E. La aceptación funcional del operador permanece pendiente.
