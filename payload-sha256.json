@@ -2,38 +2,6 @@
   "schema": "signal-interpreter-payload-sha256/v1",
   "files": [
     {
-      "path": "INSTALAR.cmd",
-      "sha256": "2AC6E3726CE7AEC90A1287588E7DF81C754D116FA2082871AFDF61C2622425D8"
-    },
-    {
-      "path": "INSTALAR.ps1",
-      "sha256": "3CE943CB01328E6DB2449DF68690D860EF52F9C340F208D6A788091805BB7FDD"
-    },
-    {
-      "path": "INSTRUCCIONES-ENTREGA.txt",
-      "sha256": "FAD3312DF370973D20AD399A220AC7952F4536D971DC0799F15FE97F8863EBD4"
-    },
-    {
-      "path": "PREPARAR-Y-CARGAR.cmd",
-      "sha256": "047826924ABAD50E366D94B21D42D9C58936B3D7B8433890B06ADFEB2A6378B9"
-    },
-    {
-      "path": "PROBAR.cmd",
-      "sha256": "7DB0ECDAE35F3F1182FDC8417E544A8791D97ACC4A9C1F0FC535C8B7EFB47D73"
-    },
-    {
-      "path": "PROBAR.ps1",
-      "sha256": "79555D14152D16C0DD74A2FBAACBD6B00C9FB215EADCE85BE5AA2542188B5B2E"
-    },
-    {
-      "path": "extension/PREPARE-CAPTIONS.cmd",
-      "sha256": "9BF5D3D8B742BD2F5C2F7E62FFAF2A26C7F43AC9059DCF908543B211F35049C8"
-    },
-    {
-      "path": "extension/README.md",
-      "sha256": "8E0C28FC1BCE86CDB51946254DAFDE0F39853493A0562446F77FD911FECB5983"
-    },
-    {
       "path": "extension/auth-bootstrap.js",
       "sha256": "5857A7732FC16B61C81553BA033FBAF932851A937A4ECC0A11A0D6B4E39AA77B"
     },
@@ -55,11 +23,15 @@
     },
     {
       "path": "extension/dialogue-engine.js",
-      "sha256": "A823F4A98EE38542ED7E96DBA187C424F45D71CA85937DE0E5029DD2BB552499"
+      "sha256": "F22D05597D1BCFD9273038D5B6BE9772B42C9AA0DBB3F07FC18679A9A1E3B095"
     },
     {
       "path": "extension/global-mouse-gesture.js",
       "sha256": "5D29D7C7E7F03FB52051400A7B6F21E660C4A6D526454F45A9B0239F14EDCB9B"
+    },
+    {
+      "path": "extension/groq-dialogue-capture.js",
+      "sha256": "8BA7E34CCAB9121476F8953019A308B217648F341D0A97D22EB9FA33B7DF634E"
     },
     {
       "path": "extension/groq-transcriber.js",
@@ -99,19 +71,11 @@
     },
     {
       "path": "extension/manifest.json",
-      "sha256": "DF2E4DAACAF087A2B3EA5D064E0FBA6053C75CAD07C230403FB65268079E896A"
+      "sha256": "0627B1C3F7652DCCF424A0059D1BA86142F7441B29AC672BC9BF1733488247ED"
     },
     {
       "path": "extension/mic-guard-main.js",
       "sha256": "0481A8F42EDA5154F30B494E2FF9FD3E2B5A3C8CD6583DBC81D9A5F9ED0CE64F"
-    },
-    {
-      "path": "extension/native/SignalInterpreter.CaptionHost.cs",
-      "sha256": "1891B4D51F38F366116DD2B3E31C6352C3FD065580D56544B1C0E7321316890D"
-    },
-    {
-      "path": "extension/native/SignalInterpreter.CaptionHost.exe.b64",
-      "sha256": "7CB0011FAA78D5FB7B87E73BEBCAE0C62B355D84085354218A770390986E68F7"
     },
     {
       "path": "extension/native/com.signalinterpreter.captionhost.json",
@@ -124,6 +88,14 @@
     {
       "path": "extension/native/register-caption-host.ps1",
       "sha256": "7431C6A650E866AB7AD61DC29CB9FEA00BEE54680194E16C8CE3E5798940B569"
+    },
+    {
+      "path": "extension/native/SignalInterpreter.CaptionHost.cs",
+      "sha256": "1891B4D51F38F366116DD2B3E31C6352C3FD065580D56544B1C0E7321316890D"
+    },
+    {
+      "path": "extension/native/SignalInterpreter.CaptionHost.exe.b64",
+      "sha256": "7CB0011FAA78D5FB7B87E73BEBCAE0C62B355D84085354218A770390986E68F7"
     },
     {
       "path": "extension/native/unregister-caption-host.ps1",
@@ -150,8 +122,16 @@
       "sha256": "20EA33845BCCECFAA4444502110B022E3F724A043F8B9A721573941E9802BB43"
     },
     {
+      "path": "extension/PREPARE-CAPTIONS.cmd",
+      "sha256": "9BF5D3D8B742BD2F5C2F7E62FFAF2A26C7F43AC9059DCF908543B211F35049C8"
+    },
+    {
       "path": "extension/presence-guard.js",
       "sha256": "2357D7A105655617E97626E15B7FC4F53309208691FED84845CC82F972ADB23C"
+    },
+    {
+      "path": "extension/README.md",
+      "sha256": "8E0C28FC1BCE86CDB51946254DAFDE0F39853493A0562446F77FD911FECB5983"
     },
     {
       "path": "extension/sound-offscreen.html",
@@ -214,16 +194,48 @@
       "sha256": "4567B7B6689D4FDE7C991D19E550C98548153B9A0B93E2B19D69E588F34775DE"
     },
     {
+      "path": "extension/whisper-window-processor.js",
+      "sha256": "FE60B226557ECFBE5520921C8A3E2098B6E58177B53F5D642A28B13A2EC412DD"
+    },
+    {
       "path": "extension/youtube-caption-adapter.js",
       "sha256": "428D6C09C8C9649355194130552E22B7256CEB47074DEE59CAD35634B75C40D5"
     },
     {
+      "path": "INSTALAR.cmd",
+      "sha256": "2AC6E3726CE7AEC90A1287588E7DF81C754D116FA2082871AFDF61C2622425D8"
+    },
+    {
+      "path": "INSTALAR.ps1",
+      "sha256": "3CE943CB01328E6DB2449DF68690D860EF52F9C340F208D6A788091805BB7FDD"
+    },
+    {
+      "path": "INSTRUCCIONES-ENTREGA.txt",
+      "sha256": "FAD3312DF370973D20AD399A220AC7952F4536D971DC0799F15FE97F8863EBD4"
+    },
+    {
       "path": "manifest.json",
-      "sha256": "8E92ECE8EEC385C073DD8B61E1E9283227A5F8024C1FFAE6946C535E957B837B"
+      "sha256": "4CA60380F91F4338360ABE30A2473067B271455F88B1ED439228A5EAF774D0F2"
+    },
+    {
+      "path": "PREPARAR-Y-CARGAR.cmd",
+      "sha256": "047826924ABAD50E366D94B21D42D9C58936B3D7B8433890B06ADFEB2A6378B9"
+    },
+    {
+      "path": "PROBAR.cmd",
+      "sha256": "7DB0ECDAE35F3F1182FDC8417E544A8791D97ACC4A9C1F0FC535C8B7EFB47D73"
+    },
+    {
+      "path": "PROBAR.ps1",
+      "sha256": "79555D14152D16C0DD74A2FBAACBD6B00C9FB215EADCE85BE5AA2542188B5B2E"
     },
     {
       "path": "tools/background-caption-capture-state-test.mjs",
       "sha256": "A39E7A5F9D4011D4ACAE228120920855A0A9E66147D282D81AD934C3931008B3"
+    },
+    {
+      "path": "tools/dialogue-engine-dual-source-tests.mjs",
+      "sha256": "264928ED64C98DA547812ACE8A60A73E760FD01A370126C39F0C0ADE247B405E"
     },
     {
       "path": "tools/materialize-lab-sample.ps1",
@@ -240,6 +252,10 @@
     {
       "path": "tools/verify-release-package.mjs",
       "sha256": "05A0A360F0F30E3A45BDAF240BC05D290E36C4812344D898DC2EAF9E700B1522"
+    },
+    {
+      "path": "tools/whisper-window-processor-tests.mjs",
+      "sha256": "5B3E534ED6EF62FD352CFA1289E514F01FA28779D17BF34228565BABA0F5B2DA"
     }
   ]
 }
