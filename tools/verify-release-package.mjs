@@ -10,11 +10,29 @@ const readText = (p) => readFileSync(resolve(root, p), "utf8");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex").toUpperCase();
 const manifest = JSON.parse(readText("manifest.json"));
 const installer = readText("INSTALAR.ps1");
+const nestedManifest = JSON.parse(readText("extension/manifest.json"));
+const prepareCommand = readText("PREPARAR-Y-CARGAR.cmd");
+const probeScript = readText("PROBAR.ps1");
 const inventory = JSON.parse(readText("payload-sha256.json"));
 const entries = Array.isArray(inventory) ? inventory : inventory.files;
 
 assert.equal(manifest.name, "Signal Interpreter");
 assert.equal(manifest.version, expectedVersion, "manifest version is not the package version");
+function normalizeManifestPaths(value) {
+  if (Array.isArray(value)) return value.map(normalizeManifestPaths);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [key, item] of Object.entries(value)) out[key] = normalizeManifestPaths(item);
+    return out;
+  }
+  return typeof value === "string" && value.startsWith("extension/") ? value.slice("extension/".length) : value;
+}
+assert.deepEqual(nestedManifest, normalizeManifestPaths(manifest), "extension/manifest.json must be the path-normalized loadable workspace manifest");
+assert.ok(prepareCommand.includes('explorer.exe "%~dp0extension"'), "one-step preparation must open the sole Chrome load folder");
+assert.ok(prepareCommand.includes("subcarpeta extension"), "preparation must instruct the operator to load extension/");
+assert.ok(probeScript.includes("Join-Path $root 'extension\\manifest.json'"), "probe must read the Chrome-loadable manifest");
+assert.ok(probeScript.includes("$loadRoot"), "probe must match the Chrome extension path to extension/");
+
 assert.ok(Array.isArray(entries) && entries.length >= 50, "payload inventory is empty or unexpectedly small");
 assert.ok(installer.includes("'"+expectedVersion+"'"), "installer and manifest versions differ");
 
