@@ -348,3 +348,18 @@ Esta adenda supersede las referencias operativas anteriores de G13 y producto 0.
 - Hallazgo MIC: `setExtensionMicrophoneMutedInternal(false, ...)` no exige `callActive` para enviar unmute a una pestaña Cloud Interpreter; el retry de pista tardía sí exige llamada activa. La prueba `microphone-guard-test.mjs` protege el comportamiento pre-call actual. Esto contradice la política anterior de mute en espera/timbrado/incierto. SI-REG-05 queda P0 abierta; no es una prueba de que una llamada real haya transmitido audio.
 - Observabilidad: ventana 10m `2026-11-10T19:25:00.897Z`: intentos 0, clicks 0, diálogos 0, readiness samples 10; `freshness=receipt-unavailable`, receiptVerified=false, 0 batches verificados y 12.907 no verificados. No permite adjudicar causalmente las dos llamadas perdidas previas.
 - No hubo cambio de código, modificación de preferencias, reload Chrome, activación/armado, llamada/audio real, aceptación, merge, deploy o release.
+
+
+### Actualización viva G14 · criterio rector de Auto-Answer latency-first · 2026-11-10
+
+La premisa de diseño indicada por el operador es que varias personas pueden competir por la misma llamada y otros intérpretes podrían utilizar automatización. Se adopta como hipótesis operativa, no como hecho verificado. La prioridad del producto es activar el botón real `Connect` lo antes posible tras detectar un OPI elegible.
+
+- **Activación única:** `button.click()` sobre el botón de interfaz. No se persigue equivalencia con ratón físico, `isTrusted`, eventos mouse/pointer ni CDP. No se invocan endpoints privados.
+- **Camino crítico:** detección → compuertas/readiness → autorización de un solo uso → `button.click()` → ruta confirmada. Se evita más de una activación del mismo intento.
+- **Candidato:** rama `perf/autoanswer-fast-dispatch-20261110`. Caché en memoria de preferencia y candado de laboratorio; reutilización de presencia `active` reciente (máximo 20 s) de eventos/sondeo/restauración; refresh obligatorio y fail-closed si está ausente, desconocida o caducada; exclusión de llamada activa en otras pestañas preservada. El camino rápido evita lectura local repetida, consulta de inactividad y `tabs.get`.
+- **Telemetría:** `authorizationVerificationPath` y `presenceSampleAgeMs` permiten evaluar `cached/refreshed`, además de latencia autorización, detección→clic y clic→ruta.
+- **Tests sintéticos offline:** Presence Guard 91/91, Presence Connect 33/33, Auto-Answer Runtime 15/15, syntax y hashes críticos PASS. Evidencia en [crónica G14 de Auto-Answer fast path](cronica/C-SIGNAL-AUTOANSWER-FASTPATH-20261110-G14.md).
+- **Sin aceptación real:** no se habilitó/armó Auto-Answer, no se cambió Online/Offline, no hubo reload de Chrome, llamada/audio real, aceptación, merge, deploy o release. La latencia de la sesión de Chrome y el éxito real de plataforma siguen PENDIENTES de prueba autorizada.
+- La vía CDP/isTrusted surgió de un malentendido posterior y queda expresamente fuera de diseño y aceptación; los archivos de sondeo temporales fueron eliminados. PR #80 permanece intacta.
+
+
