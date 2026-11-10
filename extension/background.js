@@ -2666,8 +2666,8 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
       return {ok:false,canCapture:false,reasonCode:"interpreter-channel-disabled"};
     if(config.groqZeroDataRetentionConfirmed!==true)
       return {ok:false,canCapture:false,reasonCode:"zdr-not-confirmed"};
-    if(!root.SignalGroqTranscriber||typeof root.SignalGroqTranscriber.ready!=="function"||
-       !(await root.SignalGroqTranscriber.ready()))
+    if(!globalThis.SignalGroqTranscriber||typeof globalThis.SignalGroqTranscriber.ready!=="function"||
+       !(await globalThis.SignalGroqTranscriber.ready()))
       return {ok:false,canCapture:false,reasonCode:"groq-key-missing"};
     return {ok:true,canCapture:true,reasonCode:null,callId:routeCallId,tabId:Number(sender.tab.id),
       model:GROQ_MODEL,remoteSpeakerVerified:false,zdrConfirmed:true};
@@ -2785,7 +2785,7 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
         ?"Transcribe the interpreter's own spoken words faithfully. Preserve medical terminology, names, numbers, doses, and units. Do not translate, summarize, or infer missing words."
         :"Transcribe the remote call audio faithfully. Preserve medical terminology, names, numbers, doses, and units. Do not infer speaker identity from language or content. Do not translate or summarize.";
       var blob=new Blob([audio.bytes],{type:"audio/wav"});
-      var result=await root.SignalGroqTranscriber.transcribe(blob,{
+      var result=await globalThis.SignalGroqTranscriber.transcribe(blob,{
         model:GROQ_MODEL,filename:source+"-"+sequence+".wav",timeoutMs:20000,
         zeroDataRetentionConfirmed:true,prompt:prompt
       });
