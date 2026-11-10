@@ -87,7 +87,7 @@ La ruta destinada por el operador es `signal-interpreter\\extension`. Antes de i
 - el ID de extensión, la versión, los hashes y el inventario coinciden con la candidata;
 - se cumplen SI-OP-01 y las comprobaciones del Native Messaging host en el mismo usuario Windows de Chrome.
 
-**Resolución de layout preparada en rama candidata (no integrada aún):** el manifiesto canónico del repositorio permanece en la raíz y la rama `fix/backlog-p0-switch-mic-late-track-20261110` añade `extension/manifest.json`, normalizado para que las rutas sean relativas a `extension/`. El popup resuelve la URL del laboratorio para ambos layouts. `tools/unpacked-layout-test.mjs` compara el manifiesto derivado con el canónico y verifica los recursos referenciados. La resolución solo pasa a vigente cuando CI y read-back de la rama estén verificados y el cambio se integre; en `main` 0.10.47, `extension/` todavía no se debe declarar cargable de forma autónoma.
+**Resolución de layout verificada en rama candidata (PR #80 draft; no integrada):** el manifiesto canónico permanece en raíz y `extension/manifest.json` es su variante normalizada para cargar `extension/` en Chrome. `tools/unpacked-layout-test.mjs`, `portable-root-test.mjs` y `verify-release-package.mjs` pasan; suite local 42/42, 77 archivos JS sin errores y 8 scripts PowerShell parseables; 60/60 SHA-256. La carpeta activa debe actualizarse con respaldo; la carga y aceptación en Chrome siguen a cargo del operador. `main` no se modifica hasta revisión/merge autorizados.
 
 ### Estado de la instancia inspeccionada · 2026-11-09
 
