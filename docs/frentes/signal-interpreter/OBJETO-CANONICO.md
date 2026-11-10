@@ -5,27 +5,27 @@
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
-- Revisión documental: SI-OBJ-v1.19-autoanswer-G13-20261108-01; ancla: C-SIGNAL-MISSED-CALL-AUTOANSWER-20261108-G13-D8FB3E62. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
+- Revisión documental: corte G14 de reconciliación del backlog provisional y regresiones reportadas · 2026-11-10; evidencia: [crónica](cronica/C-SIGNAL-BACKLOG-REGRESIONES-20261110-G14.md). Naturaleza: actualización del OCP heredado; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
-- Estado de producto: `main` permanece en **0.10.40**. La candidata **0.10.41** está en PR [#74](https://github.com/SeryMente/signal-interpreter/pull/74), abierta y no fusionada. La carpeta local autorizada `EP/Signal-Interpreter/extension` en PC-13 fue preparada a 0.10.41 y validada con inventario SHA-256 59/59; respaldo reversible previo de 9 archivos en `.rollback-0.10.40-20261108`. El Native Messaging existente no se modificó. Chrome no se recargó; aceptación real, E2E y liberación siguen pendientes. No hay release.
+- Estado de producto: `main/manifest.json` está en **0.10.47**. PR [#79](https://github.com/SeryMente/signal-interpreter/pull/79) quedó fusionada en `10a7f1b1f8c48d290ce8f4df5639109efe571c22`; PR #78 también está fusionada. El operador reportó después dos regresiones (switch Auto-Answer y habilitación del micrófono); la conversación anterior reportó un hotfix local, pero su recibo/archivos no fueron re-verificados en este corte y ese hotfix no está acreditado en `main`. No se recargó Chrome ni se ha aceptado una llamada E2E. No hay release declarado.
 - Persistencia verificable: identificar la revisión Git que contiene este archivo y el [recibo de migración](evidencias/C-SIGNAL-METACANON-20261020-01.json); el recibo identifica la base y los contenidos, no autocertifica publicación o conformidad semántica.
 
 ## LEER PRIMERO
 
-Modo: continuar el mismo frente como **una sola instancia responsable G13** (folio pendiente por FOL1 no activa). No crear, asignar, invocar ni coordinar un segundo agente; no dividir trabajo por papeles; no generar prompts dobles ni transferencias internas.
+Modo: continuar el mismo frente como **una sola instancia responsable G14** (folio pendiente por FOL1 no activa). No crear, asignar, invocar ni coordinar un segundo agente; no dividir trabajo por papeles; no generar prompts dobles ni transferencias internas.
 
 Leer este núcleo y adquirir gobierno vigente antes de actuar. Consultar después solo fuentes/evidencias necesarias para el objetivo actual; no recorrer toda la historia por rutina.
 
 Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metacanon pertinentes → gobierno particular de este frente. [Entrada del gobierno distribuido](https://github.com/SeryMente/metodologia/blob/main/INICIO.md). El repositorio metodológico requiere acceso autorizado; no copiar su contenido privado a este repositorio público ni pedir credenciales en el chat. Revalidar fuente y revisiones desde `main`; una referencia histórica no prueba frescura, autorización o ejecución. Fuente indispensable ausente bloquea solo la acción dependiente.
 
-**Modo operativo vigente:** una instancia única G13 tiene titularidad y responsabilidad integral de Signal Interpreter. G12 quedó SUSTITUIDA mediante transferencia condicionada por SHA/generación; el historial queda preservado. El operador conserva decisiones humanas, uso real, llamadas reales, aceptación funcional y liberación. Esta disposición no se propaga a otros proyectos. M34/M35 son antecedentes históricos cerrados; PC-14 permanece excluido.
+**Modo operativo vigente:** G14 figura ACTIVO como agente único en `CONTROL-RESPONSABILIDAD.json`; G13 quedó SUSTITUIDO mediante transferencia condicionada por SHA/generación. El operador conserva decisiones humanas, uso real, llamadas reales, aceptación funcional y liberación. FOL1 está PREPARADA, NO ACTIVA; el folio permanece PENDIENTE/NO ASIGNADO. No se heredan autorizaciones de equipos previos.
 
 ## Referencia metodológica
 
-- **Metacanon adquirido: 1.29**; DUG **v383 · NX-383m**; GOW **2.18**.
-- Fuente canónica releída desde `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, HTML canónico blob `cad464717c43733aa84b49f8c9c3af0875597fbd`; §ARR consultado. `INICIO.md` visible conserva metadatos anteriores y no se usó para sustituir la fuente canónica.
-- Control vigente: CONTROL-RESPONSABILIDAD.json, G13 ACTIVO agente_unico; alias `chatgpt-signal-interpreter-01a1bca3-e123-74f7-b884-5792d8fb3e62`; UUIDv7 local `01a1bca3-e123-74f7-b884-5792d8fb3e62`; blob/read-back `3c3b0e6999ede64593a013d78fd66c4ce28e9cd4` PASS. G12 queda SUSTITUIDO. Folio PENDIENTE/NO ASIGNADO mientras FOL1 no esté activa.
+- **Metacanon adquirido: 1.29**; DUG **v386 · NX-386m**; GOW **2.18**.
+- Fuente canónica releída desde `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, blob `22dca684830a36dff019b47811d9b800cc9bea0a`; DUG v386 · NX-386m, Metacanon 1.29 y GOW 2.18. §ARR consultado; se consideró el CNP (P001, P004, P005, P038, P043). `INICIO.md` no se usó para sustituir la fuente canónica.
+- Control vigente: `CONTROL-RESPONSABILIDAD.json`, blob `8b65e9d6886b248df90d9d879d9b982635046ed1`; G14 ACTIVO, agente único; identidad local `01a1bd8b-8291-7906-b862-6088593acfe5` según control. G13 queda SUSTITUIDO. FOL1 PREPARADA, NO ACTIVA; folio PENDIENTE/NO ASIGNADO.
 - Se consultaron §ARR, P001/P004/P005/P007/P008/P011/P019/P033/P038/P043 y Metacanon §§4/24/42/47 pertinentes. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
 
 ### Constancia de adquisición y aplicación
@@ -312,3 +312,18 @@ Esta adenda mantiene a G13 como agente responsable único; no crea una generaci�
 - **Respaldo:** se conserva `.rollback-0.10.41-pre-01043-20261108`. Antes de sincronizar al head final se creó además `.rollback-0.10.43-pre-sync-20261108-1535`, con copia byte-exacta del estado 0.10.43 previo y copia explícita del inventario anterior `payload-sha256.json.pre-sync`.
 - **Auditoría local de la cabeza:** los 12 tests de regresión de la candidata y 7/7 comprobaciones `node --check` pasaron; los audits estáticos Live Caption y Observability y el verificador de paquete también pasaron después de incorporar al árbol temporal de prueba los tres workflows ocultos `.github/workflows` que el ZIP no había extraído. Verificador de paquete: 59/59 SHA.
 - **Aceptación:** Chrome NO se recargó. No hubo aceptación E2E/Windows ni intervención de llamada real. La carpeta en disco está actualizada y verificada; el runtime cargado en Chrome puede seguir siendo la versión anterior. La prueba en llamada y la aceptación explícita del operador siguen pendientes.
+
+
+## Actualización viva G14 · reconciliación de backlog y regresiones · 2026-11-10
+
+Esta adenda supersede las referencias operativas anteriores de G13 y producto 0.10.40 como estado vigente. Las adendas previas se conservan como historia, sin reescritura retroactiva.
+
+- **Responsabilidad:** G14 ACTIVO / agente único según `CONTROL-RESPONSABILIDAD.json`; UUIDv7 local que figura en el control `01a1bd8b-8291-7906-b862-6088593acfe5`. FOL1 PREPARADA, NO ACTIVA; folio de sesión y folios CV/CY/A/B permanecen PENDIENTES/NO ASIGNADOS.
+- **Gobierno:** DUG v386 · NX-386m; Metacanon 1.29; GOW 2.18; §ARR y CNP considerados. DUG blob `22dca684830a36dff019b47811d9b800cc9bea0a`. MCP normativo DESACTIVADO.
+- **Producto:** main declara 0.10.47; PR #79 fusionada en `10a7f1b1f8c48d290ce8f4df5639109efe571c22`. PR #78 también fusionada.
+- **Backlog:** la revisión de `BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md` actualizó SI-FB-01–SI-FB-06 a estados parciales/pendientes reales y añadió SI-REG-01–SI-REG-04 para el switch Auto-Answer, el micrófono con pista tardía, la prueba permanente de paralelismo y la aceptación integrada. Véase [backlog](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md) y [crónica G14](cronica/C-SIGNAL-BACKLOG-REGRESIONES-20261110-G14.md).
+- **Regresión comunicada:** el operador reportó “micrófono no enciende” y “switch de contestador no funciona”. Un mensaje anterior informó un hotfix local; en este corte no se leyeron de nuevo sus archivos/recibo, así que se conserva como REPORTADO, NO RE-VERIFICADO. No se atribuye a main ni se declara integrado.
+- **PR abiertas:** #70, #72, #73, #74, #75 y #76 siguen abiertas según la consulta de estado; no se fusionan ramas completas. #72/#73/#76 contienen deltas cuya funcionalidad fue integrada selectivamente en #79; #74 no debe portar rearme automático al pulsar Online; #75 sigue draft y amplio; #70 conserva estado documental antiguo. Comparar deltas antes de cierre o descarte.
+- **Verificación:** main 0.10.47, estado de PR y blobs de documentación fueron leídos. Los resultados locales previos (27/27 suites, 59/59 hashes y 4/4 cotejos) se atribuyen al reporte anterior, no a ejecución de este ciclo. No hubo pruebas de código en este ciclo.
+- **Aceptación:** Chrome no fue recargado; no hubo llamada real, captura de audio, aceptación funcional ni release. No se usó RDC en PC-7 ni PC-14; la autorización vigente no se hereda a esos dispositivos. Cualquier preparación remota futura debe ajustarse al destino y cuenta registrados en el control G14.
+
