@@ -214,14 +214,14 @@ Esta sección actualiza los estados operativos de SI-FB-01–SI-FB-06 sin borrar
 ### Nuevas tareas de regresión reportadas
 
 #### SI-REG-01 — Interruptor Auto-Answer · P0
-**Estado:** REGRESIÓN REPORTADA; hotfix local mencionado en la conversación, no re-verificado ni integrado en main.
+**Estado:** CORRECCIÓN CANDIDATA en `fix/backlog-p0-switch-mic-late-track-20261110`: se fija `presenceIdleSeconds=180` en popup y worker para evitar enviar `0` al guard; pendiente de CI y read-back. No integrada en main ni aceptada en Chrome.
 
 Revisar carga del popup, listener/event handler, estado visible, escritura/lectura de configuración, comunicación con background/service worker y atajo de teclado. El fallback del handler mencionado en la conversación debe cotejarse en los archivos reales antes de promoverlo. No introducir rearme automático al pulsar Online; conservar autorización explícita, presencia revalidada y fail-closed.
 
 **Aceptación:** activar/desactivar desde UI y atajo; estado visual y almacenado coincidentes; revalidación correcta; ningún Connect sin grant vigente; pausa, idle/locked, fin de sesión y reinicio no rearman la autorización.
 
 #### SI-REG-02 — Habilitación tardía del micrófono · P0
-**Estado:** REGRESIÓN REPORTADA; hotfix local mencionado en la conversación, no re-verificado ni integrado en main.
+**Estado:** CORRECCIÓN CANDIDATA en `fix/backlog-p0-switch-mic-late-track-20261110`: el heartbeat de llamada reintenta el unmute solo si persiste una intención explícita de activar, la llamada sigue activa y una pista viva aparece ya silenciada y verificada. Pendiente de CI/read-back; no integrada ni aceptada en Chrome.
 
 Investigar el caso en que la llamada/ruta activa se confirma antes de que Cloud Interpreter cree la pista de audio. Cotejar el tratamiento de pistas que aparecen posteriormente, el estado del botón y `MediaStreamTrack.enabled`/pista saliente. Mantener mute fuera de llamada y remute al terminar, perder la ruta o quedar en estado desconocido.
 
