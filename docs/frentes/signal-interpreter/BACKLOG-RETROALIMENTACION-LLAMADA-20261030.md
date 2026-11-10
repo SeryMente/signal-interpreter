@@ -395,18 +395,29 @@ El workflow existente `.github/workflows/package-integrity.yml` ejecuta el verif
 Detalle y salida literal preservados en [crónica G14 de compuertas](cronica/C-SIGNAL-REGRESSION-GATES-20261110-G14.md).
 
 
-## 12. SI-FB-02 — precisión de alcance acordada por el operador · 2026-11-10
+## 12. SI-FB-02 — diálogo combinado Groq: audio remoto + micrófono INTÉRPRETE · actualización 2026-11-10
 
-**Interpretación vinculante del requisito INTÉRPRETE:** capturar la entrada de audio del micrófono del operador/intérprete, transcribirla en vivo y mostrarla como turnos propios en el diálogo de Signal Interpreter. No significa reconocimiento biométrico, identificación de voz ni que el intérprete sea un estándar de diarización. La etiqueta INTÉRPRETE deriva de la fuente de captura (micrófono propio), no del idioma ni de inferencias acústicas.
+**Interpretación literal y vinculante:** el operador solicita la transcripción combinada del audio de salida de la llamada mediante Groq Whisper y la transcripción simultánea de su propia voz, organizada en un único diálogo cronológico, sin costuras. El micrófono propio debe aparecer como `INTÉRPRETE`. La instrucción no convierte KHORA en estándar; permite reutilizar sus patrones útiles después de evaluar por separado las necesidades de Signal Interpreter.
 
-**Modo predeterminado solicitado:** Whisper mediante API Groq, un único motor activo. El candidato de calidad usa `whisper-large-v3`, salida `verbose_json`, timestamps de segmentos y palabras, idioma automático español/inglés, temperatura 0 y validación de rangos temporales. No usar `whisper-large-v3-turbo` como default cuando la prioridad es máxima fidelidad y no mínima latencia.
+**Modelo de calidad por defecto:** `whisper-large-v3` en los dos canales. La configuración de extensión y el transcriptor deben coincidir. Se excluye `whisper-large-v3-turbo` como modelo predeterminado de calidad; puede evaluarse en benchmark de latencia como variante, sin fallback silencioso. La fuente de decisión y el texto literal del operador están registrados en [Instrucciones y plan provisional de diálogo Groq](INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md).
 
-**Fuera del modo inicial (backlog de baja prioridad):**
-- **P3 — Live Caption nativo como motor alternativo:** conservar como posibilidad futura, no activarlo como transcriptor paralelo por defecto.
-- **P3 — modo híbrido Whisper + Live Caption:** diferido; solo considerar tras demostrar que la fusión aporta mejora medible sin duplicación, desorden o atribución incorrecta.
+**Arquitectura exigida:**
+- Fuente remota: audio reproducido por la pestaña de llamada, separado del micrófono propio, enviado al endpoint Groq de transcripción.
+- Fuente local: captura de micrófono propia, etiquetada `INTÉRPRETE` por procedencia, enviada al mismo endpoint/modelo.
+- Dos colas independientes y peticiones concurrentes. Prohibido serializar audio remoto y micrófono en una única cola de red.
+- Reloj monotónico común; segmentos globalizados, ordenados por tiempo y con solapamientos conservados.
+- Un único diálogo visual que integra ambas fuentes. Las revisiones de parciales actualizan su fila estable; no duplican turnos.
+- Fragmentos de audio autónomos y decodificables; no asumir que todo chunk de MediaRecorder puede subirse individualmente sin preparar contenedor/cabecera.
+- La reconciliación de límites de ventana no elimina repeticiones legítimas entre hablantes diferentes.
 
-**Criterios de calidad obligatorios antes de cerrar:** captura continua del micrófono durante llamada activa con gesto explícito del operador; cola acotada sin pérdida silenciosa; chunks con secuencia y reloj monotónico; timestamps globales y orden determinista; actualización de parciales por identidad; presentación ortográfica conservadora sin reescribir contenido clínico; manejo de números/nombres propios/cambio ES↔EN; cero persistencia de audio/transcripción clínica fuera de memoria/almacenamiento de sesión; parada y liberación de pista en fin de llamada, cambio de ruta, pagehide, mute manual, pérdida de permiso o error; pruebas de regresión del micrófono saliente y Connect.
+**Velocidad:** Large V3 se mantiene como modelo de calidad. La latencia se optimiza con captura y carga en paralelo, ventanas cortas medidas, colas acotadas, timestamp por segmento y sin timestamp por palabra en el camino crítico. La ventana/solapamiento óptima queda pendiente de benchmark. Deben respetarse los límites de RPM/ASH de la cuenta y la respuesta `429/Retry-After`; no se sacrifica continuidad silenciosamente.
 
-**Aclaración de atribución:** el micrófono propio es el canal INTÉRPRETE. El audio remoto/Live Caption nativo no debe etiquetarse automáticamente como LEP o proveedor si Cloud Interpreter no ofrece pistas separadas o un mecanismo de diarización verificable. No forma parte del primer corte la grabación de audio remoto.
+**Presentación:** una sola línea temporal/diálogo; identidad `INTÉRPRETE` para la fuente de micrófono; fuente remota diferenciada. Si Cloud Interpreter mezcla LEP y proveedor en un solo flujo y no ofrece metadatos de hablante, usar etiqueta neutral de hablante remoto/no verificado. Whisper/Groq no debe tratarse como diarización de participantes; idioma o contenido no prueban identidad.
 
-**Estado:** alcance aclarado; núcleo Whisper large-v3 con timestamps y compuerta ZDR en PR #83; captura en vivo e integración del diálogo aún pendientes. No declarar completado hasta superar CI y pruebas headless de captura/orden/persistencia y después aceptación acústica con corpus autorizado.
+**Modos fuera del camino crítico:** Live Caption nativo como motor alternativo y modo híbrido Live Caption+Whisper quedan en P3 y desactivados por defecto. Esto NO significa descartar el procesamiento combinado en Groq de las dos entradas (remota y micrófono): ambas son requisitos del mismo diálogo.
+
+**Privacidad y ciclo de vida:** captura iniciada por gesto explícito dentro de llamada activa y reconocida; preflight de llamada/fuente/permiso/credencial/ZDR antes de solicitar audio; texto y audio clínico no pasan a telemetría ni almacenamiento persistente general. Detención/liberación de ambas pistas al fin de llamada, pagehide, cambio de ruta, revocación de permiso o fallo. Una fuente fallida marca sesión parcial, nunca completa.
+
+**Estado verificado:** el cliente Groq utiliza `whisper-large-v3`, `verbose_json`, temperatura 0, compuerta ZDR y timestamps de segmento. La constante de modelo del background se está alineando a Large V3. Esto todavía NO implementa la captura remota+micrófono ni la fusión del diálogo en runtime.
+
+**Pendiente para cerrar:** implementación de las dos capturas, paquetes autónomos por ventana, ejecución concurrente, fusión temporal, UI unificada, headless tests de códecs/solapamientos/pérdidas/duplicados, WER/CER y latencia p50/p95 sobre corpus autorizado, CI verde para la cabeza exacta y aceptación humana.
