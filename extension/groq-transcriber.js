@@ -25,6 +25,9 @@
     if(!token)return{ok:false,error:"Falta GROQ_API_KEY."};
     if(!blob||typeof blob.size!=="number"||blob.size<=0)return{ok:false,error:"Audio vacío."};
     var started=Date.now(),timer=null;
+    var externalSignal=opts.signal||null,externalAbort=null;
+    if(externalSignal&&externalSignal.aborted)
+      return{ok:false,error:"Consulta Groq cancelada antes del envío",aborted:true,latencyMs:Date.now()-started};
     try{
       var form=new FormData();
       form.append("file",blob,opts.filename||"signal-audio.webm");
@@ -36,10 +39,9 @@
       form.append("timestamp_granularities[]","segment");
       var prompt=buildPrompt(language,context);
       if(prompt)form.append("prompt",prompt);
-      var controller=new AbortController(),externalSignal=opts.signal||null,externalAbort=null;
+      var controller=new AbortController();
       if(externalSignal){
-        if(externalSignal.aborted)controller.abort();
-        else if(typeof externalSignal.addEventListener==="function"){
+        if(typeof externalSignal.addEventListener==="function"){
           externalAbort=function(){controller.abort();};
           externalSignal.addEventListener("abort",externalAbort,{once:true});
         }
@@ -76,8 +78,10 @@
         model:String(data&&data.model||model),latencyMs:Date.now()-started,bytes:blob.size};
     }catch(error){
       if(timer)clearTimeout(timer);
+      if(externalSignal&&externalAbort&&typeof externalSignal.removeEventListener==="function")
+        externalSignal.removeEventListener("abort",externalAbort);
       return{ok:false,error:cleanError(error&&error.name==="AbortError"?"Consulta Groq cancelada o agotada":error),
-        aborted:!!(opts.signal&&opts.signal.aborted),latencyMs:Date.now()-started};
+        aborted:!!(externalSignal&&externalSignal.aborted),latencyMs:Date.now()-started};
     }
   }
   root.SignalGroqTranscriber={endpoint:ENDPOINT,model:DEFAULT_MODEL,ready:ready,transcribe:transcribe};
