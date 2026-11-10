@@ -71,6 +71,8 @@ const popupJs = readText("extension/ui/popup.js");
 const background = readText("extension/background.js");
 assert.ok(background.includes('var GROQ_MODEL = "whisper-large-v3";'), "both audio lanes must default to Groq Whisper Large V3");
 assert.ok(background.includes("var GROQ_USD_PER_AUDIO_HOUR = 0.111;"), "Groq cost telemetry must match the configured Large V3 model");
+assert.ok(background.includes("groqDialogueEnabled: false")&&popupJs.includes("groqDialogueEnabled: false"),
+  "dual-source audio capture must remain disabled until the operator explicitly opts in");
 assert.ok(manifest.host_permissions.includes("https://api.groq.com/*"), "Groq transcription endpoint permission is missing");
 const cloudContentScript = manifest.content_scripts.find((item) =>
   (item.matches || []).includes("https://app.cloudinterpreter.com/*") &&
