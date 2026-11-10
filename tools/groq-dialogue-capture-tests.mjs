@@ -105,7 +105,7 @@ function createHarness(){
 }
 
 function wavWindow(startFrame,sampleValue){
-  const seconds=6,sampleRate=16000,frames=seconds*sampleRate;
+  const seconds=6.5,sampleRate=16000,frames=seconds*sampleRate;
   const buffer=new ArrayBuffer(44+frames*2),view=new DataView(buffer);
   const write=(offset,value)=>{for(let i=0;i<value.length;i++)view.setUint8(offset+i,value.charCodeAt(i));};
   write(0,"RIFF");view.setUint32(4,buffer.byteLength-8,true);write(8,"WAVE");write(12,"fmt ");
@@ -124,7 +124,7 @@ await h.flush();
 assert.equal(h.displayCalls,1,"remote browser-tab audio is requested once");
 assert.equal(h.micCalls,1,"interpreter microphone is requested separately");
 assert.equal(h.audioNodes.length,2,"two distinct worklet lanes are created");
-assert.deepEqual(h.audioNodes.map(n=>n.opts.processorOptions.windowSeconds),[6,6]);
+assert.deepEqual(h.audioNodes.map(n=>n.opts.processorOptions.windowSeconds),[6.5,6.5]);
 const startMessage=h.sent.find(x=>x.type==="SIGNAL_GROQ_DIALOGUE_CAPTURE_START");
 assert.ok(startMessage&&startMessage.callId==="call-123","capture is bound to the active call ID");
 const sources=["groq-remote","groq-interpreter"];
@@ -135,7 +135,7 @@ await h.flush();
 const chunks=h.sent.filter(x=>x.type==="SIGNAL_GROQ_DIALOGUE_CHUNK");
 assert.equal(chunks.length,2,"both sources produce independent upload messages");
 assert.deepEqual(chunks.map(x=>x.source).sort(),sources.slice().sort());
-assert.ok(chunks.every(x=>x.mimeType==="audio/wav"&&x.sampleRate===16000&&x.durationMs===6000));
+assert.ok(chunks.every(x=>x.mimeType==="audio/wav"&&x.sampleRate===16000&&x.durationMs===6500));
 assert.ok(chunks.every(x=>x.sequence===1));
 assert.notEqual(chunks[0].base64,chunks[1].base64,"the two audio sources are never mixed together");
 const stopHandler=h.button().listeners.click;
