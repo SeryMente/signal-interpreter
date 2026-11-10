@@ -3,6 +3,7 @@
   var DEFAULT_CONFIG = {
     targetHost: "app.cloudinterpreter.com",
     autoAnswerEnabled: false,
+    presenceIdleSeconds: 180,
     observationEnabled: true,
     networkTelemetryEnabled: true,
     performanceTelemetryEnabled: true,
@@ -273,7 +274,12 @@
   }
 
   refreshYoutubeCaptionCaptureButton();
-  if($("openLab"))$("openLab").onclick=function(){chrome.tabs.create({url:chrome.runtime.getURL("extension/ui/lab.html")});};
+  function extensionPageUrl(path) {
+    var backgroundPath = String((chrome.runtime.getManifest().background || {}).service_worker || "");
+    var prefix = backgroundPath.indexOf("extension/") === 0 ? "extension/" : "";
+    return chrome.runtime.getURL(prefix + String(path || "").replace(/^\\/+/, ""));
+  }
+  if($("openLab"))$("openLab").onclick=function(){chrome.tabs.create({url:extensionPageUrl("ui/lab.html")});};
 
   var openTranscript=$("openTranscript");
   if(openTranscript)openTranscript.addEventListener("click",function(){chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab)throw new Error("No hay pestaña activa.");return chrome.runtime.sendMessage({type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:tab.id,sourceUrl:tab.url||"",sourceTitle:tab.title||""});}).catch(function(){status("No se pudo abrir el historial",true);});});
