@@ -6,17 +6,17 @@ const PROFILE='https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djf
 let checks=0;
 function eq(a,b,label){assert.equal(a,b,label);checks++;}
 function harness(seed={},sessionSeed={},popupPath='extension/ui/popup.html'){
- let now=100000,idle='active',hold=null;
+ let now=100000,idle='active',hold=null,holdTabs=null;
  const apiCalls={idle:0,storageGet:0,tabsQuery:0,tabsGet:0};
  const events=()=>({listeners:[],addListener(f){this.listeners.push(f)},emit(...args){this.listeners.forEach(f=>f(...args))}});
  const data={effectifConfig:{autoAnswerEnabled:true,presenceIdleSeconds:60},...seed};
  const sessionData={...sessionSeed};
  const changed=events(),stateChanged=events(),messages=events(),intervals=[],alarms=events(),scheduledAlarms=new Map();
- const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,getManifest:()=>({action:{default_popup:popupPath}}),onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{apiCalls.idle++;if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},alarms:{onAlarm:alarms,create:(name,info)=>scheduledAlarms.set(name,info),clear:async name=>scheduledAlarms.delete(name)},storage:{onChanged:changed,local:{get:async keys=>{apiCalls.storageGet++;return Object.fromEntries(keys.map(k=>[k,data[k]]))},set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}},session:{get:async keys=>Object.fromEntries(keys.map(k=>[k,sessionData[k]])),set:async patch=>Object.assign(sessionData,patch),remove:async key=>{delete sessionData[key]}}},tabs:{get:async()=>{apiCalls.tabsGet++;return {url:PROFILE}},query:async()=>{apiCalls.tabsQuery++;return []}}};
+ const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,getManifest:()=>({action:{default_popup:popupPath}}),onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{apiCalls.idle++;if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},alarms:{onAlarm:alarms,create:(name,info)=>scheduledAlarms.set(name,info),clear:async name=>scheduledAlarms.delete(name)},storage:{onChanged:changed,local:{get:async keys=>{apiCalls.storageGet++;return Object.fromEntries(keys.map(k=>[k,data[k]]))},set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}},session:{get:async keys=>Object.fromEntries(keys.map(k=>[k,sessionData[k]])),set:async patch=>Object.assign(sessionData,patch),remove:async key=>{delete sessionData[key]}}},tabs:{get:async()=>{apiCalls.tabsGet++;return {url:PROFILE}},query:async()=>{apiCalls.tabsQuery++;if(holdTabs)return await holdTabs();return []}}};
  const ctx={chrome,Date:class extends Date{static now(){return now}},setInterval:f=>intervals.push(f),setTimeout,clearTimeout,self:{}};
  ctx.self=ctx;ctx.URL=URL;vm.createContext(ctx);vm.runInContext(code,ctx);
  const sender={id:'id',frameId:0,url:PROFILE,tab:{id:7,url:PROFILE}};
- return {guard:ctx.SignalPresenceGuard,chrome,data,sessionData,sender,apiCalls,popupSender:{id:'id',url:'chrome-extension://id/'+popupPath},stateChanged,intervals,alarms,scheduledAlarms,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
+ return {guard:ctx.SignalPresenceGuard,chrome,data,sessionData,sender,apiCalls,popupSender:{id:'id',url:'chrome-extension://id/'+popupPath},stateChanged,intervals,alarms,scheduledAlarms,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,holdTabs:f=>holdTabs=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
 }
 const h=harness();
 eq(h.guard.snapshot().armed,false,'upgraded stored enabled does not arm');
@@ -88,8 +88,8 @@ await h.guard.arm(60);await h.chrome.storage.local.set({signalLabLock:true});eq(
 eq((await h.guard.arm(60)).ok,false,'cannot arm in lab');
 await h.chrome.storage.local.set({signalLabLock:false});await h.guard.arm(60);await h.chrome.storage.local.set({effectifConfig:{autoAnswerEnabled:false,presenceIdleSeconds:60}});eq(h.guard.snapshot().armed,false,'config off revokes');
 h.data.effectifConfig={autoAnswerEnabled:true,presenceIdleSeconds:60};await h.guard.arm(60);
-let release;h.hold(cb=>release=cb);const pending=h.guard.authorize({modality:'OPI',requestId:'race'},h.sender);
-await new Promise(r=>setImmediate(r));h.guard.disarm('locked');release('active');eq((await pending).ok,false,'lock racing query invalidates grant');
+let releaseTabs;h.holdTabs(()=>new Promise(resolve=>releaseTabs=resolve));const pending=h.guard.authorize({modality:'OPI',requestId:'race'},h.sender);
+await new Promise(r=>setImmediate(r));h.guard.disarm('locked');releaseTabs([]);eq((await pending).ok,false,'lock racing the active-call query invalidates the grant');
 h.hold(null);await h.guard.arm(60);const changedRouteSender={...h.sender,url:PROFILE+'/call/private',tab:{...h.sender.tab,url:PROFILE+'/call/private'}};eq((await h.guard.authorize({modality:'OPI',requestId:'route'},changedRouteSender)).error,'sender-not-authorized','changed tab route is rejected from browser-supplied sender metadata');
 h.chrome.tabs.query=async()=>{throw Error('query unavailable')};eq((await h.guard.authorize({modality:'OPI',requestId:'closed'},h.sender)).error,'authorization-verification-unavailable','unavailable active-call check fails closed');
 eq(h.guard.snapshot().armed,true,'transient tab verification error rejects this attempt without erasing explicit availability');
