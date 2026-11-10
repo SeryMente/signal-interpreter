@@ -48,9 +48,10 @@
       }
       timer=setTimeout(function(){controller.abort()},timeoutMs);
       var response=await fetch(ENDPOINT,{method:"POST",headers:{Authorization:"Bearer "+token},body:form,signal:controller.signal,cache:"no-store"});
+      var raw=await response.text();
       if(timer)clearTimeout(timer);
       if(externalSignal&&externalAbort&&typeof externalSignal.removeEventListener==="function")externalSignal.removeEventListener("abort",externalAbort);
-      var raw=await response.text(),data=null;
+      var data=null;
       try{data=raw?JSON.parse(raw):null}catch(_){}
       if(!response.ok){
         var retryAfterMs=null;
