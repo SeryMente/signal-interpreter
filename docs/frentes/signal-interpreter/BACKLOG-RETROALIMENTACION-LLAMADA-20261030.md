@@ -323,7 +323,7 @@ Orden actualizado: (1) SI-REG-05 corregir semántica de micrófono, conservando 
 
 **Optimización candidata:** rama `perf/autoanswer-fast-dispatch-20261110`. El guard reutiliza una muestra de presencia `active` de hasta 20 s procedente de eventos/sondeo/restauración y mantiene Auto-Answer/candado de laboratorio en caché. Evita lectura repetida de almacenamiento, consulta de inactividad y `tabs.get` en el camino caliente; conserva consulta de llamada activa en otras pestañas y refresh fail-closed cuando la muestra está ausente, desconocida o vencida. La telemetría registra ruta `cached/refreshed` y edad de la muestra. `button.click()` no se reemplaza.
 
-**Evidencia sintética de la candidata:** Presence Guard 91/91, Presence Connect 33/33, Auto-Answer Runtime 15/15, sintaxis JS y cotejo SHA-256 de tres objetos del inventario PASS. Detalle y hashes en [crónica G14 de Auto-Answer fast path](cronica/C-SIGNAL-AUTOANSWER-FASTPATH-20261110-G14.md).
+**Evidencia sintética de la candidata:** Presence Guard 94/94, Presence Connect 33/33, Auto-Answer Runtime 15/15, sintaxis JS y cotejo SHA-256 de tres objetos del inventario PASS. Detalle y hashes en [crónica G14 de Auto-Answer fast path](cronica/C-SIGNAL-AUTOANSWER-FASTPATH-20261110-G14.md).
 
 **Aceptación pendiente:** no se hizo reload, no se habilitó Auto-Answer ni se armó presencia, no hubo llamada/audio real ni aceptación humana. La prueba sintética no confirma la latencia del Chrome operativo ni que la plataforma complete la conexión. La aceptación solo se cierra con medición real autorizada y confirmación de `CALL_ROUTE_ENTERED`/`ANSWER_FLOW_ROUTE_CONFIRMED`.
 
