@@ -15,7 +15,9 @@
     volume: 0.8,
     transcriptionAvailable: true,
     transcriptionEnabled: true,
-    groqModel: "whisper-large-v3-turbo",
+    groqModel: "whisper-large-v3",
+    groqDialogueEnabled: true,
+    groqZeroDataRetentionConfirmed: false,
     opiRatePerMinute: 0.20,
     vriRatePerMinute: 0.25,
     currency: "USD",
@@ -163,7 +165,14 @@
     if ($("captionBilingualTabEnabled")) { $("captionBilingualTabEnabled").checked = false; $("captionBilingualTabEnabled").disabled = true; }
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
-    $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
+    $("groqModel").value = config.groqModel || "whisper-large-v3";
+    $("groqDialogueEnabled").checked = config.groqDialogueEnabled === true;
+    $("groqZdrConfirmed").checked = config.groqZeroDataRetentionConfirmed === true;
+    $("groqStatus").textContent = config.groqDialogueEnabled !== true
+      ? "Diálogo Groq desactivado"
+      : (config.groqZeroDataRetentionConfirmed === true
+        ? "Large V3 · dos fuentes · clave local requerida"
+        : "Large V3 · confirma ZDR antes de enviar audio");
     var loginUsernameInput = $("cloudInterpreterUsername");
     if (loginUsernameInput && document.activeElement !== loginUsernameInput) {
       loginUsernameInput.value = cloudInterpreterLoginUsername;
@@ -257,6 +266,12 @@
       render();
     }catch(error){ status("MIC ERR · permanece silenciado",true); }
     finally{ button.disabled=false; renderMicrophone(); }
+  });
+  $("groqDialogueEnabled").addEventListener("change",function(){
+    save({groqDialogueEnabled:this.checked});
+  });
+  $("groqZdrConfirmed").addEventListener("change",function(){
+    save({groqZeroDataRetentionConfirmed:this.checked});
   });
   if ($("captionInterpreterEnabled")) $("captionInterpreterEnabled").addEventListener("change", function () {
     save({ liveCaptionInterpreterEnabled: false });
