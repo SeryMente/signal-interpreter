@@ -73,15 +73,26 @@
       numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[1],
       processorOptions:{windowSeconds:6}
     });
+    var lane={source:audio,node:node,flushResolve:null};
     node.port.onmessage=function(event){
       var message=event&&event.data||{},packet=message.packet;
+      if(message.type==="flushed"){
+        if(lane.flushResolve){var resolve=lane.flushResolve;lane.flushResolve=null;resolve();}
+        return;
+      }
       if(message.type!=="window"||!packet||!packet.buffer)return;
       var offsetMs=Math.max(0,(Number(packet.startFrame)-originFrame)/context.sampleRate*1000);
       var durationMs=Math.max(0,(Number(packet.endFrame)-Number(packet.startFrame))/context.sampleRate*1000);
       deliver(source,packet.buffer,offsetMs,durationMs,context.sampleRate,captureId,call,startedAt);
     };
+    lane.flush=function(){
+      return new Promise(function(resolve){
+        lane.flushResolve=resolve;
+        node.port.postMessage({type:"flush"});
+      });
+    };
     audio.connect(node);node.connect(context.destination);
-    return {source:audio,node:node};
+    return lane;
   }
   async function deliver(source,buffer,offsetMs,durationMs,sampleRate,captureId,call,startedAt){
     if(!capture||capture.captureId!==captureId)return;
@@ -171,8 +182,13 @@
     current.stopping=true;
     current.stopPromise=(async function(){
       setStatus("Cerrando ventanas finales y drenando ambas colas…");
-      current.lanes.forEach(function(lane){try{lane.node.port.postMessage({type:"flush"});}catch(_){}});
-      await new Promise(function(resolve){setTimeout(resolve,120);});
+      var flushes=current.lanes.map(function(lane){
+        try{return lane.flush();}catch(_){return Promise.resolve();}
+      });
+      await Promise.race([
+        Promise.all(flushes),
+        new Promise(function(resolve){setTimeout(resolve,2000);})
+      ]);
       var deadline=Date.now()+25000;
       while(Date.now()<deadline&&(current.pending["groq-remote"]>0||current.pending["groq-interpreter"]>0))
         await new Promise(function(resolve){setTimeout(resolve,100);});
