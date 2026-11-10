@@ -99,6 +99,7 @@
   root.SignalDialogue={
     normalize:normalize,sortSegments:sortSegments,stableSegmentId:stableSegmentId,
     normalizeSegment:normalizeSegment,mergeSegments:mergeSegments,speakerLabel:speakerLabel,
-    formatDialogue:formatDialogue
+    formatDialogue:formatDialogue,
+    createConcurrentSourceQueue:createConcurrentSourceQueue
   };
 })(typeof globalThis!=="undefined"?globalThis:window);
