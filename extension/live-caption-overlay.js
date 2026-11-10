@@ -48,7 +48,7 @@
     if (globalThis.__SIGNAL_CAPTION_OVERLAY_RUNTIME__ === runtimeApi) delete globalThis.__SIGNAL_CAPTION_OVERLAY_RUNTIME__;
   }
 
-  var MAX_HISTORY = 1200;
+  var MAX_HISTORY = 800;
   var rows = [];
   var groqDialogueMode = false;
   var groqDialogueCaptureId = null;
