@@ -177,7 +177,12 @@ No marcar la tarea como terminada hasta demostrar, con evidencia reproducible:
 
 ## 7. Registro de cambios y límites
 
-- Esta especificación es provisional y debe actualizarse al implementar y medir.
+### Corte de implementación sintética · 2026-11-10 · cabeza CI 317242c
+
+- **Código integrado en candidata:** captura dual de pestaña/micrófono, AudioWorklet WAV mono 16 kHz, colas independientes y concurrentes, cliente Groq Large V3, fusión cronológica, overlay único, etiquetas por procedencia, ZDR gate, parada/limpieza y cancelación. No integrado en `main`.
+- **Rama/PR:** `candidate/whisper-interpreter-live-20261110`; PR #83 abierta, draft/no merge. Cabeza `317242c4809aa5434803d25c28a134a84894a284`.
+- **CI de esa cabeza:** Package integrity SUCCESS (`42926141243`); signal-observability-audit SUCCESS (`42926141253`); native-caption-host-build SUCCESS (`42926141415`). Package integrity informa 66/66 hashes y ocho suites de gate aprobadas; tests dual capture, policy revocation, WAV/flush, merger/overlap/queue concurrency y Groq transcriber mock PASS.
+- **Qué queda demostrado:** código, contratos, fusión, buffers WAV sintéticos, concurrencia y limpieza ante API/boundaries simuladas. No demuestra permisos reales de Chrome, calidad acústica real, recepción de audio tab, micrófono físico ni funcionamiento del endpoint con la cuenta del operador.
+- **Pendiente:** audio real, llamadas reales, API/key real, verificación de ZDR en consola, WER/CER, latencia p50/p95, pérdida/duplicado real, coste/cuotas efectivas, aceptación del operador. No se declara diarización.
 - Las instrucciones literales A-01, A-02, A-03 y A-04 son fuentes de verdad; la interpretación técnica no las reemplaza.
-- No se declara que el canal esté integrado en runtime, que capture audio real, que exista diarización ni que el operador haya aceptado la función.
-- No se autoriza por este documento realizar llamadas reales, capturar audio real, acceder a credenciales, recargar Chrome, fusionar a `main`, desplegar o liberar.
+- No se autoriza por este documento realizar llamadas reales, capturar audio real, acceder a credenciales, recargar Chrome, fusionar a `main`, desplegar o liberar. La aceptación y la liberación siguen reservadas al operador.
