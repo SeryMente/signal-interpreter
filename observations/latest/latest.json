@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-4c958975-7403-4c34-80bf-f0f5d6d25b48",
-  "createdAt": "2026-11-10T16:02:59.202Z",
+  "batchId": "batch-109718c6-3a95-4e10-a2da-7df27514653c",
+  "createdAt": "2026-11-10T16:07:18.428Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.46",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "4df893ab-3ff8-4c23-82fe-3a5c1660fc6c",
-      "sequence": 18947,
-      "timestamp": "2026-11-10T16:02:58.247Z",
-      "ingestedAt": "2026-11-10T16:02:58.247Z",
+      "id": "a7f2dab7-39c6-4603-a491-4d6a1913ab5b",
+      "sequence": 18948,
+      "timestamp": "2026-11-10T16:06:58.234Z",
+      "ingestedAt": "2026-11-10T16:06:58.234Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "background",
       "extensionVersion": "0.10.46",
       "host": "",
       "url": "",
-      "phase": "event",
-      "action": "TELEMETRY_MAINTENANCE",
-      "outcome": "observed",
-      "traceId": "1a6f2123-501a-42cf-8771-e3aff04dce49",
+      "phase": "started",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
+      "outcome": "success",
+      "traceId": "a9ad52e3-16d9-4ada-86c6-9fc554b1fbb4",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -44,44 +44,117 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "pruned": {
-          "cutoff": "[PHONE]T16:02:58.191Z",
-          "expiredEvents": 0,
-          "expiredSnapshots": 0,
-          "expiredSignalSegments": 0,
-          "excessEvents": 0,
-          "excessSignalSegments": 0
-        },
-        "stats": {
-          "database": "signal-interpreter-telemetry",
-          "events": 25,
-          "snapshots": 0,
-          "signalSegments": 0,
-          "oldestEventAt": "[PHONE]T15:01:58.352Z",
-          "newestEventAt": "[PHONE]T16:02:04.470Z",
-          "usageBytes": 3499566,
-          "quotaBytes": 56070800942
-        }
+        "trigger": "hourly"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "ce451d76-8e77-47ca-8c9d-51634db27b86",
+      "sequence": 18949,
+      "timestamp": "2026-11-10T16:06:58.433Z",
+      "ingestedAt": "2026-11-10T16:06:58.433Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "background",
+      "extensionVersion": "0.10.46",
+      "host": "",
+      "url": "",
+      "phase": "event",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED",
+      "outcome": "observed",
+      "traceId": "f077e281-10dc-4bbb-92a8-8f5e0b5f61eb",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.46",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "CLOUD_TAB_UNAVAILABLE",
+      "error": null,
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "trigger": "hourly",
+        "reasonCode": "CLOUD_TAB_UNAVAILABLE",
+        "policy": "no-tab-create-no-navigation-no-reload; retry-next-hour"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "c28da959-a5f2-4728-8090-a91f28e0b2c3",
+      "sequence": 18950,
+      "timestamp": "2026-11-10T16:07:03.450Z",
+      "ingestedAt": "2026-11-10T16:07:03.450Z",
+      "level": "warn",
+      "category": "RUNTIME",
+      "component": "background",
+      "extensionVersion": "0.10.46",
+      "host": "",
+      "url": "",
+      "phase": "event",
+      "action": "OBSERVATION_SYNC_RETRY_SCHEDULED",
+      "outcome": "observed",
+      "traceId": "28469256-bcfd-4039-afba-65503b1bd52e",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.46",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": "Error: Relay HTTP 500",
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "retryMs": 15000,
+        "error": "Error: Relay HTTP 500",
+        "sequence": null
       }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 3,
     "errors": 0,
-    "warnings": 0,
+    "warnings": 1,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 18947,
-    "lastSequence": 18947,
-    "firstTimestamp": "2026-11-10T16:02:58.247Z",
-    "lastTimestamp": "2026-11-10T16:02:58.247Z",
+    "firstSequence": 18948,
+    "lastSequence": 18950,
+    "firstTimestamp": "2026-11-10T16:06:58.234Z",
+    "lastTimestamp": "2026-11-10T16:07:03.450Z",
     "actions": {
-      "TELEMETRY_MAINTENANCE": 1
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED": 1,
+      "OBSERVATION_SYNC_RETRY_SCHEDULED": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "RUNTIME": 3
     }
   }
 }
