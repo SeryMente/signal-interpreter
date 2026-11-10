@@ -5,9 +5,12 @@ class SignalWhisperWindowProcessor extends AudioWorkletProcessor {
     this.windowSeconds=Math.max(1,Math.min(12,Number(opts.windowSeconds)||6));
     this.targetSampleRate=sampleRate;
     this.windowFrames=Math.max(this.targetSampleRate,Math.round(this.targetSampleRate*this.windowSeconds));
+    const overlapMs=Number.isFinite(Number(opts.overlapMs))?Number(opts.overlapMs):500;
+    this.overlapFrames=Math.max(0,Math.min(Math.floor(this.windowFrames/2),Math.round(this.targetSampleRate*Math.max(0,Math.min(1000,overlapMs))/1000)));
     this.samples=new Int16Array(this.windowFrames);
     this.used=0;
     this.startFrame=null;
+    this.hasEmitted=false;
     this.port.onmessage=(event)=>{
       const message=event&&event.data||{};
       if(message.type==="flush")this.flush();
@@ -29,10 +32,15 @@ class SignalWhisperWindowProcessor extends AudioWorkletProcessor {
     if(!count||this.startFrame===null)return;
     const packet=this.encodeWav(count,this.startFrame,endFrame);
     this.port.postMessage({type:"window",source:"audio",packet:packet},[packet.buffer]);
-    this.used=0;this.startFrame=null;
+    const keep=Math.min(this.overlapFrames,count);
+    if(keep>0)this.samples.copyWithin(0,count-keep,count);
+    this.used=keep;
+    this.startFrame=endFrame-keep;
+    this.hasEmitted=true;
   }
   flush() {
-    if(this.used>0)this.emit(this.used,(this.startFrame||0)+this.used);
+    const newFrames=this.used-(this.hasEmitted?this.overlapFrames:0);
+    if(this.used>0&&newFrames>0)this.emit(this.used,(this.startFrame||0)+this.used);
     this.port.postMessage({type:"flushed"});
   }
   process(inputs,outputs) {
