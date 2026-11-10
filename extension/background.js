@@ -3213,11 +3213,16 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
       return true;
     }
     if(message.type==="SIGNAL_GROQ_DIALOGUE_CAPTURE_STOP"){
-      var existing=signalGroqDialogueCaptures.get(String(message.captureId||""));
-      if(!existing||Number(existing.tabId)!==Number(sender&&sender.tab&&sender.tab.id)){
+      if(!sender||!sender.tab||sender.frameId!==0){
         sendResponse({ok:false,reasonCode:"capture-stop-sender-denied"});return false;
       }
-      stopSignalGroqDialogueCapture(message.captureId,message.reason||"content-stop",false).then(sendResponse).catch(function(){sendResponse({ok:false,reasonCode:"capture-stop-failed"});});
+      loadGroqDialogueCapture(message.captureId).then(function(existing){
+        if(!existing||Number(existing.tabId)!==Number(sender.tab.id)){
+          sendResponse({ok:false,reasonCode:"capture-stop-sender-denied"});return;
+        }
+        stopSignalGroqDialogueCapture(message.captureId,message.reason||"content-stop",false)
+          .then(sendResponse).catch(function(){sendResponse({ok:false,reasonCode:"capture-stop-failed"});});
+      }).catch(function(){sendResponse({ok:false,reasonCode:"capture-stop-failed"});});
       return true;
     }
 
