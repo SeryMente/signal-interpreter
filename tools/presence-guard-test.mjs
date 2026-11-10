@@ -66,6 +66,11 @@ const idleCallsBefore=stalePresence.apiCalls.idle;
 eq((await stalePresence.guard.authorize({modality:'OPI',requestId:'stale-presence'},stalePresence.sender)).error,'presence-check-unavailable','stale cached presence is refreshed and unknown OS state fails closed');
 eq(stalePresence.apiCalls.idle,idleCallsBefore+1,'stale presence triggers a fresh OS query');
 eq(stalePresence.guard.snapshot().armed,true,'unavailable refresh rejects only the attempt and retains explicit session arm');
+const refreshedPresence=harness();await refreshedPresence.guard.arm(60);refreshedPresence.setNow(121000);
+const refreshedGrant=await refreshedPresence.guard.authorize({modality:'OPI',requestId:'refresh-age'},refreshedPresence.sender);
+eq(refreshedGrant.ok,true,'stale but active presence refreshes before granting');
+eq(refreshedGrant.verificationPath,'refreshed','expired sample is labelled refreshed');
+eq(refreshedGrant.presenceAgeMs,0,'refreshed sample telemetry reports the new sample age');
 
 const callUrl='https://app.cloudinterpreter.com/call/call-fixture';
 const callSender={...lease.sender,url:callUrl,tab:{id:7,url:callUrl}};
