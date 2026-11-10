@@ -214,32 +214,26 @@ Esta sección actualiza los estados operativos de SI-FB-01–SI-FB-06 sin borrar
 ### Nuevas tareas de regresión reportadas
 
 #### SI-REG-01 — Interruptor Auto-Answer · P0
-**Estado:** CORRECCIÓN CANDIDATA VERIFICADA en `fix/backlog-p0-switch-mic-late-track-20261110`: `presenceIdleSeconds=180` en popup y worker; prueba de presencia 83/83 y suite completa 42/42 PASS; inventario 60/60 SHA-256. PR #80 sigue draft y no está integrada en main; aceptación E2E en Chrome pendiente.
+**Estado:** CORRECCIÓN CANDIDATA VERIFICADA EN RAMA, NO INTEGRADA. Se fija `presenceIdleSeconds=180` en popup y worker para evitar que una configuración nueva envíe `0`, valor rechazado por el guard. Validación local: presence-connect 35 checks y presence-guard 83 checks; inventario 60/60. PR #80 sigue draft; falta carga/aceptación E2E en Chrome.
 
-Revisar carga del popup, listener/event handler, estado visible, escritura/lectura de configuración, comunicación con background/service worker y atajo de teclado. El fallback del handler mencionado en la conversación debe cotejarse en los archivos reales antes de promoverlo. No introducir rearme automático al pulsar Online; conservar autorización explícita, presencia revalidada y fail-closed.
-
-**Aceptación:** activar/desactivar desde UI y atajo; estado visual y almacenado coincidentes; revalidación correcta; ningún Connect sin grant vigente; pausa, idle/locked, fin de sesión y reinicio no rearman la autorización.
+**Aceptación pendiente:** activar/desactivar desde UI y atajo; estado visual y almacenado coincidentes; revalidación correcta; ningún Connect sin grant vigente; pausa, idle/locked, fin de sesión y reinicio no rearman la autorización.
 
 #### SI-REG-02 — Habilitación tardía del micrófono · P0
-**Estado:** CORRECCIÓN CANDIDATA VERIFICADA en `fix/backlog-p0-switch-mic-late-track-20261110`: el heartbeat reintenta unmute solo con intención explícita persistente de activar, llamada activa y pista viva silenciada y verificada; pruebas específicas y suite 42/42 PASS. El retry no depende del estado auxiliar del heartbeat. PR #80 draft; no integrada ni aceptada en Chrome.
+**Estado:** CORRECCIÓN CANDIDATA VERIFICADA EN RAMA, NO INTEGRADA. El heartbeat reintenta unmute solo si la llamada continúa activa, la intención explícita de activar persiste y una pista viva aparece silenciada y verificada por el guard. Si no hay pista, la llamada no está activa o falla la verificación, permanece muteado. La prueba de elegibilidad cubre estos límites. PR #80 sigue draft; aceptación Chrome pendiente.
 
-Investigar el caso en que la llamada/ruta activa se confirma antes de que Cloud Interpreter cree la pista de audio. Cotejar el tratamiento de pistas que aparecen posteriormente, el estado del botón y `MediaStreamTrack.enabled`/pista saliente. Mantener mute fuera de llamada y remute al terminar, perder la ruta o quedar en estado desconocido.
-
-**Aceptación:** prueba determinista con pista previa y tardía; unmute solo dentro de llamada activa; estado visual y pista real coincidentes; remute en fin/desconexión/session-loss; cero captura/unmute en espera.
+**Aceptación pendiente:** prueba determinista con pista previa y tardía; unmute solo dentro de llamada activa; estado visual y pista real coincidentes; remute al finalizar/desconectar/perder sesión; cero captura/unmute en espera.
 
 Esta tarea se refiere al micrófono operativo de la llamada; no equivale a SI-FB-02 (transcripción del canal INTÉRPRETE).
 
 #### SI-REG-03 — Test permanente de autorización paralela · P1
-**Estado:** COBERTURA POR RESTAURAR.
+**Estado:** TEST RESTAURADO Y VERIFICADO EN RAMA, NO INTEGRADO. `presence-guard-test.mjs` usa promesas diferidas y demuestra que las cuatro consultas independientes comienzan antes de resolver la primera; 83 checks PASS. No modifica el guard ni la regla de un único clic autorizado.
 
-PR #78 documentó la ejecución simultánea de cuatro validaciones independientes: configuración, inactividad/bloqueo, otra llamada activa y perfil correcto. La rama candidata restaura el test permanente con promesas diferidas; `presence-guard-test.mjs` pasa con 83/83 comprobaciones y la suite completa 42/42.
+**Aceptación pendiente:** integrar la prueba con PR #80 y conservarla como regresión permanente en main.
 
-**Aceptación:** test determinista con promesas diferidas que demuestre el inicio de las cuatro consultas antes de resolver la primera; falla si se ejecutan secuencialmente; no modifica guards ni la regla de un único clic autorizado.
+#### SI-REG-04 — Aceptación integrada 0.10.47 + correcciones · P0
+**Estado:** PAQUETE CANDIDATO MATERIALIZADO Y VERIFICADO EN WORKSPACE FILA4; NO ACEPTADO EN CHROME. Inventario 60/60 SHA-256; verify-release-package PASS; unpacked-layout 18 referencias PASS; presence-connect 35; presence-guard 83; microphone-guard PASS; overlay regression PASS; JavaScript syntax 5/5; PowerShell 5.1 parser 7/7 scripts relevantes. Native Messaging host ya estaba presente y registrado para fila4; se verificó en solo lectura y no se modificó.
 
-#### SI-REG-04 — Aceptación integrada 0.10.47 + corrección de regresiones · P0
-**Estado:** PAQUETE CANDIDATO VALIDADO EN STAGING (42/42 pruebas; 77 archivos JS sin errores de sintaxis; 8 scripts PowerShell parseables; 60/60 SHA-256); falta sincronizar la carpeta activa y la aceptación manual del operador en Chrome/llamada controlada.
-
-Después de cotejar e integrar únicamente el hotfix mínimo y las pruebas, verificar paquete, inventario SHA-256 y respaldo reversible. La recarga manual en Chrome debe hacerla el operador fuera de una llamada activa; verificar versión realmente cargada, switch, presencia y una llamada controlada. No considerar CI o el archivo en disco como aceptación E2E.
+**Aceptación pendiente:** operador carga manualmente `signal-interpreter\\extension`, verifica versión/ID y el switch; después realiza una llamada controlada para confirmar micrófono y remute. No hubo recarga Chrome ni llamada real en este ciclo.
 
 ### Ledger de PR — no fusionar ramas completas por conveniencia
 
@@ -262,18 +256,18 @@ La búsqueda de GitHub Issues abiertos devolvió cero. Este archivo sigue siendo
 
 ## 8. Secuencia priorizada actual
 
-1. P0 — cotejar contra main y reparar el interruptor Auto-Answer sin alterar autorización explícita.
-2. P0 — cotejar contra main y reparar la habilitación del micrófono con pista tardía, preservando mute fuera de llamada.
-3. P1 — restaurar test permanente de concurrencia de las cuatro validaciones.
-4. P0 — validar paquete integrado y dejarlo preparado para recarga manual autorizada.
-5. P0 — aceptación del operador en Chrome y llamada controlada.
-6. P1/P2 — continuar SI-FB-02/03/04 y aceptación funcional del lector SI-FB-05.
-
-
+1. P0 — revisión de PR #80, CI/review y autorización explícita antes de cualquier merge.
+2. P0 — carga manual de `signal-interpreter\\extension` por el operador y prueba de switch Auto-Answer.
+3. P0 — llamada controlada por el operador para verificar pista tardía, unmute solicitado y remute de cierre.
+4. P0 — cerrar SI-REG-04 solo tras aceptación observable en Chrome.
+5. P1/P2 — continuar SI-FB-02/03/04 y la aceptación funcional completa del lector SI-FB-05.
 
 ## Aditamento de verificación de la candidata — 2026-11-10
 
-- Rama: `fix/backlog-p0-switch-mic-late-track-20261110`; PR #80 abierta como draft, no fusionada.
-- En staging aislado del perfil de trabajo `fila4`: **42/42 pruebas PASS**, **0 FAIL**; **77 archivos JavaScript** pasan `node --check`; **8 scripts PowerShell** pasan Parser; **60/60 archivos del inventario** coinciden en SHA-256.
-- `tools/verify-release-package.mjs` y `tools/portable-root-test.mjs` pasan. El manifiesto derivado `extension/manifest.json` es normalizado respecto del manifiesto raíz y las 18 rutas comprobadas existen.
-- No se cargó ni recargó Chrome, no se manipuló ninguna llamada y no se efectuó aceptación E2E. La aceptación funcional del operador permanece pendiente.
+- Rama: `fix/backlog-p0-switch-mic-late-track-20261110`; HEAD `6cb479481c51e618d085ae09991cad258d6bdc00`; PR #80 abierta como draft, no fusionada. No hay CI runs/statuses reportados para ese commit.
+- Workspace destino: `C:\\Users\\fila4\\Desktop\\SeryMente\\signal-interpreter`; única carpeta de carga Chrome: `extension/`. Se sincronizaron 28 archivos y se preservó el estado anterior en `Temporal\\SI-backup-pre-PR80-20261110.zip`, SHA-256 `24627DF49B53C58B0DC7323EECD3DBE10C98B84346A7B3A67B6D0BC52B284D65`.
+- Inventario SHA-256: 60/60 PASS. `verify-release-package.mjs`: PASS. `unpacked-layout-test.mjs`: PASS (18 referencias). `presence-connect-test.mjs`: 35 checks PASS. `presence-guard-test.mjs`: 83 checks PASS. `microphone-guard-test.mjs`: PASS. `overlay-global-toggle-regression-test.mjs`: PASS. JavaScript syntax: 5/5 PASS. Windows PowerShell 5.1 parser: 7/7 scripts relevantes PASS, BOM verificado donde hay Unicode.
+- Native Messaging host: ya estaba presente y registrado bajo `CENTRAL\\fila4`; registro, manifiesto, origen permitido y SHA-256 del ejecutable se verificaron en solo lectura. No se modificó.
+- Chrome no se cargó/recargó, no hubo llamada real ni captura de audio y no se declaró aceptación E2E. `git diff --check` no se ejecutó en el workspace materializado porque no contiene metadatos `.git`; la validación de paquete se hizo mediante inventario y tests.
+- El hotfix local reportado previamente sigue clasificado como REPORTADO, NO RE-VERIFICADO; no se le atribuye integración en main.
+
