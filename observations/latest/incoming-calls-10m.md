@@ -1,16 +1,16 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-10T17:42:48.937Z → 2026-11-10T17:52:48.937Z
-- Generado: 2026-11-10T17:52:48.937Z
-- Eventos: 541 · lotes fuente: 41
+- Ventana UTC: 2026-11-10T17:43:58.321Z → 2026-11-10T17:53:58.321Z
+- Generado: 2026-11-10T17:53:58.321Z
+- Eventos: 542 · lotes fuente: 41
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 541
+- Reloj cliente sin verificación de recibo: 542
 
 ## Resumen
 - Intentos observados: 5
-- Contestadas: 0 · perdidas confirmadas: 0
+- Contestadas: 0 · perdidas confirmadas: 1
 - Clic sin ruta: 4 · timbrados sin diálogo correlacionado: 0
-- Sin desenlace concluyente: 1
+- Sin desenlace concluyente: 0
 - Detecciones de diálogo/botón: 5 / 5
 - Bloqueos de autocontestación: 2 · clics: 4
 
@@ -117,12 +117,12 @@
   - 2026-11-10T17:52:46.943Z · CONNECT_ROUTE_TIMEOUT · error
   - 2026-11-10T17:52:48.368Z · CONNECT_FLOW_FAILED_NO_CALL_ROUTE · warn · connect_clicked_no_call_route
 
-### 7932af1d-1d97-40c9-9748-fdc4d3ab0b1e — closed_unclassified
+### 7932af1d-1d97-40c9-9748-fdc4d3ab0b1e — missed
 - Detectada: 2026-11-10T17:52:43.179Z · modalidad: OPI
-- Tab: 220926751 · eventos: 16
+- Tab: 220926751 · eventos: 19
 - Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":[],"ready":true,"availability":"online","authorizedProfile":true,"configEnabled":true,"labSafetyLock":false,"presenceArmed":true,"presenceReason":"explicit-availability","presenceGeneration":2,"reason":"availability","reasonCode":"availability"}
-- Desenlace/motivo: null
-- Señales ausentes: TERMINAL_CALL_OUTCOME
+- Desenlace/motivo: "dialog_closed_without_connect"
+- Señales ausentes: ninguna identificada
   - 2026-11-10T17:52:42.449Z · PAGE_LIFECYCLE · info
   - 2026-11-10T17:52:42.450Z · PAGE_VISIBILITY_CHANGED · info
   - 2026-11-10T17:52:43.179Z · INCOMING_DIALOG_DETECTED · info
@@ -139,6 +139,9 @@
   - 2026-11-10T17:52:47.398Z · PAGE_LIFECYCLE · info
   - 2026-11-10T17:52:47.400Z · PAGE_VISIBILITY_CHANGED · info
   - 2026-11-10T17:52:47.402Z · PLATFORM_SCREENSHOT_UPLOAD_ERROR · error · tab-activated
+  - 2026-11-10T17:52:50.749Z · INCOMING_ATTEMPT_REGISTERED · info
+  - 2026-11-10T17:52:52.570Z · INCOMING_DIALOG_CLOSED_OBSERVED · info · dialog-removed
+  - 2026-11-10T17:52:54.754Z · MISSED_CALL_CLASSIFIED · warn · dialog_closed_without_connect
 
 ## Privacidad
 - No se exportan audio, transcripciones, texto crudo del diálogo ni IDs de llamada completos.

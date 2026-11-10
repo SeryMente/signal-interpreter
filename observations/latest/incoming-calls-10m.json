@@ -1,29 +1,29 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-10T17:52:48.937Z",
-  "windowStartAt": "2026-11-10T17:42:48.937Z",
-  "windowEndAt": "2026-11-10T17:52:48.937Z",
+  "generatedAt": "2026-11-10T17:53:58.321Z",
+  "windowStartAt": "2026-11-10T17:43:58.321Z",
+  "windowEndAt": "2026-11-10T17:53:58.321Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 541
+    "client-clock-unverified": 542
   },
   "sourceBatchCount": 41,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 12804,
+  "receiptUnverifiedBatchCount": 12805,
   "medianClientClockSkewMs": null,
-  "eventCount": 541,
+  "eventCount": 542,
   "summary": {
     "attempts": 5,
     "answered": 0,
-    "missed": 0,
+    "missed": 1,
     "connectFailedNoRoute": 4,
     "ringUnmatched": 0,
-    "unresolved": 1,
+    "unresolved": 0,
     "ringSignals": 0,
     "dialogsDetected": 5,
     "buttonsFound": 5,
     "buttonsNotFound": 0,
-    "readinessSamples": 429,
+    "readinessSamples": 424,
     "blocked": 2,
     "clicks": 4
   },
@@ -1162,15 +1162,15 @@
     },
     {
       "attemptId": "7932af1d-1d97-40c9-9748-fdc4d3ab0b1e",
-      "status": "closed_unclassified",
+      "status": "missed",
       "modality": "OPI",
       "tabId": 220926751,
       "detectedAt": "2026-11-10T17:52:43.179Z",
       "closedAt": "2026-11-10T17:52:43.915Z",
       "clickedAt": null,
       "answeredAt": null,
-      "missedAt": null,
-      "outcomeReason": null,
+      "missedAt": "2026-11-10T17:52:54.754Z",
+      "outcomeReason": "dialog_closed_without_connect",
       "button": {
         "found": true,
         "notFound": false,
@@ -1210,10 +1210,8 @@
       "clickToAnswerLatencyMs": null,
       "detectionToAnswerLatencyMs": null,
       "callRefs": [],
-      "missingSignals": [
-        "TERMINAL_CALL_OUTCOME"
-      ],
-      "eventCount": 16,
+      "missingSignals": [],
+      "eventCount": 19,
       "timeline": [
         {
           "at": "2026-11-10T17:52:42.449Z",
@@ -1429,6 +1427,47 @@
           },
           "eventId": "ac6b4549-46a7-4b4b-a277-adadf225a380",
           "sequence": 21592
+        },
+        {
+          "at": "2026-11-10T17:52:50.749Z",
+          "action": "INCOMING_ATTEMPT_REGISTERED",
+          "level": "info",
+          "reasonCode": null,
+          "details": {
+            "modality": "OPI",
+            "connectFound": true,
+            "connectDisabled": false
+          },
+          "eventId": "ea88ef2b-6577-49fc-9bd3-2bef57460182",
+          "sequence": 21605
+        },
+        {
+          "at": "2026-11-10T17:52:52.570Z",
+          "action": "INCOMING_DIALOG_CLOSED_OBSERVED",
+          "level": "info",
+          "reasonCode": "dialog-removed",
+          "details": {
+            "reason": "dialog-removed",
+            "reasonCode": "dialog-removed"
+          },
+          "eventId": "d0d596ae-39e9-4775-a0fe-e5324f6c1560",
+          "sequence": 21613
+        },
+        {
+          "at": "2026-11-10T17:52:54.754Z",
+          "action": "MISSED_CALL_CLASSIFIED",
+          "level": "warn",
+          "reasonCode": "dialog_closed_without_connect",
+          "details": {
+            "modality": "OPI",
+            "connectFound": true,
+            "connectDisabled": false,
+            "reason": "dialog_closed_without_connect",
+            "status": "missed",
+            "reasonCode": "dialog_closed_without_connect"
+          },
+          "eventId": "a0392473-51ba-4c5f-812d-90141d268699",
+          "sequence": 21622
         }
       ]
     }
