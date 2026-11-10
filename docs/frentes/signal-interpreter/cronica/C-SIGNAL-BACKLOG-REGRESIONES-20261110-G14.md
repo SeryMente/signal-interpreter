@@ -136,3 +136,12 @@ No se fusiona una PR solo porque tenga trabajo útil: primero se reconcilia cada
 ## Persistencia
 
 Este documento registra el corte reconciliado y distingue integrado, reportado, candidato, verificado y aceptado. La lectura de vuelta de este archivo y de los documentos canónicos que lo referencian es la compuerta de persistencia.
+
+
+## Addendum · 2026-11-10 · PR #80 y materialización en fila4
+
+La candidata PR #80 se preparó en rama aislada, sin merge. El defecto de Auto-Answer se localizó en la ausencia del valor por defecto `presenceIdleSeconds`: el popup podía mandar `0`, que el guard rechaza. Se añadió el default de 180 s. Para micrófono, el reintento tardío solo se permite con llamada activa, intención explícita de unmute aún vigente y pista viva que el guard verifica como silenciada; fuera de esa condición permanece muteado.
+
+Se materializó la rama candidata en `C:\\Users\\fila4\\Desktop\\SeryMente\\signal-interpreter`, con carga manual en `extension/`. Backup completo previo y SHA/read-back verificados. Inventario 60/60 y suites locales sintéticas: presence-connect 35, presence-guard 83, microphone-guard, overlay regression, unpacked-layout 18 referencias y verificación del paquete; sintaxis JS 5/5 y parser Windows PowerShell 5.1 7/7 scripts relevantes.
+
+**No aceptado todavía:** Chrome no se recargó, Native Messaging no se instaló desde MantenimientoRCI, no hubo llamada real ni captura de audio. La PR permanece abierta en borrador; main no incorpora estas correcciones. La aceptación manual pertenece al operador.
