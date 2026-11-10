@@ -6,16 +6,16 @@ const PROFILE='https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djf
 let checks=0;
 function eq(a,b,label){assert.equal(a,b,label);checks++;}
 function harness(seed={},sessionSeed={},popupPath='extension/ui/popup.html'){
- let now=100000,idle='active',hold=null;
+ let now=100000,idle='active',hold=null,starts=[],gates=null,idleGateRelease=null;
  const events=()=>({listeners:[],addListener(f){this.listeners.push(f)},emit(...args){this.listeners.forEach(f=>f(...args))}});
  const data={effectifConfig:{autoAnswerEnabled:true,presenceIdleSeconds:60},...seed};
  const sessionData={...sessionSeed};
  const changed=events(),stateChanged=events(),messages=events(),intervals=[],alarms=events(),scheduledAlarms=new Map();
- const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,getManifest:()=>({action:{default_popup:popupPath}}),onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},alarms:{onAlarm:alarms,create:(name,info)=>scheduledAlarms.set(name,info),clear:async name=>scheduledAlarms.delete(name)},storage:{onChanged:changed,local:{get:async keys=>Object.fromEntries(keys.map(k=>[k,data[k]])),set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}},session:{get:async keys=>Object.fromEntries(keys.map(k=>[k,sessionData[k]])),set:async patch=>Object.assign(sessionData,patch),remove:async key=>{delete sessionData[key]}}},tabs:{get:async()=>({url:PROFILE}),query:async()=>[]}};
+ const chrome={runtime:{id:'id',getURL:p=>'chrome-extension://id/'+p,getManifest:()=>({action:{default_popup:popupPath}}),onMessage:messages,lastError:null},idle:{onStateChanged:stateChanged,queryState:(s,cb)=>{starts.push('idle');if(gates&&gates.idle){idleGateRelease=cb;return}if(hold)hold(cb);else cb(idle)},setDetectionInterval:s=>{}},alarms:{onAlarm:alarms,create:(name,info)=>scheduledAlarms.set(name,info),clear:async name=>scheduledAlarms.delete(name)},storage:{onChanged:changed,local:{get:async keys=>{starts.push('storage');if(gates&&gates.storage)await gates.storage;return Object.fromEntries(keys.map(k=>[k,data[k]]))},set:async patch=>{let c={};for(let k in patch){c[k]={oldValue:data[k],newValue:patch[k]};data[k]=patch[k]}changed.emit(c,'local')}},session:{get:async keys=>Object.fromEntries(keys.map(k=>[k,sessionData[k]])),set:async patch=>Object.assign(sessionData,patch),remove:async key=>{delete sessionData[key]}}},tabs:{get:async()=>{starts.push('tab');if(gates&&gates.tab)await gates.tab;return {url:PROFILE}},query:async()=>{starts.push('calls');if(gates&&gates.calls)await gates.calls;return []}}};
  const ctx={chrome,Date:class extends Date{static now(){return now}},setInterval:f=>intervals.push(f),setTimeout,clearTimeout,self:{}};
  ctx.self=ctx;ctx.URL=URL;vm.createContext(ctx);vm.runInContext(code,ctx);
  const sender={id:'id',frameId:0,url:PROFILE,tab:{id:7,url:PROFILE}};
- return {guard:ctx.SignalPresenceGuard,chrome,data,sessionData,sender,popupSender:{id:'id',url:'chrome-extension://id/'+popupPath},stateChanged,intervals,alarms,scheduledAlarms,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
+ return {guard:ctx.SignalPresenceGuard,chrome,data,sessionData,sender,popupSender:{id:'id',url:'chrome-extension://id/'+popupPath},stateChanged,intervals,alarms,scheduledAlarms,setIdle:v=>idle=v,setNow:v=>now=v,hold:f=>hold=f,setGates:v=>{gates=v;starts=[];idleGateRelease=null},starts:()=>starts.slice(),releaseIdle:v=>{if(idleGateRelease)idleGateRelease(v||idle)},message:(m,s)=>new Promise(resolve=>messages.listeners[0](m,s,resolve))};
 }
 const h=harness();
 eq(h.guard.snapshot().armed,false,'upgraded stored enabled does not arm');
@@ -37,6 +37,16 @@ eq((await h.guard.authorize({modality:'OPI',requestId:'o'},{...h.sender,url:'htt
 eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,true,'verified phone gets short-lived grant');
 eq((await h.guard.authorize({modality:'OPI',requestId:'a'},h.sender)).ok,false,'same grant request cannot replay');
 eq((await h.guard.authorize({modality:'OPI',requestId:'other'}, {...h.sender,tab:{id:8,url:PROFILE}})).ok,false,'cross-tab reservation blocks double click');
+
+const parallelAuthorization=harness();await parallelAuthorization.guard.arm(60);
+function deferred(){let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};}
+const pgStorage=deferred(),pgCalls=deferred(),pgTab=deferred();
+parallelAuthorization.setGates({storage:pgStorage.promise,calls:pgCalls.promise,tab:pgTab.promise,idle:true});
+const parallelPending=parallelAuthorization.guard.authorize({modality:'OPI',requestId:'parallel-authorization-checks'},parallelAuthorization.sender);
+await new Promise(r=>setImmediate(r));
+assert.deepEqual(parallelAuthorization.starts().sort(),['calls','idle','storage','tab'],'all four independent authorization checks must start before any result resolves');checks++;
+pgStorage.resolve();pgCalls.resolve();pgTab.resolve();parallelAuthorization.releaseIdle('active');
+assert.equal((await parallelPending).ok,true,'parallel read-only checks still grant only after every gate passes');checks++;
 
 const lease=harness();await lease.guard.arm(60);
 const leaseGrant=await lease.guard.authorize({modality:'OPI',requestId:'lease-1'},lease.sender);
