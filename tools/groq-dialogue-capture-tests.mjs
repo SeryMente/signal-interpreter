@@ -116,7 +116,9 @@ function wavWindow(startFrame,sampleValue){
 }
 
 const h=createHarness();
+assert.equal(h.button().disabled,true,"capture control stays disabled until asynchronous preflight completes");
 await h.flush();
+assert.equal(h.button().disabled,false,"capture control enables only after policy preflight succeeds");
 const startHandler=h.button().listeners.click;
 assert.equal(typeof startHandler,"function");
 await startHandler();
