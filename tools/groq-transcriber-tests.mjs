@@ -22,8 +22,10 @@ const ctx={
         model:"whisper-large-v3",
         segments:[
           {id:0,start:0,end:1.2,text:" Hola doctor,"},
-          {id:1,start:1.2,end:2.4,text:" buenos días.",avg_logprob:-0.12,no_speech_prob:0.01,compression_ratio:1.2}
-        ]
+          {id:1,start:1.2,end:2.4,text:" buenos días.",avg_logprob:-0.12,no_speech_prob:0.01,compression_ratio:1.2},
+          {id:2,start:3,end:2,text:" segmento inválido "}
+        ],
+        words:[{word:" Hola",start:0,end:0.4},{word:" doctor,",start:0.4,end:1.2}]
       })
     };
   }
@@ -31,7 +33,7 @@ const ctx={
 vm.createContext(ctx);
 vm.runInContext(source,ctx);
 
-const noZdr=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true});
+const noZdr=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{__testToken:"gsk_abcdefghijklmnopqrstuvwxyz"});
 assert.equal(noZdr.ok,false);
 assert.equal(noZdr.reasonCode,"zdr-required");
 assert.equal(calls.length,0,"no audio leaves the client before ZDR confirmation");
@@ -62,7 +64,7 @@ assert.equal(sent.get("response_format"),"verbose_json");
 assert.equal(sent.get("prompt"),"Transcripción en español para interpretación médica. Interpretación médica");
 
 ctx.fetch=async()=>({ok:false,status:401,text:async()=>JSON.stringify({error:{message:"invalid key gsk_abcdefghijklmnopqrstuvwxyz"}})});
-const failed=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{__testToken:"gsk_abcdefghijklmnopqrstuvwxyz"});
+const failed=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true});
 assert.equal(failed.ok,false);
 assert.doesNotMatch(failed.error,/gsk_abcdefghijklmnopqrstuvwxyz/);
 console.log("GROQ_TRANSCRIBER_TEST=PASS");
