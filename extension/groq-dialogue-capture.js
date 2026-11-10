@@ -42,7 +42,7 @@
     var note=document.createElement("small");note.textContent="Selecciona esta pestaña y comparte su audio. Micrófono propio y audio remoto se procesan por separado.";
     section.append(title,button,statusNode,note);root.append(style,section);
     (document.documentElement||document.body).appendChild(host);
-    button.addEventListener("click",function(){if(capture)stop("operator-stop");else start();});
+    button.addEventListener("click",function(){if(capture)return stop("operator-stop");return start();});
     refreshPolicy();
   }
   async function refreshPolicy(){
