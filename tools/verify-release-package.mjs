@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
@@ -115,6 +116,22 @@ const match = registration.match(/ExpectedSha256\s*=\s*"([a-f0-9]{64})"/i);
 assert.ok(match, "native host expected SHA-256 is missing");
 const embeddedExe = Buffer.from(readText("extension/native/SignalInterpreter.CaptionHost.exe.b64").trim(), "base64");
 assert.equal(sha256(embeddedExe), match[1].toUpperCase(), "embedded native host executable hash mismatch");
+
+const safetyRegressionSuites = [
+  "tools/microphone-guard-test.mjs",
+  "tools/presence-connect-test.mjs",
+  "tools/presence-guard-test.mjs",
+  "tools/autoanswer-runtime-guard-test.mjs"
+];
+for (const suite of safetyRegressionSuites) {
+  const result = spawnSync(process.execPath, [resolve(root, suite)], {
+    cwd: root,
+    stdio: "inherit"
+  });
+  if (result.error) throw result.error;
+  assert.equal(result.status, 0, "critical safety regression failed: " + suite);
+}
+console.log("PASS: audio/Connect/presence regression gate (" + safetyRegressionSuites.length + " suites)");
 
 console.log("PASS: package inventory and SHA-256 (" + entries.length + " files)");
 console.log("PASS: manifest identity/version and native host binary hash");
