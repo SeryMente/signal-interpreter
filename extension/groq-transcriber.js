@@ -16,7 +16,7 @@
   }
   function buildPrompt(language,context){
     var base=language==="es"?"Transcripción en español para interpretación médica.":language==="en"?"Transcription in English for medical interpretation.":"Transcripción para interpretación médica; detecta automáticamente el idioma entre español e inglés.";
-    return (base+" "+String(context||"")).trim().slice(0,900);
+    return (base+" "+String(context||"")).trim().split(/\\s+/).slice(0,180).join(" ");
   }
   async function transcribe(blob,options){
     var opts=options||{},token=getToken(opts);
