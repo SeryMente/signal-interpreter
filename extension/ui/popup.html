@@ -114,8 +114,16 @@
           </section>
 
           <section class="sub-card">
-            <div class="sub-head"><div><strong>Transcripción</strong><small id="groqStatus">Live Caption nativo · sin clave</small></div></div>
-            <label class="select-row" hidden><span>Modelo histórico</span><select id="groqModel"><option value="whisper-large-v3-turbo">whisper-large-v3-turbo</option><option value="whisper-large-v3">whisper-large-v3</option></select></label>
+            <div class="sub-head"><div><strong>Transcripción</strong><small id="groqStatus">Groq Whisper Large V3 · doble fuente</small></div></div>
+            <label class="control-row">
+              <span><strong>Diálogo combinado Groq</strong><small>Audio remoto + micrófono INTÉRPRETE en una sola cronología</small></span>
+              <span class="switch"><input id="groqDialogueEnabled" type="checkbox"><i></i></span>
+            </label>
+            <label class="control-row">
+              <span><strong>Zero Data Retention confirmado</strong><small>Actívalo solo después de verificar ZDR en la consola de Groq. Es una declaración operativa.</small></span>
+              <span class="switch"><input id="groqZdrConfirmed" type="checkbox"><i></i></span>
+            </label>
+            <label class="select-row" hidden><span>Modelo histórico</span><select id="groqModel"><option value="whisper-large-v3">whisper-large-v3</option><option value="whisper-large-v3-turbo">whisper-large-v3-turbo</option></select></label>
             <div class="sound-row">
               <button id="sound" class="button secondary">Probar sonido</button>
               <label class="volume-row"><span>Volumen <output id="volumeValue">80%</output></span><input id="volume" type="range" min="0" max="1" step="0.05"></label>
