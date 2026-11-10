@@ -69,6 +69,8 @@ assert.equal(commands["toggle-global-overlays"].suggested_key.default, "Ctrl+Shi
 const popup = readText("extension/ui/popup.html");
 const popupJs = readText("extension/ui/popup.js");
 const background = readText("extension/background.js");
+assert.ok(background.includes('var GROQ_MODEL = "whisper-large-v3";'), "both audio lanes must default to Groq Whisper Large V3");
+assert.ok(background.includes("var GROQ_USD_PER_AUDIO_HOUR = 0.111;"), "Groq cost telemetry must match the configured Large V3 model");
 const earnings = readText("extension/content.js");
 const captions = readText("extension/live-caption-overlay.js");
 assert.ok(popup.includes('id="overlaysGlobalEnabled"'), "global overlay switch is absent from popup");
