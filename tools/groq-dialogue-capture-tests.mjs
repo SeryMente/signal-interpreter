@@ -101,14 +101,14 @@ function createHarness(){
   };
 }
 
-function wavWindow(startFrame){
+function wavWindow(startFrame,sampleValue){
   const seconds=6,sampleRate=16000,frames=seconds*sampleRate;
   const buffer=new ArrayBuffer(44+frames*2),view=new DataView(buffer);
   const write=(offset,value)=>{for(let i=0;i<value.length;i++)view.setUint8(offset+i,value.charCodeAt(i));};
   write(0,"RIFF");view.setUint32(4,buffer.byteLength-8,true);write(8,"WAVE");write(12,"fmt ");
   view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);
   view.setUint32(24,sampleRate,true);view.setUint32(28,sampleRate*2,true);
-  view.setUint16(32,2,true);view.setUint16(34,16,true);write(36,"data");view.setUint32(40,frames*2,true);
+  view.setUint16(32,2,true);view.setUint16(34,16,true);write(36,"data");view.setUint32(40,frames*2,true);view.setInt16(44,Number(sampleValue)||0,true);
   return{buffer,startFrame,endFrame:startFrame+frames,sampleRate,frames};
 }
 
@@ -126,7 +126,7 @@ const startMessage=h.sent.find(x=>x.type==="SIGNAL_GROQ_DIALOGUE_CAPTURE_START")
 assert.ok(startMessage&&startMessage.callId==="call-123","capture is bound to the active call ID");
 const sources=["groq-remote","groq-interpreter"];
 for(let i=0;i<2;i++){
-  h.audioNodes[i].port.onmessage({data:{type:"window",source:"audio",packet:wavWindow(16000)}});
+  h.audioNodes[i].port.onmessage({data:{type:"window",source:"audio",packet:wavWindow(16000,i+1)}});
 }
 await h.flush();
 const chunks=h.sent.filter(x=>x.type==="SIGNAL_GROQ_DIALOGUE_CHUNK");
