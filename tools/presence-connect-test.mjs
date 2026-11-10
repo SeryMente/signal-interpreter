@@ -62,11 +62,11 @@ function harness({mode='Audio interpreting',grant=true,grantError='not-authorize
 }
 async function run(h){const pending=h.ctx.run();h.release();await pending;await new Promise(r=>setImmediate(r));}
 let h=harness();await run(h);assert.equal(h.clicks(),1);checks++;
+h.ctx.run();await new Promise(r=>setImmediate(r));assert.equal(h.clicks(),1);checks++;
 h=harness();h.setGrant(true,'expired',-1);await run(h);
 assert.equal(h.clicks(),0,'expired authorization must never activate Connect');
 assert.equal(h.releaseRequests().length,1,'expired one-use authorization is released without clicking');
 checks++;
-h.ctx.run();await new Promise(r=>setImmediate(r));assert.equal(h.clicks(),1);checks++;
 
 h=harness();await run(h);assert.equal(h.clicks(),1);
 h.dialogVisible(false);await h.ctx.run();h.dialogVisible(true);await run(h);
