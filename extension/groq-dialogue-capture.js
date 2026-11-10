@@ -82,7 +82,7 @@
     capture.pending[source]=Math.max(0,capture.pending[source]-1);
     if(!result||result.ok!==true){
       setStatus(showReason(result&&result.reasonCode||result&&result.error||"transcription-failed"),true);
-      if(result&&["transcription-backlog","call-not-active","zdr-not-confirmed","capture-not-active"].indexOf(result.reasonCode)>=0)
+      if(result&&["transcription-backlog","call-not-active","zdr-not-confirmed","capture-not-active","capture-policy-revoked","groq-rate-limited"].indexOf(result.reasonCode)>=0&&!capture.stopping)
         await stop(result.reasonCode);
       return;
     }
@@ -96,7 +96,7 @@
     button.disabled=true;setStatus("Selecciona la pestaña de Cloud Interpreter y comparte audio…");
     try{
       // Must be invoked synchronously from this button's user gesture.
-      tabStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
+      tabStream=await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:"browser"},audio:true,preferCurrentTab:true,selfBrowserSurface:"include",surfaceSwitching:"exclude"});
       var displaySurface=tabStream.getVideoTracks()[0]&&tabStream.getVideoTracks()[0].getSettings().displaySurface;
       if(displaySurface&&displaySurface!=="browser")throw Object.assign(Error("tab-selection-invalid"),{reasonCode:"tab-selection-invalid"});
       var tabAudio=tabStream.getAudioTracks();
@@ -111,14 +111,15 @@
       if(!micStream.getAudioTracks().some(function(t){return t.readyState==="live";}))
         throw Object.assign(Error("permission-denied"),{reasonCode:"permission-denied"});
       tabStream.getVideoTracks().forEach(function(track){try{track.stop();}catch(_){}});
-      var ready=await send({type:"SIGNAL_GROQ_DIALOGUE_CAPTURE_START",captureId:captureId,callId:call,startedAt:Date.now()});
-      if(!ready||ready.ok!==true)throw Object.assign(Error(showReason(ready&&ready.reasonCode)),{reasonCode:ready&&ready.reasonCode||"capture-failed"});
       context=new AudioContext({sampleRate:16000,latencyHint:"interactive"});
+      if(context.sampleRate!==16000)throw Object.assign(Error("audio-sample-rate-unsupported"),{reasonCode:"audio-sample-rate-unsupported"});
       await context.audioWorklet.addModule(chrome.runtime.getURL("whisper-window-processor.js"));
       await context.resume();
       var startedAt=Date.now(),originFrame=Math.round(context.currentTime*context.sampleRate);
+      var ready=await send({type:"SIGNAL_GROQ_DIALOGUE_CAPTURE_START",captureId:captureId,callId:call,startedAt:startedAt});
+      if(!ready||ready.ok!==true)throw Object.assign(Error(showReason(ready&&ready.reasonCode)),{reasonCode:ready&&ready.reasonCode||"capture-failed"});
       capture={
-        captureId:captureId,callId:call,startedAt:startedAt,context:context,
+        captureId:captureId,callId:call,startedAt:startedAt,context:context,stopping:false,stopPromise:null,
         streams:[tabStream,micStream],lanes:[],
         sequence:{"groq-remote":0,"groq-interpreter":0},
         pending:{"groq-remote":0,"groq-interpreter":0},
@@ -140,17 +141,26 @@
   }
   async function stop(reason){
     if(!capture)return;
-    var current=capture;capture=null;
-    setStatus("Deteniendo y cerrando ambas fuentes…");
-    current.lanes.forEach(function(lane){try{lane.node.port.postMessage({type:"flush"});}catch(_){}});
-    await new Promise(function(resolve){setTimeout(resolve,150);});
-    current.lanes.forEach(function(lane){try{lane.source.disconnect();lane.node.disconnect();}catch(_){}});
-    current.streams.forEach(function(stream){stream.getTracks().forEach(function(track){try{track.stop();}catch(_){} });});
-    if(current.context&&current.context.state!=="closed")await current.context.close().catch(function(){});
-    await send({type:"SIGNAL_GROQ_DIALOGUE_CAPTURE_STOP",captureId:current.captureId,callId:current.callId,reason:String(reason||"stopped")});
-    if(button){button.disabled=false;button.textContent="Iniciar diálogo Groq";}
-    setStatus("Captura detenida · segmentos remotos "+current.delivered["groq-remote"]+" · intérprete "+current.delivered["groq-interpreter"]);
-    await refreshPolicy();
+    var current=capture;
+    if(current.stopPromise)return current.stopPromise;
+    current.stopping=true;
+    current.stopPromise=(async function(){
+      setStatus("Cerrando ventanas finales y drenando ambas colas…");
+      current.lanes.forEach(function(lane){try{lane.node.port.postMessage({type:"flush"});}catch(_){}});
+      await new Promise(function(resolve){setTimeout(resolve,120);});
+      var deadline=Date.now()+25000;
+      while(Date.now()<deadline&&(current.pending["groq-remote"]>0||current.pending["groq-interpreter"]>0))
+        await new Promise(function(resolve){setTimeout(resolve,100);});
+      if(capture&&capture.captureId===current.captureId)capture=null;
+      current.lanes.forEach(function(lane){try{lane.source.disconnect();lane.node.disconnect();}catch(_){}});
+      current.streams.forEach(function(stream){stream.getTracks().forEach(function(track){try{track.stop();}catch(_){} });});
+      if(current.context&&current.context.state!=="closed")await current.context.close().catch(function(){});
+      await send({type:"SIGNAL_GROQ_DIALOGUE_CAPTURE_STOP",captureId:current.captureId,callId:current.callId,reason:String(reason||"stopped")});
+      if(button){button.disabled=false;button.textContent="Iniciar diálogo Groq";}
+      setStatus("Captura detenida · segmentos remotos "+current.delivered["groq-remote"]+" · intérprete "+current.delivered["groq-interpreter"]);
+      await refreshPolicy();
+    })();
+    return current.stopPromise;
   }
   chrome.runtime.onMessage.addListener(function(message){
     if(message&&message.type==="SIGNAL_GROQ_DIALOGUE_CAPTURE_STOP"&&capture&&message.captureId===capture.captureId)
