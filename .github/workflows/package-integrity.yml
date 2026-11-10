@@ -35,3 +35,5 @@ jobs:
           NODE
       - name: Verify package inventory and overlay invariants
         run: node tools/verify-release-package.mjs
+      - name: Groq Whisper large-v3 transcriber quality and privacy tests
+        run: node tools/groq-transcriber-tests.mjs
