@@ -3221,6 +3221,7 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
       return true;
     }
 
+    if (message.type === "SIGNAL_CAPTION_OPEN_LOOKUP") {
       openCaptionLookup(message.kind, message.query).then(sendResponse).catch(function (error) {
         sendResponse({ ok: false, error: String(error && error.message || error).slice(0, 160) });
       });
