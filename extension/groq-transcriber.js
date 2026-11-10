@@ -21,6 +21,7 @@
   async function transcribe(blob,options){
     var opts=options||{},token=getToken(opts);
     var model=String(opts.model||DEFAULT_MODEL),language=opts.language===null||opts.language===undefined?"":String(opts.language).trim(),context=String(opts.prompt||""),timeoutMs=Number(opts.timeoutMs||30000);
+    if(opts.zeroDataRetentionConfirmed!==true)return{ok:false,reasonCode:"zdr-required",error:"Confirma Zero Data Retention antes de enviar audio a Groq."};
     if(!token)return{ok:false,error:"Falta GROQ_API_KEY."};
     if(!blob||typeof blob.size!=="number"||blob.size<=0)return{ok:false,error:"Audio vacío."};
     var started=Date.now(),timer=null;
