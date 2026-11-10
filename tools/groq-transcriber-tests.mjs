@@ -69,6 +69,36 @@ assert.equal(autoLanguage.ok,true);
 assert.equal(calls.length,2);
 assert.equal(calls[1].options.body.has("language"),false,"mixed Spanish/English audio leaves language autodetection enabled");
 
+ctx.fetch=async()=>({
+  ok:false,status:429,headers:{get:(name)=>name.toLowerCase()==="retry-after"?"2":null},
+  text:async()=>JSON.stringify({error:{message:"rate limited"}})
+});
+const throttled=await ctx.SignalGroqTranscriber.transcribe(
+  new Blob(["audio"],{type:"audio/wav"}),
+  {__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true}
+);
+assert.equal(throttled.ok,false);
+assert.equal(throttled.httpStatus,429);
+assert.equal(throttled.retryAfterMs,2000,"Retry-After seconds are exposed to the caller");
+
+let observedAbortSignal=null;
+ctx.fetch=async(_url,options)=>new Promise((_resolve,reject)=>{
+  observedAbortSignal=options.signal;
+  if(options.signal.aborted)reject(Object.assign(Error("aborted"),{name:"AbortError"}));
+  else options.signal.addEventListener("abort",()=>reject(Object.assign(Error("aborted"),{name:"AbortError"})),{once:true});
+});
+const externalAbort=new AbortController();
+const abortPromise=ctx.SignalGroqTranscriber.transcribe(
+  new Blob(["audio"],{type:"audio/wav"}),
+  {__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true,signal:externalAbort.signal,timeoutMs:5000}
+);
+await Promise.resolve();
+externalAbort.abort();
+const aborted=await abortPromise;
+assert.equal(aborted.ok,false);
+assert.equal(aborted.aborted,true,"capture cancellation aborts an in-flight Groq request");
+assert.equal(observedAbortSignal.aborted,true);
+
 
 ctx.fetch=async()=>({ok:false,status:401,text:async()=>JSON.stringify({error:{message:"invalid key gsk_abcdefghijklmnopqrstuvwxyz"}})});
 const failed=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true});
