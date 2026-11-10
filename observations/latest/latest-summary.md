@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-80692346-0e01-4772-9c36-3d26f76dc6a2
-- Creado: 2026-11-10T20:08:29.485Z
+- Batch: batch-a1ec6653-ec22-4d83-904c-c16bc30bcda3
+- Creado: 2026-11-10T20:08:59.487Z
 - Trigger: event-window
 - Extensión: 0.10.47
 - Eventos: 15
 - Errores: 0
 - Warnings: 0
-- Secuencia: 23363 → 23377
+- Secuencia: 23378 → 23392
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 2222
 - Deltas de plataforma: 2201
