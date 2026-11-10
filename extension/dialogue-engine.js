@@ -30,6 +30,37 @@
   function compareSegments(a,b){
     return a.startMs-b.startMs||a.endMs-b.endMs||sourceRank(a.source)-sourceRank(b.source)||a.sequence-b.sequence||a.segmentIndex-b.segmentIndex||a.id.localeCompare(b.id);
   }
+  function normalizedTranscriptKey(value){
+    return normalize(value).toLocaleLowerCase().replace(/[^\\p{L}\\p{N}]+/gu," ").trim();
+  }
+  function sameOverlappedWindowSegment(a,b){
+    if(a.source!==b.source||Math.abs(a.sequence-b.sequence)!==1)return false;
+    if(normalizedTranscriptKey(a.text)!==normalizedTranscriptKey(b.text))return false;
+    var overlap=Math.min(a.endMs,b.endMs)-Math.max(a.startMs,b.startMs);
+    var shorter=Math.min(a.endMs-a.startMs,b.endMs-b.startMs);
+    if(overlap<=0||shorter<=0)return false;
+    return overlap/shorter>=0.35;
+  }
+  function mergeOverlappedWindowSegments(sorted){
+    var result=[];
+    sorted.forEach(function(segment){
+      var match=null;
+      for(var i=result.length-1;i>=0;i--){
+        var previous=result[i];
+        if(segment.startMs-previous.endMs>1500)break;
+        if(sameOverlappedWindowSegment(previous,segment)){match=previous;break;}
+      }
+      if(!match)result.push(segment);
+      else {
+        if(segment.text.length>match.text.length)match.text=segment.text;
+        match.startMs=Math.min(match.startMs,segment.startMs);
+        match.endMs=Math.max(match.endMs,segment.endMs);
+        match.sequence=Math.min(match.sequence,segment.sequence);
+        match.segmentIndex=Math.min(match.segmentIndex,segment.segmentIndex);
+      }
+    });
+    return result;
+  }
   function mergeSegments(groups){
     var byId=new Map();
     (Array.isArray(groups)?groups:[]).forEach(function(item){
@@ -40,7 +71,7 @@
         if(s.text.length>=old.text.length)byId.set(s.id,Object.assign({},s,{startMs:Math.min(old.startMs,s.startMs),endMs:Math.max(old.endMs,s.endMs)}));
       }
     });
-    var sorted=Array.from(byId.values()).sort(compareSegments);
+    var sorted=mergeOverlappedWindowSegments(Array.from(byId.values()).sort(compareSegments));
     for(var i=0;i<sorted.length;i++){
       for(var j=i+1;j<sorted.length&&sorted[j].startMs<sorted[i].endMs;j++){
         if(sorted[i].source!==sorted[j].source&&sorted[j].endMs>sorted[i].startMs){
