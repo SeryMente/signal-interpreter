@@ -31,7 +31,7 @@
     return a.startMs-b.startMs||a.endMs-b.endMs||sourceRank(a.source)-sourceRank(b.source)||a.sequence-b.sequence||a.segmentIndex-b.segmentIndex||a.id.localeCompare(b.id);
   }
   function normalizedTranscriptKey(value){
-    return normalize(value).toLocaleLowerCase().replace(/[^\\p{L}\\p{N}]+/gu," ").trim();
+    return normalize(value).toLowerCase().replace(/[^a-z0-9áéíóúüñ]+/g," ").trim();
   }
   function sameOverlappedWindowSegment(a,b){
     if(a.source!==b.source||Math.abs(a.sequence-b.sequence)!==1)return false;
