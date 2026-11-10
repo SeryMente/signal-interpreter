@@ -331,7 +331,7 @@ Esta adenda supersede las referencias operativas anteriores de G13 y producto 0.
 
 ### Actualización viva G14 · candidata PR #80 materializada · 2026-11-10
 
-- **Código:** rama `fix/backlog-p0-switch-mic-late-track-20261110`, HEAD `6cb479481c51e618d085ae09991cad258d6bdc00`; PR #80 abierta en borrador, no fusionada. `main` permanece en 0.10.47.
+- **Código:** rama `fix/backlog-p0-switch-mic-late-track-20261110`; paquete de código local desde `6cb479481c51e618d085ae09991cad258d6bdc00`; último commit documental de la rama `3710ac8c0a4b6c1183e4a9533a2246fcafd30a1d`; PR #80 abierta en borrador, no fusionada. `main` permanece en 0.10.47.
 - **Correcciones candidatas:** default de presencia Auto-Answer 180 s; reintento de unmute solo con llamada activa, intención explícita conservada y pista viva verificada; prueba permanente de concurrencia; manifiesto normalizado y carpeta de carga única `extension/`.
 - **Workspace:** `C:\\Users\\fila4\\Desktop\\SeryMente\\signal-interpreter`; Chrome debe cargar `...\\signal-interpreter\\extension`. Se preservó el estado anterior en `Temporal\\SI-backup-pre-PR80-20261110.zip`, SHA-256 `24627DF49B53C58B0DC7323EECD3DBE10C98B84346A7B3A67B6D0BC52B284D65`.
 - **Verificación local:** inventario 60/60 SHA-256; `verify-release-package` PASS; layout 18 referencias PASS; presence-connect 35 checks PASS; presence-guard 83 checks PASS; microphone-guard PASS; overlay regression PASS; JS syntax 5/5; PowerShell 5.1 parser 7/7 scripts relevantes PASS.
