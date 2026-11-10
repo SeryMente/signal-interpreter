@@ -87,9 +87,20 @@ La ruta destinada por el operador es `signal-interpreter\\extension`. Antes de i
 - el ID de extensión, la versión, los hashes y el inventario coinciden con la candidata;
 - se cumplen SI-OP-01 y las comprobaciones del Native Messaging host en el mismo usuario Windows de Chrome.
 
-**Resolución de layout verificada en rama candidata (PR #80 draft; no integrada):** el manifiesto canónico permanece en raíz y `extension/manifest.json` es su variante normalizada para cargar `extension/` en Chrome. `tools/unpacked-layout-test.mjs`, `portable-root-test.mjs` y `verify-release-package.mjs` pasan; suite local 42/42, 77 archivos JS sin errores y 8 scripts PowerShell parseables; 60/60 SHA-256. La carpeta activa debe actualizarse con respaldo; la carga y aceptación en Chrome siguen a cargo del operador. `main` no se modifica hasta revisión/merge autorizados.
+**Resolución de layout verificada en rama candidata (PR #80 draft; no integrada):** el manifiesto canónico permanece en la raíz como fuente del paquete; `extension/manifest.json` es su variante normalizada y **la única carpeta que debe cargarse en Chrome es `extension/`**. Los scripts de preparación abren esa carpeta y el probe compara la ruta Chrome contra ella. Validación local actual: inventario 60/60 SHA-256; verify-release-package PASS; unpacked-layout 18 referencias PASS; presence-connect 35 checks PASS; presence-guard 83 checks PASS; microphone-guard PASS; overlay regression PASS; JavaScript 5/5 syntax PASS; PowerShell 5.1 parser 7/7 scripts relevantes PASS con BOM donde corresponde. `main` conserva código 0.10.47; PR #80 sigue draft y no está fusionada. La aceptación Chrome sigue a cargo del operador.
 
-### Estado de la instancia inspeccionada · 2026-11-09
+### Estado de la instancia inspeccionada · 2026-11-10 · G14
+
+- Equipo RDC observado: `PC10RCIF4EI4`, device ID `b573344f-c68f-47c9-9c2e-ae67f2e63bdb`; identidad operadora `CENTRAL\\MantenimientoRCI`. Destino materializado: `CENTRAL\\fila4`, perfil `C:\\Users\\fila4`.
+- El usuario revalidó explícitamente el uso de RDC bajo MantenimientoRCI solo para operar/elevación y la obligación de materializar todo bajo fila4. La discrepancia de device ID frente al registro anterior se documentó en el control G14; no se usó la ruta de MantenimientoRCI como destino.
+- Workspace: `C:\\Users\\fila4\\Desktop\\SeryMente\\signal-interpreter`. Es un paquete materializado sin metadatos `.git`; no debe tratarse como clon Git. Versión de paquete 0.10.47 candidata PR #80.
+- Carpeta de carga Chrome: `C:\\Users\\fila4\\Desktop\\SeryMente\\signal-interpreter\\extension`. El README de SeryMente y los scripts de preparación designan esa subcarpeta, no la raíz.
+- Native Messaging host ya estaba presente y registrado para fila4. Se verificaron en solo lectura el manifiesto, el valor de registro, el origen permitido y el SHA-256 del ejecutable; no se modificó.
+- Se preservó el estado previo en `Temporal\\SI-backup-pre-PR80-20261110.zip`; SHA-256 cotejado. El inventario del paquete candidato es 60/60.
+- Chrome no se cargó/recargó en este ciclo; no se realizó llamada real ni captura de audio. La aceptación manual del operador permanece pendiente. No se autorizó merge, deploy o release.
+
+### Registro histórico de inspección · 2026-11-09 (PC13/PC14)
+
 
 - Workspace: `C:\\Users\\PC 13\\Desktop\\SeryMente`, equipo observado `PC-14`, identidad `pc-14\\pc 13`; esta identidad corresponde a la instancia Cyber activa y no es persistente.
 - Scaffold: `C:\\Users\\PC 13\\Desktop\\SeryMente\\signal-interpreter` existe y estaba vacío (cero elementos); todavía no es un clon Git.
