@@ -11,7 +11,15 @@
     "tab-audio-missing":"La pestaña compartida no entregó audio",
     "tab-selection-invalid":"Selecciona la pestaña del navegador con la llamada",
     "capture-failed":"No se pudo iniciar la captura",
-    "transcription-backlog":"Groq no está procesando al ritmo de captura; se detuvo para no perder audio"
+    "transcription-backlog":"Groq no está procesando al ritmo de captura; se detuvo para no perder audio",
+    "groq-rate-limited":"Groq limitó temporalmente las peticiones; captura detenida para evitar pérdida",
+    "groq-authentication-failed":"La credencial local de Groq no fue aceptada",
+    "groq-transcription-failed":"Falló la transcripción en Groq; diálogo incompleto",
+    "audio-sample-rate-unsupported":"El navegador no pudo abrir audio a 16 kHz",
+    "audio-wav-format-invalid":"El segmento WAV no pasó la validación de integridad",
+    "overlay-unavailable":"No se pudo entregar el texto al diálogo visible",
+    "source-track-ended":"Una de las fuentes de audio terminó; captura detenida",
+    "policy-check-failed":"No se pudo verificar que la llamada siga activa"
   };
   function callId(){var m=location.pathname.match(/^\\/call\\/([^/?#]+)\\/?$/);return m?m[1]:null;}
   function send(message){return chrome.runtime.sendMessage(message).catch(function(){return{ok:false,reasonCode:"background-unavailable"};});}
@@ -38,8 +46,18 @@
     refreshPolicy();
   }
   async function refreshPolicy(){
-    if(!callId()||capture||disposed)return;
-    policy=await send({type:"SIGNAL_GROQ_DIALOGUE_POLICY_GET",callId:callId()});
+    if(!callId()||disposed)return;
+    var checked=await send({type:"SIGNAL_GROQ_DIALOGUE_POLICY_GET",callId:callId()});
+    if(capture){
+      if(!checked||checked.canCapture!==true){
+        setStatus(showReason(checked&&checked.reasonCode||"policy-check-failed"),true);
+        await stop(checked&&checked.reasonCode||"policy-check-failed");
+        return;
+      }
+      policy=checked;
+      return;
+    }
+    policy=checked;
     if(!button)return;
     button.disabled=!(policy&&policy.canCapture===true);
     setStatus(policy&&policy.canCapture?"Lista · dos fuentes independientes":showReason(policy&&policy.reasonCode),!(policy&&policy.canCapture));
@@ -81,9 +99,9 @@
     if(!capture||capture.captureId!==captureId)return;
     capture.pending[source]=Math.max(0,capture.pending[source]-1);
     if(!result||result.ok!==true){
-      setStatus(showReason(result&&result.reasonCode||result&&result.error||"transcription-failed"),true);
-      if(result&&["transcription-backlog","call-not-active","zdr-not-confirmed","capture-not-active","capture-policy-revoked","groq-rate-limited"].indexOf(result.reasonCode)>=0&&!capture.stopping)
-        await stop(result.reasonCode);
+      var failureReason=result&&result.reasonCode||"groq-transcription-failed";
+      setStatus(showReason(failureReason),true);
+      if(capture&&!capture.stopping)await stop(failureReason);
       return;
     }
     capture.delivered[source]+=Number(result.segments||0);
@@ -128,6 +146,13 @@
       var remoteStream=new MediaStream(tabAudio);
       capture.lanes.push(buildLane("groq-remote",remoteStream,context,originFrame,captureId,call,startedAt));
       capture.lanes.push(buildLane("groq-interpreter",new MediaStream(micStream.getAudioTracks()),context,originFrame,captureId,call,startedAt));
+      [tabStream,micStream].forEach(function(stream){
+        stream.getAudioTracks().forEach(function(track){
+          track.addEventListener("ended",function(){
+            if(capture&&capture.captureId===captureId&&!capture.stopping)stop("source-track-ended");
+          },{once:true});
+        });
+      });
       setStatus("Activo · dos fuentes separadas; enviando ventanas de 6 s");
       button.disabled=false;button.textContent="Detener diálogo Groq";
     }catch(error){
