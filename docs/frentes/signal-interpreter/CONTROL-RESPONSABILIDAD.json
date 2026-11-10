@@ -1300,9 +1300,9 @@
       "perfil_destino": "C:\\Users\\fila4",
       "alcance": "Revalidación puntual del endpoint RDC en el mismo equipo PC10RCIF4EI4: usar MantenimientoRCI solo como identidad operadora/elevada y materializar todos los artefactos, respaldos, pruebas y documentos bajo C:\\Users\\fila4. Autoriza sincronizar la candidata PR #80 del repositorio SeryMente/signal-interpreter en el workspace ya existente, preservar antes el contenido, validar SHA-256, ejecutar pruebas sintéticas y dejar extension/ como la única carpeta de carga manual de Chrome.",
       "controles": "El device_id actual difiere del registrado en la autorización G14 anterior; se acepta solo por la instrucción explícita de revalidación del operador y porque el hostname PC10RCIF4EI4, la identidad CENTRAL\\MantenimientoRCI y la ruta destino C:\\Users\\fila4 fueron verificados en esta sesión. No transferir artefactos a C:\\Users\\MantenimientoRCI.",
-      "limites": "No autoriza instalar/registrar Native Messaging desde la identidad MantenimientoRCI, no autoriza cargar/recargar/reiniciar Chrome, no autoriza llamadas reales, audio real, aceptación funcional, merge, deploy o release. La carga manual corresponde al operador en CENTRAL\\fila4.",
+      "limites": "No autoriza instalar/registrar Native Messaging desde la identidad MantenimientoRCI, no autoriza cargar/recargar/reiniciar Chrome, no autoriza llamadas reales, audio real, aceptación funcional, merge, deploy o release. El host ya estaba presente y registrado para fila4; se verificó solo lectura y no se modificó. La carga manual corresponde al operador en CENTRAL\\fila4.",
       "evidencia": "Se verificó la carpeta de trabajo en fila4 y el README de SeryMente que designa signal-interpreter\\extension como destino de carga. Se preservó el estado previo con backup ZIP y SHA cotejado; se materializaron 28 archivos desde PR #80; inventario 60/60, pruebas sintéticas y parser PowerShell 5.1 pasaron. Chrome no se cargó/recargó y Native Messaging no se instaló desde MantenimientoRCI.",
-      "estado": "REVALIDADA_Y_MATERIALIZADA_VERIFICADA; CHROME_NATIVE_HOST_Y_ACEPTACION_PENDIENTES",
+      "estado": "REVALIDADA_Y_MATERIALIZADA_VERIFICADA; HOST_NATIVE_PRESENTE; CHROME_Y_ACEPTACION_PENDIENTES",
       "candidato": {
         "pull_request": 80,
         "url": "https://github.com/SeryMente/signal-interpreter/pull/80",
@@ -1334,7 +1334,17 @@
         "chrome_load_or_reload": "NOT PERFORMED; operator manual action pending",
         "native_messaging_install": "NOT PERFORMED; installer must run as CENTRAL\\fila4, not MantenimientoRCI",
         "real_call_or_audio": "NOT TESTED",
-        "operator_acceptance": "PENDING"
+        "operator_acceptance": "PENDING",
+        "native_messaging_host": {
+          "estado": "PRESENTE_Y_REGISTRADO_VERIFICADO_SOLO_LECTURA",
+          "perfil": "CENTRAL\\fila4",
+          "manifest": "C:\\Users\\fila4\\AppData\\Local\\SignalInterpreter\\NativeMessagingHost\\com.signalinterpreter.captionhost.json",
+          "registro": "HKEY_USERS\\S-1-5-21-1529298404-1161420656-882029410-5167\\Software\\Google\\Chrome\\NativeMessagingHosts\\com.signalinterpreter.captionhost",
+          "ejecutable": "C:\\Users\\fila4\\AppData\\Local\\SignalInterpreter\\NativeMessagingHost\\SignalInterpreter.CaptionHost.exe",
+          "sha256": "313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE",
+          "allowed_origin": "chrome-extension://ldpbjhobnfgmhdoehehdmnbhhjckebmj/",
+          "modificado_en_este_ciclo": false
+        }
       }
     }
   ]
