@@ -28,6 +28,7 @@ assert.equal(view.getInt16(44,true),8192);
 const micLike=new Processor({processorOptions:{windowSeconds:1}});
 ctx.currentFrame=16000;micLike.process([[input]],[[new Float32Array(128)]]);
 micLike.port.onmessage({data:{type:"flush"}});
-assert.equal(micLike.port.messages.length,1,"partial final window flushes on stop");
+assert.equal(micLike.port.messages.length,2,"partial final window is followed by an explicit flush acknowledgement");
 assert.ok(micLike.port.messages[0].packet.frames>0);
+assert.equal(micLike.port.messages[1].type,"flushed");
 console.log("WHISPER_WINDOW_WAV_16K_MONO=PASS");
