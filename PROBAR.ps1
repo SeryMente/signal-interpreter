@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param()
 $ErrorActionPreference='Stop'
-$root=[IO.Path]::GetFullPath($PSScriptRoot).TrimEnd('\')`n$loadRoot=Join-Path $root 'extension'
+$root=[IO.Path]::GetFullPath($PSScriptRoot).TrimEnd('\')
+$loadRoot=Join-Path $root 'extension'
 $id='ldpbjhobnfgmhdoehehdmnbhhjckebmj'
 $manifest=Get-Content -Raw -LiteralPath (Join-Path $loadRoot 'manifest.json') | ConvertFrom-Json
 if($manifest.version -ne '0.10.47'){throw 'Manifiesto esperado no encontrado en esta carpeta.'}
