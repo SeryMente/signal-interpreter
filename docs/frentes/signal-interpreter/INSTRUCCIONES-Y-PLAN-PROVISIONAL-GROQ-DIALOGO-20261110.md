@@ -81,6 +81,8 @@ Groq recomienda `whisper-large-v3` para aplicaciones multilingües sensibles a e
 - El tamaño y solapamiento de ventanas es provisional y debe medirse. No fijar una cifra como óptima hasta comparar latencia, WER/CER, continuidad, duplicación y límites de cuenta.
 - Tratar 429, `Retry-After`, timeouts y límites ASH/RPM sin pérdida silenciosa. Mantener estado de fuente degradada y recuperar por secuencia cuando sea posible.
 
+**Límites públicos consultados el 2026-11-10 (no equivalen a los límites contratados de la cuenta del operador):** la documentación de Groq publica para Whisper Large V3 en Developer una base de 20 RPM, 2.000 RPD y 7.200 ASH; el endpoint aplica facturación mínima de 10 segundos por petición. La tarifa publicada para Large V3 es USD 0.111 por hora de audio. Dos canales de una hora en tiempo real consumen aproximadamente 7.200 segundos de audio por hora de sesión antes de añadir solapamiento/reintentos; por tanto, la cuenta puede necesitar límites superiores para mantener ventanas solapadas sin throttling. La ventana real debe calcularse contra los headers y límites efectivos de la organización, no asumir la base. No fijar chunk size hasta medir latencia y confirmar el plan.
+
 ### 3.3 Captura, cronología y continuidad
 
 - Capturar micrófono y audio de pestaña en pistas separadas; no mezclarlos antes de transcribir.
