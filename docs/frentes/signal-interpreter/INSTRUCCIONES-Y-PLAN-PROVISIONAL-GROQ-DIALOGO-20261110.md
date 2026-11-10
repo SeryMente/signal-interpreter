@@ -41,6 +41,13 @@ El resumen previo del frente incluye una petición inicial anterior, pero el tex
 Okj, continuemos, actualiza en tu ocp las reglas operativas y las decisiones hasta aquim tus tareas provisionales,  y sigamos trabajando,  tengo 40 minutos, hagamos que cuenten.
 ```
 
+
+### A-04 · estándar de calidad y ejecución
+
+```text
+Ok, no uize interrumpir tu trabajo de tan alta calidad yu pulcritud. Documenta todo correctamente,  y construye mi solucion elgantemente, pensando siempre en calidad mundial que quede bien a la primer ok? Perfecto al primer itnento.  go.
+```
+
 ## 2. Interpretación operativa vinculante
 
 El entregable solicitado es **un solo diálogo cronológico combinado** que recibe dos fuentes de audio independientes y las procesa con Groq Whisper:
@@ -171,6 +178,6 @@ No marcar la tarea como terminada hasta demostrar, con evidencia reproducible:
 ## 7. Registro de cambios y límites
 
 - Esta especificación es provisional y debe actualizarse al implementar y medir.
-- Las instrucciones literales A-01 y A-02 son fuentes de verdad; la interpretación técnica no las reemplaza.
+- Las instrucciones literales A-01, A-02, A-03 y A-04 son fuentes de verdad; la interpretación técnica no las reemplaza.
 - No se declara que el canal esté integrado en runtime, que capture audio real, que exista diarización ni que el operador haya aceptado la función.
 - No se autoriza por este documento realizar llamadas reales, capturar audio real, acceder a credenciales, recargar Chrome, fusionar a `main`, desplegar o liberar.
