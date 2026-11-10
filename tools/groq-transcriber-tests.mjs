@@ -61,6 +61,14 @@ assert.equal(sent.get("language"),"es");
 assert.equal(sent.get("temperature"),"0");
 assert.equal(sent.get("response_format"),"verbose_json");
 assert.equal(sent.get("prompt"),"Transcripción en español para interpretación médica. Interpretación médica");
+const autoLanguage=await ctx.SignalGroqTranscriber.transcribe(
+  new Blob(["audio"],{type:"audio/webm"}),
+  {__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true,prompt:"Interprete médico bilingüe"}
+);
+assert.equal(autoLanguage.ok,true);
+assert.equal(calls.length,2);
+assert.equal(calls[1].options.body.has("language"),false,"mixed Spanish/English audio leaves language autodetection enabled");
+
 
 ctx.fetch=async()=>({ok:false,status:401,text:async()=>JSON.stringify({error:{message:"invalid key gsk_abcdefghijklmnopqrstuvwxyz"}})});
 const failed=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true});
