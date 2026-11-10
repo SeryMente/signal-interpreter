@@ -54,32 +54,37 @@
 - Estado visual y estado real de las pistas coinciden; las verificaciones deben inspeccionar `MediaStreamTrack.enabled` y la pista saliente, no solo el icono.
 - El guard actual se reutiliza o extiende sin crear una segunda ruta de control contradictoria.
 
-### SI-FB-02 — Captura y transcripción bilingüe del canal INTÉRPRETE
+### SI-FB-02 — Captura dual y transcripción bilingüe Groq en un único diálogo
 
-**Prioridad:** P1 · funcionalidad central
-**Estado al 2026-11-10:** no implementado en main. La candidata de PR #75 permanece draft/no mergeable; credencial y confirmación efectiva de ZDR, aislamiento y E2E bilingüe siguen pendientes.
+**Prioridad:** P1 · funcionalidad central  
+**Estado al 2026-11-10:** prototipo de integración implementado en la candidata [PR #83](https://github.com/SeryMente/signal-interpreter/pull/83), rama `candidate/whisper-interpreter-live-20261110`; NO integrado en main. La candidata contiene captura separada, ventanas WAV 16 kHz mono, motor de fusión, dos colas concurrentes, uso de Groq Large V3, presentación en un overlay cronológico, compuertas de llamada/ZDR, cancelación y pruebas sintéticas. CI de la cabeza actual y revisión E2E todavía pendientes; no se ha usado Chrome, micrófono real, llamada real ni credenciales.
 
-**Objetivo:** transcribir en tiempo real la voz del operador/intérprete capturada desde el micrófono, tanto en español como en inglés, y mostrarla como un canal independiente de los captions del cliente/LEP.
+**Objetivo:** transcribir simultáneamente (a) la salida de audio remoto de la pestaña de llamada y (b) la entrada del micrófono propio del intérprete, y mostrar ambos resultados en un solo diálogo cronológico, bilingüe, con solapamientos preservados y sin inferir identidad por idioma.
 
 **Requisitos:**
 
 - Captura únicamente después de `ACCEPTED / ACTIVE`; nunca durante espera, timbrado o una sesión sin llamada.
-- Canal lógico explícito, por ejemplo `source=yo` y `speaker=INTÉRPRETE`, sin deducir identidad a partir del idioma.
-- Detección automática español/inglés por segmento o cambio de idioma dentro de una misma intervención; no fijar toda la llamada a un solo idioma.
-- El texto propio debe coexistir con el canal nativo de Chrome sin mezclar fuentes, sobrescribir frases ni duplicar eventos.
-- Indicador visible de captura/transcripción activa y estado de error/permisos.
-- Al terminar la llamada, detener captura y liberar las pistas.
-- No enviar audio crudo, texto clínico ni contenido de la llamada al sistema de observabilidad. No persistir audio. La retención del texto de sesión debe permanecer limitada al alcance explícitamente aprobado.
-- Evaluar latencia, precisión por idioma, estabilidad de conexión, coste y privacidad antes de seleccionar proveedor. No asumir Groq como decisión arquitectónica por el solo hecho de existir el módulo.
+- Dos pistas de captura independientes: audio remoto de pestaña y micrófono propio; no mezclar las ondas antes de transcribir.
+- Groq `whisper-large-v3` para ambas fuentes, con `verbose_json`, temperatura 0, timestamps por segmento y autodetección ES/EN cuando no exista idioma fiable por fragmento. Turbo no es default.
+- Dos colas concurrentes independientes: el micrófono no espera al audio remoto ni viceversa; dentro de cada canal se conserva el orden por secuencia y hay backpressure visible.
+- El micrófono propio se etiqueta `INTÉRPRETE` por procedencia. El canal remoto mezclado se etiqueta `AUDIO REMOTO · HABLANTE NO VERIFICADO`; no deducir LEP/proveedor por idioma.
+- El overlay presenta un solo diálogo, fusiona por timestamp global y conserva solapamientos reales; no deduplica entre fuentes distintas.
+- Indicador visible de captura/transcripción activa y estado de error/permisos/cuota.
+- Al terminar la llamada, cambiar de ruta, perder el permiso o revocar ZDR, detener y liberar ambas fuentes y abortar las peticiones pendientes.
+- No enviar audio crudo, texto clínico ni contenido de la llamada al sistema de observabilidad. No persistir audio ni transcript clínico en el almacenamiento general; la sesión en vivo permanece en memoria de página. La telemetría conserva solo estados, códigos de error y métricas no clínicas.
+- La confirmación de ZDR es una declaración operativa local que requiere verificación previa en la consola del proveedor; no se debe presentar como comprobación independiente de la cuenta.
+- Medir latencia, precisión por idioma, estabilidad, coste, RPM/ASH, throttling y privacidad antes de ratificar ventanas o metas.
 
 **Criterios de aceptación:**
 
-- Prueba bilingüe con frases de intérprete en inglés y español, incluyendo cambios de idioma dentro de la misma llamada.
-- Todo segmento de esa fuente queda atribuido a INTÉRPRETE, independientemente del idioma.
-- Ningún audio propio se captura fuera de una llamada aceptada.
-- Las fuentes entrantes y el micrófono se conservan como canales independientes.
-- El micrófono se silencia y la captura se detiene al terminar, perder o reiniciar la llamada.
-- Se documentan latencia y calidad por idioma usando muestras sintéticas o expresamente autorizadas; no se publica contenido clínico real.
+- Captura y envío simultáneo de ambas pistas en un mismo ciclo, verificable mediante pruebas sintéticas de navegador y API simulada.
+- Ambos resultados aparecen en el mismo diálogo, en orden cronológico, con solapamientos legítimos y sin duplicación artificial entre fuentes.
+- Todo segmento de micrófono queda atribuido a INTÉRPRETE, independientemente del idioma; el remoto permanece neutral si no existen pistas individuales verificables.
+- Ningún audio propio o remoto se captura fuera de una llamada aceptada ni después de revocar una compuerta.
+- Fin de llamada, pérdida de pista, error irrecoverable o revocación libera recursos y cancela peticiones.
+- CI verde sobre la cabeza exacta que integra captura, transcriptor, fusión y overlay; hashes e inventario verificados.
+- Se reportan p50/p95, WER/CER por idioma, pérdida, duplicación, cuotas y coste sobre corpus sintético o expresamente autorizado.
+- Prueba real controlada en Windows/Chrome y aceptación expresa del operador; no se equipara test sintético ni CI a aceptación.
 
 ### SI-FB-03 — Calidad, continuidad y atribución de la transcripción
 
