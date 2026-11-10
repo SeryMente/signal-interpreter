@@ -327,3 +327,13 @@ Esta adenda supersede las referencias operativas anteriores de G13 y producto 0.
 - **Verificación:** main 0.10.47, estado de PR y blobs de documentación fueron leídos. Los resultados locales previos (27/27 suites, 59/59 hashes y 4/4 cotejos) se atribuyen al reporte anterior, no a ejecución de este ciclo. No hubo pruebas de código en este ciclo.
 - **Aceptación:** Chrome no fue recargado; no hubo llamada real, captura de audio, aceptación funcional ni release. No se usó RDC en PC-7 ni PC-14; la autorización vigente no se hereda a esos dispositivos. Cualquier preparación remota futura debe ajustarse al destino y cuenta registrados en el control G14.
 
+
+
+### Actualización viva G14 · candidata PR #80 materializada · 2026-11-10
+
+- **Código:** rama `fix/backlog-p0-switch-mic-late-track-20261110`, HEAD `6cb479481c51e618d085ae09991cad258d6bdc00`; PR #80 abierta en borrador, no fusionada. `main` permanece en 0.10.47.
+- **Correcciones candidatas:** default de presencia Auto-Answer 180 s; reintento de unmute solo con llamada activa, intención explícita conservada y pista viva verificada; prueba permanente de concurrencia; manifiesto normalizado y carpeta de carga única `extension/`.
+- **Workspace:** `C:\\Users\\fila4\\Desktop\\SeryMente\\signal-interpreter`; Chrome debe cargar `...\\signal-interpreter\\extension`. Se preservó el estado anterior en `Temporal\\SI-backup-pre-PR80-20261110.zip`, SHA-256 `24627DF49B53C58B0DC7323EECD3DBE10C98B84346A7B3A67B6D0BC52B284D65`.
+- **Verificación local:** inventario 60/60 SHA-256; `verify-release-package` PASS; layout 18 referencias PASS; presence-connect 35 checks PASS; presence-guard 83 checks PASS; microphone-guard PASS; overlay regression PASS; JS syntax 5/5; PowerShell 5.1 parser 7/7 scripts relevantes PASS.
+- **Estado:** materializado y verificado como paquete; Chrome no se cargó/recargó; Native Messaging no se instaló en este ciclo; llamada real/audio y aceptación del operador pendientes. No declarar resuelta la aceptación funcional.
+- **RDC:** endpoint actual PC10RCIF4EI4 / device_id `b573344f-c68f-47c9-9c2e-ae67f2e63bdb` revalidado en el addendum de control G14. MantenimientoRCI solo operó el agente; los artefactos quedaron bajo fila4.
