@@ -8,9 +8,10 @@ assert(diagnosticStart>=0&&diagnosticEnd>diagnosticStart,'post-authorization cla
 const diagnosticHelper=content.slice(diagnosticStart,diagnosticEnd);
 const helper=content.slice(content.indexOf('  function clearAuthorizationRetry('),content.indexOf('  async function autoAnswer() {'));
 const fn=diagnosticHelper+helper+content.slice(content.indexOf('  async function autoAnswer() {'),content.indexOf('  function emitAutoAnswerReadiness'));
+assert.equal((fn.match(/\\bbutton\\.click\\s*\\(\\s*\\)/g)||[]).length,1,'answer flow contains exactly one normal Connect activation site');
 let checks=0;
 function harness({mode='Audio interpreting',grant=true,grantError='not-authorized',labLocked=false,presenceArmed=true,autoEnabled=true,availability='online',buttonPresent=true}={}){
- let clicks=0,release=null,route=false,visible=true,dialogVisible=true,events=[],releaseRequests=[],timers=[],authorizationRequests=0,grantValue=grant;
+ let clicks=0,release=null,route=false,visible=true,dialogVisible=true,events=[],releaseRequests=[],timers=[],authorizationRequests=0,grantValue=grant,grantTtlMs=500;
  const button={disabled:false,isConnected:true,textContent:'Connect',getAttribute:()=>null,click(){clicks++}};
  const dialog={innerText:'Caller is requesting interpretation '+mode,querySelectorAll:()=>buttonPresent?[button]:[],contains:el=>el===button};
  const ctx={
@@ -50,8 +51,8 @@ function harness({mode='Audio interpreting',grant=true,grantError='not-authorize
  vm.createContext(ctx);vm.runInContext(fn+'\nthis.run=autoAnswer;',ctx);
  return {
   ctx,button,dialog,clicks:()=>clicks,events:()=>events,
-  release:()=>{if(release)release(grantValue?{ok:true,generation:2,expiresAt:Date.now()+500}: {ok:false,error:grantError});},
-  setGrant:(value,error='not-authorized')=>{grantValue=value;grantError=error;},
+  release:()=>{if(release)release(grantValue?{ok:true,generation:2,expiresAt:Date.now()+grantTtlMs}: {ok:false,error:grantError});},
+  setGrant:(value,error='not-authorized',ttlMs=500)=>{grantValue=value;grantError=error;grantTtlMs=ttlMs;},
   authorizationRequests:()=>authorizationRequests,
   releaseRequests:()=>releaseRequests,timers:()=>timers,
   fireRetries:()=>{const t=timers.find(x=>!x.cleared&&x.ms<7000);if(!t)return null;t.cleared=true;t.fn();return t.ms;},
@@ -61,6 +62,10 @@ function harness({mode='Audio interpreting',grant=true,grantError='not-authorize
 }
 async function run(h){const pending=h.ctx.run();h.release();await pending;await new Promise(r=>setImmediate(r));}
 let h=harness();await run(h);assert.equal(h.clicks(),1);checks++;
+h=harness();h.setGrant(true,'expired',-1);await run(h);
+assert.equal(h.clicks(),0,'expired authorization must never activate Connect');
+assert.equal(h.releaseRequests().length,1,'expired one-use authorization is released without clicking');
+checks++;
 h.ctx.run();await new Promise(r=>setImmediate(r));assert.equal(h.clicks(),1);checks++;
 
 h=harness();await run(h);assert.equal(h.clicks(),1);
