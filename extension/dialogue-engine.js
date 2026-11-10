@@ -2,7 +2,7 @@
   "use strict";
 
   function normalize(text){
-    return String(text||"").replace(/[\\u200B-\\u200D\\uFEFF]/g,"").replace(/\\s+/g," ").trim();
+    return String(text||"").replace(/[\u200B-\u200D\uFEFF]/g,"").replace(/\s+/g," ").trim();
   }
   function sourceRank(source){
     if(source==="groq-interpreter")return 0;
@@ -96,7 +96,7 @@
     return mergeSegments(items).map(function(s){
       var t=new Date(s.startMs).toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
       return "["+t+"] "+s.speaker+": "+s.text;
-    }).join("\\n\\n");
+    }).join("\n\n");
   }
   function createConcurrentSourceQueue(maxPendingPerSource){
     var maxPending=Math.max(1,Math.min(4,Number(maxPendingPerSource)||2));
