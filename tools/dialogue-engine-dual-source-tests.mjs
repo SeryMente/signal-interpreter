@@ -27,6 +27,19 @@ const crossSourceRepeat=d.mergeSegments([
  {id:"b",source:"groq-remote",startMs:1000,endMs:2000,text:"Sí."}
 ]);
 assert.equal(crossSourceRepeat.length,2,"same spoken text from two sources is never deduplicated across sources");
+const overlappedRepeat=d.mergeSegments([
+ {id:"remote-window-1",source:"groq-remote",sequence:1,segmentIndex:2,startMs:5500,endMs:6500,text:"Can you repeat that?"},
+ {id:"remote-window-2",source:"groq-remote",sequence:2,segmentIndex:0,startMs:5700,endMs:6600,text:"Can you repeat that?"},
+ {id:"remote-window-3",source:"groq-remote",sequence:3,segmentIndex:0,startMs:9000,endMs:10000,text:"Can you repeat that?"}
+]);
+assert.equal(overlappedRepeat.length,2,"only identical same-source text inside adjacent overlapping windows is reconciled");
+assert.equal(overlappedRepeat[0].startMs,5500);
+assert.equal(overlappedRepeat[0].endMs,6600);
+assert.equal(overlappedRepeat[0].id,"remote-window-1","reconciled text retains the first stable segment id");
+assert.equal(d.mergeSegments([
+ {id:"remote-a",source:"groq-remote",sequence:1,startMs:1000,endMs:2000,text:"No."},
+ {id:"remote-b",source:"groq-remote",sequence:3,startMs:1500,endMs:2500,text:"No."}
+]).length,2,"non-adjacent same-source repetitions are preserved");
 assert.equal(d.mergeSegments([{id:"bad",source:"groq-interpreter",startMs:-1,endMs:4,text:"bad"}]).length,0);
 console.log("DIALOGUE_ENGINE_DUAL_SOURCE=PASS");
 
