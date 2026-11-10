@@ -83,6 +83,8 @@ assert.ok(manifest.content_security_policy.extension_pages.includes("https://api
 const capture = readText("extension/groq-dialogue-capture.js");
 const windowProcessor = readText("extension/whisper-window-processor.js");
 assert.ok(capture.includes("getDisplayMedia") && capture.includes("getUserMedia"), "remote tab and interpreter microphone capture lanes are not independent");
+assert.ok(capture.includes('button.disabled=true;button.textContent="Iniciar diálogo Groq"'),
+  "getDisplayMedia control must not be clickable before the asynchronous permission preflight is complete");
 assert.ok(capture.includes('"groq-remote"') && capture.includes('"groq-interpreter"'), "stable source identifiers are missing");
 assert.ok(capture.includes("context.sampleRate!==16000"), "capture must fail closed unless the WAV clock is exactly 16 kHz");
 assert.ok(capture.includes("track.addEventListener(\"ended\"") && capture.includes("groq-dialogue-control"), "capture lifecycle/visible controls are incomplete");
