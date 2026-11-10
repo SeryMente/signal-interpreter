@@ -451,3 +451,69 @@ Las instrucciones literales A-01, A-02 y A-03, con erratas originales preservada
 6. Documentar resultados, errores y límites reales; mantener PR en draft hasta que pase revisión de arquitectura y aceptación humana.
 
 **Siguiente estado esperado:** un prototipo de pipeline dual de extremo a extremo en entorno sintético/headless, no una declaración de función lista para llamada real.
+
+
+
+### Cierre de implementación sintética dual Groq · G14 · 2026-11-10
+
+Esta adenda actualiza SI-GRQ-01–SI-GRQ-12; conserva el resto del OCP y no declara aceptación de llamada real.
+
+**Candidata y control**
+
+- Rama: `candidate/whisper-interpreter-live-20261110`.
+- PR #83: abierta, `draft=true`, NO fusionada; base `main`; cabeza CI validada: `317242c4809aa5434803d25c28a134a84894a284`.
+- `main` no fue modificado. No hubo merge, deploy, release ni carga/reload de Chrome.
+- Inventario del paquete: **66/66 SHA-256 PASS**; read-back del `payload-sha256.json` exacto.
+- Modelo por defecto: `whisper-large-v3` en ambos canales; no Turbo.
+- El módulo de captura queda instalado solo en el content script aislado de `app.cloudinterpreter.com`; el worker/offscreen/popup no abren dispositivos. El endpoint Groq y la CSP están expresamente declarados en el manifiesto candidato.
+- El service worker valida top frame, dominio y ruta de llamada, ID de llamada, pestaña fuente, estado `ACTIVE`, habilitación explícita, ZDR attested y presencia de una clave local antes de aceptar audio.
+- La clave real no fue proporcionada, leída ni usada. El archivo `extension/groq-secret.local.js` es opcional, local e ignorado por Git. ZDR permanece una declaración del operador y no se ha verificado la configuración de cuenta en consola Groq.
+
+**Implementación observada en código**
+
+- Captura separada de audio remoto de pestaña y micrófono propio mediante gesto explícito; dos nodos AudioWorklet sobre reloj común de AudioContext.
+- Ventanas WAV PCM16 mono a 16 kHz, encabezado autocontenido, timestamps por segmento y sequence IDs por fuente.
+- Dos colas ordenadas por fuente con concurrencia entre fuentes y backpressure.
+- Groq Whisper Large V3 por carril; autodetección ES/EN cuando no se especifica idioma, temperatura 0, `verbose_json`, timestamps de segmento.
+- Fusión cronológica estable; se preservan solapamientos; solo se reconcilian IDs duplicados del mismo segmento. Etiquetas por procedencia: micrófono `INTÉRPRETE`; remoto `AUDIO REMOTO · HABLANTE NO VERIFICADO`.
+- Un solo overlay cronológico recibe segmentos Groq; captions nativos se suprimen mientras está activo el modo Groq para evitar transcripción paralela.
+- Detención al terminar llamada, cambio de ruta, revocación de permiso o error; cierre de tracks; ACK explícito del flush de cada Worklet; drenaje acotado de colas; cancelación AbortController de peticiones. El worker recupera metadata de captura de `chrome.storage.session` para aceptar STOP después de suspensión.
+- El contenido clínico no se almacena en telemetría, reportes o persistencia general; metadata de captura se mantiene en session storage, texto en memoria del overlay.
+
+**Evidencia CI de la cabeza exacta 317242c**
+
+| Workflow | Run | Resultado |
+|---|---:|---|
+| Package integrity | `42926141243` | SUCCESS |
+| signal-observability-audit | `42926141253` | SUCCESS |
+| native-caption-host-build | `42926141415` | SUCCESS |
+
+Package integrity aprobó **8 suites**: microphone guard; Presence Connect 36; Presence Guard 94; Auto-Answer Runtime 15; Groq transcriber; merger dual; colas paralelas; Worklet WAV 16 kHz; captura dual sintética y revocación de política. El gate reporta 66 hashes, manifest/version 0.10.47, identidad y hash del host nativo, inventory schema y overlay/hotload guards PASS. El workflow de Native Messaging compiló el host y aprobó framing y clean shutdown. La auditoría de observabilidad, Live Caption, layout portable, privacy lifecycle y regressions heredadas reportó PASS.
+
+**Estado de tareas provisionales**
+
+| ID | Resultado a la cabeza 317242c | Estado operativo |
+|---|---|---|
+| SI-GRQ-01 | Large V3, verbose JSON, segmento, ZDR gate y transcriber cancellation/Retry-After; tests Groq PASS | IMPLEMENTADO EN CANDIDATA / MOCK API PASS |
+| SI-GRQ-02 | Captura remota separada, gesto explícito y control de browser surface | IMPLEMENTADA; solo sintética, audio real NO VERIFICADO |
+| SI-GRQ-03 | Captura micrófono propio separado y etiqueta INTÉRPRETE | IMPLEMENTADA; solo sintética, audio real NO VERIFICADO |
+| SI-GRQ-04 | WAV PCM16 mono 16 kHz, reloj y ACK de flush | IMPLEMENTADO / TEST SINTÉTICO PASS |
+| SI-GRQ-05 | Dos colas, secuencia por pista, concurrencia y backpressure | IMPLEMENTADO / TEST PASS |
+| SI-GRQ-06 | Fusión cronológica, overlaps y stable IDs | IMPLEMENTADO / TEST PASS |
+| SI-GRQ-07 | Un overlay con fuente del intérprete y remoto neutral; native captions no compiten | IMPLEMENTADO EN CANDIDATA; UI real NO ACEPTADA |
+| SI-GRQ-08 | Stop, flush, release, abort y revalidación de llamada | IMPLEMENTADO / TEST SINTÉTICO PASS |
+| SI-GRQ-09 | Suites headless de Worklet, captura, fusión, colas y cliente Groq simulado | IMPLEMENTADO / CI PASS; aún no prueba hardware real |
+| SI-GRQ-10 | WER/CER, latencia p50/p95, pérdidas, RPM/ASH y coste sobre corpus autorizado | PENDIENTE |
+| SI-GRQ-11 | CI verde para la cabeza exacta | PASS 3/3 para 317242c |
+| SI-GRQ-12 | Aceptación de Windows/Chrome y llamada controlada | PENDIENTE · RESERVADA AL OPERADOR |
+
+**Límites que permanecen**
+
+- No se inició una sesión de captura real; no se obtuvo ni transmitió audio real; no hubo request real a Groq; no se usó clave/API; no se midió latencia efectiva ni WER/CER.
+- La captura real de tab audio / getUserMedia y sus permisos dependen de prueba controlada de Chrome. El pipeline Groq fue probado con API simulada, no contra la cuenta del operador.
+- La ventana de 6 s sigue provisional. Los límites/cuotas efectivos y la calidad por idioma requieren medición autorizada; no se declaran óptimos.
+- El audio remoto puede ser una mezcla. No hay diarización acreditada de LEP/proveedor.
+- CI verde y synthetic tests no equivalen a aceptación humana, uso en llamada, release ni producto listo para producción.
+- Mantener PR #83 en borrador hasta revisión de arquitectura, prueba controlada y aceptación expresa. No transferir ni ampliar permisos por analogía.
+
+**Siguiente secuencia autorizada:** revisión estática final de la PR y los límites de audio/API; después, cuando el operador autorice y realice la verificación de cuenta/ZDR/clave y la prueba real, medir WER/CER, latencia y coste. La instancia no ejecutará esa prueba real bajo el control G14 vigente.
