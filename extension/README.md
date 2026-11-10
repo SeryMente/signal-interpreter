@@ -32,6 +32,32 @@ Observabilidad automática al cierre, con retry persistente y diagnóstico de te
 
 Documento canónico único: `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`, sección 15, en el repositorio y en el paquete distribuido.
 
+
+## Candidata de transcripción dual Groq · PR #83 · NO INTEGRADA
+
+El comportamiento predeterminado de `main/0.10.47` sigue siendo el descrito arriba (Live Caption nativo). El siguiente flujo existe únicamente en la candidata draft [PR #83](https://github.com/SeryMente/signal-interpreter/pull/83), no debe tratarse como una versión publicada ni cargada en Chrome:
+
+- Una acción visible en la ruta de llamada solicita compartir la pestaña del navegador con audio y solicita el micrófono propio en una pista independiente.
+- Dos AudioWorklets producen ventanas WAV PCM16 mono a 16 kHz, con reloj común.
+- Cada ventana remota y cada ventana del intérprete se envía por colas independientes a Groq `whisper-large-v3`; se conserva el orden dentro de cada fuente y se permite concurrencia entre ellas.
+- Segmentos con timestamp se fusionan en un único diálogo. El micrófono se presenta como **INTÉRPRETE** y el canal remoto mixto como **AUDIO REMOTO · HABLANTE NO VERIFICADO**. Idioma no equivale a identidad.
+- La transcripción se mantiene en memoria del overlay; audio, texto hablado y segmentos clínicos no se envían a observabilidad ni a la persistencia general. Al terminar la llamada, revocar permiso o fallar una compuerta se detienen ambas fuentes y se abortan las peticiones activas.
+
+### Preparación local de credencial (solo si el operador habilita la candidata)
+
+No se incluye una clave Groq en Git, ZIP, logs ni en este README. El archivo local opcional `extension/groq-secret.local.js` está excluido por `.gitignore`; crearlo solo en el checkout local y nunca publicarlo:
+
+```js
+globalThis.__SIGNAL_GROQ_TOKEN = "gsk_...";
+```
+
+El token real se obtiene y guarda directamente en el perfil local autorizado; no se envía por chat ni se registra en commits. El service worker intenta importar ese archivo local. La ausencia de token deja la captura bloqueada.
+
+En el popup, `Diálogo combinado Groq` debe estar habilitado. `Zero Data Retention confirmado` permanece desmarcado por defecto y solo debe marcarse después de verificar ZDR directamente en la consola/cuenta Groq. Es una declaración del operador, no una verificación independiente del proveedor. No confirmar ZDR sin evidencia.
+
+**Estado de aceptación:** captura, llamadas Groq, WER/CER real, latencia extremo a extremo y calidad en Windows/Chrome no han sido probadas con audio real. La candidata requiere CI verde en su cabeza final y aceptación humana; no cargarla en producción mientras siga draft o con checks fallidos.
+
+
 ## Funciones Cloud
 
 Auto-Answer, OPI/VRI, Online/Offline, llamadas perdidas, cronómetros, ingresos, USD/MXN, overlay, espejo de pantallas, telemetría persistente/exportable y sonido continúan siendo específicos de app.cloudinterpreter.com.
