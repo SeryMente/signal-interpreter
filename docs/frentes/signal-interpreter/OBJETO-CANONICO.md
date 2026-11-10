@@ -517,3 +517,16 @@ Package integrity aprobó **8 suites**: microphone guard; Presence Connect 36; P
 - Mantener PR #83 en borrador hasta revisión de arquitectura, prueba controlada y aceptación expresa. No transferir ni ampliar permisos por analogía.
 
 **Siguiente secuencia autorizada:** revisión estática final de la PR y los límites de audio/API; después, cuando el operador autorice y realice la verificación de cuenta/ZDR/clave y la prueba real, medir WER/CER, latencia y coste. La instancia no ejecutará esa prueba real bajo el control G14 vigente.
+
+
+
+### Reconciliación de observaciones en main y cierre documental · G14 · 2026-11-10
+
+- **Cabeza de código verificada:** `317242c4809aa5434803d25c28a134a84894a284`.
+- **Cabeza documental actual consultada:** `cb8691295d7da7dbb017b2dc9d64bbe7f9a59480`; incluye el OCP y SI-FB-02 reconciliados con resultados CI, sin cambios posteriores de código respecto del checkpoint 317242c.
+- **CI sobre la cabeza documental cb869129:** Package integrity run `42926448920` SUCCESS; signal-observability-audit `42926448989` SUCCESS; native-caption-host-build `42926450236` SUCCESS. Package integrity confirma 66/66 hashes, las ocho suites del gate y PASS para Groq transcriber, dual dialogue, colas paralelas, WAV/flush, captura dual y revocación de política. Audit confirma Live Caption, observabilidad, layout y lifecycle; Native Messaging pasa compilación, framing y clean shutdown.
+- **Estado GitHub:** PR #83 permanece abierta, draft, no fusionada. La rama candidata y la documentación son remotas y tienen read-back. No se actualizó `main` con esta implementación.
+- **Movimiento externo de main:** el ref consultado de `main` avanzó a `a39591c9bd11a773cf262e842c8793526a66a817`, mientras la base registrada de PR #83 seguía en `f80c57bfc9544c85d10caf79949cc6ee64fd198e`. Comparación GitHub entre ambos: 227 commits y 189 rutas modificadas, todas bajo `observations/` (batches, inbox, health, latest, manifest e índices); no se identificaron rutas de código fuente en esa diferencia. Se registra como movimiento de datos/observabilidad, no como modificación de código funcional. No se importaron esos 227 commits, no se rebasó y no se cambió base; se evita contaminar la PR con lotes diagnósticos.
+- **Límite de cierre:** el CI verde acredita la revisión estática y las pruebas sintéticas de candidata; no acredita captura real en Chrome, llamada, calidad acústica, WER/CER, latencia real, cuenta Groq/ZDR ni aceptación del operador. La implementación sigue siendo candidata, no una versión integrada o publicada.
+- **Siguiente compuerta:** revisión de diffs frente a los cambios data-only de main; después, con autorización y acción del operador, prueba controlada Windows/Chrome, verificación ZDR/cuenta, métricas de calidad y aceptación. No se autoriza merge/deploy/release por el estado CI.
+
