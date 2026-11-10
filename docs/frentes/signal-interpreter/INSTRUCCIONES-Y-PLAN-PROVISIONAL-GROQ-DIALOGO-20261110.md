@@ -35,6 +35,12 @@ El resumen previo del frente incluye una petición inicial anterior, pero el tex
 
 ---
 
+### A-03 · continuidad, OCP y ventana de trabajo
+
+```text
+Okj, continuemos, actualiza en tu ocp las reglas operativas y las decisiones hasta aquim tus tareas provisionales,  y sigamos trabajando,  tengo 40 minutos, hagamos que cuenten.
+```
+
 ## 2. Interpretación operativa vinculante
 
 El entregable solicitado es **un solo diálogo cronológico combinado** que recibe dos fuentes de audio independientes y las procesa con Groq Whisper:
