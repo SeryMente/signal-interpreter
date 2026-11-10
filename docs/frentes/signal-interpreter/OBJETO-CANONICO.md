@@ -8,7 +8,7 @@
 - Revisión documental: corte G14 de reconciliación del backlog provisional y regresiones reportadas · 2026-11-10; evidencia: [crónica](cronica/C-SIGNAL-BACKLOG-REGRESIONES-20261110-G14.md). Naturaleza: actualización del OCP heredado; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
-- Estado de producto: `main/manifest.json` está en **0.10.47**. PR [#79](https://github.com/SeryMente/signal-interpreter/pull/79) quedó fusionada en `10a7f1b1f8c48d290ce8f4df5639109efe571c22`; PR #78 también está fusionada. El operador reportó después dos regresiones (switch Auto-Answer y habilitación del micrófono); la conversación anterior reportó un hotfix local, pero su recibo/archivos no fueron re-verificados en este corte y ese hotfix no está acreditado en `main`. No se recargó Chrome ni se ha aceptado una llamada E2E. No hay release declarado.
+- Estado de producto · corte G14 del 2026-11-10: `main/manifest.json` permanece en **0.10.47**; #79 y #78 integradas. PR #80 sigue draft/no mergeable, sin merge. El workspace local fila4 0.10.47 fue re-leído y sus pruebas sintéticas repetidas pasan (Presence Guard 85, Presence Connect 35, Auto-Answer Runtime 15, Microphone Guard PASS; paquete 60/60 SHA-256). Estos resultados no prueban Chrome ni E2E. La discrepancia de unmute previo a llamada quedó abierta como SI-REG-05. No se recargó Chrome, no se activó Auto-Answer/presencia, no hubo llamada/audio real, aceptación ni release; véase la [crónica de retoma G14](cronica/C-SIGNAL-RETOMA-20261110-G14-CURRENT.md).
 - Persistencia verificable: identificar la revisión Git que contiene este archivo y el [recibo de migración](evidencias/C-SIGNAL-METACANON-20261020-01.json); el recibo identifica la base y los contenidos, no autocertifica publicación o conformidad semántica.
 
 ## LEER PRIMERO
@@ -23,9 +23,9 @@ Precedencia: plataforma y autorización vigente → Metaprompt Canónico y Metac
 
 ## Referencia metodológica
 
-- **Metacanon adquirido: 1.29**; DUG **v386 · NX-386m**; GOW **2.18**.
-- Fuente canónica releída desde `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, blob `22dca684830a36dff019b47811d9b800cc9bea0a`; DUG v386 · NX-386m, Metacanon 1.29 y GOW 2.18. §ARR consultado; se consideró el CNP (P001, P004, P005, P038, P043). `INICIO.md` no se usó para sustituir la fuente canónica.
-- Control vigente: `CONTROL-RESPONSABILIDAD.json`, blob `8b65e9d6886b248df90d9d879d9b982635046ed1`; G14 ACTIVO, agente único; identidad local `01a1bd8b-8291-7906-b862-6088593acfe5` según control. G13 queda SUSTITUIDO. FOL1 PREPARADA, NO ACTIVA; folio PENDIENTE/NO ASIGNADO.
+- **Metacanon adquirido: 1.29**; DUG **v388 · NX-388m**; GOW **2.18**.
+- Fuente canónica releída desde `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, blob `4db0ebadfd1e48b2bdec9236ba7f344921e4a865`; DUG v388 · NX-388m, Metacanon 1.29 y GOW 2.18. §ARR consultado; se consideró el CNP (P001, P004, P005, P038, P043). `INICIO.md` no se usó para sustituir la fuente canónica.
+- Control vigente: `CONTROL-RESPONSABILIDAD.json`, blob `2f02cab6b3697f31b2af3d141204c4431fbc05cb`; G14 ACTIVO, agente único; identidad local `01a1bd8b-8291-7906-b862-6088593acfe5` según control. G13 queda SUSTITUIDO. FOL1 PREPARADA, NO ACTIVA; folio PENDIENTE/NO ASIGNADO.
 - Se consultaron §ARR, P001/P004/P005/P007/P008/P011/P019/P033/P038/P043 y Metacanon §§4/24/42/47 pertinentes. **MCP-NORMATIVO: DESACTIVADO**. No se presume sincronización con Notion u otras superficies.
 
 ### Constancia de adquisición y aplicación
@@ -337,3 +337,14 @@ Esta adenda supersede las referencias operativas anteriores de G13 y producto 0.
 - **Verificación local:** inventario 60/60 SHA-256; `verify-release-package` PASS; layout 18 referencias PASS; presence-connect 35 checks PASS; presence-guard 83 checks PASS; microphone-guard PASS; overlay regression PASS; JS syntax 5/5; PowerShell 5.1 parser 7/7 scripts relevantes PASS.
 - **Estado:** materializado y verificado como paquete; Chrome no se cargó/recargó; Native Messaging host ya estaba presente y registrado bajo CENTRAL\\fila4; se verificó en solo lectura que el registro apunta al manifiesto correcto, el origen permitido coincide con el ID de extensión y el ejecutable conserva SHA-256 313CCD3312A8C75131EC7C4ADFEBF883B028BCE8AEE8B1EA43BD4DDDBB202EFE. No se modificó. Llamada real/audio y aceptación del operador pendientes. No declarar resuelta la aceptación funcional.
 - **RDC:** endpoint actual PC10RCIF4EI4 / device_id `b573344f-c68f-47c9-9c2e-ae67f2e63bdb` revalidado en el addendum de control G14. MantenimientoRCI solo operó el agente; los artefactos quedaron bajo fila4.
+
+
+### Actualización viva G14 · repetición del ciclo y retoma literal · 2026-11-10
+
+- Gobierno releído: DUG v388 · NX-388m; Metacanon 1.29; GOW 2.18; blob DUG `4db0ebadfd1e48b2bdec9236ba7f344921e4a865`; §ARR consultado. Control G14 releído, activo y agente único; FOL1 PREPARADA/NO ACTIVA.
+- Main: 0.10.47; commit de observabilidad `e2fccfce855e20df9aa1fd0ff34c1eecaa087275`. La actualización observacional posterior no cambia el código de extensión. PR #80 draft, no mergeable; sus tres workflows consultados constan SUCCESS (Package integrity, observability audit, native-caption-host-build), sin aceptación de micrófono/llamada.
+- Retoma local bajo `C:\\Users\\fila4\\Desktop\\SeryMente\\signal-interpreter`: presencia 85/85, conexión 35/35, runtime Auto-Answer 15/15, test MIC PASS, sintaxis 2/2 y package 60/60 hashes. Sintético/offline; no Chrome/E2E. Los hashes de archivos y la salida literal del modelo constan en la [crónica de retoma](cronica/C-SIGNAL-RETOMA-20261110-G14-CURRENT.md).
+- Política Auto-Answer: interruptor de configuración y `SIGNAL_PRESENCE_ARM` son estados separados. El default del código popup es `autoAnswerEnabled=false`; el estado persistido en Chrome no se consultó. En este ciclo no se habilitó ni armó la contestación.
+- Hallazgo MIC: `setExtensionMicrophoneMutedInternal(false, ...)` no exige `callActive` para enviar unmute a una pestaña Cloud Interpreter; el retry de pista tardía sí exige llamada activa. La prueba `microphone-guard-test.mjs` protege el comportamiento pre-call actual. Esto contradice la política anterior de mute en espera/timbrado/incierto. SI-REG-05 queda P0 abierta; no es una prueba de que una llamada real haya transmitido audio.
+- Observabilidad: ventana 10m `2026-11-10T19:25:00.897Z`: intentos 0, clicks 0, diálogos 0, readiness samples 10; `freshness=receipt-unavailable`, receiptVerified=false, 0 batches verificados y 12.907 no verificados. No permite adjudicar causalmente las dos llamadas perdidas previas.
+- No hubo cambio de código, modificación de preferencias, reload Chrome, activación/armado, llamada/audio real, aceptación, merge, deploy o release.
