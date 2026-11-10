@@ -121,7 +121,8 @@ const safetyRegressionSuites = [
   "tools/microphone-guard-test.mjs",
   "tools/presence-connect-test.mjs",
   "tools/presence-guard-test.mjs",
-  "tools/autoanswer-runtime-guard-test.mjs"
+  "tools/autoanswer-runtime-guard-test.mjs",
+  "tools/groq-transcriber-tests.mjs"
 ];
 for (const suite of safetyRegressionSuites) {
   const result = spawnSync(process.execPath, [resolve(root, suite)], {
