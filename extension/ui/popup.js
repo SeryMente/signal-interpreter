@@ -16,7 +16,7 @@
     transcriptionAvailable: true,
     transcriptionEnabled: true,
     groqModel: "whisper-large-v3",
-    groqDialogueEnabled: true,
+    groqDialogueEnabled: false,
     groqZeroDataRetentionConfirmed: false,
     opiRatePerMinute: 0.20,
     vriRatePerMinute: 0.25,
