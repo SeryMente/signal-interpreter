@@ -32,8 +32,8 @@
       if(language)form.append("language",language);
       form.append("temperature","0");
       form.append("response_format","verbose_json");
+      // Segment timestamps keep live chronology without the extra word-timing latency.
       form.append("timestamp_granularities[]","segment");
-      form.append("timestamp_granularities[]","word");
       var prompt=buildPrompt(language,context);
       if(prompt)form.append("prompt",prompt);
       var controller=new AbortController();
