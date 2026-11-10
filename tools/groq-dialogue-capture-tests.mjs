@@ -128,16 +128,19 @@ assert.deepEqual(h.audioNodes.map(n=>n.opts.processorOptions.windowSeconds),[6.5
 const startMessage=h.sent.find(x=>x.type==="SIGNAL_GROQ_DIALOGUE_CAPTURE_START");
 assert.ok(startMessage&&startMessage.callId==="call-123","capture is bound to the active call ID");
 const sources=["groq-remote","groq-interpreter"];
-for(let i=0;i<2;i++){
-  h.audioNodes[i].port.onmessage({data:{type:"window",source:"audio",packet:wavWindow(16000,i+1)}});
-}
+h.audioNodes[0].port.onmessage({data:{type:"window",source:"audio",packet:wavWindow(16000,1)}});
+h.audioNodes[0].port.onmessage({data:{type:"window",source:"audio",packet:wavWindow(112000,3)}});
+h.audioNodes[1].port.onmessage({data:{type:"window",source:"audio",packet:wavWindow(16000,2)}});
 await h.flush();
 const chunks=h.sent.filter(x=>x.type==="SIGNAL_GROQ_DIALOGUE_CHUNK");
-assert.equal(chunks.length,2,"both sources produce independent upload messages");
-assert.deepEqual(chunks.map(x=>x.source).sort(),sources.slice().sort());
+assert.equal(chunks.length,3,"two remote windows and one interpreter window are uploaded independently");
+assert.deepEqual(Array.from(chunks,x=>x.source).sort(),["groq-interpreter","groq-remote","groq-remote"]);
 assert.ok(chunks.every(x=>x.mimeType==="audio/wav"&&x.sampleRate===16000&&x.durationMs===6500));
-assert.ok(chunks.every(x=>x.sequence===1));
-assert.notEqual(chunks[0].base64,chunks[1].base64,"the two audio sources are never mixed together");
+const remoteChunks=chunks.filter(x=>x.source==="groq-remote");
+assert.deepEqual(Array.from(remoteChunks,x=>x.sequence),[1,2],"same-source uploads retain capture sequence");
+assert.deepEqual(Array.from(remoteChunks,x=>x.chunkStartOffsetMs),[0,6000],"remote windows advance six seconds with 500 ms overlap");
+assert.equal(chunks.find(x=>x.source==="groq-interpreter").sequence,1);
+assert.equal(new Set(chunks.map(x=>x.base64)).size,3,"all chunks remain separate; no microphone/tab mixing");
 const stopHandler=h.button().listeners.click;
 await stopHandler();
 await h.flush();
