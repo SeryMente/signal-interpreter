@@ -37,7 +37,7 @@
     style.textContent="section{font:12px/1.4 system-ui,sans-serif;color:#f8fafc;background:#111827;border:1px solid #475569;border-radius:12px;padding:9px 10px;box-shadow:0 8px 28px #0008;width:220px}button{width:100%;border:0;border-radius:8px;background:#2563eb;color:white;font:600 12px system-ui;padding:9px;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}p{margin:7px 2px 0;color:#cbd5e1;min-height:18px}small{display:block;color:#94a3b8;margin:5px 2px 0}";
     var section=document.createElement("section");
     var title=document.createElement("small");title.textContent="TRANSCRIPCIÓN · GROQ WHISPER LARGE V3";
-    button=document.createElement("button");button.type="button";button.textContent="Iniciar diálogo Groq";
+    button=document.createElement("button");button.type="button";button.disabled=true;button.textContent="Iniciar diálogo Groq";
     statusNode=document.createElement("p");statusNode.setAttribute("aria-live","polite");statusNode.textContent="Comprobando disponibilidad…";
     var note=document.createElement("small");note.textContent="Selecciona esta pestaña y comparte su audio. Micrófono propio y audio remoto se procesan por separado.";
     section.append(title,button,statusNode,note);root.append(style,section);
