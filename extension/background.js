@@ -2637,7 +2637,7 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
 
   var signalGroqDialogueCaptures = new Map();
   function groqDialogueCallIdFromUrl(rawUrl) {
-    try { var u=new URL(String(rawUrl||"")); var m=u.pathname.match(/^\\/call\\/([^/]+)\\/?$/); return m?m[1]:null; } catch (_) { return null; }
+    try { var u=new URL(String(rawUrl||"")); var m=u.pathname.match(/^\/call\/([^/]+)\/?$/); return m?m[1]:null; } catch (_) { return null; }
   }
   function groqDialogueSourceKey(source) {
     return source==="groq-interpreter"?"groq-interpreter":source==="groq-remote"?"groq-remote":null;
