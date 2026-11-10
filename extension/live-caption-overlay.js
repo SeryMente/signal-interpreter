@@ -48,8 +48,10 @@
     if (globalThis.__SIGNAL_CAPTION_OVERLAY_RUNTIME__ === runtimeApi) delete globalThis.__SIGNAL_CAPTION_OVERLAY_RUNTIME__;
   }
 
-  var MAX_HISTORY = 800;
+  var MAX_HISTORY = 1200;
   var rows = [];
+  var groqDialogueMode = false;
+  var groqDialogueCaptureId = null;
   var host = null;
   var root = null;
   var config = { liveCaptionOverlayEnabled: true, overlaysGlobalEnabled: true, liveCaptionOverlayScope: "source-only" };
@@ -541,7 +543,7 @@
   }
 
   function laneForSource(source) {
-    return source === "yo" ? "yo" : "cliente";
+    return source === "yo" || source === "groq-interpreter" ? "yo" : "cliente";
   }
 
   function nearBottom(container) {
@@ -842,7 +844,7 @@
         : nativeStatusMessage();
     }
     if (dot) dot.className = "dot" + (active ? "" : " idle");
-    if (stateLabel) { stateLabel.textContent = active ? "CHROME · EN VIVO" : (sessionEnded ? "HISTORIAL" : nativeStatusMessage()); stateLabel.title = nativeStatusMessage(); }
+    if (stateLabel) { stateLabel.textContent = groqDialogueMode ? (active ? "GROQ · WHISPER LARGE V3" : (sessionEnded ? "HISTORIAL · GROQ" : "GROQ · DETENIDO")) : (active ? "CHROME · EN VIVO" : (sessionEnded ? "HISTORIAL" : nativeStatusMessage())); stateLabel.title = groqDialogueMode ? "Transcripción separada de micrófono propio y audio remoto" : nativeStatusMessage(); }
     host.style.display = "block";
     updateAriaVisibility();
     reportVisibility("render");
@@ -858,11 +860,25 @@
     if (collapsed) applyCollapsedState();
   }
 
-  function addRow(text, language, source, isLive, timestamp) {
-    if (source !== "chrome-live-caption") return;
+  function addRow(text, language, source, isLive, timestamp, segmentId) {
+    var groqSource = source === "groq-interpreter" || source === "groq-remote";
+    if (source !== "chrome-live-caption" && !groqSource) return;
+    if (source === "chrome-live-caption" && groqDialogueMode) return;
     var clean = core.normalizeText(text).slice(0, 1500);
     if (!clean) return;
     lastCaptionAt = Date.now();
+    if (groqSource) {
+      var stableId = String(segmentId || "");
+      if (!stableId || rows.some(function(item){return item.id===stableId;})) return;
+      language = core.resolveLanguage(language, clean);
+      var groqAt = Number(timestamp);
+      if (!Number.isFinite(groqAt) || groqAt <= 0) return;
+      rows.push({id:stableId,text:clean,language:language,source:source,live:true,at:groqAt});
+      rows.sort(function(a,b){return Number(a.at||0)-Number(b.at||0)||String(a.id||"").localeCompare(String(b.id||""));});
+      if (rows.length > MAX_HISTORY) rows.splice(0, rows.length - MAX_HISTORY);
+      render();
+      return;
+    }
     source = source === "yo" || source === "chrome-live-caption" ? source : "cliente";
     language = core.resolveLanguage(language, clean);
     var now = Number(timestamp);
@@ -1213,6 +1229,26 @@
       return false;
     }
     if (!message) return;
+    if(message.type==="SIGNAL_GROQ_DIALOGUE_RESET"){
+      if(!isCloudCallRoute()||String(message.captureId||"").length===0)return;
+      groqDialogueMode=true;groqDialogueCaptureId=String(message.captureId);
+      rows=[];active=true;sessionEnded=false;unreadCount=0;
+      render(true);
+      return false;
+    }
+    if(message.type==="SIGNAL_GROQ_DIALOGUE_SEGMENTS"){
+      if(!isCloudCallRoute()||!groqDialogueMode||String(message.captureId||"")!==groqDialogueCaptureId)return false;
+      (Array.isArray(message.segments)?message.segments:[]).forEach(function(segment){
+        if(!segment||!segment.text||!Number.isFinite(Number(segment.startMs)))return;
+        addRow(segment.text,segment.language,segment.source,true,segment.startMs,segment.id);
+      });
+      return false;
+    }
+    if(message.type==="SIGNAL_GROQ_DIALOGUE_STOP"){
+      if(String(message.captureId||"")!==groqDialogueCaptureId)return false;
+      active=false;sessionEnded=rows.length>0;render(true);
+      return false;
+    }
     if (!!message.labOnly !== isLabPage && /^SIGNAL_CAPTION_/.test(message.type)) return false;
     if (message.type === "SIGNAL_YOUTUBE_CAPTION_PREVIEW_STATUS") {
       if (youtubeTarget) {
