@@ -18,7 +18,7 @@ El manifiesto canónico del repositorio permanece en la raíz (manifest.json). P
 
 ### Puente Native Messaging
 
-No ejecutes por separado `extension/native/register-caption-host.ps1` en la versión 0.10.39. El instalador raíz ya materializa el ejecutable, genera el manifiesto estable, registra HKCU y hace el probe del host instalado. La preparación es por usuario de Windows: debe ser la misma cuenta que utiliza Chrome. Después de preparar el puente, todavía debes cargar la carpeta raíz en Chrome; esa carga no la realiza el instalador.
+En este workspace 0.10.47, el Native Messaging host ya preparado debe permanecer en el perfil Windows que ejecuta Chrome. No ejecutes el instalador bajo otra identidad: el registro HKCU y LOCALAPPDATA pertenecen al usuario. Tras verificar el host, carga manualmente la subcarpeta `extension/` en Chrome; esta preparación no carga ni recarga la extensión.
 
 La extensión utiliza texto nativo de Live Caption → Windows UI Automation → puente Native Messaging → overlay de llamada. No captura audio de pestaña ni del micrófono, no usa Groq como fallback y no reproduce conversación. La segmentación lingüística no identifica hablantes; los fragmentos ambiguos permanecen sin asignar. Windows/Chrome deben exponer el texto nativo para que SI pueda mostrarlo.
 
