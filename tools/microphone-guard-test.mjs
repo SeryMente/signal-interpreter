@@ -13,7 +13,7 @@ if(!main.includes("recoveryBaselineAttempted")||!main.includes("recoveredBaselin
 if(background.includes("var recoveryMuted=previousMuted;"))throw Error("previous-muted-state-can-lock-an-unmute");
 if(!content.includes("EXTENSION_MICROPHONE_KEYBOARD_FALLBACK_TRIGGERED"))throw Error("content-hotkey-fallback-missing");
 const helperStart=background.indexOf("function pendingMicrophoneUnmuteEligible");
-const helperEnd=background.indexOf("\\n",helperStart);
+const helperEnd=background.indexOf("\n",helperStart);
 if(helperStart<0||helperEnd<0)throw Error("late-track-unmute-eligibility-helper-missing");
 const lateTrackEligible=vm.runInNewContext(background.slice(helperStart,helperEnd)+"; pendingMicrophoneUnmuteEligible");
 const pendingState={microphoneMuteRequested:false,microphoneMuted:true,microphoneMuteStatus:"error",microphoneOutputStatus:"error"};
