@@ -5,7 +5,7 @@
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
-- Revisión documental: corte G14 de reconciliación del backlog provisional y regresiones reportadas · 2026-11-10; evidencia: [crónica](cronica/C-SIGNAL-BACKLOG-REGRESIONES-20261110-G14.md). Naturaleza: actualización del OCP heredado; no proyecto nuevo.
+- Revisión documental: corte G14 de reconciliación del backlog y compuertas de regresión · 2026-11-10; evidencia: [crónica de regresiones](cronica/C-SIGNAL-BACKLOG-REGRESIONES-20261110-G14.md) y [crónica de compuertas micrófono/Connect](cronica/C-SIGNAL-REGRESSION-GATES-20261110-G14.md). Naturaleza: actualización del OCP heredado; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
 - Estado de producto · corte G14 del 2026-11-10: `main/manifest.json` permanece en **0.10.47**; #79 y #78 integradas. PR #80 sigue draft/no mergeable, sin merge. El workspace local fila4 0.10.47 fue re-leído y sus pruebas sintéticas repetidas pasan (Presence Guard 85, Presence Connect 35, Auto-Answer Runtime 15, Microphone Guard PASS; paquete 60/60 SHA-256). Estos resultados no prueban Chrome ni E2E. La discrepancia de unmute previo a llamada quedó abierta como SI-REG-05. No se recargó Chrome, no se activó Auto-Answer/presencia, no hubo llamada/audio real, aceptación ni release; véase la [crónica de retoma G14](cronica/C-SIGNAL-RETOMA-20261110-G14-CURRENT.md).
@@ -348,3 +348,35 @@ Esta adenda supersede las referencias operativas anteriores de G13 y producto 0.
 - Hallazgo MIC: `setExtensionMicrophoneMutedInternal(false, ...)` no exige `callActive` para enviar unmute a una pestaña Cloud Interpreter; el retry de pista tardía sí exige llamada activa. La prueba `microphone-guard-test.mjs` protege el comportamiento pre-call actual. Esto contradice la política anterior de mute en espera/timbrado/incierto. SI-REG-05 queda P0 abierta; no es una prueba de que una llamada real haya transmitido audio.
 - Observabilidad: ventana 10m `2026-11-10T19:25:00.897Z`: intentos 0, clicks 0, diálogos 0, readiness samples 10; `freshness=receipt-unavailable`, receiptVerified=false, 0 batches verificados y 12.907 no verificados. No permite adjudicar causalmente las dos llamadas perdidas previas.
 - No hubo cambio de código, modificación de preferencias, reload Chrome, activación/armado, llamada/audio real, aceptación, merge, deploy o release.
+
+
+### Actualización viva G14 · criterio rector de Auto-Answer latency-first · 2026-11-10
+
+La premisa de diseño indicada por el operador es que varias personas pueden competir por la misma llamada y otros intérpretes podrían utilizar automatización. Se adopta como hipótesis operativa, no como hecho verificado. La prioridad del producto es activar el botón real `Connect` lo antes posible tras detectar un OPI elegible.
+
+- **Activación única:** `button.click()` sobre el botón de interfaz. No se persigue equivalencia con ratón físico, `isTrusted`, eventos mouse/pointer ni CDP. No se invocan endpoints privados.
+- **Camino crítico:** detección → compuertas/readiness → autorización de un solo uso → `button.click()` → ruta confirmada. Se evita más de una activación del mismo intento.
+- **Candidato:** rama `perf/autoanswer-fast-dispatch-20261110`. Caché en memoria de preferencia y candado de laboratorio; reutilización de presencia `active` reciente (máximo 20 s) de eventos/sondeo/restauración; refresh obligatorio y fail-closed si está ausente, desconocida o caducada; exclusión de llamada activa en otras pestañas preservada. El camino rápido evita lectura local repetida, consulta de inactividad y `tabs.get`.
+- **Telemetría:** `authorizationVerificationPath` y `presenceSampleAgeMs` permiten evaluar `cached/refreshed`, además de latencia autorización, detección→clic y clic→ruta.
+- **Tests sintéticos offline:** Presence Guard 94/94, Presence Connect 33/33, Auto-Answer Runtime 15/15, syntax y hashes críticos PASS. Evidencia en [crónica G14 de Auto-Answer fast path](cronica/C-SIGNAL-AUTOANSWER-FASTPATH-20261110-G14.md).
+- **Sin aceptación real:** no se habilitó/armó Auto-Answer, no se cambió Online/Offline, no hubo reload de Chrome, llamada/audio real, aceptación, merge, deploy o release. La latencia de la sesión de Chrome y el éxito real de plataforma siguen PENDIENTES de prueba autorizada.
+- La vía CDP/isTrusted surgió de un malentendido posterior y queda expresamente fuera de diseño y aceptación; los archivos de sondeo temporales fueron eliminados. PR #80 permanece intacta.
+
+## Actualización de estado G14 — compuertas de regresión · 2026-11-10
+
+- **Candidata de trabajo:** PR #82, rama `candidate/autoanswer-fastpath-ready-20261110`, conserva estado abierta/draft/no fusionada. Main no se modifica.
+- **Guards:** unmute sin llamada activa bloqueado en el candidato; late-track retry exige llamada activa e intención explícita; fin de llamada detiene captura, solicita/verifica remute y registra fallo antes de limpiar el contexto.
+- **Connect:** un único punto de activación normal `button.click()`; la suite exige exactamente uno y añade rechazo de concesión expirada con cero clics y liberación de lease. El watchdog conserva política `no-second-click`.
+- **CI:** `verify-release-package.mjs` invoca cuatro suites críticas (micrófono, Connect, presencia y runtime Auto-Answer), haciendo fallar el verificador ante cualquier suite fallida. El workflow package-integrity invoca ese verificador en PR.
+- **Persistencia de código:** commits candidatos `39dc6104578bd9074ae93944badcc7fac26c03be`, `4c32d761b2b84320cfc1e0b5ee8fcb2774cf9c9f` y `327c2dfa370c1ac2b0bfc929e18f6a2fc4c15011`. Cada archivo fue releído y cotejado exactamente tras la escritura.
+- **Crónica/read-back:** `cronica/C-SIGNAL-REGRESSION-GATES-20261110-G14.md`, commit `99847b65537ac33fc46555f4a6300ec2bd1df670`, lectura de vuelta exacta.
+- **Verificación pendiente:** el conector GitHub no devolvió workflow runs ni check statuses para el último commit; las nuevas suites no se ejecutaron en esta sesión. No declarar CI o tests PASS por el mero hecho de que el gate exista.
+- **Límites:** sin Chrome reload, GUI, presencia armada, Auto-Answer activo, llamada/audio real, aceptación humana, merge, deploy o release. La política de micrófono está protegida en la candidata, no aceptada en llamada real.
+- **Backlog prioritario:** P0 aceptación switch/llamada/micrófono; P1 transcripción bilingüe INTÉRPRETE, calidad y matriz integrada; P2 compactación/accesibilidad y lector de pestaña.
+- **Regla de aceptación:** el clic emitido no equivale a llamada conectada; un test sintético no equivale a pista física; el gate CI no equivale a aceptación humana.
+
+### Cierre de CI de las compuertas de regresión · 2026-11-10
+
+La cabeza candidata `b82c813dd3650e9f10fe47ef55a710489d6bad0b` obtuvo 3/3 workflows SUCCESS: observability audit `42906302139`, native-caption-host-build `42906302286`, package-integrity `42906302442`. Package integrity ejecutó y aprobó Mic Guard, Presence Connect 36/36, Presence Guard 94/94 y Auto-Answer Runtime 15/15, con 60/60 hashes de paquete. El smoke test Windows aprobó validación del instalador, compilación/paquete del host y Native Messaging framing/clean shutdown.
+
+Esto cierra el gate automatizado de esta candidata; no constituye aceptación en Chrome ni prueba de micrófono físico, llamada o transcripción real. La PR #82 continúa abierta/draft/no fusionada. No se ejecutaron reload, arming, Auto-Answer, llamada/audio real, merge, deploy ni release. Véase `cronica/C-SIGNAL-REGRESSION-GATES-20261110-G14.md`.

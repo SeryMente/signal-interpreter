@@ -10,7 +10,7 @@ if errorlevel 1 (
 echo.
 echo Puente nativo verificado e instalado para este usuario de Windows.
 echo La extension aun debe cargarse manualmente en Chrome.
-echo Selecciona la raiz de esta carpeta: debe contener manifest.json.
+echo Selecciona la subcarpeta extension: contiene el manifest.json cargable.
 start "" "chrome://extensions"
-start "" explorer.exe "%~dp0"
+start "" explorer.exe "%~dp0extension"
 pause

@@ -12,6 +12,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   var DEFAULT_CONFIG = {
     targetHost: "app.cloudinterpreter.com",
     autoAnswerEnabled: false,
+    presenceIdleSeconds: 180,
     observationEnabled: true,
     networkTelemetryEnabled: true,
     performanceTelemetryEnabled: true,
@@ -649,6 +650,13 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     }
     return{ok:false,verified:false,muted:false,trackCount:0,senderCount:0,error:lastError||"probe-failed",attempts:3};
   }
+  function pendingMicrophoneUnmuteEligible(state, probe, activeCall) {
+    return activeCall === true && !!state && state.microphoneMuteRequested === false &&
+      state.microphoneMuted === true && state.microphoneMuteStatus === "error" &&
+      !!probe && probe.verified === true && probe.muted === true &&
+      Number(probe.trackCount || 0) > 0;
+  }
+
   async function hotloadHeartbeat(trigger) {
     var now = Date.now();
     if (now - hotloadLastHeartbeatAt < HOTLOAD_HEARTBEAT_MIN_MS) return;
@@ -659,8 +667,20 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     state.hotLoadLease = Object.assign({}, state.hotLoadLease || baseState().hotLoadLease, {
       schema: HOTLOAD_SCHEMA, phase: "active-call", lastHeartbeatAt: iso(), runtimeVersion: chrome.runtime.getManifest().version
     });
-    var expectedMuted=!!state.microphoneMuted;
     var micProbe=await probeMainClientMicrophone(state.callSourceTabId,"hotload-heartbeat").catch(function(error){return{ok:false,verified:false,muted:false,trackCount:0,senderCount:0,error:String(error)}});
+    if(pendingMicrophoneUnmuteEligible(state,micProbe,hasActiveCall(state))){
+      var lateUnmute=await setMainClientMicrophoneMuted(state.callSourceTabId,false,"late-track-explicit-unmute-retry").catch(function(error){return{ok:false,verified:false,muted:true,error:String(error)}});
+      if(lateUnmute&&lateUnmute.verified===true&&lateUnmute.muted===false){
+        state.microphoneMuted=false;state.microphoneMuteRequested=false;state.microphoneMuteStatus="applied";
+        state.microphoneOutputMuted=false;state.microphoneOutputStatus="applied";
+        state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:false});
+        micProbe=lateUnmute;
+        record("EXTENSION_MICROPHONE_LATE_TRACK_UNMUTE_RECOVERED",{callId:state.callId,tabId:state.callSourceTabId,trackCount:Number(lateUnmute.trackCount||0),senderCount:Number(lateUnmute.senderCount||0),source:"explicit-unmute-intent-preserved"},"info","microphone");
+      }else{
+        record("EXTENSION_MICROPHONE_LATE_TRACK_UNMUTE_DEFERRED",{callId:state.callId,tabId:state.callSourceTabId,trackCount:Number(lateUnmute&&lateUnmute.trackCount||micProbe.trackCount||0),error:lateUnmute&&lateUnmute.error||"verification-pending",policy:"remain-muted-retry-on-next-active-call-heartbeat"},"warn","microphone");
+      }
+    }
+    var expectedMuted=!!state.microphoneMuted;
     state.microphoneOutputTrackCount=Number(micProbe&&micProbe.trackCount||0);
     state.microphoneOutputSenderCount=Number(micProbe&&micProbe.senderCount||0);
     var micProbeMatches=micProbe&&micProbe.verified===true&&!!micProbe.muted===expectedMuted;
@@ -671,7 +691,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:expectedMuted});
       record("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFIED",{callId:state.callId,tabId:state.callSourceTabId,muted:expectedMuted,trackCount:state.microphoneOutputTrackCount,senderCount:state.microphoneOutputSenderCount,attempts:Number(micProbe.attempts||1),trigger:trigger||"alarm"},"info","microphone");
     }else{
-      state.microphoneOutputMuted=expectedMuted;
+      state.microphoneOutputMuted=micProbe&&typeof micProbe.muted==="boolean"?!!micProbe.muted:expectedMuted;
       state.microphoneOutputStatus="pending";
       if(state.microphoneMuteStatus!=="error")state.microphoneMuteStatus="pending";
       state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:expectedMuted});

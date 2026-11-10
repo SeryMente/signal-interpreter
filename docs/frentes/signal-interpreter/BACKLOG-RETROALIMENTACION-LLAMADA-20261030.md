@@ -32,7 +32,7 @@
 
 ### SI-FB-01 — Política de mute vinculada al estado de llamada
 
-**Prioridad:** P0 · seguridad del canal de audio  
+**Prioridad:** P0 · seguridad del canal de audio
 **Estado al 2026-11-10:** implementación parcial en main 0.10.47; el operador reportó que el micrófono no enciende. El hotfix local que atendería pistas tardías está reportado, no re-verificado ni integrado en main. Aceptación pendiente.
 
 **Objetivo:** impedir que el micrófono quede abierto antes de que el operador conteste una llamada y asegurar el cierre inmediato al terminarla.
@@ -56,7 +56,7 @@
 
 ### SI-FB-02 — Captura y transcripción bilingüe del canal INTÉRPRETE
 
-**Prioridad:** P1 · funcionalidad central  
+**Prioridad:** P1 · funcionalidad central
 **Estado al 2026-11-10:** no implementado en main. La candidata de PR #75 permanece draft/no mergeable; credencial y confirmación efectiva de ZDR, aislamiento y E2E bilingüe siguen pendientes.
 
 **Objetivo:** transcribir en tiempo real la voz del operador/intérprete capturada desde el micrófono, tanto en español como en inglés, y mostrarla como un canal independiente de los captions del cliente/LEP.
@@ -83,7 +83,7 @@
 
 ### SI-FB-03 — Calidad, continuidad y atribución de la transcripción
 
-**Prioridad:** P1 · calidad funcional  
+**Prioridad:** P1 · calidad funcional
 **Estado al 2026-11-10:** parcial para captions nativos, metadata source/speaker/language e identidad de parciales; métricas WER/CER, corpus autorizado y aceptación del canal INTÉRPRETE pendientes.
 
 **Hallazgos observados en la muestra (sin conservar contenido privado):**
@@ -114,7 +114,7 @@
 
 ### SI-FB-04 — Densidad visual y redistribución del overlay
 
-**Prioridad:** P2 · UX / legibilidad  
+**Prioridad:** P2 · UX / legibilidad
 **Estado al 2026-11-10:** parcial: minimización reversible y preferencia de colapso integradas en main; densidad compacta integral, revisión teclado/viewport y aceptación visual pendientes.
 
 **Objetivo:** maximizar el espacio legible para el contenido transcrito y reducir el espacio consumido por elementos repetitivos.
@@ -138,7 +138,7 @@
 
 ### SI-FB-05 — Lector de transcripción en pestaña independiente de Chrome
 
-**Prioridad:** P2 · UX / lectura extendida  
+**Prioridad:** P2 · UX / lectura extendida
 **Estado al 2026-11-10:** implementado a nivel de código en main 0.10.47 como pestaña LIVE normal/reutilizable y de ancho completo con captions nativos de sesión; sincronización/scroll y aceptación en Chrome real pendientes.
 
 **Objetivo:** añadir un botón visible en el overlay para abrir la transcripción de la llamada en una pestaña independiente de Google Chrome, utilizando el espacio completo de esa pestaña.
@@ -163,7 +163,7 @@
 
 ### SI-FB-06 — Matriz integrada de pruebas y aceptación
 
-**Prioridad:** P1 · compuerta de liberación  
+**Prioridad:** P1 · compuerta de liberación
 **Estado al 2026-11-10:** parcial: CI y pruebas sintéticas disponibles; el operador reportó una batería 27/27 y SHA 59/59 en el ciclo anterior, no re-verificados aquí. La prueba integrada en Chrome/llamada real y aceptación del operador siguen pendientes.
 
 La entrega que incorpore estos cambios debe probar, como mínimo:
@@ -201,9 +201,9 @@ La entrega que incorpore estos cambios debe probar, como mínimo:
 
 ## 6. Estado de este registro
 
-**Persistencia:** PERSISTIDO en `main`; commit de creación `02b52c061c8c3c9e22d0a4dbc3e69824f95f2c6c`; lectura de vuelta exacta verificada.  
-**Implementación:** no iniciada.  
-**Prueba de usuario posterior:** pendiente.  
+**Persistencia:** PERSISTIDO en `main`; commit de creación `02b52c061c8c3c9e22d0a4dbc3e69824f95f2c6c`; lectura de vuelta exacta verificada.
+**Implementación:** no iniciada.
+**Prueba de usuario posterior:** pendiente.
 **Clasificación:** backlog provisional del mismo frente Signal Interpreter; no crea un frente ni un responsable paralelo.
 
 
@@ -312,3 +312,84 @@ Esto no coincide con la política vigente anterior: permanecer silenciado durant
 - No code edits, no stored preference changes, no Chrome reload, no arming, no real call/audio and no human acceptance.
 
 Orden actualizado: (1) SI-REG-05 corregir semántica de micrófono, conservando controles y guards; (2) SI-REG-01 aceptar switch en Chrome sin armar presencia; (3) SI-REG-02 validar pista tardía bajo llamada activa; (4) conservar SI-REG-03 como test permanente; (5) SI-REG-04 solo cierra con aceptación del operador.
+## 10. SI-REG-06 — Auto-Answer: prioridad de latencia bajo competencia · P0
+
+**Premisa de diseño del operador:** puede haber varias personas compitiendo por una llamada y otros intérpretes podrían usar automatización. Se adopta como hipótesis operativa, no como hecho comprobado sobre la plataforma.
+
+**Criterio:** minimizar el tiempo detección→clic y ejecutar una sola activación normal de `Connect` mediante `button.click()` sobre el botón real. No se persiguen eventos de ratón físico, `isTrusted`, CDP ni endpoints privados; no se permiten dobles clics.
+
+**Optimización candidata:** caché en memoria de configuración y candado de laboratorio; reutilización de presencia `active` reciente (máximo 20 s) procedente de eventos, sondeo o restauración; actualización obligatoria y fail-closed si falta, es desconocida o caduca; se mantiene la exclusión por llamadas activas en otras pestañas. La ruta rápida evita lecturas repetidas de almacenamiento, consulta de inactividad y `tabs.get`. Se conserva autorización efímera de un solo uso, generación, expiración, perfil/modalidad permitidos y presencia explícita.
+
+**Verificación offline candidata:** Presence Guard 94/94, Presence Connect 33/33 y Auto-Answer Runtime 15/15 PASS; sintaxis y cotejo SHA-256 de inventario PASS. La aceptación en Chrome/llamada real permanece pendiente; no se habilitó Auto-Answer ni se armó presencia.
+
+## 11. Retoma G14 — compuertas permanentes de regresión · 2026-11-10
+
+**Procedencia:** continuación del mismo frente y de SI-REG-05/SI-REG-06. Evidencia detallada y salida literal preservada en [crónica G14 de compuertas de regresión](cronica/C-SIGNAL-REGRESSION-GATES-20261110-G14.md).
+
+### SI-REG-05 — Política de unmute previa a llamada · actualización
+
+**Estado candidato:** GUARD FAIL-CLOSED Y ASERCIONES PERSISTIDAS EN PR #82; ejecución de las nuevas aserciones y aceptación Chrome/E2E PENDIENTES.
+
+- El handler de unmute exige llamada activa mediante el estado de llamada; sin ella conserva mute, registra `EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL` y devuelve `call-not-active`.
+- La recuperación de pista tardía exige llamada activa, intención explícita de unmute, pista viva y un probe verificado en mute.
+- La prueba ahora exige que, al cerrar la llamada, se detenga la captura del intérprete, se solicite/verifique el remute y se registre el fallo de verificación antes de borrar `callId`/`callStartedAt`.
+- Se conserva el control manual del usuario y no se crea una ruta paralela de audio.
+
+**Pendiente:** ejecutar suites, comprobar UI/estado físico de la pista y probar transiciones reales autorizadas por el operador.
+
+### SI-REG-06 — Auto-Answer latency-first · actualización
+
+**Estado candidato:** CONSERVA ACTIVACIÓN ÚNICA Y REVALIDACIÓN; una prueba añadida rechaza concesión vencida.
+
+- La suite exige exactamente un punto de invocación normal `button.click()` en `autoAnswer()`.
+- Un permiso expirado debe producir cero clics y liberar la concesión.
+- El watchdog sigue siendo no-retry: distingue `CONNECT_CLICKED` de `CONNECT_ROUTE_TIMEOUT` y no hace un segundo clic.
+- Se mantienen controles contra intento reemplazado, runtime inactivo, presencia desarmada, generación distinta, llamada activa, botón inexistente/desconectado/deshabilitado y autorización no válida.
+- Fuera de alcance: eventos de ratón físico, `isTrusted`, CDP y endpoints privados.
+
+**Pendiente:** ejecutar pruebas y medir latencia/éxito de ruta en una aceptación real dirigida por el operador; ningún clic sintético prueba que la plataforma haya conectado.
+
+### SI-REG-07 — Compuerta CI de audio/Connect/presencia · P1
+
+**Estado:** IMPLEMENTADA EN EL VERIFICADOR DE PAQUETE DE PR #82; ejecución del workflow en el commit actual NO VERIFICADA.
+
+`tools/verify-release-package.mjs` invoca secuencialmente y falla ante código de salida no cero en:
+1. `tools/microphone-guard-test.mjs`
+2. `tools/presence-connect-test.mjs`
+3. `tools/presence-guard-test.mjs`
+4. `tools/autoanswer-runtime-guard-test.mjs`
+
+El workflow existente `.github/workflows/package-integrity.yml` ejecuta el verificador en eventos `pull_request`; por tanto, el gate añadido convierte las cuatro suites en precondición de integridad para el PR. La existencia del código no demuestra por sí sola que Actions se haya ejecutado: para el último commit, el conector no devolvió workflow runs ni status checks. No etiquetar CI como PASS hasta obtener evidencia.
+
+### Evidencia de persistencia del ciclo
+
+- Rama: `candidate/autoanswer-fastpath-ready-20261110`; PR #82 continúa abierta/draft y sin fusionar.
+- `tools/microphone-guard-test.mjs`: commit `39dc6104578bd9074ae93944badcc7fac26c03be`; contenido releído y comparado exactamente.
+- `tools/presence-connect-test.mjs`: commit `4c32d761b2b84320cfc1e0b5ee8fcb2774cf9c9f`; contenido releído y comparado exactamente.
+- `tools/verify-release-package.mjs`: commit `327c2dfa370c1ac2b0bfc929e18f6a2fc4c15011`; contenido releído y comparado exactamente.
+- Crónica: `C-SIGNAL-REGRESSION-GATES-20261110-G14.md`, creada en commit `99847b65537ac33fc46555f4a6300ec2bd1df670`, lectura de vuelta exacta.
+- Las pruebas nuevas NO se ejecutaron en este ciclo; sus estados son implementadas, pendientes de ejecución.
+- No hubo acceso a Chrome GUI/reload, presencia armada, Auto-Answer activado, llamada/audio real, aceptación humana, merge, deploy o release.
+
+### Backlog que permanece abierto
+
+- **P0:** aceptación operativa del switch Auto-Answer; prueba del micrófono en llamada aceptada, pista tardía y cierre/remute; aceptación completa de la candidata. SI-REG-05 queda protegida en código candidato, pero no se cierra sin prueba y revisión.
+- **P1:** SI-FB-02 canal bilingüe INTÉRPRETE (diseño de captura/privacidad/proveedor/ZDR/retención); SI-FB-03 continuidad y precisión de la transcripción; SI-FB-06 matriz integrada y aceptación.
+- **P2:** SI-FB-04 compactación/accesibilidad del overlay; SI-FB-05 sincronización y scroll del lector en pestaña.
+- No se confunde la candidata de respuesta automática con la implementación del canal de transcripción propio.
+
+**Orden de continuación:** (1) ejecutar la compuerta y resolver fallos; (2) conciliar y revisar PR #82 sin fusionar; (3) preparar instrucciones de aceptación real para el operador; (4) continuar SI-FB-02/03 y después SI-FB-04/05; (5) cerrar SI-FB-06 solo con evidencia integrada y aceptación.
+
+### SI-REG-07 — resultado de la compuerta CI · cierre de verificación de código · 2026-11-10
+
+**Estado:** CI COMPLETADO · 3/3 workflows SUCCESS sobre la cabeza candidata `b82c813dd3650e9f10fe47ef55a710489d6bad0b`.
+
+- Audit `42906302139`: SUCCESS.
+- Native caption host build/smoke test `42906302286`: SUCCESS.
+- Package integrity `42906302442`: SUCCESS.
+- La compuerta ejecutó Mic Guard PASS, Presence Connect 36/36, Presence Guard 94/94 y Auto-Answer Runtime 15/15; 60/60 hashes del paquete PASS.
+- Windows CI comprobó instalador/source archive, compilación del host, artefacto, protocolo Native Messaging y cierre limpio.
+
+**Cierre limitado:** se cierra la verificación CI de esta candidata, no la aceptación funcional completa. No equivale a transcripción real, llamada contestada en Chrome ni micrófono físico verificado. PR #82 permanece abierta/draft/no fusionada; sin reload, armado de presencia, activación Auto-Answer, llamada/audio real, merge, deploy o release.
+
+Detalle y salida literal preservados en [crónica G14 de compuertas](cronica/C-SIGNAL-REGRESSION-GATES-20261110-G14.md).
