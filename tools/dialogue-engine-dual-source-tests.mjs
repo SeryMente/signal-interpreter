@@ -29,3 +29,22 @@ const crossSourceRepeat=d.mergeSegments([
 assert.equal(crossSourceRepeat.length,2,"same spoken text from two sources is never deduplicated across sources");
 assert.equal(d.mergeSegments([{id:"bad",source:"groq-interpreter",startMs:-1,endMs:4,text:"bad"}]).length,0);
 console.log("DIALOGUE_ENGINE_DUAL_SOURCE=PASS");
+
+const queue=d.createConcurrentSourceQueue(2);
+let active=0,maxActive=0,order=[];
+let releaseRemote;
+const remoteGate=new Promise(resolve=>{releaseRemote=resolve;});
+const remote1=queue.enqueue("groq-remote",async()=>{active++;maxActive=Math.max(maxActive,active);order.push("remote-1-start");await remoteGate;order.push("remote-1-end");active--;return{ok:true};});
+const remote2=queue.enqueue("groq-remote",async()=>{active++;maxActive=Math.max(maxActive,active);order.push("remote-2");active--;return{ok:true};});
+const interpreter=queue.enqueue("groq-interpreter",async()=>{active++;maxActive=Math.max(maxActive,active);order.push("interpreter");active--;return{ok:true};});
+await Promise.resolve();await Promise.resolve();
+assert.equal(maxActive,2,"interpreter lane executes while remote lane is busy");
+assert.ok(order.includes("interpreter"));
+assert.equal(order.includes("remote-2"),false,"a source's next chunk waits for its previous chunk");
+releaseRemote();
+await Promise.all([remote1,remote2,interpreter]);
+assert.ok(order.indexOf("remote-1-end")<order.indexOf("remote-2"));
+assert.equal(queue.setSequence("groq-remote",1),true);
+assert.equal(queue.setSequence("groq-remote",1),false,"duplicate sequence is rejected");
+assert.equal(queue.status("groq-remote").lastSequence,1);
+console.log("DIALOGUE_ENGINE_PARALLEL_LANES=PASS");
