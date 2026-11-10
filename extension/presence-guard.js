@@ -222,6 +222,7 @@
         presence = await idleState(threshold);
         presencePath = "refreshed";
         recordPresenceCheck(presence, "authorization-refresh").catch(function () {});
+        presenceAgeMs = 0;
       }
       if (presence.state === "idle") { disarm("idle-confirm-again"); return { ok: false, error: reason, state: snapshot() }; }
       if (presence.state === "locked") { disarm("locked-confirm-again"); return { ok: false, error: reason, state: snapshot() }; }
