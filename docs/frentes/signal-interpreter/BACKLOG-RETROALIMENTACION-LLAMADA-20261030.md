@@ -379,3 +379,17 @@ El workflow existente `.github/workflows/package-integrity.yml` ejecuta el verif
 - No se confunde la candidata de respuesta automática con la implementación del canal de transcripción propio.
 
 **Orden de continuación:** (1) ejecutar la compuerta y resolver fallos; (2) conciliar y revisar PR #82 sin fusionar; (3) preparar instrucciones de aceptación real para el operador; (4) continuar SI-FB-02/03 y después SI-FB-04/05; (5) cerrar SI-FB-06 solo con evidencia integrada y aceptación.
+
+### SI-REG-07 — resultado de la compuerta CI · cierre de verificación de código · 2026-11-10
+
+**Estado:** CI COMPLETADO · 3/3 workflows SUCCESS sobre la cabeza candidata `b82c813dd3650e9f10fe47ef55a710489d6bad0b`.
+
+- Audit `42906302139`: SUCCESS.
+- Native caption host build/smoke test `42906302286`: SUCCESS.
+- Package integrity `42906302442`: SUCCESS.
+- La compuerta ejecutó Mic Guard PASS, Presence Connect 36/36, Presence Guard 94/94 y Auto-Answer Runtime 15/15; 60/60 hashes del paquete PASS.
+- Windows CI comprobó instalador/source archive, compilación del host, artefacto, protocolo Native Messaging y cierre limpio.
+
+**Cierre limitado:** se cierra la verificación CI de esta candidata, no la aceptación funcional completa. No equivale a transcripción real, llamada contestada en Chrome ni micrófono físico verificado. PR #82 permanece abierta/draft/no fusionada; sin reload, armado de presencia, activación Auto-Answer, llamada/audio real, merge, deploy o release.
+
+Detalle y salida literal preservados en [crónica G14 de compuertas](cronica/C-SIGNAL-REGRESSION-GATES-20261110-G14.md).
