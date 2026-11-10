@@ -33,7 +33,7 @@
 ### SI-FB-01 — Política de mute vinculada al estado de llamada
 
 **Prioridad:** P0 · seguridad del canal de audio  
-**Estado:** pendiente de análisis e implementación.
+**Estado al 2026-11-10:** implementación parcial en main 0.10.47; el operador reportó que el micrófono no enciende. El hotfix local que atendería pistas tardías está reportado, no re-verificado ni integrado en main. Aceptación pendiente.
 
 **Objetivo:** impedir que el micrófono quede abierto antes de que el operador conteste una llamada y asegurar el cierre inmediato al terminarla.
 
@@ -57,7 +57,7 @@
 ### SI-FB-02 — Captura y transcripción bilingüe del canal INTÉRPRETE
 
 **Prioridad:** P1 · funcionalidad central  
-**Estado:** cambio de alcance solicitado; arquitectura y permisos por diseñar.
+**Estado al 2026-11-10:** no implementado en main. La candidata de PR #75 permanece draft/no mergeable; credencial y confirmación efectiva de ZDR, aislamiento y E2E bilingüe siguen pendientes.
 
 **Objetivo:** transcribir en tiempo real la voz del operador/intérprete capturada desde el micrófono, tanto en español como en inglés, y mostrarla como un canal independiente de los captions del cliente/LEP.
 
@@ -84,7 +84,7 @@
 ### SI-FB-03 — Calidad, continuidad y atribución de la transcripción
 
 **Prioridad:** P1 · calidad funcional  
-**Estado:** diagnóstico inicial realizado sobre la muestra compartida; correcciones pendientes.
+**Estado al 2026-11-10:** parcial para captions nativos, metadata source/speaker/language e identidad de parciales; métricas WER/CER, corpus autorizado y aceptación del canal INTÉRPRETE pendientes.
 
 **Hallazgos observados en la muestra (sin conservar contenido privado):**
 
@@ -115,7 +115,7 @@
 ### SI-FB-04 — Densidad visual y redistribución del overlay
 
 **Prioridad:** P2 · UX / legibilidad  
-**Estado:** diagnóstico visual inicial realizado; rediseño pendiente.
+**Estado al 2026-11-10:** parcial: minimización reversible y preferencia de colapso integradas en main; densidad compacta integral, revisión teclado/viewport y aceptación visual pendientes.
 
 **Objetivo:** maximizar el espacio legible para el contenido transcrito y reducir el espacio consumido por elementos repetitivos.
 
@@ -139,7 +139,7 @@
 ### SI-FB-05 — Lector de transcripción en pestaña independiente de Chrome
 
 **Prioridad:** P2 · UX / lectura extendida  
-**Estado:** solicitado; diseño e implementación pendientes.
+**Estado al 2026-11-10:** implementado a nivel de código en main 0.10.47 como pestaña LIVE normal/reutilizable y de ancho completo con captions nativos de sesión; sincronización/scroll y aceptación en Chrome real pendientes.
 
 **Objetivo:** añadir un botón visible en el overlay para abrir la transcripción de la llamada en una pestaña independiente de Google Chrome, utilizando el espacio completo de esa pestaña.
 
@@ -164,7 +164,7 @@
 ### SI-FB-06 — Matriz integrada de pruebas y aceptación
 
 **Prioridad:** P1 · compuerta de liberación  
-**Estado:** pendiente.
+**Estado al 2026-11-10:** parcial: CI y pruebas sintéticas disponibles; el operador reportó una batería 27/27 y SHA 59/59 en el ciclo anterior, no re-verificados aquí. La prueba integrada en Chrome/llamada real y aceptación del operador siguen pendientes.
 
 La entrega que incorpore estos cambios debe probar, como mínimo:
 
@@ -205,3 +205,67 @@ La entrega que incorpore estos cambios debe probar, como mínimo:
 **Implementación:** no iniciada.  
 **Prueba de usuario posterior:** pendiente.  
 **Clasificación:** backlog provisional del mismo frente Signal Interpreter; no crea un frente ni un responsable paralelo.
+
+
+## 7. Reconciliación vigente — 2026-11-10 · G14
+
+Esta sección actualiza los estados operativos de SI-FB-01–SI-FB-06 sin borrar su registro original. La crónica detallada está en [C-SIGNAL-BACKLOG-REGRESIONES-20261110-G14.md](cronica/C-SIGNAL-BACKLOG-REGRESIONES-20261110-G14.md). La última versión de producto verificada en `main/manifest.json` es **0.10.47**; PR #79 se fusionó en `10a7f1b1f8c48d290ce8f4df5639109efe571c22`.
+
+### Nuevas tareas de regresión reportadas
+
+#### SI-REG-01 — Interruptor Auto-Answer · P0
+**Estado:** REGRESIÓN REPORTADA; hotfix local mencionado en la conversación, no re-verificado ni integrado en main.
+
+Revisar carga del popup, listener/event handler, estado visible, escritura/lectura de configuración, comunicación con background/service worker y atajo de teclado. El fallback del handler mencionado en la conversación debe cotejarse en los archivos reales antes de promoverlo. No introducir rearme automático al pulsar Online; conservar autorización explícita, presencia revalidada y fail-closed.
+
+**Aceptación:** activar/desactivar desde UI y atajo; estado visual y almacenado coincidentes; revalidación correcta; ningún Connect sin grant vigente; pausa, idle/locked, fin de sesión y reinicio no rearman la autorización.
+
+#### SI-REG-02 — Habilitación tardía del micrófono · P0
+**Estado:** REGRESIÓN REPORTADA; hotfix local mencionado en la conversación, no re-verificado ni integrado en main.
+
+Investigar el caso en que la llamada/ruta activa se confirma antes de que Cloud Interpreter cree la pista de audio. Cotejar el tratamiento de pistas que aparecen posteriormente, el estado del botón y `MediaStreamTrack.enabled`/pista saliente. Mantener mute fuera de llamada y remute al terminar, perder la ruta o quedar en estado desconocido.
+
+**Aceptación:** prueba determinista con pista previa y tardía; unmute solo dentro de llamada activa; estado visual y pista real coincidentes; remute en fin/desconexión/session-loss; cero captura/unmute en espera.
+
+Esta tarea se refiere al micrófono operativo de la llamada; no equivale a SI-FB-02 (transcripción del canal INTÉRPRETE).
+
+#### SI-REG-03 — Test permanente de autorización paralela · P1
+**Estado:** COBERTURA POR RESTAURAR.
+
+PR #78 documentó la ejecución simultánea de cuatro validaciones independientes: configuración, inactividad/bloqueo, otra llamada activa y perfil correcto. La revisión posterior detectó que la garantía explícita de paralelismo ya no está en la prueba permanente. Una comprobación temporal independiente fue reportada en conversación, pero no se ha incorporado al repositorio.
+
+**Aceptación:** test determinista con promesas diferidas que demuestre el inicio de las cuatro consultas antes de resolver la primera; falla si se ejecutan secuencialmente; no modifica guards ni la regla de un único clic autorizado.
+
+#### SI-REG-04 — Aceptación integrada 0.10.47 + corrección de regresiones · P0
+**Estado:** PENDIENTE DEL OPERADOR Y DE VALIDACIÓN DEL PAQUETE INTEGRADO.
+
+Después de cotejar e integrar únicamente el hotfix mínimo y las pruebas, verificar paquete, inventario SHA-256 y respaldo reversible. La recarga manual en Chrome debe hacerla el operador fuera de una llamada activa; verificar versión realmente cargada, switch, presencia y una llamada controlada. No considerar CI o el archivo en disco como aceptación E2E.
+
+### Ledger de PR — no fusionar ramas completas por conveniencia
+
+- **#79:** fusionada; contiene la línea base de main 0.10.47.
+- **#78:** fusionada; proteger la optimización de autorización paralela y su test permanente.
+- **#72 y #73:** abiertas/no mergeable; parte de continuidad MV3 y manejo de fallos transitorios fue integrada selectivamente en #79. Revisar solo deltas no cubiertos.
+- **#74:** abierta/no mergeable; no portar el rearme automático al pulsar Online. Revisar únicamente el arreglo de URL/diagnóstico que no debilite el consentimiento.
+- **#75:** abierta, draft/no mergeable; rama amplia. Mantener sin merge mientras no se aíslen y validen los cambios de micrófono/ASR, privacidad, rendimiento y visuales.
+- **#76:** abierta/no mergeable; el indicador contextual azul ya está descrito en #79. Conciliar diff restante antes de decidir cierre.
+- **#70:** abierta, draft/no mergeable y documentalmente antigua; conservar como antecedente hasta conciliar deltas útiles, no fusionar completa.
+
+La búsqueda de GitHub Issues abiertos devolvió cero. Este archivo sigue siendo el backlog persistente del frente.
+
+### Evidencia y límites del corte
+
+- PR #79 confirma que main 0.10.47 incluye guards de Auto-Answer, mute fail-closed, lector LIVE nativo y controles de overlay. No confirma recarga de Chrome ni E2E real.
+- La conversación anterior reportó un hotfix local para pistas tardías, el handler del switch y escrituras serializadas, con 7/7 suites, paquete 59/59 y 4/4 SHA comparados. En este corte no se leyó el recibo ni se cotejaron esos archivos; clasificar como **REPORTADO, NO RE-VERIFICADO**. No afirmar integración en main.
+- No se realizó acceso remoto a PC-7 ni se recargó Chrome. El control G14 vigente no hereda autorización de dispositivos anteriores.
+- No se capturó audio real ni se actuó sobre llamadas. La aceptación funcional final permanece PENDIENTE.
+
+## 8. Secuencia priorizada actual
+
+1. P0 — cotejar contra main y reparar el interruptor Auto-Answer sin alterar autorización explícita.
+2. P0 — cotejar contra main y reparar la habilitación del micrófono con pista tardía, preservando mute fuera de llamada.
+3. P1 — restaurar test permanente de concurrencia de las cuatro validaciones.
+4. P0 — validar paquete integrado y dejarlo preparado para recarga manual autorizada.
+5. P0 — aceptación del operador en Chrome y llamada controlada.
+6. P1/P2 — continuar SI-FB-02/03/04 y aceptación funcional del lector SI-FB-05.
+
