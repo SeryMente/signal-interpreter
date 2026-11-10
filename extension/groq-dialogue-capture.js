@@ -95,28 +95,35 @@
     return lane;
   }
   async function deliver(source,buffer,offsetMs,durationMs,sampleRate,captureId,call,startedAt){
-    if(!capture||capture.captureId!==captureId)return;
-    if(capture.pending[source]>=2){
+    var current=capture;
+    if(!current||current.captureId!==captureId)return;
+    if(current.pending[source]>=2){
       setStatus("Cola de "+source+" saturada; deteniendo para conservar integridad",true);
       await stop("transcription-backlog");return;
     }
-    var sequence=++capture.sequence[source];capture.pending[source]++;
+    var sequence=++current.sequence[source];
+    current.pending[source]++;
     var message={
       type:"SIGNAL_GROQ_DIALOGUE_CHUNK",captureId:captureId,callId:call,source:source,
       sequence:sequence,chunkStartOffsetMs:offsetMs,durationMs:durationMs,sampleRate:sampleRate,
       startedAt:startedAt,mimeType:"audio/wav",base64:base64(buffer)
     };
-    var result=await send(message);
+    var queuedSend=current.sendQueues[source].then(function(){return send(message);});
+    current.sendQueues[source]=queuedSend.catch(function(){return {ok:false,reasonCode:"background-unavailable"};});
+    var result;
+    try{result=await queuedSend;}
+    catch(_){result={ok:false,reasonCode:"background-unavailable"};}
+    current.pending[source]=Math.max(0,current.pending[source]-1);
     if(!capture||capture.captureId!==captureId)return;
-    capture.pending[source]=Math.max(0,capture.pending[source]-1);
     if(!result||result.ok!==true){
       var failureReason=result&&result.reasonCode||"groq-transcription-failed";
       setStatus(showReason(failureReason),true);
-      if(capture&&!capture.stopping)await stop(failureReason);
+      if(capture&&!current.stopping)await stop(failureReason);
       return;
     }
-    capture.delivered[source]+=Number(result.segments||0);
-    setStatus("Activo · intérprete "+capture.delivered["groq-interpreter"]+" · remoto "+capture.delivered["groq-remote"]);
+    current.delivered[source]+=Number(result.segments||0);
+    if(capture===current)
+      setStatus("Activo · intérprete "+current.delivered["groq-interpreter"]+" · remoto "+current.delivered["groq-remote"]);
   }
   async function start(){
     if(capture||!callId())return;
@@ -152,7 +159,8 @@
         streams:[tabStream,micStream],lanes:[],
         sequence:{"groq-remote":0,"groq-interpreter":0},
         pending:{"groq-remote":0,"groq-interpreter":0},
-        delivered:{"groq-remote":0,"groq-interpreter":0}
+        delivered:{"groq-remote":0,"groq-interpreter":0},
+        sendQueues:{"groq-remote":Promise.resolve(),"groq-interpreter":Promise.resolve()}
       };
       var remoteStream=new MediaStream(tabAudio);
       capture.lanes.push(buildLane("groq-remote",remoteStream,context,originFrame,captureId,call,startedAt));
