@@ -22,6 +22,7 @@ if(lateTrackEligible(pendingState,{verified:true,muted:true,trackCount:0},true))
 if(lateTrackEligible(pendingState,{verified:true,muted:true,trackCount:1},false))throw Error("late-track-retry-requires-active-call");
 if(lateTrackEligible({...pendingState,microphoneMuteRequested:true},{verified:true,muted:true,trackCount:1},true))throw Error("late-track-retry-requires-explicit-unmute-intent");
 if(!background.includes("EXTENSION_MICROPHONE_LATE_TRACK_UNMUTE_RECOVERED"))throw Error("late-track recovery must be observable without audio/transcript data");
+if(!background.includes('state.microphoneOutputMuted=micProbe&&typeof micProbe.muted==="boolean"?!!micProbe.muted:expectedMuted;'))throw Error("heartbeat must report observed output mute state rather than desired state");
 class E{constructor(){this.l=new Map()}addEventListener(t,f){let a=this.l.get(t)||[];a.push(f);this.l.set(t,a)}removeEventListener(t,f){this.l.set(t,(this.l.get(t)||[]).filter(x=>x!==f))}dispatchEvent(e){for(const f of(this.l.get(e.type)||[]).slice())f(e)}}
 class T extends E{constructor(id){super();this.kind="audio";this.id=id;this.enabled=true;this.readyState="live"}clone(){return new T(this.id+"-clone")}}
 class S{constructor(t){this.t=t}getAudioTracks(){return[this.t]}}
