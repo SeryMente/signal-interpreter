@@ -110,6 +110,28 @@ assert.equal(aborted.ok,false);
 assert.equal(aborted.aborted,true,"capture cancellation aborts an in-flight Groq request");
 assert.equal(observedAbortSignal.aborted,true);
 
+let bodyReadSignal=null;
+ctx.fetch=async(_url,options)=>{
+  bodyReadSignal=options.signal;
+  return {
+    ok:true,status:200,headers:{get:()=>null},
+    text:()=>new Promise((_resolve,reject)=>{
+      if(options.signal.aborted)reject(Object.assign(Error("body-aborted"),{name:"AbortError"}));
+      else options.signal.addEventListener("abort",()=>reject(Object.assign(Error("body-aborted"),{name:"AbortError"})),{once:true});
+    })
+  };
+};
+const bodyAbort=new AbortController();
+const bodyPromise=ctx.SignalGroqTranscriber.transcribe(
+  new Blob(["audio"],{type:"audio/wav"}),
+  {__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true,signal:bodyAbort.signal,timeoutMs:5000}
+);
+await Promise.resolve();await Promise.resolve();
+assert.ok(bodyReadSignal,"mock fetch returned response headers before body reading");
+bodyAbort.abort();
+const bodyAborted=await bodyPromise;
+assert.equal(bodyAborted.ok,false);
+assert.equal(bodyAborted.aborted,true,"external cancellation remains active during response-body reading");
 
 ctx.fetch=async()=>({ok:false,status:401,text:async()=>JSON.stringify({error:{message:"invalid key gsk_abcdefghijklmnopqrstuvwxyz"}})});
 const failed=await ctx.SignalGroqTranscriber.transcribe(new Blob(["audio"],{type:"audio/webm"}),{__testToken:"gsk_abcdefghijklmnopqrstuvwxyz",zeroDataRetentionConfirmed:true});
