@@ -15,7 +15,7 @@ const merged=d.mergeSegments([
  {id:"bad",source:"groq-remote",startMs:10000,endMs:9000,text:"invalid"},
  {id:"remote-1",source:"groq-remote",startMs:2000,endMs:5000,text:"remote first",sequence:0}
 ]);
-assert.deepEqual(merged.map(x=>x.id),["mic-1","remote-1","remote-2"]);
+assert.deepEqual(Array.from(merged,x=>x.id),["mic-1","remote-1","remote-2"]);
 assert.equal(merged[0].overlap,true);
 assert.equal(merged[1].overlap,true);
 assert.equal(merged[2].overlap,true);
