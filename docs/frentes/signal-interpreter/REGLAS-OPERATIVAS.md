@@ -87,7 +87,7 @@ La ruta destinada por el operador es `signal-interpreter\\extension`. Antes de i
 - el ID de extensión, la versión, los hashes y el inventario coinciden con la candidata;
 - se cumplen SI-OP-01 y las comprobaciones del Native Messaging host en el mismo usuario Windows de Chrome.
 
-**Discrepancia observada en el corte 0.10.45:** la rama candidata tiene `manifest.json` en la raíz del repositorio, no en `extension\\manifest.json`; el manifiesto raíz referencia rutas `extension/...` y `INSTALAR.ps1` lee el manifiesto desde la raíz (`$PSScriptRoot\\manifest.json`). Por tanto, aunque `extension/README.md` indica seleccionar `extension/` desde un checkout, el contenido actualmente leído no acredita que esa carpeta sea cargable por sí sola. No declarar la ruta lista ni pedir al operador que la cargue hasta reconciliar el layout/manifest generado y verificar todas las rutas. El manifiesto raíz del paquete y la carpeta fuente `extension` no se confunden.
+**Resolución de layout verificada en rama candidata (PR #80 draft; no integrada):** el manifiesto canónico permanece en raíz y `extension/manifest.json` es su variante normalizada para cargar `extension/` en Chrome. `tools/unpacked-layout-test.mjs`, `portable-root-test.mjs` y `verify-release-package.mjs` pasan; suite local 42/42, 77 archivos JS sin errores y 8 scripts PowerShell parseables; 60/60 SHA-256. La carpeta activa debe actualizarse con respaldo; la carga y aceptación en Chrome siguen a cargo del operador. `main` no se modifica hasta revisión/merge autorizados.
 
 ### Estado de la instancia inspeccionada · 2026-11-09
 
