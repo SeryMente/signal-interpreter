@@ -464,7 +464,7 @@ G14 sigue ACTIVO como agente único. FOL1 continúa PREPARADA / NO ACTIVA; no se
 
 ### 12.5 Tareas provisionales activas
 
-El backlog operativo de continuidad queda en [TAREAS-PROVISIONALES-GROQ-DUAL-G14.md](TAREAS-PROVISIONALES-GROQ-DUAL-G14.md), blob `c39186ec7e1543bba6a58e4da45761e453a18221`. Define 12 tareas, prioridad, estado, dependencias, acciones y criterios de salida. Resumen: conservar PR/CI; resolver Chrome autorizado; verificar ZDR/cuotas; preparar secreto local; probar API con corpus sintético no clínico; validar ciclo de vida de captura; verificar fusión/overlay; optimizar chunking/coste con medición; fijar umbrales acústicos; reservar aceptación final al operador; mantener aceleración CI sin reducción de cobertura; y preservar continuidad interconversacional.
+El backlog operativo de continuidad queda en [TAREAS-PROVISIONALES-GROQ-DUAL-G14.md](TAREAS-PROVISIONALES-GROQ-DUAL-G14.md), blob `e840f9d1b9315084fcb593430c14a35eef9c8783`. Define 12 tareas, prioridad, estado, dependencias, acciones y criterios de salida. Resumen: conservar PR/CI; resolver Chrome autorizado; verificar ZDR/cuotas; preparar secreto local; probar API con corpus sintético no clínico; validar ciclo de vida de captura; verificar fusión/overlay; optimizar chunking/coste con medición; fijar umbrales acústicos; reservar aceptación final al operador; mantener aceleración CI sin reducción de cobertura; y preservar continuidad interconversacional.
 
 ### 12.6 Ruta única de reanudación
 
