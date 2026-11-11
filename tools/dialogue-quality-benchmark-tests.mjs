@@ -45,13 +45,18 @@ function makeRecording(index, overrides = {}) {
       ]
     }
   };
-  return {
+  const recording = {
     ...base,
     ...overrides,
     strata: { ...base.strata, ...(overrides.strata || {}) },
     media: overrides.media || base.media,
     evaluation: overrides.evaluation || base.evaluation
   };
+  if (index === 3) {
+    recording.evaluation.reference.segments[1].startMs = 0;
+    recording.evaluation.hypothesis.segments[1].startMs = 0;
+  }
+  return recording;
 }
 
 function makeManifest() {
@@ -80,8 +85,8 @@ function makeManifest() {
       latencyBasis: "capture-window-ready-to-visible-text"
     },
     acceptanceProfile: {
-      id: "fixture-perfect-1",
-      minRecordings: 3,
+      id: "si-dual-fixture-perfect-1",
+      minRecordings: 4,
       minRecordingsPerStratum: 1,
       minReferenceWordsBySource: { "groq-remote": 1, "groq-interpreter": 1 },
       minLatencySamplesBySource: { "groq-remote": 1, "groq-interpreter": 1 },
@@ -104,7 +109,7 @@ const manifest = makeManifest();
 const report = evaluateDialogueBenchmark(manifest);
 assert.equal(report.schema, "signal-interpreter-dialogue-benchmark-report/v1");
 assert.equal(report.acceptance.status, "PASS");
-assert.equal(report.sample.recordings, 3);
+assert.equal(report.sample.recordings, 4);
 assert.equal(report.metrics.bySource["groq-remote"].weightedWer, 0);
 assert.equal(report.metrics.bySource["groq-interpreter"].weightedWer, 0);
 assert.equal(report.metrics.bySource["groq-remote"].weightedCer, 0);
