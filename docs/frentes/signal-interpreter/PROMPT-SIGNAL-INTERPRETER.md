@@ -77,3 +77,17 @@ La persistencia en GitHub es provisional mientras el operador normaliza la persi
 ## Entrega de cada ciclo
 
 Actualiza el núcleo canónico con el delta real, evidencia, SHA/commit, entorno, límites, dependencias y siguiente paso terminal. Añade una crónica de cada ciclo sustantivo y verifica por read-back. La salida debe decir de forma ejecutiva qué quedó hecho, qué está verificado, qué no ocurrió, qué queda bloqueado y el siguiente paso único. No emitas un segundo prompt ni un handoff de papeles: este es el único prompt activo del frente.
+
+## Checkpoint posterior vigente · cabeza 9301dade · 2026-11-11
+
+Este bloque supersede los SHA/base/checkpoints históricos anteriores de este prompt; no altera las reglas de gobierno o seguridad.
+
+- DUG/§ARR releídos desde la fuente canónica: v388 · NX-388m; Metacanon 1.29; GOW 2.18; blob `4db0ebadfd1e48b2bdec9236ba7f344921e4a865`.
+- Control releído: `2f02cab6b3697f31b2af3d141204c4431fbc05cb`; G14 ACTIVO, agente único; UUIDv7 local `01a1bd8b-8291-7906-b862-6088593acfe5`; FOL1 PREPARADA/NO ACTIVA; folio PENDIENTE/NO ASIGNADO. MCP normativo DESACTIVADO.
+- PR #84 OPEN/DRAFT/NOT MERGED; base `5f80297e1b08bcca4736e549363f47187748df11`; head `9301dade6cde46a181a7260397223d2d45ea0478`; 36 archivos; 7 adelante / 0 atrás; mergeable=true; `observations/` fuera del diff.
+- Rama local de trabajo verificada: `work/g14-groq-dual-clean-20261111`, ruta bajo `C:\Users\fila4\Desktop\SeryMente\Repositorios\signal-interpreter`, usuario `CENTRAL\fila4`. MantenimientoRCI es solo operador/elevación; no destino de archivos.
+- Cambios nuevos: protección Unicode para deduplicación; cierre explícito incompleto al no drenar ambas colas; evaluador bilingüe por segmento WER/CER/términos/atribución/latencia. Local: 58/58 sintaxis, 43/43 suites ejecutables, package 66/66 hashes, ocho gates críticos PASS. La auditoría de datos `observations/` no se ejecutó localmente por sparse-checkout; fixture sí.
+- CI de `9301dade`: no se devolvieron workflows ni checks en el último read-back; clasificar NO OBSERVADO/PENDIENTE. Consultar antes de reutilizar cualquier PASS histórico.
+- No se capturó audio real, no se llamó a Groq con audio, no hay credencial local ni ZDR/cuotas verificados, Chrome administrado no permite Load unpacked, no aceptación, merge, deploy o release. Flags Groq/ZDR false.
+
+Orden inmediato: (1) comprobar workflows asociados al SHA `9301dade`; (2) si CI verde, seguir SI-GROQ-02/03/04 por dependencias; (3) medir el corpus autorizado solo cuando ZDR, credencial y entorno estén verificados. No eludir política Chrome ni inferir aceptación.
