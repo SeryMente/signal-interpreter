@@ -357,6 +357,7 @@ Esta adenda supersede las referencias operativas anteriores de G13 y producto 0.
 
 - El operador recuperó y pegó la conversación anterior completa. Su texto se conserva literalmente en [originales/CHATGPT-SI-RECUPERADO-GROQ-20261110.txt](originales/CHATGPT-SI-RECUPERADO-GROQ-20261110.txt). Lectura de vuelta byte por byte: coincide con el mensaje recibido. Es texto recuperado y aportado en esta conversación, no una exportación nativa de ChatGPT.
 - El plan con A-01/A-02/A-03/A-04 verbatim, interpretación, modelo, restricciones y P-01–P-13 se recuperó de la rama candidata y se publicó en [INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md](INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md). Su sección 8 concilia sus estados históricos con el HEAD y la CI observados.
+- La crónica del ciclo, evidencia, límites y commits/read-back está en [C-SIGNAL-RECUPERACION-GROQ-20261110-G14.md](cronica/C-SIGNAL-RECUPERACION-GROQ-20261110-G14.md).
 - SI-OP-03, que existía en la rama candidata pero no en main, fue incorporada en [REGLAS-OPERATIVAS.md](REGLAS-OPERATIVAS.md). La regla exige un único diálogo cronológico y dos fuentes separadas/procesadas concurrentemente. Read-back exacto efectuado.
 
 ### Instrucción funcional vigente
