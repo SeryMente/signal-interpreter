@@ -283,12 +283,12 @@ Los estados describen trabajo de desarrollo. VERIFICADO significa que la evidenc
 ## 5. Herramientas y superficies de trabajo verificadas
 
 - Repositorio de producto: SeryMente/signal-interpreter.
-- Checkout local de integración: C:\Users\fila4\AppData\Local\Temp\SI-G14-candidate, rama feat/groq-dual-main-20261111, HEAD observado 1c7aca92cc89337aeb4c9907426847f941fa35bd, limpio en el último read-back.
-- Checkout principal del perfil Fila 4: C:\Users\fila4\Desktop\SeryMente\Repositorios\signal-interpreter, rama main; sincronizar por fast-forward cuando se requiera. No confundirlo con C:\Users\fila4\Desktop\SeryMente\signal-interpreter, otra carpeta existente que no se debe asumir como checkout.
+- Checkout local de integración: rama `feat/groq-dual-main-20261111`, HEAD observado `1c7aca92cc89337aeb4c9907426847f941fa35bd`, limpio en el último read-back. Se omite ruta y cuenta del perfil.
+- Checkout principal: alias funcional Fila 4, rama main; sincronizar por fast-forward cuando se requiera. No se conservan rutas locales ni ubicaciones similares.
 - **Sincronización local final:** el último fast-forward leído de vuelta fue HEAD 05a12cde497ecb1110211d225fa41d3fab2c9efb, anterior al pin final del OCP. El hash histórico 3e1697711cd3f578ead7601232d5c33ea9d3f6c8 fue supersedido por una actualización documental posterior; resolver el blob vigente del OCP directamente desde GitHub main al reanudar. La lectura local posterior a ese pin no se pudo verificar; tratar el checkout de escritorio como PENDIENTE DE SINCRONIZACIÓN/READ-BACK. Próxima operación: bajo CENTRAL\fila4, fast-forward main limpio y cotejar ese blob. No cambiar safe.directory global ni escribir como MantenimientoRCI.
 - El entorno secundario bajo CENTRAL\mantenimientorci fue un clon temporal para ejecutar pruebas independientes; ya fue eliminado. Sus archivos/scripts temporales fueron eliminados y read-back comprobado.
 - No hay CLI/Hiku ni herramienta Hiku expuesta en esta sesión. Claude Code fue localizado en otro perfil, pero auth status mostró loggedIn=false; no se usó ni se contabiliza como agente. La aceleración real se logró con runners paralelos de GitHub Actions y pruebas en dos checkouts aislados.
-- PC-8 fue tratado como sesión efímera indicada por el operador; la actividad técnica y las pruebas se hicieron en Fila 4, según el alcance autorizado.
+- Una sesión separada fue tratada como efímera; la actividad técnica y las pruebas se hicieron en el destino funcional Fila 4, según el alcance autorizado. No persistir identidad o ruta de la sesión efímera.
   
 ## 6. Límites que no deben reinterpretarse
 
@@ -398,3 +398,11 @@ El evaluador incluye WER/CER, términos críticos, atribución y latencia, más 
 ### Compuertas externas
 
 Siguen pendientes Chrome autorizado, verificación ZDR/cuotas, credencial local, llamada Groq con corpus autorizado y evaluación acústica con referencia humana. No hubo audio real/API; flags false. Sin aceptación, merge, deploy o release.
+
+## 10. Gobierno vigente y estado del checkpoint · 2026-11-11
+
+- DUG verificado: Samantha v389 · NX-389m · Metacanon 1.30 · GOW 2.19; blob `bcd99e72113f444a045d7f1c91b4ad36865b8ea8`. §ARR (`gow-sec-14`) leído como vocabulario de entrada, sin autoridad de reglas.
+- CNP aplicado por pertinencia: P001, P004, P005, P038 y P043 en sus textos completos. ART-013 §§2–4 aplicado: registrar solo el alias funcional designado Fila 4, no las identidades técnicas efímeras ni rutas de perfil. GOW §37.3: no calcular edades d.h.m. ni intervalos.
+- Control: G14 ACTIVO, agente único, generación 14; FOL1 PREPARADA/NO ACTIVA; folios PENDIENTES/NO ASIGNADOS; MCP normativo DESACTIVADO.
+- PR #84 HEAD `305d8d862be629af0fc96e35701adc29be15013c`; 3/3 workflows y 7/7 jobs SUCCESS. Evaluador estructural en PR; aceptación acústica real pendiente.
+- Compuertas pendientes: Chrome autorizado, ZDR/cuotas, credencial local, API Groq con corpus autorizado y benchmark de referencia humana. No hay captura/audio real ni aceptación; flags false; sin merge, deploy o release.
