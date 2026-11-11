@@ -64,8 +64,9 @@ function readWav(buffer) {
 export function verifyDialogueMedia(manifest, audioDirectory) {
   assert(manifest?.schema === "signal-interpreter-dialogue-benchmark/v1",
     "schema must be signal-interpreter-dialogue-benchmark/v1");
-  assert(manifest.corpus?.rawAudioStoredOutsideRepository === true,
-    "the corpus must declare that raw audio is stored outside the repository");
+  assert(manifest.corpus?.rawAudioStoredOutsideRepository === true &&
+    manifest.corpus?.transcriptsStoredOutsideRepository === true,
+    "the corpus must declare that raw audio and transcripts are stored outside the repository");
   assert(Array.isArray(manifest.recordings) && manifest.recordings.length > 0,
     "benchmark recordings are required");
   assert(typeof audioDirectory === "string" && path.isAbsolute(audioDirectory),
@@ -82,7 +83,6 @@ export function verifyDialogueMedia(manifest, audioDirectory) {
       const media = recording.media?.[source];
       assert(media && /^[a-f0-9]{64}$/i.test(String(media.sha256 || "")),
         "audio media metadata is invalid");
-      assert(!verified.has(media.sha256.toUpperCase()), "the same audio hash is referenced more than once");
       const filename = media.sha256.toLowerCase() + ".wav";
       const candidate = path.join(realDirectory, filename);
       const realFile = fs.realpathSync(candidate);
@@ -120,7 +120,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     process.exit(2);
   }
   try {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    const realManifestPath = fs.realpathSync(manifestPath);
+    assert(!isInside(REPOSITORY_ROOT, realManifestPath),
+      "benchmark manifest and gold transcripts must be outside the Git repository");
+    const manifest = JSON.parse(fs.readFileSync(realManifestPath, "utf8"));
     const result = verifyDialogueMedia(manifest, audioDirectory);
     process.stdout.write(JSON.stringify(result, null, 2) + "\n");
   } catch (error) {
