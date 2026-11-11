@@ -10,7 +10,7 @@ function makeRecording(index, overrides = {}) {
     strata: {
       languagePair: index % 2 ? "en-es" : "es-en",
       noise: ["quiet", "moderate", "noisy"][index % 3],
-      overlap: "partial",
+      overlap: index === 3 ? "heavy" : "partial",
       network: index % 2 ? "stable" : "variable",
       chunkProfile: "window-6500-overlap-500"
     },
@@ -76,7 +76,8 @@ function makeManifest() {
       chunkDurationMs: 6500,
       overlapMs: 500,
       concurrency: 2,
-      latencyBasis: "audio-window-end-to-visible-text"
+      timestampBasis: "call-start-relative",
+      latencyBasis: "capture-window-ready-to-visible-text"
     },
     acceptanceProfile: {
       id: "fixture-perfect-1",
@@ -95,7 +96,7 @@ function makeManifest() {
       maxLatencyMaxMsBySource: { "groq-remote": 1500, "groq-interpreter": 1500 }
     },
     bootstrap: { iterations: 1000, seed: 20261111 },
-    recordings: [makeRecording(1), makeRecording(2), makeRecording(3)]
+    recordings: [makeRecording(1), makeRecording(2), makeRecording(3), makeRecording(4)]
   };
 }
 
