@@ -158,6 +158,162 @@ function percentile(values, fraction) {
   return Number(sorted[index].toFixed(1));
 }
 
+function chronologyInversions(segments) {
+  let inversions = 0;
+  for (let index = 1; index < segments.length; index++) {
+    if (Number(segments[index - 1]?.startMs) > Number(segments[index]?.startMs)) inversions++;
+  }
+  return inversions;
+}
+
+function chronologyBySource(segments) {
+  return Object.fromEntries(SOURCES.map(source => [
+    source,
+    chronologyInversions(segments.filter(segment => segment?.source === source))
+  ]));
+}
+
+function buildDialogueTurns(segments, gapThresholdMs) {
+  const tracks = new Map();
+  const ordered = segments.slice().sort((a, b) =>
+    a.startMs - b.startMs || a.endMs - b.endMs || a.index - b.index
+  );
+
+  for (const segment of ordered) {
+    const trackKey = JSON.stringify([segment.source, segment.speakerId]);
+    const turns = tracks.get(trackKey) || [];
+    const previous = turns[turns.length - 1];
+    if (previous && segment.startMs - previous.endMs <= gapThresholdMs) {
+      previous.endMs = Math.max(previous.endMs, segment.endMs);
+      previous.segmentCount++;
+    } else {
+      turns.push({
+        id: trackKey + "#" + String(turns.length),
+        source: segment.source,
+        speakerId: segment.speakerId,
+        startMs: segment.startMs,
+        endMs: segment.endMs,
+        segmentCount: 1
+      });
+    }
+    tracks.set(trackKey, turns);
+  }
+
+  return Array.from(tracks.values()).flat().sort((a, b) =>
+    a.startMs - b.startMs || a.endMs - b.endMs || a.id.localeCompare(b.id)
+  );
+}
+
+function matchDialogueTurns(referenceTurns, hypothesisTurns, minimumOverlapMs) {
+  const matchedHypothesisToReference = new Map();
+  const bySource = {};
+
+  for (const source of SOURCES) {
+    const reference = referenceTurns.filter(turn => turn.source === source);
+    const hypothesis = hypothesisTurns.filter(turn => turn.source === source);
+    const usedHypothesis = new Set();
+    let matched = 0;
+
+    for (const expected of reference) {
+      let best = null;
+      for (const actual of hypothesis) {
+        if (usedHypothesis.has(actual.id)) continue;
+        if (expected.speakerId != null && actual.speakerId !== expected.speakerId) continue;
+        const intersection = Math.max(0,
+          Math.min(expected.endMs, actual.endMs) - Math.max(expected.startMs, actual.startMs)
+        );
+        if (intersection < minimumOverlapMs) continue;
+        const union = Math.max(expected.endMs, actual.endMs) - Math.min(expected.startMs, actual.startMs);
+        const score = union > 0 ? intersection / union : 0;
+        const startDelta = Math.abs(expected.startMs - actual.startMs);
+        if (!best || score > best.score || (score === best.score && startDelta < best.startDelta)) {
+          best = { turn: actual, score, startDelta };
+        }
+      }
+      if (best) {
+        usedHypothesis.add(best.turn.id);
+        matchedHypothesisToReference.set(best.turn.id, expected.id);
+        matched++;
+      }
+    }
+
+    const precision = rate(matched, hypothesis.length);
+    const recall = rate(matched, reference.length);
+    bySource[source] = {
+      referenceTurns: reference.length,
+      hypothesisTurns: hypothesis.length,
+      matchedTurns: matched,
+      missedTurns: reference.length - matched,
+      extraTurns: hypothesis.length - matched,
+      precision,
+      recall,
+      f1: precision == null || recall == null || precision + recall === 0
+        ? null : Number((2 * precision * recall / (precision + recall)).toFixed(4))
+    };
+  }
+
+  return { bySource, matchedHypothesisToReference };
+}
+
+function findCrossSourceOverlapPairs(turns, minimumOverlapMs) {
+  const remote = turns.filter(turn => turn.source === "groq-remote");
+  const interpreter = turns.filter(turn => turn.source === "groq-interpreter");
+  const pairs = [];
+  for (const remoteTurn of remote) {
+    for (const interpreterTurn of interpreter) {
+      const overlapMs = Math.max(0,
+        Math.min(remoteTurn.endMs, interpreterTurn.endMs) -
+        Math.max(remoteTurn.startMs, interpreterTurn.startMs)
+      );
+      if (overlapMs >= minimumOverlapMs) {
+        pairs.push({ remoteId: remoteTurn.id, interpreterId: interpreterTurn.id, overlapMs });
+      }
+    }
+  }
+  return pairs;
+}
+
+function evaluateOverlapPreservation(referenceTurns, hypothesisTurns, matchedHypothesisToReference, minimumOverlapMs) {
+  const referencePairs = findCrossSourceOverlapPairs(referenceTurns, minimumOverlapMs);
+  const hypothesisPairs = findCrossSourceOverlapPairs(hypothesisTurns, minimumOverlapMs);
+  const expectedKeys = new Set(referencePairs.map(pair => pair.remoteId + "|" + pair.interpreterId));
+  const seenHypothesisKeys = new Set();
+  let preservedPairs = 0;
+  let extraPairs = 0;
+
+  for (const pair of hypothesisPairs) {
+    const remoteId = matchedHypothesisToReference.get(pair.remoteId);
+    const interpreterId = matchedHypothesisToReference.get(pair.interpreterId);
+    const key = remoteId && interpreterId ? remoteId + "|" + interpreterId : null;
+    const uniqueKey = key || "unmatched|" + pair.remoteId + "|" + pair.interpreterId;
+    if (seenHypothesisKeys.has(uniqueKey)) continue;
+    seenHypothesisKeys.add(uniqueKey);
+    if (key && expectedKeys.has(key)) preservedPairs++;
+    else extraPairs++;
+  }
+
+  const missedPairs = Math.max(0, referencePairs.length - preservedPairs);
+  const precision = rate(preservedPairs, preservedPairs + extraPairs);
+  const recall = rate(preservedPairs, referencePairs.length);
+  const referenceOverlapMs = referencePairs.reduce((sum, pair) => sum + pair.overlapMs, 0);
+  const hypothesisOverlapMs = hypothesisPairs.reduce((sum, pair) => sum + pair.overlapMs, 0);
+
+  return {
+    referencePairs: referencePairs.length,
+    hypothesisPairs: hypothesisPairs.length,
+    preservedPairs,
+    missedPairs,
+    extraPairs,
+    precision,
+    recall,
+    f1: precision == null || recall == null || precision + recall === 0
+      ? null : Number((2 * precision * recall / (precision + recall)).toFixed(4)),
+    referenceOverlapMs,
+    hypothesisOverlapMs,
+    overlapDurationDeltaMs: hypothesisOverlapMs - referenceOverlapMs
+  };
+}
+
 function hasContiguous(tokens, termTokens) {
   if (!termTokens.length || termTokens.length > tokens.length) return false;
   outer: for (let i = 0; i <= tokens.length - termTokens.length; i++) {
@@ -294,6 +450,39 @@ export function evaluateDialogueQuality(dataset) {
     }];
   }));
 
+  const structureOptions = dataset.structureOptions && typeof dataset.structureOptions === "object"
+    ? dataset.structureOptions : {};
+  const turnGapThresholdMs = structureOptions.turnGapThresholdMs == null
+    ? 1200 : Number(structureOptions.turnGapThresholdMs);
+  const minimumOverlapMs = structureOptions.minimumOverlapMs == null
+    ? 100 : Number(structureOptions.minimumOverlapMs);
+  if (!Number.isFinite(turnGapThresholdMs) || turnGapThresholdMs < 0 ||
+      !Number.isFinite(minimumOverlapMs) || minimumOverlapMs <= 0) {
+    throw new TypeError("turnGapThresholdMs must be non-negative and minimumOverlapMs must be positive");
+  }
+
+  const referenceTurns = buildDialogueTurns(reference, turnGapThresholdMs);
+  const hypothesisTurns = buildDialogueTurns(hypothesis, turnGapThresholdMs);
+  const turnMatching = matchDialogueTurns(referenceTurns, hypothesisTurns, minimumOverlapMs);
+  const referenceSegmentsInput = dataset.reference.segments;
+  const hypothesisSegmentsInput = dataset.hypothesis.segments;
+  const hypothesisChronologyBySource = chronologyBySource(hypothesisSegmentsInput);
+  const referenceChronologyBySource = chronologyBySource(referenceSegmentsInput);
+  const turnCounts = Object.values(turnMatching.bySource).reduce((total, item) => ({
+    referenceTurns: total.referenceTurns + item.referenceTurns,
+    hypothesisTurns: total.hypothesisTurns + item.hypothesisTurns,
+    matchedTurns: total.matchedTurns + item.matchedTurns,
+    missedTurns: total.missedTurns + item.missedTurns,
+    extraTurns: total.extraTurns + item.extraTurns
+  }), { referenceTurns: 0, hypothesisTurns: 0, matchedTurns: 0, missedTurns: 0, extraTurns: 0 });
+  const turnPrecision = rate(turnCounts.matchedTurns, turnCounts.hypothesisTurns);
+  const turnRecall = rate(turnCounts.matchedTurns, turnCounts.referenceTurns);
+  const turnF1 = turnPrecision == null || turnRecall == null || turnPrecision + turnRecall === 0
+    ? null : Number((2 * turnPrecision * turnRecall / (turnPrecision + turnRecall)).toFixed(4));
+  const overlapPreservation = evaluateOverlapPreservation(
+    referenceTurns, hypothesisTurns, turnMatching.matchedHypothesisToReference, minimumOverlapMs
+  );
+
   const wordDenominator = aggregate.referenceWords;
   const characterDenominator = aggregate.characterReferenceUnits;
   const speakerDenominator = aggregate.speakerTokensCompared;
@@ -317,6 +506,28 @@ export function evaluateDialogueQuality(dataset) {
       preserved: criticalPreserved,
       recall: criticalTerms.length ? Number((criticalPreserved / criticalTerms.length).toFixed(4)) : null,
       bySource: criticalTermsBySource
+    },
+    dialogueStructure: {
+      definition: {
+        turnGapThresholdMs,
+        minimumOverlapMs,
+        note: "A turn groups consecutive segments on the same source/speaker track; unknown speaker IDs remain grouped as unknown."
+      },
+      turns: {
+        bySource: turnMatching.bySource,
+        overall: Object.assign({}, turnCounts, {
+          precision: turnPrecision,
+          recall: turnRecall,
+          f1: turnF1
+        })
+      },
+      chronology: {
+        referenceOutOfOrderAdjacentPairs: chronologyInversions(referenceSegmentsInput),
+        hypothesisOutOfOrderAdjacentPairs: chronologyInversions(hypothesisSegmentsInput),
+        referenceBySource: referenceChronologyBySource,
+        hypothesisBySource: hypothesisChronologyBySource
+      },
+      crossSourceOverlap: overlapPreservation
     },
     speakerAttribution: {
       comparedTokens: speakerDenominator,

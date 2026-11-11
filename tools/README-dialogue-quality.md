@@ -79,6 +79,8 @@ El JSON de entrada debe mantenerse fuera del repositorio si contiene conversacio
 - `latencyMs`: latencia del segmento desde el final del audio que lo origina hasta que el texto quedó visible en la interfaz. Es opcional; se requiere para percentiles por canal.
 - `hypothesis.latenciesMs`: muestras globales de latencia, opcionales; se usan para el p50/p95 general.
 - `criticalTerms`: cadenas buscadas en ambos canales, o elementos `{term, source, language}` para exigir el término en un canal concreto.
+- `structureOptions.turnGapThresholdMs`: silencio máximo para agrupar segmentos consecutivos del mismo canal/identificador de hablante en un turno; valor predeterminado 1,200 ms.
+- `structureOptions.minimumOverlapMs`: intersección mínima para reconocer un solapamiento temporal entre turnos remotos y del intérprete; valor predeterminado 100 ms y debe ser positivo.
 
 ## Métricas y cautelas
 
@@ -87,10 +89,15 @@ El JSON de entrada debe mantenerse fuera del repositorio si contiene conversacio
 - **Términos críticos**: recall de frases exactas normalizadas; no evalúa equivalencia semántica.
 - **Atribución**: exactitud de `speakerId` en tokens correctamente alineados que sí tienen etiqueta de referencia. No mide diarización de segmentos insertados, eliminados o sustituidos.
 - **Latencia**: p50, p95 y máximo; los valores solo son válidos si `latencyMs` se midió con un reloj monotónico común y el evento final corresponde a texto visible, no solo a respuesta HTTP.
+- **Turnos**: agrupa segmentos consecutivos del mismo canal y `speakerId` cuando el silencio entre ellos no supera `turnGapThresholdMs`. Compara turnos de referencia e hipótesis por intersección temporal y reporta precisión, recall, F1, turnos omitidos y turnos extra. Es una heurística de continuidad, no diarización.
+- **Cronología**: cuenta inversiones adyacentes de `startMs` en el orden original de entrada, globalmente y por canal. Así no se ocultan inversiones ordenando previamente el diálogo.
+- **Solapamiento entre canales**: compara las relaciones de intersección temporal entre turnos remotos y del intérprete, después de emparejar turnos de cada fuente. Reporta pares preservados, omitidos y extra, precisión/recall/F1 y diferencia de duración superpuesta. No estima quién habló si no existe `speakerId` de referencia.
 - **Idioma**: usa `Intl.Segmenter` cuando está disponible; la segmentación y el gold transcript deben conservar la misma convención.
+
+Los umbrales de 1,200 ms para agrupar turnos y 100 ms para reconocer solapamientos son defaults de evaluación, no verdades universales. Deben ajustarse y documentarse según el corpus de referencia antes de comparar candidatos.
 
 WER/CER bajos no prueban por sí solos un buen diálogo: revisar también negaciones, cantidades, nombres, turnos, solapamientos, pérdidas, duplicados, cronología y errores de atribución. No convertir los resultados de corpus sintético en afirmaciones de calidad acústica real. Definir los umbrales de aceptación antes de ejecutar el benchmark y conservar fuera del repo el audio, las transcripciones y cualquier dato de llamada.
 
 ## Esquema del informe
 
-El resultado `signal-interpreter-dialogue-quality-report/v1` incluye WER/CER general y por fuente, recall de términos críticos (general y por fuente), exactitud de atribución y percentiles de latencia. El informe contiene números únicamente, sin segmentos ni transcripciones.
+El resultado `signal-interpreter-dialogue-quality-report/v1` incluye WER/CER general y por fuente, recall de términos críticos (general y por fuente), métricas de turnos, inversiones cronológicas, preservación de solapamientos entre canales, exactitud de atribución y percentiles de latencia. El informe contiene números únicamente, sin segmentos ni transcripciones.

@@ -66,6 +66,57 @@ assert.equal(perfectReport.latency.bySource["groq-interpreter"].p95Ms, 260);
 assert.equal(perfectReport.latency.p50Ms, 330);
 assert.equal(perfectReport.latency.p95Ms, 550);
 assert.equal(perfectReport.latency.maxMs, 550);
+assert.deepEqual(perfectReport.dialogueStructure.turns.overall, {
+  referenceTurns: 2,
+  hypothesisTurns: 2,
+  matchedTurns: 2,
+  missedTurns: 0,
+  extraTurns: 0,
+  precision: 1,
+  recall: 1,
+  f1: 1
+});
+assert.equal(perfectReport.dialogueStructure.crossSourceOverlap.referencePairs, 1);
+assert.equal(perfectReport.dialogueStructure.crossSourceOverlap.hypothesisPairs, 1);
+assert.equal(perfectReport.dialogueStructure.crossSourceOverlap.preservedPairs, 1);
+assert.equal(perfectReport.dialogueStructure.crossSourceOverlap.recall, 1);
+assert.equal(perfectReport.dialogueStructure.chronology.hypothesisOutOfOrderAdjacentPairs, 0);
+
+const outOfOrder = structuredClone(perfect);
+outOfOrder.hypothesis.segments.reverse();
+const outOfOrderReport = evaluateDialogueQuality(outOfOrder);
+assert.equal(outOfOrderReport.overall.wordErrorRate, 0, "lexical score remains independent of array order");
+assert.equal(outOfOrderReport.dialogueStructure.chronology.hypothesisOutOfOrderAdjacentPairs, 1);
+assert.equal(outOfOrderReport.dialogueStructure.chronology.hypothesisBySource["groq-remote"], 0);
+assert.equal(outOfOrderReport.dialogueStructure.chronology.hypothesisBySource["groq-interpreter"], 0);
+
+const missingLane = structuredClone(perfect);
+missingLane.hypothesis.segments = [missingLane.hypothesis.segments[0]];
+const missingLaneReport = evaluateDialogueQuality(missingLane);
+assert.equal(missingLaneReport.dialogueStructure.turns.bySource["groq-interpreter"].missedTurns, 1);
+assert.equal(missingLaneReport.dialogueStructure.turns.overall.recall, 0.5);
+assert.equal(missingLaneReport.dialogueStructure.crossSourceOverlap.missedPairs, 1);
+assert.equal(missingLaneReport.dialogueStructure.crossSourceOverlap.recall, 0);
+
+const movedLane = structuredClone(perfect);
+movedLane.hypothesis.segments[1].startMs = 3000;
+movedLane.hypothesis.segments[1].endMs = 4100;
+const movedLaneReport = evaluateDialogueQuality(movedLane);
+assert.equal(movedLaneReport.dialogueStructure.crossSourceOverlap.preservedPairs, 0);
+assert.equal(movedLaneReport.dialogueStructure.crossSourceOverlap.missedPairs, 1);
+
+const extraTurn = structuredClone(perfect);
+extraTurn.hypothesis.segments.push({
+  source: "groq-interpreter",
+  speakerId: "interpreter",
+  language: "es",
+  startMs: 5000,
+  endMs: 5600,
+  text: "Entendido.",
+  latencyMs: 300
+});
+const extraTurnReport = evaluateDialogueQuality(extraTurn);
+assert.equal(extraTurnReport.dialogueStructure.turns.bySource["groq-interpreter"].extraTurns, 1);
 
 const degraded = structuredClone(perfect);
 degraded.hypothesis.segments[0].text =
@@ -119,5 +170,9 @@ assert.throws(() => evaluateDialogueQuality({
   reference: { segments: [{ source: "groq-remote", startMs: null, endMs: 1, text: "x" }] },
   hypothesis: { segments: [] }
 }), /invalid timestamps/);
+assert.throws(() => evaluateDialogueQuality({
+  ...perfect,
+  structureOptions: { minimumOverlapMs: 0 }
+}), /minimumOverlapMs/);
 
 console.log("DIALOGUE_QUALITY_EVALUATION=PASS");
