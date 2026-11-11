@@ -277,3 +277,37 @@ Las cifras anteriores identifican materializaciones concretas de cada documento;
 - Se intentó verificar/sincronizar el checkout local después de ese commit, pero la sesión RDC del perfil CENTRAL\fila4 no completó la lectura de vuelta. La segunda conexión, CENTRAL\mantenimientorci, devolvió la protección Git "dubious ownership" al leer la ruta propiedad de CENTRAL\fila4. No se cambió safe.directory global ni se escribió desde MantenimientoRCI en ese checkout.
 - Resultado preciso: **GitHub main contiene y relee el OCP final; el checkout local de escritorio después del pin final queda NO VERIFICADO**. No usarlo como fuente vigente ni afirmar que ya está alineado a 3e169771...
 - Acción única pendiente cuando vuelva a estar operativo el canal RDC de CENTRAL\fila4: entrar como ese usuario, comprobar que el checkout esté clean/main, hacer fetch y pull --ff-only, confirmar HEAD==origin/main y comprobar que HEAD:docs/frentes/signal-interpreter/OBJETO-CANONICO.md coincida con el blob OCP que se acaba de leer desde GitHub main para esa sesión. No cambiar propiedad/ACL ni modificar configuración global de Git para eludir la protección.
+
+## 11. Retoma de continuidad · exportación recuperada 2026-11-11
+
+### 11.1 Custodia del TXT
+
+Se localizó en Descargas de Fila 4 el archivo `ChatGPT-SI-20261111-0913.txt` (exportado el 2026-11-11 a las 09:13:07, hora America/Mexico_City; creado el 2026-11-10 a las 18:44:33; actualizado a las 20:06:13). Contiene 1,626 líneas y 75,289 bytes. Se copió mediante RDC, sin mover ni alterar el original, a `docs/frentes/signal-interpreter/originales/ChatGPT-SI-20261111-0913.txt` dentro del checkout de Fila 4.
+
+La huella SHA-256 de la fuente, copia de destino y relectura coincide exactamente: `1564338E578D32EA685831521627FE58BC0DA8B3DC59920225939D02ED73E955`. Verificación local: 2026-11-11T09:18:30.9567506-06:00. Se añadió una exclusión específica en `.git/info/exclude`; el TXT completo permanece **LOCAL / PRIVADO / NO PUBLICADO** porque este repositorio es público. El recibo público de custodia, sin contenido conversacional, está en [RECIBO-EXPORT-CHATGPT-SI-20261111-0913.json](../evidencias/RECIBO-EXPORT-CHATGPT-SI-20261111-0913.json).
+
+### 11.2 Última salida visible del modelo anterior · copia literal
+
+Fuente: exportación indicada, última respuesta visible, 10/11/2026 a las 19:42:55, modelo `gpt-6-t-mini-mini`. El texto se conserva literalmente; no es un resumen ni una reconstrucción:
+
+```text
+La paralelización ya quedó validada en GitHub, no solo en local. En el HEAD 1c7aca92 pasaron los tres workflows y la auditoría se ejecutó en 4 jobs independientes $syntax, guards, observability, captions$ más un quinto job agregado (audit) que exige el éxito de los cuatro. Los comandos originales se conservaron: 56 chequeos de sintaxis y 43 suites de regresión/auditoría. La cancelación de ejecuciones obsoletas también funcionó: las dos ejecuciones duplicadas quedaron cancelled y se completaron las más nuevas.
+
+Estoy cerrando también el problema de continuidad, no solo el código. El control de responsabilidad sigue en G14 como agente único, sin inventar un corresponsable ni folio nuevo. El checkout independiente que usé bajo el perfil operador de MantenimientoRCI ya fue eliminado después de las pruebas; la verificación quedó registrada como evidencia y no queda allí una copia de trabajo.
+```
+
+### 11.3 Contexto de trabajo recuperado y estado de referencia
+
+El propósito no cambió: construir **un único diálogo cronológico** con dos fuentes independientes y concurrentes: (1) audio remoto de la pestaña seleccionada y (2) micrófono propio del intérprete. Cada fuente se transcribe separadamente con Groq Whisper; después se fusionan los segmentos por reloj común, secuencia y offsets, conservando solapamientos reales y reconciliando límites/parciales sin duplicaciones. La fuente del micrófono se rotula `INTÉRPRETE`; el canal remoto, `AUDIO REMOTO · HABLANTE NO VERIFICADO`, salvo metadata verificable. No inferir LEP/proveedor por idioma, voz, acento o contenido.
+
+Decisiones heredadas vigentes: `whisper-large-v3` como modelo predeterminado de calidad en ambos carriles; no sustituir silenciosamente por Turbo; dos colas concurrentes; ventanas WAV autónomas; timestamps por segmento en el camino crítico; backpressure/reintentos explícitos; captura únicamente con inicio explícito y llamada activa; terminar al finalizar la llamada o perder permisos; no interferir con el micrófono saliente. La ventana candidata 6.5 s / overlap 500 ms / hop 6 s no está ratificada como óptima: debe medirse WER/CER, latencia p50/p95, pérdidas, duplicados, deriva, cuota y costo.
+
+Estado GitHub reconsultado durante esta retoma (2026-11-11, aprox. 09:16 America/Mexico_City): main estaba en `83c477eff650f33deec98b6545448e3f464d2acc`, commit automático de diagnóstico `diagnostic: enqueue observation batch`; esto no acredita avance de producto. PR #84 seguía OPEN / DRAFT / NOT MERGED, rama `feat/groq-dual-main-20261111`, HEAD `1c7aca92cc89337aeb4c9907426847f941fa35bd`, 33 archivos. Los tres workflows de ese HEAD figuraban SUCCESS: Package integrity run `42941191180`, signal-observability-audit run `42941191052` y native-caption-host-build run `42941191195`. Auditoría: syntax 56, guards 16, observability 14, captions 13 y agregador; se preservan los 99 comandos originales. La verificación local previamente registrada fue 43/43 suites, 56/56 sintaxis y 66/66 hashes. Estos resultados pertenecen a ese SHA, no a una cabeza futura.
+
+Límites sin cambio: no se cargó la extensión en Chrome por política administrada; no había credencial Groq verificada; no se llamó a la API con audio; no se capturó audio real ni se probó una llamada real; ZDR/cuotas no fueron comprobados en la consola de cuenta; no existen mediciones acústicas WER/CER o latencia real; no hubo aceptación del operador, merge, deploy ni release. Los toggles permanecen false por defecto. No se publica audio ni texto clínico.
+
+La autorización G14 y los límites de RDC se conservan: trabajo y artefactos en Fila 4; MantenimientoRCI solo como identidad operadora elevada. El intento de Git local bajo MantenimientoRCI devolvió `dubious ownership` porque el checkout pertenece a CENTRAL\\fila4. No se cambió `safe.directory`, ACL ni propiedad, ni se escribió Git desde esa identidad. Por ello, el archivo fuente está preservado localmente y los documentos canónicos se actualizan por la superficie remota; el espejo local Git no se declara sincronizado.
+
+### 11.4 Instrucción de continuidad
+
+Continuar en la misma titularidad G14, sin redescubrir arquitectura ni reabrir PR #83 (cerrada sin merge). La superficie canónica vigente es GitHub `main`; al iniciar el siguiente trabajo, releer PR #84, HEAD y checks actuales antes de reutilizar evidencia. Después continuar con validación técnica del runtime/ciclo de vida y compuertas pendientes, sin degradar cobertura ni habilitar audio/Groq/Chrome real por inferencia. La ventana de 40 minutos mencionada en A-03 pertenecía al 10/11/2026 y es histórica, no un límite vigente para esta sesión.
