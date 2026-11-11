@@ -268,3 +268,12 @@ Las cifras anteriores identifican materializaciones concretas de cada documento;
 - No había secreto Groq en el perfil Fila 4 ni variables GROQ_API_KEY/SIGNAL_GROQ_API_KEY/__SIGNAL_GROQ_TOKEN; no se transmitió audio ni se ejecutó API real.
 - La carga Chrome no se completó por política corporativa; el perfil temporal fue eliminado y el perfil habitual no se modificó.
 - La única titularidad sigue G14; FOL1 PREPARADA/NO ACTIVA; folios PENDIENTES/NO ASIGNADOS; no aceptación, merge, deploy ni release.
+
+
+### 10.4 Límite de read-back del checkout local tras el pin final del OCP
+
+- El checkout principal de Fila 4 completó un fast-forward y un cotejo local de ocho blobs en HEAD 05a12cde497ecb1110211d225fa41d3fab2c9efb. Ese cotejo fue anterior al último pin del OCP, por lo que comprobó el blob OCP anterior b0e2f728a6014b8d3ac380c05eee9e85a2a15e17, no el blob final actual.
+- Después se publicó el pin final del OCP en commit 45d3ec872ed83f5aaafe2d5a58ce75181ef04189, blob actual 3e1697711cd3f578ead7601232d5c33ea9d3f6c8.
+- Se intentó verificar/sincronizar el checkout local después de ese commit, pero la sesión RDC del perfil CENTRAL\fila4 no completó la lectura de vuelta. La segunda conexión, CENTRAL\mantenimientorci, devolvió la protección Git "dubious ownership" al leer la ruta propiedad de CENTRAL\fila4. No se cambió safe.directory global ni se escribió desde MantenimientoRCI en ese checkout.
+- Resultado preciso: **GitHub main contiene y relee el OCP final; el checkout local de escritorio después del pin final queda NO VERIFICADO**. No usarlo como fuente vigente ni afirmar que ya está alineado a 3e169771...
+- Acción única pendiente cuando vuelva a estar operativo el canal RDC de CENTRAL\fila4: entrar como ese usuario, comprobar que el checkout esté clean/main, hacer fetch y pull --ff-only, confirmar HEAD==origin/main y comprobar que HEAD:docs/frentes/signal-interpreter/OBJETO-CANONICO.md tenga blob 3e1697711cd3f578ead7601232d5c33ea9d3f6c8. No cambiar propiedad/ACL ni modificar configuración global de Git para eludir la protección.
