@@ -116,7 +116,7 @@ function validateCorpusMetadata(corpus) {
 
 function validateSystem(system) {
   assertAllowedKeys(system, [
-    "model", "buildSha", "chunkDurationMs", "overlapMs", "concurrency", "latencyBasis"
+    "model", "buildSha", "chunkDurationMs", "overlapMs", "concurrency", "timestampBasis", "latencyBasis"
   ], "system configuration");
   assert(system.model === "whisper-large-v3", "the benchmark model must be pinned to whisper-large-v3");
   assert(/^[a-f0-9]{40}$/i.test(String(system.buildSha || "")), "system build SHA is invalid");
@@ -125,8 +125,10 @@ function validateSystem(system) {
   assert(Number.isInteger(system.overlapMs) && system.overlapMs > 0 &&
     system.overlapMs < system.chunkDurationMs, "overlapMs is invalid");
   assert(system.concurrency === 2, "dual-lane benchmark concurrency must be exactly 2");
-  assert(system.latencyBasis === "audio-window-end-to-visible-text",
-    "latency must end when text is visible, not when the HTTP response arrives");
+  assert(system.timestampBasis === "call-start-relative",
+    "reference and hypothesis timestamps must be relative to each recording's call start");
+  assert(system.latencyBasis === "capture-window-ready-to-visible-text",
+    "latency must run from the ready audio window to rendered visible text, not HTTP response time");
 }
 
 function validateStrata(strata) {
@@ -407,6 +409,23 @@ export function evaluateDialogueBenchmark(manifest) {
   }
   const acceptance = evaluateAcceptance(summary, manifest.acceptanceProfile);
   const allCriteria = [...acceptance.criteria, ...stratumCriteria];
+  const overlapCategories = new Set(rows.map(row => row.strata.overlap));
+  for (const required of ["partial", "heavy"]) {
+    allCriteria.push({
+      id: "strata.overlapCoverage." + required,
+      status: overlapCategories.has(required) ? "PASS" : "BLOCKED",
+      minimum: required,
+      reason: overlapCategories.has(required) ? null : "the test set must include both partial and heavy real cross-source overlap"
+    });
+  }
+  if (summary.crossSourceOverlap.referencePairs <= 0) {
+    allCriteria.push({
+      id: "overlap.referencePairs",
+      status: "BLOCKED",
+      observed: summary.crossSourceOverlap.referencePairs,
+      reason: "the frozen reference contains no simultaneous cross-source turns"
+    });
+  }
   const addStratumMetric = (id, observed, limit, comparator) => {
     if (!finite(observed)) {
       allCriteria.push({ id, status: "BLOCKED", observed, limit, reason: "insufficient or missing stratum evidence" });
@@ -460,6 +479,7 @@ export function evaluateDialogueBenchmark(manifest) {
       chunkDurationMs: manifest.system.chunkDurationMs,
       overlapMs: manifest.system.overlapMs,
       concurrency: manifest.system.concurrency,
+      timestampBasis: manifest.system.timestampBasis,
       latencyBasis: manifest.system.latencyBasis
     },
     sample: {
