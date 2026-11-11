@@ -21,3 +21,14 @@ Repositorio público: no cargar originales privados, secretos ni datos de llamad
 - **Responsabilidad actual:** G14 ACTIVO, agente único, según `CONTROL-RESPONSABILIDAD.json`; FOL1 PREPARADA, NO ACTIVA; folio pendiente/no asignado.
 - **Estado actual de producto:** `main/manifest.json` declara 0.10.47; PR #79/#78 fusionadas; PR #80 draft/no mergeable. El workspace fila4 repitió pruebas sintéticas: Presence Guard 85, Presence Connect 35, Auto-Answer Runtime 15, Microphone Guard PASS y paquete 60/60. No hubo reload Chrome ni aceptación E2E. SI-REG-05 registra conflicto estático entre unmute inmediato prellamada y política de mute durante espera/timbrado.
 - **Backlog vigente:** SI-FB-01–SI-FB-06 y SI-REG-01–SI-REG-05. Véase [crónica de retoma G14 · 2026-11-10](cronica/C-SIGNAL-RETOMA-20261110-G14-CURRENT.md) para la salida literal, pruebas repetidas, CI observado, límites y checkpoint.
+
+## Recuperación del frente Groq dual · 2026-11-10 · G14
+
+- [Conversación recuperada, literal](originales/CHATGPT-SI-RECUPERADO-GROQ-20261110.txt)
+- [Instrucciones verbatim y plan provisional reconciliado](INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md)
+- [Crónica de recuperación y evidencia](cronica/C-SIGNAL-RECUPERACION-GROQ-20261110-G14.md)
+- [SI-OP-03 · transcripción dual Groq](REGLAS-OPERATIVAS.md)
+- [Backlog de retroalimentación y estado Groq dual](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md)
+
+La conversación preservada es texto aportado por el operador, no una exportación nativa. El estado vigente y los límites se rigen por OBJETO-CANONICO.md.
+
