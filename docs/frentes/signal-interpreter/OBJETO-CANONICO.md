@@ -427,3 +427,46 @@ La crónica [C-SIGNAL-GROQ-DUAL-PORT-20261111-G14.md](cronica/C-SIGNAL-GROQ-DUAL
 - No hay WER/CER acústico, latencia p50/p95 ni aceptación en Chrome. No hacer merge, activación, deploy o release hasta completar esas compuertas.
 
 G14 sigue ACTIVO como agente único. FOL1 continúa PREPARADA / NO ACTIVA; no se asigna folio. MCP normativo sigue DESACTIVADO.
+
+
+## 12. Retoma integral y aceleración segura · G14 · corte 2026-11-10 local / 2026-11-11 UTC
+
+### 12.1 Autoridad, procedencia y recuperación literal
+
+- La autorización técnica amplia y las instrucciones de aceleración/continuidad de esta retoma están preservadas literalmente en [CHATGPT-SI-AUTORIZACIONES-RETOMA-20261110-G14.txt](originales/CHATGPT-SI-AUTORIZACIONES-RETOMA-20261110-G14.txt), blob de lectura de vuelta `a55caa4f2659fdee3fafb198b3b1317e1774f859`, 1,133 caracteres, read-back exacto.
+- La conversación constructora anterior, suministrada por el operador y no considerada export nativa, continúa preservada en [CHATGPT-SI-RECUPERADO-GROQ-20261110.txt](originales/CHATGPT-SI-RECUPERADO-GROQ-20261110.txt), blob `a24d696207dfb357f12e90151d64ce1a35fc084c`.
+- El plan literal A-01–A-04 permanece en [INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md](INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md). A-01 fue cotejada con el original y su frase final es exactamente `Calidad maxima. Reportame en 10 minutos.`; no reintroducir la frase que apareció en un borrador anterior.
+- La última salida visible exacta de una conversación previa no se ha localizado como copia literal persistida y cotejada. Se declara **NO DISPONIBLE / NO VERIFICADA**; no reconstruirla desde memoria, resumen ni crónica histórica.
+
+### 12.2 Gobierno y titularidad vigentes
+
+- Fuente metodológica releída: `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`, DUG v388 · NX-388m, Metacanon 1.29, GOW 2.18, blob `4db0ebadfd1e48b2bdec9236ba7f344921e4a865`; §ARR consultado.
+- CNP aplicado por pertinencia: P001, P004, P005, P038 y P043. Metacanon §§4, 28, 42 y 47–48 aplicados a salida, persistencia, titularidad y reanudación.
+- Control leído: `CONTROL-RESPONSABILIDAD.json`, blob `2f02cab6b3697f31b2af3d141204c4431fbc05cb`; G14 ACTIVO, agente único; alias UUIDv7 local `01a1bd8b-8291-7906-b862-6088593acfe5` (no es ID nativo); G13 sustituido; FOL1 PREPARADA/NO ACTIVA; folio PENDIENTE/NO ASIGNADO.
+- No se transfirió titularidad, no se creó corresponsable y no se asignó nuevo folio. MCP normativo continúa DESACTIVADO.
+
+### 12.3 Código, PR y CI vigentes
+
+- PR #83 cerrada sin merge. PR #84 [dual-source Groq Whisper](https://github.com/SeryMente/signal-interpreter/pull/84) permanece OPEN/DRAFT/NOT MERGED, rama `feat/groq-dual-main-20261111`, HEAD validado `1c7aca92cc89337aeb4c9907426847f941fa35bd`.
+- Diff del PR: 33 archivos de código, pruebas, manifiestos, empaquetado y workflows; `observations/` no está en el diff. Versión declarada de extensión: 0.10.47.
+- CI SUCCESS para ese HEAD: Package integrity run `42941191180`; signal-observability-audit run `42941191052`; native-caption-host-build run `42941191195`.
+- La auditoría de observabilidad se ejecutó con cuatro jobs paralelos (syntax 56 comandos, guards 16 suites, observability 14 suites, captions 13 suites) y un job aggregate obligatorio. 99 comandos originales preservados. Los tres workflows aplican concurrency/cancel-in-progress por workflow y rama; dos ejecuciones anteriores obsoletas fueron canceladas y las tres ejecuciones vigentes SUCCESS.
+- En dos checkouts de Fila 4 se obtuvo validación independiente: 43/43 suites PASS; 56/56 syntax PASS; verificador 66/66 hashes PASS; 8 critical audio/Connect/presence suites PASS; YAML parse/estructura/conteos PASS; parser PowerShell 5.1, identidad de extensión y archivo de distribución PASS. Los checkouts se mantuvieron separados; el checkout temporal bajo MantenimientoRCI se eliminó tras la prueba.
+
+### 12.4 Estado de runtime, privacidad y aceptación
+
+- La captura exige `displaySurface === "browser"`; metadata ausente, ventana o monitor fallan cerrado antes de pedir el micrófono. El control remoto conserva etiqueta neutral si no hay metadata verificable; no inferir LEP/proveedor.
+- Los flags Groq/ZDR permanecen false por defecto. No se encontró clave Groq local ni variable de entorno habilitada. No hubo llamadas al endpoint, audio real, llamada real ni comprobación ZDR en la consola de cuenta.
+- Chrome administrado bloqueó Developer Mode / Load unpacked. El perfil temporal fue eliminado y el perfil habitual no fue modificado. No se declara extensión cargada/aceptada.
+- No existen métricas WER/CER, latencia p50/p95, jitter, deriva, pérdidas/duplicados, calidad acústica por fuente ni coste/ASH real de la cuenta. Chunk 6.5 s / overlap 500 ms / hop 6 s siguen siendo candidatos, no parámetros óptimos.
+- No hubo merge, deploy, release ni aceptación funcional. La CI verde acredita solo los workflows y SHA indicados.
+
+### 12.5 Tareas provisionales activas
+
+El backlog operativo de continuidad queda en [TAREAS-PROVISIONALES-GROQ-DUAL-G14.md](TAREAS-PROVISIONALES-GROQ-DUAL-G14.md), blob `1aa2792ac5e497af72770b1d30d64889f1878d51`. Define 12 tareas, prioridad, estado, dependencias, acciones y criterios de salida. Resumen: conservar PR/CI; resolver Chrome autorizado; verificar ZDR/cuotas; preparar secreto local; probar API con corpus sintético no clínico; validar ciclo de vida de captura; verificar fusión/overlay; optimizar chunking/coste con medición; fijar umbrales acústicos; reservar aceptación final al operador; mantener aceleración CI sin reducción de cobertura; y preservar continuidad interconversacional.
+
+### 12.6 Ruta única de reanudación
+
+Una conversación nueva debe leer, en este orden: (1) §ARR y DUG vigentes desde Metodología main; (2) este OCP y CONTROL-RESPONSABILIDAD.json; (3) [esta crónica de retoma](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md); (4) [TAREAS-PROVISIONALES-GROQ-DUAL-G14.md](TAREAS-PROVISIONALES-GROQ-DUAL-G14.md); (5) instrucciones literales y plan provisional enlazados en §12.1; (6) PR #84 y checks del HEAD actual. No asumir que el HEAD aquí citado sigue vigente; consultarlo otra vez. No reconstruir la última salida anterior no disponible. No iniciar audio real, credenciales, ZDR, Chrome ni aceptación sin las compuertas descritas.
+
+G14 continúa como agente único. FOL1 sigue PREPARADA/NO ACTIVA; folios permanecen PENDIENTES/NO ASIGNADOS. MCP normativo DESACTIVADO.
