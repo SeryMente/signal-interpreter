@@ -409,3 +409,21 @@ Los tres SUCCESS citados en salidas antiguas corresponden a una cabeza anterior 
 - No ejecutado: nuevas pruebas locales, CI de reintento, instalación, carga/reload de Chrome, permisos de audio, micrófono físico, captura de pestaña real, endpoint Groq real, credenciales, verificación de ZDR, llamada real, merge, deploy, release o aceptación.
 - G14 continúa como agente único del frente según CONTROL-RESPONSABILIDAD.json. FOL1 sigue PREPARADA/NO ACTIVA; no se asigna folio nuevo ni se simula transferencia de titularidad.
 
+
+
+## 11. Integración selectiva Groq dual y aceptación pendiente · G14 · 2026-11-11
+
+La crónica [C-SIGNAL-GROQ-DUAL-PORT-20261111-G14.md](cronica/C-SIGNAL-GROQ-DUAL-PORT-20261111-G14.md) conserva las reparaciones, commits, pruebas, CI, límites de entorno y decisiones de aceptación.
+
+- A-01 quedó corregida para coincidir literalmente con la conversación recuperada: `Calidad maxima. Reportame en 10 minutos.`; lectura de vuelta exacta en main y candidata.
+- PR #83 fue cerrada sin merge y supersedida por [PR #84](https://github.com/SeryMente/signal-interpreter/pull/84), port selectivo desde main; no se fusionó la historia divergente.
+- PR #84 / rama `feat/groq-dual-main-20261111` permanece draft, abierta y sin merge. HEAD de la crónica: `03fc895dbe682be3bd9f944ee68951a4e815bc16`.
+- CI 3/3 SUCCESS en ese HEAD: Package integrity `42939190917`, signal-observability-audit `42939190945`, native-caption-host-build `42939191050`.
+- Reparados nueve hashes de inventario, dos fixtures escapados y validación de superficie de captura; ahora exige `displaySurface === "browser"` y falla cerrado antes de pedir el micrófono.
+- Pruebas locales: inventario 66/66, verificador y ocho suites, 43 pruebas de observabilidad/regresión/layout, cuatro suites Groq dual, parser Windows PowerShell 5.1, identidad de extensión y archivo de distribución: PASS.
+- La carga Chrome en perfil temporal no se completó porque la política organizacional bloquea Developer Mode / Load unpacked. El perfil temporal fue eliminado; el perfil habitual no se tocó.
+- No había clave Groq local en el entorno de prueba; no hubo llamadas reales, captura de audio ni verificación ZDR. Los controles siguen false por defecto.
+- Las cuotas públicas de Groq presentan discrepancias entre Rate Limits y Supported Models. La cuota exacta de la organización debe comprobarse antes de activar el flujo. La ventana de 6.5 s / 500 ms sigue siendo candidata; el coste mínimo por petición y el uso de ASH deben medirse.
+- No hay WER/CER acústico, latencia p50/p95 ni aceptación en Chrome. No hacer merge, activación, deploy o release hasta completar esas compuertas.
+
+G14 sigue ACTIVO como agente único. FOL1 continúa PREPARADA / NO ACTIVA; no se asigna folio. MCP normativo sigue DESACTIVADO.
