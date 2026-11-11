@@ -412,3 +412,23 @@ Retomar desde PR #84 y desde el benchmark de calidad de extremo a extremo; no re
 ### 14.4 Compuertas externas y continuidad
 
 Siguen sin ejecutarse audio/captura real, llamada Groq con audio, verificación de ZDR/cuotas, credencial local ni instalación en Chrome autorizado. Flags false. No hay WER/CER acústico ni latencia real; no aceptación, merge, deploy o release. Próximo paso: recoger los tres workflows del SHA `305d8d86`, diagnosticar fallos si los hubiera y no declarar aceptación de calidad sin corpus humano autorizado.
+
+## 15. Cierre CI del HEAD 305d8d86 · 2026-11-11
+
+### 15.1 CI remoto
+
+Los tres workflows del SHA exacto `305d8d862be629af0fc96e35701adc29be15013c` completaron correctamente:
+
+- Package integrity `43115403310`: SUCCESS, job `package-integrity`.
+- native-caption-host-build `43115403381`: SUCCESS, job `compile-and-protocol-smoke-test`.
+- signal-observability-audit `43115404314`: SUCCESS, jobs `guards`, `syntax`, `observability`, `captions` y `audit`.
+
+Total: siete jobs de tres workflows, todos completed/success en la misma cabeza. Esto valida código, regresiones y pipeline CI de ese SHA, no permisos reales de Chrome, API Groq con audio, calidad acústica ni aceptación del producto.
+
+### 15.2 Estado de PR y base
+
+PR #84 OPEN / DRAFT / NOT MERGED; HEAD `305d8d862be629af0fc96e35701adc29be15013c`; metadata consultada dos veces `mergeable=true`. El punto de comparación antes de esta actualización documental era main `aad9da320e8e9df7015c3627a893b21f49329119`, 50 commits del lado main, 12 de rama y merge-base `8bfc2eaf5feb277ca821f12958df5f96e5845e0f`. Los archivos del lado main consistían en `observations/**` y las tres rutas documentales del frente; no hay rutas `observations/` en la PR. Evitar sincronización automática del flujo de snapshots.
+
+### 15.3 Continuidad y límites
+
+El evaluador estructural queda implementado, documentado, probado localmente y validado por CI. Falta benchmark acústico con referencia humana autorizada y umbrales predefinidos. Continúan pendientes Chrome autorizado, ZDR/cuotas, secreto local y smoke test API; no hubo llamada Groq con audio ni captura real. Flags false, sin aceptación, merge, deploy o release. G14 continúa agente único; FOL1 preparada/no activa; folios pendientes/no asignados; MCP normativo desactivado.
