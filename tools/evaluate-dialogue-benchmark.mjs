@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { evaluateDialogueQuality } from "./evaluate-dialogue-quality.mjs";
 
 const SOURCES = ["groq-remote", "groq-interpreter"];
