@@ -216,7 +216,7 @@ assert.ok(unratifiedReport.acceptance.criteria.some(item =>
 
 const missingLatencySummary = makeManifest();
 delete missingLatencySummary.recordings[0].evaluation.hypothesis.latencySummaryBySource["groq-remote"];
-assert.throws(() => evaluateDialogueBenchmark(missingLatencySummary), /latency summary by source is invalid/);
+assert.throws(() => evaluateDialogueBenchmark(missingLatencySummary), /source latency summary is invalid/);
 
 const unorderedLatencySummary = makeManifest();
 unorderedLatencySummary.recordings[0].evaluation.hypothesis.latencySummaryBySource["groq-remote"].p95Ms = 100;
