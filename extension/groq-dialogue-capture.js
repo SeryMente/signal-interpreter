@@ -35,7 +35,9 @@
     return {samples:sorted.length,p50Ms:at(0.5),p95Ms:at(0.95),maxMs:Number(sorted[sorted.length-1].toFixed(1))};
   }
   function latencyText(label,summary){
-    return label+" "+(summary?"p95 "+summary.p95Ms+" ms (n="+summary.samples+")":"N/D");
+    return label+" "+(summary
+      ?"p50 "+summary.p50Ms+" ms · p95 "+summary.p95Ms+" ms · max "+summary.maxMs+" ms (n="+summary.samples+")"
+      :"N/D");
   }
   function mount(){
     if(host&&host.isConnected)return;
@@ -234,7 +236,7 @@
       await refreshPolicy();
       var remoteLatency=summarizeLatency(current.latencySamples["groq-remote"]);
       var interpreterLatency=summarizeLatency(current.latencySamples["groq-interpreter"]);
-      var latencyStatus=" · latencia visible p95 "+latencyText("remoto",remoteLatency)+" · "+latencyText("intérprete",interpreterLatency);
+      var latencyStatus=" · latencia visible "+latencyText("remoto",remoteLatency)+" · "+latencyText("intérprete",interpreterLatency);
       var finalStatus=incomplete
         ? "Captura INCOMPLETA · flush final "+(flushCompleted?"confirmado":"no confirmado")+" · pendientes remoto "+pendingRemote+" · intérprete "+pendingInterpreter+latencyStatus
         : "Captura detenida · segmentos remotos "+current.delivered["groq-remote"]+" · intérprete "+current.delivered["groq-interpreter"]+latencyStatus;
