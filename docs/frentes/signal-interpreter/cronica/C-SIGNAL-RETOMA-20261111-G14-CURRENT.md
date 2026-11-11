@@ -230,3 +230,41 @@ No hay CLI/tool Hiku accesible en esta sesión. Claude Code encontrado en otro p
 **Responsabilidad:** G14 ACTIVO, agente único; FOL1 PREPARADA / NO ACTIVA; folios sin asignar.  
 **MCP normativo:** DESACTIVADO.  
 **Continuidad:** este documento, el registro provisional, las instrucciones literales, el plan y el OCP constituyen la ruta de reanudación; la conversación previa no debe reconstruirse de memoria.
+
+
+## 10. Reconciliación final de persistencia y checkout local
+
+### 10.1 Materiales publicados y cotejados
+
+| Artefacto | Commit de materialización | Blob SHA-1 leído de main | Verificación |
+|---|---|---|---|
+| Instrucciones nuevas verbatim | 112e94fdcaf5a62b7fd805fab1173e3a5967845b | a55caa4f2659fdee3fafb198b3b1317e1774f859 | 1,133 caracteres; read-back exacto |
+| Registro provisional de 12 tareas | 4182742a1ee197d62c7ee36096cc1a93be4b6b55 | 1aa2792ac5e497af72770b1d30d64889f1878d51 | 21,811 caracteres; read-back exacto |
+| Crónica G14 (primera materialización) | dd10792ebe6dbfc76ac9902dc906f481bf405ae5 | 4274b0c0718f6f877b26d9c9f76e54570a99d50e | 14,296 caracteres; read-back exacto; esta crónica recibió después la sección 10 |
+| OCP tras sección 12 y corrección del estado inicial | dc54619dad4697486b1f5f35d15b999f994c53d6 | b0e2f728a6014b8d3ac380c05eee9e85a2a15e17 | read-back exacto |
+| Plan provisional, sección 10 | a023a76d75d359b88b68c00481e36407fc59845f | 84ac5c8ff67369495ab86d0b69a767d8dc847392 | read-back exacto |
+| Prompt operativo G14 | 0ce205867b21a5cb3e1a49adbf4c23a22c958fc5 | 9d152406fcc03ca35526396de9af3c0769c26268 | read-back exacto; marcadores G11/v377/PC-13 residuales: 0 |
+| README con navegación vigente | 7bb9f0e098f2d743e1f079ff4b6a43647b37466d | 96e09691ee5f6a2b95bb406d52ef271ae322f2cd | read-back exacto |
+| CONTROL-RESPONSABILIDAD.json | sin escritura en este ciclo | 2f02cab6b3697f31b2af3d141204c4431fbc05cb | leído de main; G14 y generación 14 conservados |
+
+Las cifras anteriores identifican materializaciones concretas de cada documento; los archivos que recibieron una segunda actualización se deben leer por su blob actual en main, no asumir que su blob de creación sigue siendo la última revisión. El historial de Git conserva las revisiones consecutivas.
+
+### 10.2 Sincronización del checkout principal de Fila 4
+
+- Ruta conservada: C:\\Users\\fila4\\Desktop\\SeryMente\\Repositorios\\signal-interpreter.
+- Cuenta de archivos: CENTRAL\\fila4; branch main.
+- Cabeza previa comprobada: 0a9f3917178415d22a81163f1c159e04b080ceb9.
+- Se hizo fast-forward, sin reset destructivo, y sin cambios locales previos; la primera alineación fue b9e7cbe6af9b7cb5bf866c9371f372626cb995f0.
+- Después, main recibió más commits automáticos de observations/. Se volvió a fetch/revisar diff; las 25 rutas nuevas entre b9e7cbe y 05a12cde eran exclusivamente observations/, sin cambios de código, OCP, prompt, plan o tareas. Se hizo un segundo fast-forward limpio.
+- Última cabeza local/remote verificada: 05a12cde497ecb1110211d225fa41d3fab2c9efb. Worktree limpio.
+- Los blobs esperados de ocho rutas fueron cotejados desde el checkout local contra los blobs publicados: OCP, plan, prompt, README, tareas, crónica, original de instrucciones y control; 8/8 PASS.
+- El repositorio tiene snapshots/batches automáticos que pueden continuar avanzando independientemente. El checkout se alineó a la cabeza observada al momento del read-back; una retoma posterior debe volver a fetch y confirmar la cabeza antes de escribir.
+
+### 10.3 PR y estado del entorno al cierre
+
+- PR #84 se relee como OPEN/DRAFT, HEAD 1c7aca92cc89337aeb4c9907426847f941fa35bd; la lista de archivos modificados conserva 33 rutas y no contiene observations/.
+- Checks vigentes para ese SHA: 42941191180, 42941191052, 42941191195 SUCCESS. Las ejecuciones antiguas 42941184668 y 42941184677 constan CANCELLED.
+- Fila 4 permanece como entorno de trabajo. La copia temporal usada bajo MantenimientoRCI fue borrada y su ruta ya no existe; no se dejó un checkout secundario.
+- No había secreto Groq en el perfil Fila 4 ni variables GROQ_API_KEY/SIGNAL_GROQ_API_KEY/__SIGNAL_GROQ_TOKEN; no se transmitió audio ni se ejecutó API real.
+- La carga Chrome no se completó por política corporativa; el perfil temporal fue eliminado y el perfil habitual no se modificó.
+- La única titularidad sigue G14; FOL1 PREPARADA/NO ACTIVA; folios PENDIENTES/NO ASIGNADOS; no aceptación, merge, deploy ni release.
