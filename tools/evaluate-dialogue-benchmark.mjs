@@ -36,6 +36,22 @@ function assert(condition, message) {
   if (!condition) throw new TypeError(message);
 }
 
+function assertAllowedKeys(value, allowed, label) {
+  assert(value && typeof value === "object" && !Array.isArray(value), label + " is invalid");
+  assert(Object.keys(value).every(key => allowed.includes(key)), label + " contains an unsupported field");
+}
+
+function validateEvaluationShape(evaluation) {
+  assertAllowedKeys(evaluation, ["schema", "language", "reference", "hypothesis", "criticalTerms", "structureOptions"], "evaluation");
+  assertAllowedKeys(evaluation.reference, ["segments"], "reference");
+  assertAllowedKeys(evaluation.hypothesis, ["segments", "latenciesMs"], "hypothesis");
+  for (const side of [evaluation.reference, evaluation.hypothesis]) {
+    for (const segment of side.segments || []) {
+      assertAllowedKeys(segment, ["source", "speakerId", "language", "startMs", "endMs", "latencyMs", "text"], "evaluation segment");
+    }
+  }
+}
+
 function validateAcceptance(profile) {
   assert(profile && typeof profile === "object", "acceptanceProfile is required");
   for (const key of REQUIRED_ACCEPTANCE) {
@@ -75,7 +91,10 @@ function validateAcceptance(profile) {
 }
 
 function validateCorpusMetadata(corpus) {
-  assert(corpus && typeof corpus === "object", "corpus metadata is required");
+  assertAllowedKeys(corpus, [
+    "id", "version", "split", "frozenAt", "consentStatus", "nonClinical",
+    "rawAudioStoredOutsideRepository", "clockBasis", "independentAnnotators", "adjudicationComplete"
+  ], "corpus metadata");
   assert(/^[a-z0-9][a-z0-9._-]{2,63}$/i.test(String(corpus.id || "")), "corpus id is invalid");
   assert(/^\d+\.\d+\.\d+$/.test(String(corpus.version || "")), "corpus version must use MAJOR.MINOR.PATCH");
   assert(corpus.split === "test", "acceptance requires a frozen test split");
@@ -92,7 +111,9 @@ function validateCorpusMetadata(corpus) {
 }
 
 function validateSystem(system) {
-  assert(system && typeof system === "object", "system configuration is required");
+  assertAllowedKeys(system, [
+    "model", "buildSha", "chunkDurationMs", "overlapMs", "concurrency", "latencyBasis"
+  ], "system configuration");
   assert(system.model === "whisper-large-v3", "the benchmark model must be pinned to whisper-large-v3");
   assert(/^[a-f0-9]{40}$/i.test(String(system.buildSha || "")), "system build SHA is invalid");
   assert(Number.isInteger(system.chunkDurationMs) && system.chunkDurationMs >= 1000,
@@ -117,10 +138,10 @@ function validateStrata(strata) {
 }
 
 function validateMedia(media, durationMs) {
-  assert(media && typeof media === "object", "both audio lanes need media metadata");
+  assertAllowedKeys(media, SOURCES, "media metadata");
   for (const source of SOURCES) {
     const item = media[source];
-    assert(item && typeof item === "object", "both audio lanes need media metadata");
+    assertAllowedKeys(item, ["sha256", "durationMs", "sampleRate", "channels", "codec"], "audio media metadata");
     assert(/^[a-f0-9]{64}$/i.test(String(item.sha256 || "")), "audio media SHA-256 is invalid");
     assert(finite(item.durationMs) && item.durationMs > 0 && item.durationMs <= 60 * 60 * 1000,
       "audio media duration is invalid");
@@ -132,7 +153,7 @@ function validateMedia(media, durationMs) {
 }
 
 function validateRecording(recording, seenIds) {
-  assert(recording && typeof recording === "object", "recording entry is invalid");
+  assertAllowedKeys(recording, ["id", "strata", "media", "evaluation"], "recording entry");
   assert(/^clip-[a-z0-9-]{1,40}$/i.test(String(recording.id || "")), "recording id must be an anonymous clip identifier");
   assert(!seenIds.has(recording.id), "recording identifiers must be unique");
   seenIds.add(recording.id);
@@ -141,6 +162,7 @@ function validateRecording(recording, seenIds) {
   assert(durations.every(finite), "audio duration metadata is missing");
   validateMedia(recording.media, Math.max(...durations));
   const evaluation = recording.evaluation;
+  validateEvaluationShape(evaluation);
   assert(evaluation?.schema === "signal-interpreter-dialogue-evaluation/v1",
     "recording evaluation schema is invalid");
   for (const side of ["reference", "hypothesis"]) {
@@ -339,11 +361,19 @@ function evaluateAcceptance(summary, profile) {
 }
 
 export function evaluateDialogueBenchmark(manifest) {
+  assertAllowedKeys(manifest, ["schema", "corpus", "system", "acceptanceProfile", "bootstrap", "recordings"], "benchmark manifest");
   assert(manifest?.schema === "signal-interpreter-dialogue-benchmark/v1",
     "schema must be signal-interpreter-dialogue-benchmark/v1");
   validateCorpusMetadata(manifest.corpus);
   validateSystem(manifest.system);
   validateAcceptance(manifest.acceptanceProfile);
+  if (manifest.bootstrap != null) {
+    assertAllowedKeys(manifest.bootstrap, ["iterations", "seed"], "bootstrap options");
+  }
+  if (manifest.acceptanceProfile.id != null) {
+    assert(typeof manifest.acceptanceProfile.id === "string" && manifest.acceptanceProfile.id.length <= 80,
+      "acceptance profile id is invalid");
+  }
   const iterations = manifest.bootstrap?.iterations == null ? 2000 : manifest.bootstrap.iterations;
   const seed = manifest.bootstrap?.seed == null ? 0x51a7c0de : manifest.bootstrap.seed;
   assert(Number.isInteger(iterations) && iterations >= 1000 && iterations <= 10000,
