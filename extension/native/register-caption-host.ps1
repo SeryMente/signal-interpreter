@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $HostName = "com.signalinterpreter.captionhost"
 $Manifest = Join-Path $Root "$HostName.json"

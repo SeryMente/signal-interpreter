@@ -1,0 +1,45 @@
+{
+  "schema": "signal-interpreter-dialogue-benchmark-acceptance-profile/v1",
+  "id": "si-dual-high-quality-candidate-1",
+  "status": "PROPOSED_NOT_RATIFIED",
+  "minRecordings": 60,
+  "minRecordingsPerStratum": 20,
+  "minReferenceWordsBySource": {
+    "groq-remote": 10000,
+    "groq-interpreter": 10000
+  },
+  "minLatencySamplesBySource": {
+    "groq-remote": 60,
+    "groq-interpreter": 60
+  },
+  "maxWeightedWerBySource": {
+    "groq-remote": 0.1,
+    "groq-interpreter": 0.1
+  },
+  "maxMacroWerCiUpperBySource": {
+    "groq-remote": 0.12,
+    "groq-interpreter": 0.12
+  },
+  "maxWeightedCerBySource": {
+    "groq-remote": 0.05,
+    "groq-interpreter": 0.05
+  },
+  "minCriticalTermRecallBySource": {
+    "groq-remote": 1,
+    "groq-interpreter": 1
+  },
+  "minTurnF1BySource": {
+    "groq-remote": 0.95,
+    "groq-interpreter": 0.95
+  },
+  "minOverlapRecall": 0.95,
+  "maxChronologyInversions": 0,
+  "maxLatencyP95MsBySource": {
+    "groq-remote": 2500,
+    "groq-interpreter": 2500
+  },
+  "maxLatencyMaxMsBySource": {
+    "groq-remote": 5000,
+    "groq-interpreter": 5000
+  }
+}

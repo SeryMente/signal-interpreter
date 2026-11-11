@@ -2,26 +2,23 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
-## Candidata consolidada 0.10.38 — NO liberada
+## Paquete de trabajo 0.10.47 · layout desempaquetado para SI-OP-02
 
-Integra la protección de presencia explícita y segmentación conservadora de subtítulos nativos, junto con las correcciones verificadas de instalación/recarga de main. El manifiesto y las pruebas de la candidata usan 0.10.38; main continúa en 0.10.37 hasta superar las compuertas. El atajo global existente permanece en Ctrl+Shift+8. No activa captura de micrófono, audio de pestaña ni fallback Groq. La aceptación en Windows/Chrome real sigue siendo obligatoria.
-
+El manifiesto canónico del repositorio está en la raíz. Para el workspace, `extension/manifest.json` es su variante normalizada y hace que **esta carpeta `extension/` sea cargable de forma independiente**. El test `tools/unpacked-layout-test.mjs` verifica que ambas variantes coincidan y que las rutas referenciadas existan. Al seguir SI-OP-02, no selecciones la raíz del repositorio.
 
 ## Uso portable — Windows + Chrome
 
-El **ZIP del repositorio** contiene la extensión cargable: `manifest.json` está en la **raíz** de la carpeta extraída, no dentro de `extension/`.
-
-1. Extrae el ZIP en una carpeta estable y escribible. Finaliza cualquier llamada/prueba antes de instalar.
-2. Haz doble clic en **INSTALAR.cmd**, en esa raíz. Verifica huellas/identidad y registra el puente incluido para tu usuario; no requiere Node/Python/compilador ni privilegios de administrador. No reinicia Chrome. `INSTALACION-RESULTADO.json` confirma preparación, no captions en vivo.
-3. En Chrome, activa modo desarrollador y **Cargar descomprimida**: selecciona esa **misma raíz**. Desactiva otra copia anterior; no muevas la carpeta cargada.
-4. Enciende Live Caption, cierra las pestañas Cloud Interpreter y pausa otros audios. Abre **Probar** en el popup; pulsa **Iniciar prueba** y luego reproducir. También puedes usar **PROBAR.cmd** si el perfil cargado se identifica sin ambigüedad.
-5. Comprueba texto nativo y filas del panel, prueba abrir/cerrar la burbuja, y **Finalizar y exportar**. El fin del audio también solicita la descarga. Si cierras abruptamente la página, recupera **Descargar último informe** al reabrir.
+1. Conserva el repositorio en `%USERPROFILE%\\Desktop\\SeryMente\\signal-interpreter`.
+2. En Chrome, activa modo desarrollador y **Cargar descomprimida**: selecciona `%USERPROFILE%\\Desktop\\SeryMente\\signal-interpreter\\extension`, donde `manifest.json` debe estar directamente en esa carpeta.
+3. No muevas la carpeta cargada. Desactiva una copia anterior solo después de preservar su configuración y confirmar su ruta.
+4. La preparación del Native Messaging host se rige por SI-OP-01 y debe realizarse bajo el mismo usuario Windows que ejecuta Chrome. Copiar archivos no demuestra que el host esté instalado.
+5. La carga/recarga y aceptación funcional en Chrome corresponden al operador. No se reinicia Chrome ni se intervienen llamadas reales desde RDC.
 
 Muestra de voz generada localmente al instalar, o archivo local autorizado; no se sube audio/texto. El laboratorio no toma llamadas ni produce ingresos/exportación de producción. Una prueba local no certifica Cloud Interpreter; si Chrome destruye el árbol accesible al cerrar la burbuja, no se fabrica texto ni se captura audio como alternativa. Windows/Chrome deben tener Live Caption disponible; puede requerir sus propios modelos. MacOS y Linux no pertenecen al alcance del producto.
 
 En cada computadora registra/carga la carpeta para su usuario Windows. Sin rutas fijas, servicios ni runtime de desarrollo; las preferencias locales no se sincronizan automáticamente entre equipos. Canon completo y límites: [TRANSCRIPTION-SPRINT-CANONICAL.md](../docs/TRANSCRIPTION-SPRINT-CANONICAL.md), §16.
 
-## Arquitectura vigente 0.10.35 — solo texto nativo
+## Arquitectura vigente 0.10.47 — captions nativos y mute de llamada
 
 **Chrome Live Caption → Windows UI Automation → Native Messaging → overlay de la llamada**
 
@@ -34,6 +31,32 @@ Si Windows expone texto de la ventana de Live Caption aunque esté oculta, el ho
 Observabilidad automática al cierre, con retry persistente y diagnóstico de texto nativo/estado del puente. Informes y descarga manual de diagnóstico excluyen audio y texto hablado.
 
 Documento canónico único: `docs/TRANSCRIPTION-SPRINT-CANONICAL.md`, sección 15, en el repositorio y en el paquete distribuido.
+
+
+## Candidata de transcripción dual Groq · PR #84 · CI VERDE · PENDIENTE DE ACEPTACIÓN
+
+El comportamiento predeterminado de `main/0.10.47` sigue siendo el descrito arriba (Live Caption nativo). El siguiente flujo existe únicamente en la candidata draft [PR #84](https://github.com/SeryMente/signal-interpreter/pull/84), no debe tratarse como una versión publicada ni cargada en Chrome:
+
+- Una acción visible en la ruta de llamada solicita compartir la pestaña del navegador con audio y solicita el micrófono propio en una pista independiente.
+- Dos AudioWorklets producen ventanas WAV PCM16 mono a 16 kHz, con reloj común.
+- Cada ventana remota y cada ventana del intérprete se envía por colas independientes a Groq `whisper-large-v3`; se conserva el orden dentro de cada fuente y se permite concurrencia entre ellas.
+- Segmentos con timestamp se fusionan en un único diálogo. El micrófono se presenta como **INTÉRPRETE** y el canal remoto mixto como **AUDIO REMOTO · HABLANTE NO VERIFICADO**. Idioma no equivale a identidad.
+- La transcripción se mantiene en memoria del overlay; audio, texto hablado y segmentos clínicos no se envían a observabilidad ni a la persistencia general. Al terminar la llamada, revocar permiso o fallar una compuerta se detienen ambas fuentes y se abortan las peticiones activas.
+
+### Preparación local de credencial (solo si el operador habilita la candidata)
+
+No se incluye una clave Groq en Git, ZIP, logs ni en este README. El archivo local opcional `extension/groq-secret.local.js` está excluido por `.gitignore`; crearlo solo en el checkout local y nunca publicarlo:
+
+```js
+globalThis.__SIGNAL_GROQ_TOKEN = "gsk_...";
+```
+
+El token real se obtiene y guarda directamente en el perfil local autorizado; no se envía por chat ni se registra en commits. El service worker intenta importar ese archivo local. La ausencia de token deja la captura bloqueada.
+
+En el popup, `Diálogo combinado Groq` debe estar habilitado. `Zero Data Retention confirmado` permanece desmarcado por defecto y solo debe marcarse después de verificar ZDR directamente en la consola/cuenta Groq. Es una declaración del operador, no una verificación independiente del proveedor. No confirmar ZDR sin evidencia.
+
+**Estado de verificación · 2026-11-11:** CI 3/3 PASS en HEAD `43a85317d981e2932f91b36112d9556b040ab9ff`; pruebas sintéticas de captura, WAV, transcriptor, fusión, privacidad, overlay, guards, empaquetado y Native Messaging superadas. La captura exige `displaySurface === "browser"`; si falta metadata o se comparte una ventana/monitor, falla cerrado antes de solicitar el micrófono. No se han ejecutado llamadas Groq con audio real, evaluación WER/CER acústica ni aceptación funcional en un Chrome no administrado.
+
 
 ## Funciones Cloud
 

@@ -1171,7 +1171,9 @@
       modality: modality, decision: "click-connect",
       buttonLabel: safe(button.getAttribute("aria-label") || button.textContent).slice(0, 120),
       authorizationLatencyMs: authorizationLatencyMs,
-      authorizationVerificationMs: Number(grant.verificationMs || 0)
+      authorizationVerificationMs: Number(grant.verificationMs || 0),
+        authorizationVerificationPath: grant && String(grant.verificationPath || "legacy-or-unknown"),
+        presenceSampleAgeMs: grant && Number.isFinite(Number(grant.presenceAgeMs)) ? Number(grant.presenceAgeMs) : null
     });
     try {
       var started = performance.now();
@@ -1205,6 +1207,8 @@
         buttonDisabledAtClick: !!button.disabled,
         authorizationLatencyMs: authorizationLatencyMs,
         authorizationVerificationMs: Number(grant.verificationMs || 0),
+        authorizationVerificationPath: grant && String(grant.verificationPath || "legacy-or-unknown"),
+        presenceSampleAgeMs: grant && Number.isFinite(Number(grant.presenceAgeMs)) ? Number(grant.presenceAgeMs) : null,
         platformInteraction: "permitted-connect-only"
       });
       emitIntegrity("after-connect");
