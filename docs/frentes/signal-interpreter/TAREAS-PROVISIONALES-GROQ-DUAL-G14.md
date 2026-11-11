@@ -376,3 +376,25 @@ Validación local: captions 14/14; hashes 66/66; regresiones críticas 8/8; synt
 ### Compuertas no alteradas
 
 Chrome autorizado, ZDR/cuotas, credencial local, API con audio y prueba acústica humana continúan pendientes. No habilitar flags, captura real, merge, deploy, release ni aceptación por inferencia. G14 continúa titular único; FOL1 PREPARADA/NO ACTIVA; folios PENDIENTES/NO ASIGNADOS; MCP normativo DESACTIVADO.
+
+## 9. Seguimiento de CI del HEAD 305d8d86 · 2026-11-11
+
+### SI-GROQ-01 · PR y CI
+
+**Estado:** CI 3/3 WORKFLOWS / 7/7 JOBS SUCCESS; PR ABIERTA EN DRAFT.
+
+- HEAD `305d8d862be629af0fc96e35701adc29be15013c`.
+- Package integrity `43115403310` SUCCESS.
+- native-caption-host-build `43115403381` SUCCESS.
+- signal-observability-audit `43115404314` SUCCESS; jobs guards/syntax/observability/captions/audit todos SUCCESS.
+- PR #84 OPEN / DRAFT / NOT MERGED; latest metadata `mergeable=true`. No se fusiona hasta superar compuertas externas y aceptación acústica.
+
+### SI-GROQ-05 · evaluador estructural
+
+**Estado:** IMPLEMENTADO + TESTS LOCALES + CI VERDE; BENCHMARK ACÚSTICO PENDIENTE.
+
+El evaluador incluye WER/CER, términos críticos, atribución y latencia, más métricas de continuidad de turnos, orden cronológico y conservación de solapamientos entre canales. La clasificación de turnos es heurística, sin diarización inferida. Local: captions 14/14, package 66/66, regresiones críticas 8/8 y tests/sintaxis del evaluador PASS.
+
+### Compuertas externas
+
+Siguen pendientes Chrome autorizado, verificación ZDR/cuotas, credencial local, llamada Groq con corpus autorizado y evaluación acústica con referencia humana. No hubo audio real/API; flags false. Sin aceptación, merge, deploy o release.
