@@ -28,6 +28,15 @@
     if(button)button.textContent=capture?"Detener diálogo Groq":"Iniciar diálogo Groq";
   }
   function showReason(reason){return LABELS[reason]||String(reason||"No disponible").replace(/-/g," ");}
+  function summarizeLatency(values){
+    var sorted=(Array.isArray(values)?values:[]).filter(function(value){return Number.isFinite(value)&&value>=0;}).slice().sort(function(a,b){return a-b;});
+    if(!sorted.length)return null;
+    function at(fraction){return Number(sorted[Math.max(0,Math.ceil(fraction*sorted.length)-1)].toFixed(1));}
+    return {samples:sorted.length,p50Ms:at(0.5),p95Ms:at(0.95),maxMs:Number(sorted[sorted.length-1].toFixed(1))};
+  }
+  function latencyText(label,summary){
+    return label+" "+(summary?"p95 "+summary.p95Ms+" ms (n="+summary.samples+")":"N/D");
+  }
   function mount(){
     if(host&&host.isConnected)return;
     host=document.createElement("div");host.id="signal-groq-dialogue-control";
@@ -83,7 +92,14 @@
       if(message.type!=="window"||!packet||!packet.buffer)return;
       var offsetMs=Math.max(0,(Number(packet.startFrame)-originFrame)/context.sampleRate*1000);
       var durationMs=Math.max(0,(Number(packet.endFrame)-Number(packet.startFrame))/context.sampleRate*1000);
-      deliver(source,packet.buffer,offsetMs,durationMs,context.sampleRate,captureId,call,startedAt);
+      var windowReadyAtMs=null,windowReadyTimeOriginMs=null;
+      try{
+        if(typeof performance!=="undefined"&&Number.isFinite(performance.now())&&Number.isFinite(performance.timeOrigin)){
+          windowReadyAtMs=performance.now();
+          windowReadyTimeOriginMs=performance.timeOrigin;
+        }
+      }catch(_){}
+      deliver(source,packet.buffer,offsetMs,durationMs,context.sampleRate,captureId,call,startedAt,windowReadyAtMs,windowReadyTimeOriginMs);
     };
     lane.flush=function(){
       return new Promise(function(resolve){
@@ -94,7 +110,7 @@
     audio.connect(node);node.connect(context.destination);
     return lane;
   }
-  async function deliver(source,buffer,offsetMs,durationMs,sampleRate,captureId,call,startedAt){
+  async function deliver(source,buffer,offsetMs,durationMs,sampleRate,captureId,call,startedAt,windowReadyAtMs,windowReadyTimeOriginMs){
     var current=capture;
     if(!current||current.captureId!==captureId)return;
     if(current.pending[source]>=2){
@@ -106,7 +122,8 @@
     var message={
       type:"SIGNAL_GROQ_DIALOGUE_CHUNK",captureId:captureId,callId:call,source:source,
       sequence:sequence,chunkStartOffsetMs:offsetMs,durationMs:durationMs,sampleRate:sampleRate,
-      startedAt:startedAt,mimeType:"audio/wav",base64:base64(buffer)
+      startedAt:startedAt,windowReadyAtMs:windowReadyAtMs,windowReadyTimeOriginMs:windowReadyTimeOriginMs,
+      mimeType:"audio/wav",base64:base64(buffer)
     };
     var queuedSend=current.sendQueues[source].then(function(){return send(message);});
     current.sendQueues[source]=queuedSend.catch(function(){return {ok:false,reasonCode:"background-unavailable"};});
@@ -122,6 +139,11 @@
       return;
     }
     current.delivered[source]+=Number(result.segments||0);
+    if(result.latencyBasis==="capture-window-ready-to-visible-text"&&
+       Number.isFinite(Number(result.visibleLatencyMs))&&Number(result.visibleLatencyMs)>=0&&
+       Number(result.visibleSegments)>0){
+      current.latencySamples[source].push(Number(result.visibleLatencyMs));
+    }
     if(capture===current)
       setStatus("Activo · intérprete "+current.delivered["groq-interpreter"]+" · remoto "+current.delivered["groq-remote"]);
   }
@@ -160,6 +182,7 @@
         sequence:{"groq-remote":0,"groq-interpreter":0},
         pending:{"groq-remote":0,"groq-interpreter":0},
         delivered:{"groq-remote":0,"groq-interpreter":0},
+        latencySamples:{"groq-remote":[],"groq-interpreter":[]},
         sendQueues:{"groq-remote":Promise.resolve(),"groq-interpreter":Promise.resolve()}
       };
       var remoteStream=new MediaStream(tabAudio);
@@ -209,9 +232,12 @@
       await send({type:"SIGNAL_GROQ_DIALOGUE_CAPTURE_STOP",captureId:current.captureId,callId:current.callId,reason:String(reason||"stopped")});
       if(button){button.disabled=false;button.textContent="Iniciar diálogo Groq";}
       await refreshPolicy();
+      var remoteLatency=summarizeLatency(current.latencySamples["groq-remote"]);
+      var interpreterLatency=summarizeLatency(current.latencySamples["groq-interpreter"]);
+      var latencyStatus=" · latencia visible p95 "+latencyText("remoto",remoteLatency)+" · "+latencyText("intérprete",interpreterLatency);
       var finalStatus=incomplete
-        ? "Captura INCOMPLETA · flush final "+(flushCompleted?"confirmado":"no confirmado")+" · pendientes remoto "+pendingRemote+" · intérprete "+pendingInterpreter
-        : "Captura detenida · segmentos remotos "+current.delivered["groq-remote"]+" · intérprete "+current.delivered["groq-interpreter"];
+        ? "Captura INCOMPLETA · flush final "+(flushCompleted?"confirmado":"no confirmado")+" · pendientes remoto "+pendingRemote+" · intérprete "+pendingInterpreter+latencyStatus
+        : "Captura detenida · segmentos remotos "+current.delivered["groq-remote"]+" · intérprete "+current.delivered["groq-interpreter"]+latencyStatus;
       setStatus(finalStatus,incomplete);
     })();
     return current.stopPromise;
