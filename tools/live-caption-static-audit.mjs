@@ -199,5 +199,19 @@ assert.ok(overlay.includes('if (source === "chrome-live-caption" && groqDialogue
   "native captions do not create a parallel transcript while Groq mode is active");
 assert.ok(overlay.includes("SIGNAL_GROQ_DIALOGUE_SEGMENTS")&&core.includes('source === "yo" || source === "groq-interpreter"'),
   "one Groq timeline is rendered with interpreter source attribution");
+assert.ok(overlay.includes('document.visibilityState!=="visible"'),
+  "visible latency samples are rejected when the call document is hidden");
+assert.ok(overlay.includes("window.requestAnimationFrame(function(){window.requestAnimationFrame(acknowledgeVisible);});"),
+  "visible latency is acknowledged after two render frames");
+assert.ok(overlay.includes("performanceTimeOriginMs:Number(performance.timeOrigin)")&&
+  overlay.includes("visibleAtMs:Number(performance.now())"),
+  "overlay acknowledgement contains only same-document monotonic timing and counts");
+assert.ok(background.includes("capture-window-ready-to-visible-text")&&
+  background.includes("Math.abs(ackOrigin-windowReadyTimeOriginMs)<=1"),
+  "background accepts visible latency only when the capture and overlay clocks share a time origin");
+assert.ok(background.includes("callRelativeStartMs")&&background.includes("callRelativeEndMs"),
+  "benchmark segment time offsets are retained relative to call start");
+assert.ok(captureController.includes("windowReadyTimeOriginMs")&&captureController.includes("latencySamples"),
+  "capture records in-memory visible latency samples per independent source");
 assert.ok(bridge.includes('native-heartbeat-timeout'));
 assert.ok(bridge.includes('Math.min(reconnectAttempt, RECONNECT_DELAYS.length - 1)'));
