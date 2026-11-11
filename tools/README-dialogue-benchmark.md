@@ -102,7 +102,7 @@ Este dictamen se conserva fuera de Git y no se sustituye por un promedio automá
 
 ### 1. Validación y selección
 
-Usar exclusivamente el split validation, nunca el test final:
+Usar exclusivamente el split `validation`, nunca el test final. En el manifiesto establecer `purpose:"tuning"` y `corpus.split:"validation"`; el runner calcula todas las métricas e intervalos, pero devuelve `TUNING_ONLY`, sin criterios PASS/FAIL ni dictamen de aceptación.
 
 1. Fijar corpus, gold transcript, hashes, ruido, idiomas, condiciones de overlap y configuración inicial.
 2. Baseline: whisper-large-v3, 6.500 ms por ventana, 500 ms overlap, dos colas concurrentes.
@@ -111,17 +111,18 @@ Usar exclusivamente el split validation, nunca el test final:
 5. Medir cada fuente por separado y las dos fuentes concurrentes; registrar WER/CER, términos críticos, turnos, pares solapados, orden y latencia visible. Anotar cuotas/coste facturado directamente desde la consola autorizada, nunca desde estimaciones como si fueran cargos reales.
 6. Elegir configuración solo con validation. Congelar código, build SHA, corpus y umbrales.
 
-Los resultados de validation no son aceptación.
+Los resultados de validation son para optimización, no aceptación. No permiten declarar un umbral PASS.
 
 ### 2. Aceptación final
 
 1. Confirmar ZDR efectivo y cuotas en la cuenta/endpoint que se usará.
 2. Confirmar Chrome autorizado y consentimiento para el corpus.
-3. Ejecutar una vez la configuración congelada en el test independiente.
-4. Verificar archivos y hashes con verify-dialogue-media.mjs.
-5. Ejecutar evaluate-dialogue-benchmark.mjs.
-6. Completar revisión humana ciega y dictamen de errores críticos.
-7. Conservar el informe privado y publicar únicamente los agregados aprobados, sin texto/audio/rutas ni identificadores de participantes.
+3. Ratificar y congelar los umbrales antes de abrir el test; en el manifiesto establecer `purpose:"acceptance"`, `corpus.split:"test"` y `acceptanceProfile.status:"RATIFIED"`.
+4. Ejecutar una sola vez la configuración congelada en el test independiente.
+5. Verificar archivos y hashes con `verify-dialogue-media.mjs`.
+6. Ejecutar `evaluate-dialogue-benchmark.mjs`.
+7. Completar revisión humana ciega y dictamen de errores críticos.
+8. Conservar el informe privado y publicar únicamente los agregados aprobados, sin texto/audio/rutas ni identificadores de participantes.
 
 No realizar ninguna llamada Groq con audio mientras ZDR, cuotas o credencial local no estén verificados.
 
