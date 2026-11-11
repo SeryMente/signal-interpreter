@@ -66,8 +66,8 @@ function validateAcceptance(profile) {
   for (const key of ["minReferenceWordsBySource", "minLatencySamplesBySource"]) {
     assert(profile[key] && typeof profile[key] === "object", "acceptanceProfile source thresholds are invalid");
     for (const source of SOURCES) {
-      assert(Number.isInteger(profile[key][source]) && profile[key][source] >= 0,
-        "acceptanceProfile source thresholds are invalid");
+      assert(Number.isInteger(profile[key][source]) && profile[key][source] >= 1,
+        "acceptanceProfile word and latency sample minimums must be positive");
     }
   }
   const sourceThresholds = [
@@ -83,7 +83,11 @@ function validateAcceptance(profile) {
     assert(profile[key] && typeof profile[key] === "object", "acceptanceProfile source thresholds are invalid");
     for (const source of SOURCES) {
       const value = profile[key][source];
-      assert(finite(value) && value >= 0 && (key.startsWith("min") ? value <= 1 : true),
+      const boundedRate = [
+        "maxWeightedWerBySource", "maxMacroWerCiUpperBySource", "maxWeightedCerBySource",
+        "minCriticalTermRecallBySource", "minTurnF1BySource"
+      ].includes(key);
+      assert(finite(value) && value >= 0 && (boundedRate ? value <= 1 : true),
         "acceptanceProfile source thresholds are invalid");
     }
   }
@@ -97,7 +101,7 @@ function validateCorpusMetadata(corpus) {
     "rawAudioStoredOutsideRepository", "transcriptsStoredOutsideRepository", "clockBasis",
     "independentAnnotators", "adjudicationComplete"
   ], "corpus metadata");
-  assert(/^[a-z0-9][a-z0-9._-]{2,63}$/i.test(String(corpus.id || "")), "corpus id is invalid");
+  assert(/^si-dual-[a-z0-9][a-z0-9._-]{1,48}$/i.test(String(corpus.id || "")), "corpus id must be an anonymous si-dual identifier");
   assert(/^\d+\.\d+\.\d+$/.test(String(corpus.version || "")), "corpus version must use MAJOR.MINOR.PATCH");
   assert(corpus.split === "test", "acceptance requires a frozen test split");
   assert(typeof corpus.frozenAt === "string" && Number.isFinite(Date.parse(corpus.frozenAt)),
@@ -377,8 +381,9 @@ export function evaluateDialogueBenchmark(manifest) {
     assertAllowedKeys(manifest.bootstrap, ["iterations", "seed"], "bootstrap options");
   }
   if (manifest.acceptanceProfile.id != null) {
-    assert(typeof manifest.acceptanceProfile.id === "string" && manifest.acceptanceProfile.id.length <= 80,
-      "acceptance profile id is invalid");
+    assert(typeof manifest.acceptanceProfile.id === "string" &&
+      /^si-dual-[a-z0-9][a-z0-9._-]{1,48}$/i.test(manifest.acceptanceProfile.id),
+      "acceptance profile id must be an anonymous si-dual identifier");
   }
   const iterations = manifest.bootstrap?.iterations == null ? 2000 : manifest.bootstrap.iterations;
   const seed = manifest.bootstrap?.seed == null ? 0x51a7c0de : manifest.bootstrap.seed;
@@ -472,7 +477,7 @@ export function evaluateDialogueBenchmark(manifest) {
     ? "BLOCKED" : allCriteria.some(item => item.status === "FAIL") ? "FAIL" : "PASS";
   return {
     schema: "signal-interpreter-dialogue-benchmark-report/v1",
-    corpus: { id: manifest.corpus.id, version: manifest.corpus.version, split: manifest.corpus.split },
+    corpus: { version: manifest.corpus.version, split: manifest.corpus.split },
     system: {
       model: manifest.system.model,
       buildSha: manifest.system.buildSha,
