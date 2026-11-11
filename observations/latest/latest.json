@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-2c02a633-c672-4598-8290-aea941162106",
-  "createdAt": "2026-11-11T22:24:02.183Z",
-  "trigger": "alarm",
+  "batchId": "batch-54390f87-95b5-4b9d-88b5-88bbf79ea6dd",
+  "createdAt": "2026-11-11T22:24:39.277Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.47",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "caf6b605-0b0e-459e-93de-5b5653cd223a",
-      "sequence": 66913,
-      "timestamp": "2026-11-11T22:23:31.315Z",
-      "ingestedAt": "2026-11-11T22:23:31.369Z",
+      "id": "398923a8-8104-4192-8dd3-5ff07f8563b2",
+      "sequence": 66915,
+      "timestamp": "2026-11-11T22:24:08.439Z",
+      "ingestedAt": "2026-11-11T22:24:08.509Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -18,14 +18,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "41eb48bc-9a32-4712-9e7e-973d18fbfebb",
+      "traceId": "c1ce9ad8-e0ae-40a2-8eae-a8b91e589313",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220926967,
+      "tabId": 220927006,
       "session": {
         "callId": null
       },
@@ -40,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/c/local-chatgpt%3A8acb2ef0-ec83-49a1-bcfe-dfae070c3158",
-        "visibility": "hidden",
+        "route": "/c/6af4ca2a-b840-83e8-ae2e-dcbee3a4b458",
+        "visibility": "visible",
         "online": true,
-        "sourceTabId": 220926967,
+        "sourceTabId": 220927006,
         "sourceWindowId": 220925964,
         "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://chatgpt.com/c/local-chatgpt%3A8acb2ef0-ec83-49a1-bcfe-dfae070c3158"
+        "observedTabActive": true,
+        "observedTabUrl": "https://chatgpt.com/c/6af4ca2a-b840-83e8-ae2e-dcbee3a4b458"
       },
       "privacy": {
         "rawTextStored": false,
@@ -56,89 +56,29 @@
       },
       "payload": {
         "callId": null,
-        "route": "/c/local-chatgpt%3A8acb2ef0-ec83-49a1-bcfe-dfae070c3158",
+        "route": "/c/6af4ca2a-b840-83e8-ae2e-dcbee3a4b458",
         "extensionVersion": "0.10.47",
-        "previousRoute": "/",
-        "currentRoute": "/c/local-chatgpt%3A8acb2ef0-ec83-49a1-bcfe-dfae070c3158",
-        "activeCallRoute": false
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "47236840-103b-478c-ab5c-da99267adf11",
-      "sequence": 66914,
-      "timestamp": "2026-11-11T22:23:33.121Z",
-      "ingestedAt": "2026-11-11T22:23:33.176Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.47",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
-      "outcome": "observed",
-      "traceId": "e34810f8-76f4-49e5-bae2-7c49696b5cba",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220926967,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.47",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/c/6af4ea5a-20b4-83e8-8d88-820dbc5bf891",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220926967,
-        "sourceWindowId": 220925964,
-        "observedTabStatus": "complete",
-        "observedTabActive": false,
-        "observedTabUrl": "https://chatgpt.com/c/6af4ea5a-20b4-83e8-8d88-820dbc5bf891"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/c/6af4ea5a-20b4-83e8-8d88-820dbc5bf891",
-        "extensionVersion": "0.10.47",
-        "previousRoute": "/c/local-chatgpt%3A8acb2ef0-ec83-49a1-bcfe-dfae070c3158",
-        "currentRoute": "/c/6af4ea5a-20b4-83e8-8d88-820dbc5bf891",
-        "activeCallRoute": false
+        "hostRemoved": true
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 66913,
-    "lastSequence": 66914,
-    "firstTimestamp": "2026-11-11T22:23:31.315Z",
-    "lastTimestamp": "2026-11-11T22:23:33.121Z",
+    "firstSequence": 66915,
+    "lastSequence": 66915,
+    "firstTimestamp": "2026-11-11T22:24:08.439Z",
+    "lastTimestamp": "2026-11-11T22:24:08.439Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 1
     }
   }
 }
