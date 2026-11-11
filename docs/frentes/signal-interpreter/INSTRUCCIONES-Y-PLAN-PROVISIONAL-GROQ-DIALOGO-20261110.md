@@ -273,3 +273,33 @@ No se deben reutilizar como estado actual los tres SUCCESS de una cabeza anterio
 - No utilizar speaker diarization/biometría ni asignar LEP/proveedor sin metadatos verificados.
 - No merge de PR #83: 115 commits adelante y 783 detrás respecto de main; revisión selectiva obligatoria.
 - Esta reconciliación no certifica ejecución de tests locales, permisos de Chrome, endpoint real, cuenta Groq, ZDR efectivo, instalación, llamada, calidad ASR ni aceptación del operador.
+
+
+## 9. Reconciliación de integración selectiva · G14 · 2026-11-11
+
+### 9.1 Estado de implementación
+
+- La corrección literal A-01 ya está aplicada y cotejada contra la conversación recuperada: `Calidad maxima. Reportame en 10 minutos.`.
+- PR #83 se cerró sin merge. Su historia divergente no se integra.
+- PR #84 [dual-source Groq Whisper](https://github.com/SeryMente/signal-interpreter/pull/84) contiene el port selectivo sobre el main vigente. Sigue draft y sin merge.
+- HEAD documentado: `03fc895dbe682be3bd9f944ee68951a4e815bc16`; CI 3/3 SUCCESS (Package integrity, observability audit y native caption host build).
+
+### 9.2 Trabajo completado y verificado
+
+1. Reconciliación de nueve SHA-256 divergentes del inventario y lectura de vuelta.
+2. Corrección de dos fixtures mal escapados (Unicode zero-width y separadores de párrafo).
+3. Validación de superficie de captura fail-closed: solo acepta `displaySurface === "browser"`; ausencia de metadata y window/monitor rechazan antes de pedir el micrófono.
+4. Port selectivo de manifiestos, captura dual, worklet WAV, transcriptor, motor temporal, overlay, guards y pruebas a una rama nueva basada en main.
+5. 66/66 hashes, ocho suites del verificador, 43 pruebas de observabilidad/regresión/layout, cuatro suites Groq dual, parser PowerShell 5.1, identidad de extensión y archivo de distribución: PASS.
+6. CI 3/3 SUCCESS en el HEAD indicado.
+
+### 9.3 Compuertas aún pendientes
+
+- La carga de extensión en Chrome no se pudo completar en el entorno temporal porque la política organizacional bloquea Developer Mode / Load unpacked. El perfil temporal fue eliminado y el perfil habitual no se tocó.
+- No se encontró clave Groq en el entorno de prueba conectado; no hubo llamadas API ni audio real.
+- ZDR y límites efectivos de la cuenta siguen sin verificar. Las páginas públicas de Groq consultadas muestran límites discrepantes; la cuenta es la fuente definitiva.
+- Con 6.5 s / 500 ms y paso de 6 s, dos canales podrían generar 20 RPM y 7,800 segundos de audio enviados por hora. El mínimo de facturación de 10 s puede elevar el coste teórico a aproximadamente USD 0.37 por hora de llamada simultánea. No declarar ese tamaño óptimo ni habilitar producción antes de medir cuotas/coste.
+- WER/CER, latencia p50/p95, deriva, pérdidas/duplicados y calidad por fuente no han sido medidos con audio autorizado.
+- No merge, activación, deploy, release ni aceptación funcional en nombre del operador.
+
+La secuencia de aceptación es: verificar ZDR/cuotas en la cuenta, instalar una clave local ignorada por Git, ejecutar corpus bilingüe sintético no clínico contra Groq, cargar la extensión en un Chrome autorizado, validar una llamada controlada y obtener aceptación expresa.
