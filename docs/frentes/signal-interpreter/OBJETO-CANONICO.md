@@ -434,7 +434,7 @@ G14 sigue ACTIVO como agente único. FOL1 continúa PREPARADA / NO ACTIVA; no se
 ### 12.1 Autoridad, procedencia y recuperación literal
 
 - La autorización técnica amplia y las instrucciones de aceleración/continuidad de esta retoma están preservadas literalmente en [CHATGPT-SI-AUTORIZACIONES-RETOMA-20261110-G14.txt](originales/CHATGPT-SI-AUTORIZACIONES-RETOMA-20261110-G14.txt), blob de lectura de vuelta `a55caa4f2659fdee3fafb198b3b1317e1774f859`, 1,133 caracteres, read-back exacto.
-- La versión final cotejada de esta crónica de retoma está en commit `d935a26ebce4762cdc284887d1e3919646cd52fb`, blob `4d40e7e3c441592af5ccde69fc97e9d41074bbe1`; incluye tabla de commits/blobs, fast-forward del checkout principal y los ocho cotejos locales.
+- La versión final cotejada de esta crónica de retoma está en commit `34131600b5b56e76edf0bd687adc7c23dcf179be`, blob `ba4f4864bbc0240d3a44ac4df1d93c81ac263052`; incluye tabla de commits/blobs, fast-forward del checkout principal y los ocho cotejos locales.
 - La conversación constructora anterior, suministrada por el operador y no considerada export nativa, continúa preservada en [CHATGPT-SI-RECUPERADO-GROQ-20261110.txt](originales/CHATGPT-SI-RECUPERADO-GROQ-20261110.txt), blob `a24d696207dfb357f12e90151d64ce1a35fc084c`.
 - El plan literal A-01–A-04 permanece en [INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md](INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md). A-01 fue cotejada con el original y su frase final es exactamente `Calidad maxima. Reportame en 10 minutos.`; no reintroducir la frase que apareció en un borrador anterior.
 - La última salida visible exacta de una conversación previa no se ha localizado como copia literal persistida y cotejada. Se declara **NO DISPONIBLE / NO VERIFICADA**; no reconstruirla desde memoria, resumen ni crónica histórica.
@@ -464,7 +464,7 @@ G14 sigue ACTIVO como agente único. FOL1 continúa PREPARADA / NO ACTIVA; no se
 
 ### 12.5 Tareas provisionales activas
 
-El backlog operativo de continuidad queda en [TAREAS-PROVISIONALES-GROQ-DUAL-G14.md](TAREAS-PROVISIONALES-GROQ-DUAL-G14.md), blob `1aa2792ac5e497af72770b1d30d64889f1878d51`. Define 12 tareas, prioridad, estado, dependencias, acciones y criterios de salida. Resumen: conservar PR/CI; resolver Chrome autorizado; verificar ZDR/cuotas; preparar secreto local; probar API con corpus sintético no clínico; validar ciclo de vida de captura; verificar fusión/overlay; optimizar chunking/coste con medición; fijar umbrales acústicos; reservar aceptación final al operador; mantener aceleración CI sin reducción de cobertura; y preservar continuidad interconversacional.
+El backlog operativo de continuidad queda en [TAREAS-PROVISIONALES-GROQ-DUAL-G14.md](TAREAS-PROVISIONALES-GROQ-DUAL-G14.md), blob `c39186ec7e1543bba6a58e4da45761e453a18221`. Define 12 tareas, prioridad, estado, dependencias, acciones y criterios de salida. Resumen: conservar PR/CI; resolver Chrome autorizado; verificar ZDR/cuotas; preparar secreto local; probar API con corpus sintético no clínico; validar ciclo de vida de captura; verificar fusión/overlay; optimizar chunking/coste con medición; fijar umbrales acústicos; reservar aceptación final al operador; mantener aceleración CI sin reducción de cobertura; y preservar continuidad interconversacional.
 
 ### 12.6 Ruta única de reanudación
 
