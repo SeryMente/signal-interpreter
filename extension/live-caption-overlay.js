@@ -1241,9 +1241,10 @@
       var acceptedSegments=0;
       (Array.isArray(message.segments)?message.segments:[]).forEach(function(segment){
         if(!segment||!segment.text||!Number.isFinite(Number(segment.startMs)))return;
-        var previousCount=rows.length;
+        var stableId=String(segment.id||"");
+        var existed=!!stableId&&rows.some(function(item){return item.id===stableId;});
         addRow(segment.text,segment.language,segment.source,true,segment.startMs,segment.id);
-        if(rows.length>previousCount)acceptedSegments++;
+        if(stableId&&!existed&&rows.some(function(item){return item.id===stableId;}))acceptedSegments++;
       });
       if(typeof sendResponse!=="function")return false;
       if(acceptedSegments<=0){
