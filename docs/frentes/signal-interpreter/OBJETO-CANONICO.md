@@ -348,3 +348,63 @@ Esta adenda supersede las referencias operativas anteriores de G13 y producto 0.
 - Hallazgo MIC: `setExtensionMicrophoneMutedInternal(false, ...)` no exige `callActive` para enviar unmute a una pestaña Cloud Interpreter; el retry de pista tardía sí exige llamada activa. La prueba `microphone-guard-test.mjs` protege el comportamiento pre-call actual. Esto contradice la política anterior de mute en espera/timbrado/incierto. SI-REG-05 queda P0 abierta; no es una prueba de que una llamada real haya transmitido audio.
 - Observabilidad: ventana 10m `2026-11-10T19:25:00.897Z`: intentos 0, clicks 0, diálogos 0, readiness samples 10; `freshness=receipt-unavailable`, receiptVerified=false, 0 batches verificados y 12.907 no verificados. No permite adjudicar causalmente las dos llamadas perdidas previas.
 - No hubo cambio de código, modificación de preferencias, reload Chrome, activación/armado, llamada/audio real, aceptación, merge, deploy o release.
+
+---
+
+## 10. Recuperación del hilo constructor y reconciliación del frente Groq · G14 · 2026-11-10
+
+### Fuente y preservación
+
+- El operador recuperó y pegó la conversación anterior completa. Su texto se conserva literalmente en [originales/CHATGPT-SI-RECUPERADO-GROQ-20261110.txt](originales/CHATGPT-SI-RECUPERADO-GROQ-20261110.txt). Lectura de vuelta byte por byte: coincide con el mensaje recibido. Es texto recuperado y aportado en esta conversación, no una exportación nativa de ChatGPT.
+- El plan con A-01/A-02/A-03/A-04 verbatim, interpretación, modelo, restricciones y P-01–P-13 se recuperó de la rama candidata y se publicó en [INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md](INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md). Su sección 8 concilia sus estados históricos con el HEAD y la CI observados.
+- SI-OP-03, que existía en la rama candidata pero no en main, fue incorporada en [REGLAS-OPERATIVAS.md](REGLAS-OPERATIVAS.md). La regla exige un único diálogo cronológico y dos fuentes separadas/procesadas concurrentemente. Read-back exacto efectuado.
+
+### Instrucción funcional vigente
+
+El objetivo actual es **un solo diálogo cronológico, de alta fidelidad y baja latencia**, alimentado en paralelo por:
+1. audio remoto de la llamada, capturado de la pestaña elegida explícitamente; y
+2. micrófono propio del intérprete, etiquetado INTÉRPRETE por procedencia.
+
+Ambos canales van separados a Groq Whisper; no mezclar pistas antes de transcribir, no serializar un canal detrás del otro, y fusionar sus segmentos después usando el tiempo de captura común, IDs estables y reconciliación de solapamientos. El audio remoto permanece como AUDIO REMOTO · HABLANTE NO VERIFICADO mientras no existan pistas/metadatos de identidad verificables. No inferir LEP/proveedor por idioma, voz aparente o contenido.
+
+Las exclusiones históricas de audio de pestaña/Groq quedan supersedidas **solo para diseñar y construir esta función** por las órdenes A-01/A-02 y SI-OP-03. No quedan supersedidos los controles de llamada activa, acción visible, permisos, privacidad, parada, no retención, no telemetría clínica ni aceptación del operador. No autoriza capturas reales, uso de credenciales, llamadas reales, reload de Chrome, merge, deploy o release.
+
+### Estado técnico observado de la candidata
+
+- PR #83 sigue OPEN/DRAFT/no merged: https://github.com/SeryMente/signal-interpreter/pull/83.
+- Rama: candidate/whisper-interpreter-live-20261110. HEAD observado: 4737823873f826f80346cd817b877c6664769f20, último commit de contenido a las 17:58:56 locales. La rama estaba 115 commits ahead y 783 behind de main, en estado diverged.
+- main/manifest.json sigue en 0.10.47. Ningún código de la candidata Groq se ha integrado a main.
+- Por inspección estática de esa cabeza, sí existen y están conectados en código: botón de captura visible; getDisplayMedia para audio de pestaña y getUserMedia para micrófono; dos lanes AudioWorklet; WAV mono PCM16 16 kHz; mensajes SIGNAL_GROQ_DIALOGUE_* y handlers en background.js; preflight de llamada activa, perfil/tab, interruptor y ZDR; colas Groq independientes; transcriptor whisper-large-v3; fusión/IDs; receptor de segmentos en overlay. roleForSource asigna INTÉRPRETE a groq-interpreter y AUDIO REMOTO · NO VERIFICADO a groq-remote.
+- Existen pruebas sintéticas para dual capture, policy revocation, WAV/flush/overlap, fusión, colas y transcriptor. La inspección de archivos no demuestra que esas pruebas se hayan ejecutado en este ciclo ni que funcionen con permisos/audio reales.
+- El flujo legacy startGroqCapture/handleGroqAudioChunk continúa respondiendo native-text-only; revisar que no se invoque accidentalmente junto con el nuevo flujo SIGNAL_GROQ_DIALOGUE_*.
+- Los valores groqDialogueEnabled y groqZeroDataRetentionConfirmed permanecen false por defecto en la candidata. La casilla ZDR es una declaración operativa local, no prueba independiente de la configuración del proveedor. No se leyó ni usó una clave Groq.
+
+### Estado de CI de la cabeza exacta
+
+Los tres workflows asociados a HEAD 4737823873f826f80346cd817b877c6664769f20 terminaron en FAILURE:
+- Package integrity · run 42927711704: discrepancias SHA-256 entre inventario e insumos; las pruebas específicas posteriores quedan omitidas.
+- signal-observability-audit · run 42927711800: falla Global overlay toggle and hotload lifecycle regression; varias suites posteriores quedan omitidas.
+- native-caption-host-build · run 42927712133: instalador falla por Payload SHA-256 mismatch en extension/background.js; compilación/protocolo posteriores quedan omitidos.
+
+Los tres SUCCESS citados en salidas antiguas corresponden a una cabeza anterior y se conservan como reportes históricos, no como validación del HEAD actual.
+
+### Pendientes ejecutivos priorizados
+
+1. Corregir los SHA divergentes del inventario, las invariantes y las referencias a manifests; regenerar/verificar cada SHA y leer de vuelta antes de reintentar.
+2. Diagnosticar y corregir Global overlay toggle and hotload lifecycle regression sin debilitar guards de presencia, MIC, Connect, llamada activa ni privacidad.
+3. Corregir la validación del archivo/instalador que falla con SHA mismatch de extension/background.js.
+4. Ejecutar directamente las suites nuevas (captura dual, WAV, transcriptor, motor, overlap/concurrencia y privacidad); no dar por ejecutadas las que CI omitió.
+5. Revalidar el límite entre el flujo nuevo SIGNAL_GROQ_DIALOGUE_* y el flujo legacy native-text-only.
+6. Probar el overlay en entorno sintético/headless para confirmar etiqueta INTÉRPRETE, fuente remota neutral, orden temporal y actualización de parciales.
+7. Confirmar por inspección de proveedor/cuota el régimen efectivo de Groq y medir ventanas/cadencia/coste. La ventana de 6–6.5 s es una candidata, no un valor óptimo aprobado.
+8. Preparar un corpus bilingüe autorizado y medir WER/CER, latencia p50/p95, deriva temporal, pérdida, duplicación y calidad por fuente.
+9. Mantener controles de producción desactivados. No capturar audio real ni usar credenciales hasta que el operador lo autorice y se cumplan las compuertas de privacidad.
+10. Tras CI verde y revisión selectiva del diff, solicitar aceptación del operador en Windows/Chrome. La aceptación funcional, merge, despliegue y release siguen reservados al operador.
+
+### Evidencia y límites del ciclo de recuperación
+
+- Persistido y verificado en main: conversación recuperada, plan con reconciliación, y regla SI-OP-03.
+- Inspección del código: candidata PR #83, solo lectura. No se modificaron fuentes de producto ni paquetes.
+- No ejecutado: nuevas pruebas locales, CI de reintento, instalación, carga/reload de Chrome, permisos de audio, micrófono físico, captura de pestaña real, endpoint Groq real, credenciales, verificación de ZDR, llamada real, merge, deploy, release o aceptación.
+- G14 continúa como agente único del frente según CONTROL-RESPONSABILIDAD.json. FOL1 sigue PREPARADA/NO ACTIVA; no se asigna folio nuevo ni se simula transferencia de titularidad.
+
