@@ -1,80 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-5a35f64e-6817-48f6-812a-96a8e2e9c5c9",
-  "createdAt": "2026-11-11T23:11:07.856Z",
+  "batchId": "batch-c8e59f0a-aa3d-409f-91bb-c9b4d02e0612",
+  "createdAt": "2026-11-11T23:12:41.442Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.47",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "899565b9-38e4-440f-a068-5e306ee37b4f",
-      "sequence": 66931,
-      "timestamp": "2026-11-11T23:11:00.171Z",
-      "ingestedAt": "2026-11-11T23:11:00.239Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.47",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "6cb43c9b-68e2-4e14-8053-a4b4640c6e3a",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220927020,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.47",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/search",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220927020,
-        "sourceWindowId": 220925964,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://www.google.com/search"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/search",
-        "extensionVersion": "0.10.47",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "8bbc9b74-c19c-4948-8723-4581f6cc357e",
-      "sequence": 66932,
-      "timestamp": "2026-11-11T23:11:00.172Z",
-      "ingestedAt": "2026-11-11T23:11:01.103Z",
+      "id": "fd67f275-f51b-4ba5-969d-69e7813c3e30",
+      "sequence": 66933,
+      "timestamp": "2026-11-11T23:12:10.785Z",
+      "ingestedAt": "2026-11-11T23:12:10.852Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -82,9 +18,9 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
       "outcome": "observed",
-      "traceId": "5e64b557-258d-464c-a59d-b2a9146f1607",
+      "traceId": "f1c846fa-8e5c-42ef-a77e-dc512c47b6c8",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -122,6 +58,126 @@
         "callId": null,
         "route": "/search",
         "extensionVersion": "0.10.47",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "45796431-bcb1-4030-bca6-0e0fd51ca379",
+      "sequence": 66934,
+      "timestamp": "2026-11-11T23:12:11.464Z",
+      "ingestedAt": "2026-11-11T23:12:11.524Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.47",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "85dea95d-2e47-4a70-b724-fc829e873032",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220927020,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.47",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/welcome",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220927020,
+        "sourceWindowId": 220925964,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://aistudio.google.com/welcome"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/welcome",
+        "extensionVersion": "0.10.47",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "c78bb1f0-2172-491b-8ef0-6688ebe684ea",
+      "sequence": 66935,
+      "timestamp": "2026-11-11T23:12:11.464Z",
+      "ingestedAt": "2026-11-11T23:12:12.327Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.47",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "f4a287be-a414-4bd0-8ac8-5f6bb1f0e90e",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220927020,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.47",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/welcome",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220927020,
+        "sourceWindowId": 220925964,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://aistudio.google.com/welcome"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/welcome",
+        "extensionVersion": "0.10.47",
         "enabled": true,
         "scope": "source-only",
         "pageAllowed": false,
@@ -133,26 +189,443 @@
         "contextSyncAttempts": 1,
         "contextSyncFailures": 0
       }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "a9f6f0ac-bf91-473f-9b81-ccf03226656b",
+      "sequence": 66936,
+      "timestamp": "2026-11-11T23:12:12.368Z",
+      "ingestedAt": "2026-11-11T23:12:13.233Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.47",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "dd8dd484-b2c8-47f5-9817-250e20732949",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220927020,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.47",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/welcome",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220927020,
+        "sourceWindowId": 220925964,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://www.google.com/search"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/welcome",
+        "extensionVersion": "0.10.47",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "d9b045d0-8226-4f22-8cf8-0e2fcb5c43d7",
+      "sequence": 66937,
+      "timestamp": "2026-11-11T23:12:15.005Z",
+      "ingestedAt": "2026-11-11T23:12:15.069Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.47",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
+      "outcome": "observed",
+      "traceId": "45e9a19e-b011-438d-a205-b5fce1cc969a",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220927020,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.47",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/search",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220927020,
+        "sourceWindowId": 220925964,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://www.google.com/search"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/search",
+        "extensionVersion": "0.10.47",
+        "hostRemoved": true
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "184a2b18-c6ee-4090-a63b-6e1c3424279d",
+      "sequence": 66938,
+      "timestamp": "2026-11-11T23:12:15.747Z",
+      "ingestedAt": "2026-11-11T23:12:15.799Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.47",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "24445e39-d521-41f7-89cd-3a111b88057c",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220927020,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.47",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/welcome",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220927020,
+        "sourceWindowId": 220925964,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://aistudio.google.com/welcome"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/welcome",
+        "extensionVersion": "0.10.47",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "4a99246e-dc5a-454c-824d-5bc686a32283",
+      "sequence": 66939,
+      "timestamp": "2026-11-11T23:12:15.748Z",
+      "ingestedAt": "2026-11-11T23:12:16.571Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.47",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "2682122a-aaa2-40d1-ac65-51a91e655b69",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220927020,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.47",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/welcome",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220927020,
+        "sourceWindowId": 220925964,
+        "observedTabStatus": "loading",
+        "observedTabActive": true,
+        "observedTabUrl": "https://aistudio.google.com/welcome"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/welcome",
+        "extensionVersion": "0.10.47",
+        "enabled": true,
+        "scope": "source-only",
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "sourceTabKnown": false,
+        "routeFallbackApplied": false,
+        "historyRows": 0,
+        "contextSyncAttempts": 1,
+        "contextSyncFailures": 0
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "bf4fc12f-c804-408b-840e-93e31a10722a",
+      "sequence": 66940,
+      "timestamp": "2026-11-11T23:12:17.268Z",
+      "ingestedAt": "2026-11-11T23:12:17.572Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.47",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "5f2223ae-723a-4cbc-b849-dd53d2cb4365",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220927020,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.47",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/prompts/new_chat",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220927020,
+        "sourceWindowId": 220925964,
+        "observedTabStatus": "loading",
+        "observedTabActive": false,
+        "observedTabUrl": "https://aistudio.google.com/prompts/new_chat"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/prompts/new_chat",
+        "extensionVersion": "0.10.47",
+        "previousRoute": "/welcome",
+        "currentRoute": "/prompts/new_chat",
+        "activeCallRoute": false
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "cf1ca0fc-4f21-4312-a98c-e384d65d26ee",
+      "sequence": 66941,
+      "timestamp": "2026-11-11T23:12:22.800Z",
+      "ingestedAt": "2026-11-11T23:12:22.866Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.47",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "67093d56-5761-4e37-ade2-5f783aac42e8",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220927020,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.47",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/apps",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220927020,
+        "sourceWindowId": 220925964,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://aistudio.google.com/apps"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/apps",
+        "extensionVersion": "0.10.47",
+        "previousRoute": "/prompts/new_chat",
+        "currentRoute": "/apps",
+        "activeCallRoute": false
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "1c4ef3c7-7118-4a32-b1df-9003631d7056",
+      "sequence": 66942,
+      "timestamp": "2026-11-11T23:12:24.740Z",
+      "ingestedAt": "2026-11-11T23:12:24.800Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.47",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "29daecc0-ffeb-4c44-bb4a-40ebbd591209",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220927020,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.47",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/prompts/new_chat",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220927020,
+        "sourceWindowId": 220925964,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://aistudio.google.com/prompts/new_chat"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/prompts/new_chat",
+        "extensionVersion": "0.10.47",
+        "previousRoute": "/apps",
+        "currentRoute": "/prompts/new_chat",
+        "activeCallRoute": false
+      }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 10,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 2,
     "critical": false,
     "scopeRejected": 0,
-    "contextEvents": 1,
+    "contextEvents": 2,
     "invariantSignals": 0,
-    "firstSequence": 66931,
-    "lastSequence": 66932,
-    "firstTimestamp": "2026-11-11T23:11:00.171Z",
-    "lastTimestamp": "2026-11-11T23:11:00.172Z",
+    "firstSequence": 66933,
+    "lastSequence": 66942,
+    "firstTimestamp": "2026-11-11T23:12:10.785Z",
+    "lastTimestamp": "2026-11-11T23:12:24.740Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
+      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 3,
+      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 2,
+      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 2,
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 3
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 10
     }
   }
 }
