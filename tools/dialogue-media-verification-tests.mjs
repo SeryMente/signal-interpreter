@@ -75,7 +75,7 @@ try {
   const invalidFormatDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "si-dialogue-media-invalid-"));
   try {
     const invalidWav = Buffer.from(remoteWav);
-    invalidWav.writeUInt32LE(2, 20);
+    invalidWav.writeUInt16LE(2, 22);
     invalidWav.writeUInt32LE(64000, 28);
     invalidWav.writeUInt16LE(4, 32);
     const invalidHash = createHash("sha256").update(invalidWav).digest("hex");
