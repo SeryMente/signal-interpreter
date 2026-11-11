@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { createHash } from "node:crypto";
-import { dirname, fileURLToPath } from "node:url";
+import { fileURLToPath } from "node:url";
 import { verifyDialogueMedia } from "./verify-dialogue-media.mjs";
 
 function makeWav(sampleValue) {
@@ -65,7 +65,7 @@ try {
   assert.equal(verified.storageBoundary, "OUTSIDE_REPOSITORY");
   assert.equal(JSON.stringify(verified).includes(tempDirectory), false);
 
-  const repositoryRoot = path.resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
   assert.throws(() => verifyDialogueMedia(manifest, repositoryRoot), /outside the Git repository/);
 
   const wrongHash = structuredClone(manifest);
@@ -76,11 +76,12 @@ try {
   try {
     const invalidWav = Buffer.from(remoteWav);
     invalidWav.writeUInt32LE(2, 20);
+    invalidWav.writeUInt32LE(64000, 28);
+    invalidWav.writeUInt16LE(4, 32);
     const invalidHash = createHash("sha256").update(invalidWav).digest("hex");
     fs.writeFileSync(path.join(invalidFormatDirectory, invalidHash + ".wav"), invalidWav, { flag: "wx" });
     const invalid = structuredClone(manifest);
     invalid.recordings[0].media["groq-remote"].sha256 = invalidHash;
-    invalid.recordings[0].media["groq-remote"].channels = 2;
     assert.throws(() => verifyDialogueMedia(invalid, invalidFormatDirectory), /mono 16 kHz|channel/);
   } finally {
     fs.rmSync(invalidFormatDirectory, { recursive: true, force: true });
