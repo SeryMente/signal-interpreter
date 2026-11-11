@@ -72,7 +72,7 @@ docs/frentes/signal-interpreter/CONTROL-RESPONSABILIDAD.json
 - Folio de sesión y folios CV/CY/A/B: PENDIENTES / NO ASIGNADOS.
 - No se cambió la titularidad, no se creó un segundo responsable ni se hizo transferencia en este ciclo.
 
-La autorización de Fila 4 mantiene a MantenimientoRCI como identidad operadora elevada y a CENTRAL\fila4 como destino de repositorio, archivos y entorno de producto. No materializar archivos de trabajo en el perfil MantenimientoRCI.
+La autorización de Fila 4 conserva ese alias funcional como destino del trabajo y los artefactos. La función de elevación administrativa se mantiene separada de la ejecución operativa; no se persisten nombres de cuenta, endpoints, sesiones ni rutas de perfil.
 
 ## 3. Estado de código, PR y CI
 
@@ -131,7 +131,7 @@ Validación adicional:
 - Destino operativo: Fila 4, alias funcional designado por el operador; identificadores técnicos efímeros omitidos.
 - Checkout candidato: rama `feat/groq-dual-main-20261111`, HEAD `1c7aca92...`, limpio al último read-back; se omite la ruta local y la cuenta.
 - Checkout principal de trabajo: alias funcional Fila 4, rama main; se requería sincronización posterior. Se omite ruta local y perfil.
-- La carpeta C:\Users\fila4\Desktop\SeryMente\signal-interpreter también existe, pero no se asumió que fuera un checkout Git y no se modificó.
+- Se detectó una carpeta adicional de nombre parecido, pero no se asumió como checkout Git ni se modificó; su ubicación no se conserva.
 - Checkout secundario de pruebas: entorno efímero usado solo para lectura/pruebas y eliminado después; no se conservan ruta, cuenta ni identificador del endpoint.
 - El checkout secundario se eliminó al terminar. El read-back final confirmó que no quedaban directorios SI-G14-* ni scripts temporales de las pruebas bajo ese perfil.
 
@@ -243,7 +243,7 @@ No hay CLI/tool Hiku accesible en esta sesión. Claude Code encontrado en otro p
 | Crónica G14 (primera materialización) | dd10792ebe6dbfc76ac9902dc906f481bf405ae5 | 4274b0c0718f6f877b26d9c9f76e54570a99d50e | 14,296 caracteres; read-back exacto; esta crónica recibió después la sección 10 |
 | OCP tras sección 12 y corrección del estado inicial | dc54619dad4697486b1f5f35d15b999f994c53d6 | b0e2f728a6014b8d3ac380c05eee9e85a2a15e17 | read-back exacto |
 | Plan provisional, sección 10 | a023a76d75d359b88b68c00481e36407fc59845f | 84ac5c8ff67369495ab86d0b69a767d8dc847392 | read-back exacto |
-| Prompt operativo G14 | 0ce205867b21a5cb3e1a49adbf4c23a22c958fc5 | 9d152406fcc03ca35526396de9af3c0769c26268 | read-back exacto; marcadores G11/v377/PC-13 residuales: 0 |
+| Prompt operativo G14 | actualización cotejada | read-back exacto; marcadores de generaciones anteriores: 0 |
 | README con navegación vigente | 7bb9f0e098f2d743e1f079ff4b6a43647b37466d | 96e09691ee5f6a2b95bb406d52ef271ae322f2cd | read-back exacto |
 | CONTROL-RESPONSABILIDAD.json | sin escritura en este ciclo | 2f02cab6b3697f31b2af3d141204c4431fbc05cb | leído de main; G14 y generación 14 conservados |
 
@@ -251,7 +251,7 @@ Las cifras anteriores identifican materializaciones concretas de cada documento;
 
 ### 10.2 Sincronización del checkout principal de Fila 4
 
-- Ruta conservada: C:\\Users\\fila4\\Desktop\\SeryMente\\Repositorios\\signal-interpreter.
+- Ruta de trabajo: alias funcional Fila 4; ubicación de perfil no conservada.
 - Checkout principal: rama main; identidad operativa y ruta de perfil omitidas conforme a ART-013.
 - Cabeza previa comprobada: 0a9f3917178415d22a81163f1c159e04b080ceb9.
 - Se hizo fast-forward, sin reset destructivo, y sin cambios locales previos; la primera alineación fue b9e7cbe6af9b7cb5bf866c9371f372626cb995f0.
@@ -274,9 +274,9 @@ Las cifras anteriores identifican materializaciones concretas de cada documento;
 
 - El checkout principal de Fila 4 completó un fast-forward y un cotejo local de ocho blobs en HEAD 05a12cde497ecb1110211d225fa41d3fab2c9efb. Ese cotejo fue anterior al último pin del OCP, por lo que comprobó el blob OCP anterior b0e2f728a6014b8d3ac380c05eee9e85a2a15e17, no el blob final actual.
 - Después se publicó un pin del OCP en commit 45d3ec872ed83f5aaafe2d5a58ce75181ef04189, blob entonces observado 3e1697711cd3f578ead7601232d5c33ea9d3f6c8. Ese pin fue supersedido por actualizaciones posteriores de referencias; consultar el blob vigente desde GitHub main, no reutilizar ese SHA histórico.
-- Se intentó verificar/sincronizar el checkout local después de ese commit, pero la sesión RDC del perfil CENTRAL\fila4 no completó la lectura de vuelta. La segunda conexión, CENTRAL\mantenimientorci, devolvió la protección Git "dubious ownership" al leer la ruta propiedad de CENTRAL\fila4. No se cambió safe.directory global ni se escribió desde MantenimientoRCI en ese checkout.
+- Se intentó verificar/sincronizar el checkout después de ese commit, pero la sesión RDC no completó la lectura de vuelta. No se cambió `safe.directory`, ACL ni propiedad, ni se escribió desde una identidad elevada en el checkout operativo.
 - Resultado preciso: **GitHub main contiene y relee el OCP final; el checkout local de escritorio después del pin final queda NO VERIFICADO**. No usarlo como fuente vigente ni afirmar que ya está alineado a 3e169771...
-- Acción única pendiente cuando vuelva a estar operativo el canal RDC de CENTRAL\fila4: entrar como ese usuario, comprobar que el checkout esté clean/main, hacer fetch y pull --ff-only, confirmar HEAD==origin/main y comprobar que HEAD:docs/frentes/signal-interpreter/OBJETO-CANONICO.md coincida con el blob OCP que se acaba de leer desde GitHub main para esa sesión. No cambiar propiedad/ACL ni modificar configuración global de Git para eludir la protección.
+- Acción pendiente: con el canal autorizado de Fila 4, comprobar que el checkout esté limpio en `main`, realizar `fetch` y `pull --ff-only`, confirmar `HEAD==origin/main` y cotejar el blob del OCP vigente. No cambiar propiedad/ACL ni modificar configuración global de Git.
 
 ## 11. Retoma de continuidad · exportación recuperada 2026-11-11
 
@@ -318,7 +318,7 @@ Continuar en la misma titularidad G14, sin redescubrir arquitectura ni reabrir P
 
 - Metodología releída en `SeryMente/metodologia/main`: DUG v388 · NX-388m; Metacanon 1.29; GOW 2.18; blob `4db0ebadfd1e48b2bdec9236ba7f344921e4a865`. §ARR / `gow-sec-14` consultado. CNP pertinente: P001, P004, P005, P038 y P043.
 - `CONTROL-RESPONSABILIDAD.json` releído en `main`, blob `2f02cab6b3697f31b2af3d141204c4431fbc05cb`: G14 ACTIVO, agente único; alias UUIDv7 local `01a1bd8b-8291-7906-b862-6088593acfe5`; G13 SUSTITUIDO; FOL1 PREPARADA/NO ACTIVA; folio PENDIENTE/NO ASIGNADO. Sin transferencia ni corresponsable.
-- Confirmación operativa del operador: `MantenimientoRCI` es identidad operadora/elevada; los repositorios y artefactos se materializan bajo el perfil y carpeta de trabajo de Fila 4. Se ejecutó Git como `CENTRAL\fila4`, no como MantenimientoRCI.
+- Confirmación operativa del operador: Fila 4 es el destino funcional de repositorios y artefactos; la identidad elevada solo opera como autorización administrativa. La ejecución y materialización se mantienen separadas. No se conservan nombres de cuenta ni rutas del perfil.
 - RDC preflight completado en el destino funcional Fila 4; la verificación de identidad efectiva y rutas se realizó en vivo. No se guardan Device IDs, hostname, cuenta ni ruta de perfil.
 
 ### 12.2 Integración Git y PR
