@@ -160,8 +160,10 @@ assert.equal(h.tracks.every(t=>t.stopped),true,"all acquired microphone and tab 
 assert.equal(h.contextClosed,true,"shared audio context is closed");
 assert.match(h.status(),/Captura detenida/,"a fully drained stop is reported as complete");
 assert.doesNotMatch(h.status(),/INCOMPLETA/,"a successful flush never raises the incomplete warning");
-assert.match(h.status(),/latencia visible p95 remoto 120 ms/,"remote visible latency uses the overlay acknowledgement");
-assert.match(h.status(),/latencia visible p95 intérprete 120 ms/,"interpreter visible latency uses the overlay acknowledgement");
+assert.match(h.status(),/latencia visible remoto p50 120 ms · p95 120 ms · max 120 ms \(n=2\)/,
+  "remote visible latency percentiles use the overlay paint acknowledgement");
+assert.match(h.status(),/latencia visible intérprete p50 120 ms · p95 120 ms · max 120 ms \(n=1\)/,
+  "interpreter visible latency percentiles use the overlay paint acknowledgement");
 console.log("GROQ_DUAL_CAPTURE_SYNTHETIC=PASS");
 
 const incomplete=createHarness("browser",{holdChunks:true});
