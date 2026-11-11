@@ -6,6 +6,8 @@
 **Última cabeza de código validada:** 1c7aca92cc89337aeb4c9907426847f941fa35bd.  
 **PR:** [#84 · dual-source Groq Whisper](https://github.com/SeryMente/signal-interpreter/pull/84), abierta, draft, no fusionada.  
 **Fuente literal:** [conversación Groq recuperada](originales/CHATGPT-SI-RECUPERADO-GROQ-20261110.txt) y [autorizaciones de continuidad G14](originales/CHATGPT-SI-AUTORIZACIONES-RETOMA-20261110-G14.txt).  
+**Exportación de continuidad adicional (2026-11-11):** [recibo de custodia](evidencias/RECIBO-EXPORT-CHATGPT-SI-20261111-0913.json). El TXT completo `ChatGPT-SI-20261111-0913.txt` está en `originales/` del checkout de Fila 4, SHA-256 `1564338E578D32EA685831521627FE58BC0DA8B3DC59920225939D02ED73E955`, excluido de Git y no publicado. La última salida visible literal del modelo anterior se conserva en la crónica G14 §11.2. La ventana de 40 minutos citada en A-03 es un antecedente fechado el 10/11, no una restricción temporal vigente.
+
 **Plan técnico:** [instrucciones verbatim y plan provisional](INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md).  
 **Checkpoint más reciente:** [retoma G14 · 2026-11-11](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md).
 
