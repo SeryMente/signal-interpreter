@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { evaluateDialogueQuality } from "./evaluate-dialogue-quality.mjs";
 
 const SOURCES = ["groq-remote", "groq-interpreter"];
+const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const STRATA = {
   languagePair: /^[a-z]{2,3}-[a-z]{2,3}$/i,
   noise: new Set(["quiet", "moderate", "noisy", "unknown"]),
@@ -53,7 +54,7 @@ function validateEvaluationShape(evaluation) {
 }
 
 function validateAcceptance(profile) {
-  assert(profile && typeof profile === "object", "acceptanceProfile is required");
+  assertAllowedKeys(profile, ["id", ...REQUIRED_ACCEPTANCE], "acceptanceProfile");
   for (const key of REQUIRED_ACCEPTANCE) {
     assert(Object.hasOwn(profile, key), "acceptanceProfile is missing a required criterion");
   }
@@ -93,7 +94,8 @@ function validateAcceptance(profile) {
 function validateCorpusMetadata(corpus) {
   assertAllowedKeys(corpus, [
     "id", "version", "split", "frozenAt", "consentStatus", "nonClinical",
-    "rawAudioStoredOutsideRepository", "clockBasis", "independentAnnotators", "adjudicationComplete"
+    "rawAudioStoredOutsideRepository", "transcriptsStoredOutsideRepository", "clockBasis",
+    "independentAnnotators", "adjudicationComplete"
   ], "corpus metadata");
   assert(/^[a-z0-9][a-z0-9._-]{2,63}$/i.test(String(corpus.id || "")), "corpus id is invalid");
   assert(/^\d+\.\d+\.\d+$/.test(String(corpus.version || "")), "corpus version must use MAJOR.MINOR.PATCH");
@@ -104,6 +106,8 @@ function validateCorpusMetadata(corpus) {
   assert(corpus.nonClinical === true, "the benchmark corpus must be explicitly non-clinical");
   assert(corpus.rawAudioStoredOutsideRepository === true,
     "raw audio must remain outside the Git repository");
+  assert(corpus.transcriptsStoredOutsideRepository === true,
+    "benchmark manifest and transcripts must remain outside the Git repository");
   assert(corpus.clockBasis === "shared-monotonic", "a shared monotonic time basis is required");
   assert(Number.isInteger(corpus.independentAnnotators) && corpus.independentAnnotators >= 2,
     "two independent reference annotators are required");
@@ -481,7 +485,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     process.exit(2);
   }
   try {
-    const manifest = JSON.parse(fs.readFileSync(inputPath, "utf8"));
+    const realInputPath = fs.realpathSync(inputPath);
+    const relativeInput = path.relative(REPOSITORY_ROOT, realInputPath);
+    assert(relativeInput === ".." || relativeInput.startsWith(".." + path.sep) || path.isAbsolute(relativeInput),
+      "benchmark manifest and gold transcripts must be outside the Git repository");
+    const manifest = JSON.parse(fs.readFileSync(realInputPath, "utf8"));
     const report = evaluateDialogueBenchmark(manifest);
     process.stdout.write(JSON.stringify(report, null, 2) + "\n");
     if (report.acceptance.status !== "PASS") process.exitCode = 3;
