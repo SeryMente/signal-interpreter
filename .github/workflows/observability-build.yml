@@ -12,7 +12,8 @@ on:
 
 concurrency:
   group: signal-observability-build-main
-  cancel-in-progress: false
+  # A run rebuilds the full inbox; superseded runs can be safely coalesced.
+  cancel-in-progress: true
 
 permissions:
   contents: write
