@@ -109,7 +109,7 @@ function validateAcceptance(profile) {
     "acceptanceProfile overlap threshold is invalid");
 }
 
-function validateCorpusMetadata(corpus) {
+function validateCorpusMetadata(corpus, purpose) {
   assertAllowedKeys(corpus, [
     "id", "version", "split", "frozenAt", "consentStatus", "nonClinical",
     "rawAudioStoredOutsideRepository", "transcriptsStoredOutsideRepository", "clockBasis",
@@ -117,7 +117,11 @@ function validateCorpusMetadata(corpus) {
   ], "corpus metadata");
   assert(/^si-dual-[a-z0-9][a-z0-9._-]{1,48}$/i.test(String(corpus.id || "")), "corpus id must be an anonymous si-dual identifier");
   assert(/^\d+\.\d+\.\d+$/.test(String(corpus.version || "")), "corpus version must use MAJOR.MINOR.PATCH");
-  assert(corpus.split === "test", "acceptance requires a frozen test split");
+  assert(
+    (purpose === "tuning" && corpus.split === "validation") ||
+    (purpose === "acceptance" && corpus.split === "test"),
+    "tuning requires the validation split and acceptance requires the frozen test split"
+  );
   assert(typeof corpus.frozenAt === "string" && Number.isFinite(Date.parse(corpus.frozenAt)),
     "corpus freeze timestamp is invalid");
   assert(corpus.consentStatus === "authorized", "corpus authorization is not verified");
@@ -393,10 +397,12 @@ function evaluateAcceptance(summary, profile) {
 }
 
 export function evaluateDialogueBenchmark(manifest) {
-  assertAllowedKeys(manifest, ["schema", "corpus", "system", "acceptanceProfile", "bootstrap", "recordings"], "benchmark manifest");
+  assertAllowedKeys(manifest, ["schema", "purpose", "corpus", "system", "acceptanceProfile", "bootstrap", "recordings"], "benchmark manifest");
   assert(manifest?.schema === "signal-interpreter-dialogue-benchmark/v1",
     "schema must be signal-interpreter-dialogue-benchmark/v1");
-  validateCorpusMetadata(manifest.corpus);
+  assert(manifest.purpose === "tuning" || manifest.purpose === "acceptance",
+    "purpose must be tuning or acceptance");
+  validateCorpusMetadata(manifest.corpus, manifest.purpose);
   validateSystem(manifest.system);
   validateAcceptance(manifest.acceptanceProfile);
   if (manifest.bootstrap != null) {
@@ -424,7 +430,7 @@ export function evaluateDialogueBenchmark(manifest) {
   const summary = summarizeRows(rows, iterations, seed);
   const stratified = buildStratifiedSummaries(rows, iterations, seed);
   const stratumCriteria = [];
-  for (const [dimension, groups] of Object.entries(stratified)) {
+  if (manifest.purpose === "acceptance") for (const [dimension, groups] of Object.entries(stratified)) {
     for (const [value, group] of Object.entries(groups)) {
       stratumCriteria.push({
         id: "strata." + dimension,
@@ -434,10 +440,13 @@ export function evaluateDialogueBenchmark(manifest) {
       });
     }
   }
-  const acceptance = evaluateAcceptance(summary, manifest.acceptanceProfile);
-  const allCriteria = [...acceptance.criteria, ...stratumCriteria];
+  const acceptance = manifest.purpose === "acceptance"
+    ? evaluateAcceptance(summary, manifest.acceptanceProfile)
+    : { status: "TUNING_ONLY", criteria: [] };
+  const allCriteria = manifest.purpose === "acceptance"
+    ? [...acceptance.criteria, ...stratumCriteria] : [];
   const overlapCategories = new Set(rows.map(row => row.strata.overlap));
-  for (const required of ["partial", "heavy"]) {
+  if (manifest.purpose === "acceptance") for (const required of ["partial", "heavy"]) {
     allCriteria.push({
       id: "strata.overlapCoverage." + required,
       status: overlapCategories.has(required) ? "PASS" : "BLOCKED",
@@ -445,7 +454,7 @@ export function evaluateDialogueBenchmark(manifest) {
       reason: overlapCategories.has(required) ? null : "the test set must include both partial and heavy real cross-source overlap"
     });
   }
-  if (summary.crossSourceOverlap.referencePairs <= 0) {
+  if (manifest.purpose === "acceptance" && summary.crossSourceOverlap.referencePairs <= 0) {
     allCriteria.push({
       id: "overlap.referencePairs",
       status: "BLOCKED",
@@ -461,7 +470,7 @@ export function evaluateDialogueBenchmark(manifest) {
     const passed = comparator === "min" ? observed >= limit : observed <= limit;
     allCriteria.push({ id, status: passed ? "PASS" : "FAIL", observed, limit });
   };
-  for (const [dimension, groups] of Object.entries(stratified)) {
+  if (manifest.purpose === "acceptance") for (const [dimension, groups] of Object.entries(stratified)) {
     for (const [value, group] of Object.entries(groups)) {
       const prefix = "strata." + dimension + "." + value;
       for (const source of SOURCES) {
@@ -488,14 +497,14 @@ export function evaluateDialogueBenchmark(manifest) {
   }
   const strataCovered = Object.keys(stratified).includes("languagePair") &&
     Object.keys(stratified).includes("noise") && Object.keys(stratified).includes("overlap");
-  if (!strataCovered) {
+  if (manifest.purpose === "acceptance" && !strataCovered) {
     allCriteria.push({
       id: "strata.requiredDimensions",
       status: "BLOCKED",
       reason: "languagePair, noise and overlap strata are all required"
     });
   }
-  if (manifest.acceptanceProfile.status !== "RATIFIED") {
+  if (manifest.purpose === "acceptance" && manifest.acceptanceProfile.status !== "RATIFIED") {
     allCriteria.push({
       id: "acceptanceProfile.ratification",
       status: "BLOCKED",
@@ -527,7 +536,7 @@ export function evaluateDialogueBenchmark(manifest) {
     acceptance: {
       profileId: String(manifest.acceptanceProfile.id || "UNNAMED"),
       profileStatus: manifest.acceptanceProfile.status,
-      status: finalStatus,
+      status: manifest.purpose === "tuning" ? "TUNING_ONLY" : finalStatus,
       criteria: allCriteria
     }
   };
@@ -547,7 +556,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     const manifest = JSON.parse(fs.readFileSync(realInputPath, "utf8"));
     const report = evaluateDialogueBenchmark(manifest);
     process.stdout.write(JSON.stringify(report, null, 2) + "\n");
-    if (report.acceptance.status !== "PASS") process.exitCode = 3;
+    if (report.acceptance.status !== "PASS" && report.acceptance.status !== "TUNING_ONLY") process.exitCode = 3;
   } catch (error) {
     console.error("Benchmark failed: " + String(error && error.message || error));
     process.exit(1);
