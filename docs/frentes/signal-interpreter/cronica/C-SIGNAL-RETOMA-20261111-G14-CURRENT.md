@@ -128,11 +128,11 @@ Validación adicional:
 
 ### 4.1 Superficies y cuentas
 
-- Dispositivo: PC10RCIF4EI4.
-- Checkout principal de prueba: C:\Users\fila4\AppData\Local\Temp\SI-G14-candidate, cuenta CENTRAL\fila4, branch feat/groq-dual-main-20261111, HEAD 1c7aca92..., limpio al último read-back.
-- Checkout principal de repositorio para main: C:\Users\fila4\Desktop\SeryMente\Repositorios\signal-interpreter; existe y estaba limpio en main, aunque requería sincronización posterior.
+- Destino operativo: Fila 4, alias funcional designado por el operador; identificadores técnicos efímeros omitidos.
+- Checkout candidato: rama `feat/groq-dual-main-20261111`, HEAD `1c7aca92...`, limpio al último read-back; se omite la ruta local y la cuenta.
+- Checkout principal de trabajo: alias funcional Fila 4, rama main; se requería sincronización posterior. Se omite ruta local y perfil.
 - La carpeta C:\Users\fila4\Desktop\SeryMente\signal-interpreter también existe, pero no se asumió que fuera un checkout Git y no se modificó.
-- Checkout secundario para pruebas: C:\Users\MANTEN~1\AppData\Local\Temp\SI-G14-worker-independent, bajo CENTRAL\mantenimientorci, mismo HEAD y solo lectura/pruebas.
+- Checkout secundario de pruebas: entorno efímero usado solo para lectura/pruebas y eliminado después; no se conservan ruta, cuenta ni identificador del endpoint.
 - El checkout secundario se eliminó al terminar. El read-back final confirmó que no quedaban directorios SI-G14-* ni scripts temporales de las pruebas bajo ese perfil.
 
 ### 4.2 Batería local y verificación
@@ -252,7 +252,7 @@ Las cifras anteriores identifican materializaciones concretas de cada documento;
 ### 10.2 Sincronización del checkout principal de Fila 4
 
 - Ruta conservada: C:\\Users\\fila4\\Desktop\\SeryMente\\Repositorios\\signal-interpreter.
-- Cuenta de archivos: CENTRAL\\fila4; branch main.
+- Checkout principal: rama main; identidad operativa y ruta de perfil omitidas conforme a ART-013.
 - Cabeza previa comprobada: 0a9f3917178415d22a81163f1c159e04b080ceb9.
 - Se hizo fast-forward, sin reset destructivo, y sin cambios locales previos; la primera alineación fue b9e7cbe6af9b7cb5bf866c9371f372626cb995f0.
 - Después, main recibió más commits automáticos de observations/. Se volvió a fetch/revisar diff; las 25 rutas nuevas entre b9e7cbe y 05a12cde eran exclusivamente observations/, sin cambios de código, OCP, prompt, plan o tareas. Se hizo un segundo fast-forward limpio.
@@ -306,7 +306,7 @@ Estado GitHub reconsultado durante esta retoma (2026-11-11, aprox. 09:16 America
 
 Límites sin cambio: no se cargó la extensión en Chrome por política administrada; no había credencial Groq verificada; no se llamó a la API con audio; no se capturó audio real ni se probó una llamada real; ZDR/cuotas no fueron comprobados en la consola de cuenta; no existen mediciones acústicas WER/CER o latencia real; no hubo aceptación del operador, merge, deploy ni release. Los toggles permanecen false por defecto. No se publica audio ni texto clínico.
 
-La autorización G14 y los límites de RDC se conservan: trabajo y artefactos en Fila 4; MantenimientoRCI solo como identidad operadora elevada. El intento de Git local bajo MantenimientoRCI devolvió `dubious ownership` porque el checkout pertenece a CENTRAL\\fila4. No se cambió `safe.directory`, ACL ni propiedad, ni se escribió Git desde esa identidad. Por ello, el archivo fuente está preservado localmente y los documentos canónicos se actualizan por la superficie remota; el espejo local Git no se declara sincronizado.
+La autorización G14 y los límites de RDC se conservan: trabajo y artefactos bajo el alias funcional Fila 4; MantenimientoRCI únicamente como identidad operadora elevada. No se persisten cuentas, identificadores de endpoint, SID ni rutas de perfil. El intento de Git bajo la identidad elevada devolvió `dubious ownership`; no se cambió `safe.directory`, ACL ni propiedad.
 
 ### 11.4 Instrucción de continuidad
 
@@ -319,7 +319,7 @@ Continuar en la misma titularidad G14, sin redescubrir arquitectura ni reabrir P
 - Metodología releída en `SeryMente/metodologia/main`: DUG v388 · NX-388m; Metacanon 1.29; GOW 2.18; blob `4db0ebadfd1e48b2bdec9236ba7f344921e4a865`. §ARR / `gow-sec-14` consultado. CNP pertinente: P001, P004, P005, P038 y P043.
 - `CONTROL-RESPONSABILIDAD.json` releído en `main`, blob `2f02cab6b3697f31b2af3d141204c4431fbc05cb`: G14 ACTIVO, agente único; alias UUIDv7 local `01a1bd8b-8291-7906-b862-6088593acfe5`; G13 SUSTITUIDO; FOL1 PREPARADA/NO ACTIVA; folio PENDIENTE/NO ASIGNADO. Sin transferencia ni corresponsable.
 - Confirmación operativa del operador: `MantenimientoRCI` es identidad operadora/elevada; los repositorios y artefactos se materializan bajo el perfil y carpeta de trabajo de Fila 4. Se ejecutó Git como `CENTRAL\fila4`, no como MantenimientoRCI.
-- RDC activo revalidado. Dispositivo PC10RCIF4EI4; sesión usada como `CENTRAL\fila4`; checkout `C:\Users\fila4\Desktop\SeryMente\Repositorios\signal-interpreter`.
+- RDC preflight completado en el destino funcional Fila 4; la verificación de identidad efectiva y rutas se realizó en vivo. No se guardan Device IDs, hostname, cuenta ni ruta de perfil.
 
 ### 12.2 Integración Git y PR
 
@@ -375,7 +375,7 @@ La ventana de 6.5 s / overlap de 500 ms / hop de 6 s sigue siendo candidata: no 
 
 ### 13.4 Estado GitHub revalidado en esta retoma
 
-- RDC comprobado en PC10RCIF4EI4 como CENTRAL\fila4; repositorio de trabajo C:\Users\fila4\Desktop\SeryMente\Repositorios\signal-interpreter; árbol limpio al inicio, rama work/g14-groq-dual-clean-20261111, HEAD local 366fdd8514cd5e027b702864ab331e8ca27efcbc.
+- RDC comprobado para el alias funcional Fila 4; árbol limpio al inicio, rama `work/g14-groq-dual-clean-20261111`, HEAD local `366fdd8514cd5e027b702864ab331e8ca27efcbc`. Se omiten identificadores efímeros y la ubicación del checkout.
 - PR #84 reconsultada: OPEN / DRAFT / NOT MERGED; head 366fdd8514cd5e027b702864ab331e8ca27efcbc; GitHub devolvió mergeable=false. Los runs exactos 43100336938, 43100336979, 43100337042 finalizaron SUCCESS. La auditoría tuvo jobs guards, captions, syntax, observability y audit; el host nativo y package integrity también pasaron.
 - main observado en 7fc3597ac734976b3b9fe0491841ccdf0561bc72. La comparación desde el merge-base 8bfc2eaf5feb277ca821f12958df5f96e5845e0f identifica 19 commits adicionales en main, todos limitados a observations/**; por eso se mantiene separada la rama de código y no se absorbe cada snapshot automático.
 - Issue #85 sigue abierta como seguimiento interno de ejecuciones antiguas de Actions sin jobs/cancelación coherente. No se ha abierto un ticket de soporte de GitHub.
@@ -389,7 +389,7 @@ Retomar desde PR #84 y desde el benchmark de calidad de extremo a extremo; no re
 
 ### 14.1 Trabajo publicado
 
-- Desde Fila 4 (`CENTRAL\\fila4`), en `C:\\Users\\fila4\\Desktop\\SeryMente\\Repositorios\\signal-interpreter`, se amplió `tools/evaluate-dialogue-quality.mjs`, junto con `tools/dialogue-quality-evaluation-tests.mjs` y `tools/README-dialogue-quality.md`.
+- Desde el entorno funcional Fila 4 se amplió `tools/evaluate-dialogue-quality.mjs`, junto con `tools/dialogue-quality-evaluation-tests.mjs` y `tools/README-dialogue-quality.md`; la ruta del repositorio y la cuenta de Windows no se conservan.
 - Commit local y remoto de la rama de PR: `305d8d862be629af0fc96e35701adc29be15013c`; push normal/fast-forward confirmado a `feat/groq-dual-main-20261111`. Árbol de trabajo local limpio tras el commit.
 - Nuevas métricas estructurales: turnos agrupados por fuente/`speakerId` con silencio configurable; precisión/recall/F1 y turnos omitidos/extra; inversiones cronológicas adyacentes en el orden original; pares de solapamiento entre audio remoto e intérprete preservados/omitidos/extra y diferencia en milisegundos. El informe continúa sin emitir texto.
 - La heurística de turnos no constituye diarización ni inventa hablantes. Con referencia sin identidad, el track se mantiene como desconocido. Los defaults 1,200 ms / 100 ms son parámetros de evaluación, no umbrales de producto aprobados.
@@ -432,3 +432,20 @@ PR #84 OPEN / DRAFT / NOT MERGED; HEAD `305d8d862be629af0fc96e35701adc29be15013c
 ### 15.3 Continuidad y límites
 
 El evaluador estructural queda implementado, documentado, probado localmente y validado por CI. Falta benchmark acústico con referencia humana autorizada y umbrales predefinidos. Continúan pendientes Chrome autorizado, ZDR/cuotas, secreto local y smoke test API; no hubo llamada Groq con audio ni captura real. Flags false, sin aceptación, merge, deploy o release. G14 continúa agente único; FOL1 preparada/no activa; folios pendientes/no asignados; MCP normativo desactivado.
+
+## 16. Reconciliación de gobernanza v389 y retoma limpia · 2026-11-11
+
+### 16.1 Fuente normativa
+
+Se releyó `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`: Samantha v389 · NX-389m · Metacanon 1.30 · GOW 2.19; blob `bcd99e72113f444a045d7f1c91b4ad36865b8ea8`. §ARR (`gow-sec-14`) es vocabulario de entrada, no autoridad: Ser y Mente, GOW, DUG, principios/anexos, IPZ, frente/módulo, repositorio/main, OCP, control, ciclo/conversación, MCP-NORMATIVO, MCP-OCP, binomio A/B, CNP y PAI.
+
+### 16.2 Principios y límites aplicados
+
+- CNP leído en texto normativo: P001 cascada/precedencia; P004 no-simulación; P005 autorización previa para cambiar normas del MP; P038 autoridad de `metodologia/main`; P043 PAI.
+- ART-013 §§2–4: Fila 4 es el alias funcional autorizado por el operador. Los identificadores técnicos de RDC son efímeros y se usan solo durante el preflight vivo; no persistir hostnames, Device IDs, nombres de sesión, SID, cuentas ni rutas de perfil en OCP, crónica o backlog. No inferir continuidad entre conexiones.
+- GOW §37.3: no calcular edad d.h.m., duración, latencia ni intervalos; se conserva la revisión/versión y su hash.
+- Control leído: G14 ACTIVO / agente único / generación 14; FOL1 PREPARADA / NO ACTIVA; folio PENDIENTE / NO ASIGNADO; MCP normativo DESACTIVADO. El UUID/folio son metadatos de auditoría, no IDs nativos ni permisos.
+
+### 16.3 Estado del frente tras la corrección
+
+PR #84 OPEN / DRAFT / NOT MERGED; HEAD `305d8d862be629af0fc96e35701adc29be15013c`; CI 3/3 workflows / 7/7 jobs SUCCESS. Evaluador estructural publicado y documentado; sigue pendiente el benchmark acústico humano autorizado. Las compuertas Chrome autorizado, ZDR/cuotas Groq, credencial local y prueba API controlada no se han abierto. Flags siguen false; no aceptación, merge, deploy ni release.
