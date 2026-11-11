@@ -1,4 +1,7 @@
 name: signal-observability-audit
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
 
 on:
   pull_request:
@@ -8,14 +11,15 @@ on:
       - "feat/**"
 
 jobs:
-  audit:
+  syntax:
+    name: syntax
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: JavaScript syntax
+      - name: Run syntax
         run: |
           node --check extension/caption-lab.js
           node --check extension/ui/lab.js
@@ -69,91 +73,97 @@ jobs:
           node --check tools/observability-cycle-delta-test.mjs
           node --check tools/call-observability-report-test.mjs
           node --check tools/overlay-activation-regression-test.mjs
-      - name: Explicit availability and fail-closed answer regression
-        run: |
           node --check extension/presence-guard.js
           node --check tools/presence-guard-test.mjs
           node --check tools/presence-connect-test.mjs
           node --check tools/autoanswer-runtime-guard-test.mjs
+
+  guards:
+    name: guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run guards
+        run: |
           node tools/presence-guard-test.mjs
           node tools/presence-connect-test.mjs
           node tools/autoanswer-runtime-guard-test.mjs
           node tools/caption-language-spans-test.mjs
-      - name: Platform learning unit test
-        run: node tools/observability/platform-learning-test.mjs
-      - name: Screenshot relay unit test
-        run: node tools/observability-screenshot-relay-test.mjs
-      - name: Cloud login bootstrap unit test
-        run: node tools/cloud-login-bootstrap-test.mjs
-      - name: Hotload caption reinjection runtime regression
-        run: node tools/hotload-caption-runtime-test.mjs
-      - name: Hotload during active call unit test
-        run: node tools/hotload-active-call-test.mjs
-      - name: Microphone guard unit test
-        run: node tools/microphone-guard-test.mjs
-      - name: Global mouse mute unit test
-        run: node tools/global-mouse-gesture-test.mjs
-      - name: Global microphone hotkey unit test
-        run: node tools/global-microphone-hotkey-test.mjs
-      - name: Microphone feedback unit test
-        run: node tools/microphone-feedback-test.mjs
-      - name: Platform screenshot unit test
-        run: node tools/platform-screenshot-test.mjs
-      - name: GitHub package pipeline unit test
-        run: node tools/observability-github-pipeline-test.mjs
-      - name: Ten-minute incoming call lifecycle report test
-        run: node tools/observability/incoming-call-window-test.mjs
-      - name: Relay receive timestamp test
-        run: node tools/observability-relay-batch-test.mjs
-      - name: Immediate call lifecycle sync regression test
-        run: node tools/observability-call-lifecycle-sync-test.mjs
-      - name: Observability freshness audit regression test
-        run: node tools/observability-freshness-audit-test.mjs
-      - name: Per-call observability report regression test
-        run: node tools/call-observability-report-test.mjs
-      - name: Overlay activation and recovery regression test
-        run: node tools/overlay-activation-regression-test.mjs
-      - name: Observability package audit unit test
-        run: node tools/observability-package-audit-test.mjs
-      - name: Observability package baseline audit
-        run: node tools/observability-package-audit.mjs observations
-      - name: Observability cycle delta unit test
-        run: node tools/observability-cycle-delta-test.mjs
-      - name: Call earnings baseline regression test
-        run: node tools/call-earnings-baseline-tests.mjs
-      - name: Earnings overlay regression test
-        run: node tools/earnings-overlay-tests.mjs
-      - name: Scheduled official sync no-tab safety regression
-        run: node tools/official-sync-scheduled-no-tab-test.mjs
-      - name: Installer payload inventory shape regression
-        run: node tools/installer-inventory-shape-test.mjs
-      - name: Global overlay hotkey consistency
-        run: node tools/pipeline-hotkey-consistency-test.mjs
-      - name: Global overlay toggle and hotload lifecycle regression
-        run: node tools/overlay-global-toggle-regression-test.mjs
-      - name: Groq transcriber unit test
-        run: node tools/groq-transcriber-tests.mjs
-      - name: Independent call preview runtime regression
-        run: node tools/call-caption-runtime-test.mjs
-      - name: Automatic call export and privacy runtime regression
-        run: node tools/call-export-runtime-test.mjs
-      - name: Live Caption core unit test
-        run: node tools/live-caption-core-test.mjs
-      - name: Live Caption Native Messaging bridge transition test
-        run: node tools/live-caption-bridge-tests.mjs
-      - name: Live Caption offscreen preview lifecycle test
-        run: node tools/live-caption-offscreen-tests.mjs
-      - name: Longitudinal microphone and overlays regression
-        run: node tools/signal-interpreter-longitudinal-regression-test.mjs
-      - name: Native caption reader privacy regression
-        run: node tools/live-reader-native-caption-regression-test.mjs
-      - name: Live Caption static audit
-        run: node tools/live-caption-static-audit.mjs
-      - name: Observability static audit
-        run: node tools/observability-static-audit.mjs
+          node tools/cloud-login-bootstrap-test.mjs
+          node tools/hotload-caption-runtime-test.mjs
+          node tools/hotload-active-call-test.mjs
+          node tools/microphone-guard-test.mjs
+          node tools/global-mouse-gesture-test.mjs
+          node tools/global-microphone-hotkey-test.mjs
+          node tools/microphone-feedback-test.mjs
+          node tools/platform-screenshot-test.mjs
+          node tools/official-sync-scheduled-no-tab-test.mjs
+          node tools/installer-inventory-shape-test.mjs
+          node tools/pipeline-hotkey-consistency-test.mjs
+          node tools/overlay-global-toggle-regression-test.mjs
 
-      - name: Portable root and caption laboratory regression
+  observability:
+    name: observability
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run observability
         run: |
+          node tools/observability/platform-learning-test.mjs
+          node tools/observability-screenshot-relay-test.mjs
+          node tools/observability-github-pipeline-test.mjs
+          node tools/observability/incoming-call-window-test.mjs
+          node tools/observability-relay-batch-test.mjs
+          node tools/observability-call-lifecycle-sync-test.mjs
+          node tools/observability-freshness-audit-test.mjs
+          node tools/call-observability-report-test.mjs
+          node tools/overlay-activation-regression-test.mjs
+          node tools/observability-package-audit-test.mjs
+          node tools/observability-package-audit.mjs observations
+          node tools/observability-cycle-delta-test.mjs
+          node tools/call-earnings-baseline-tests.mjs
+          node tools/earnings-overlay-tests.mjs
+
+  captions:
+    name: captions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run captions
+        run: |
+          node tools/groq-transcriber-tests.mjs
+          node tools/call-caption-runtime-test.mjs
+          node tools/call-export-runtime-test.mjs
+          node tools/live-caption-core-test.mjs
+          node tools/live-caption-bridge-tests.mjs
+          node tools/live-caption-offscreen-tests.mjs
+          node tools/signal-interpreter-longitudinal-regression-test.mjs
+          node tools/live-reader-native-caption-regression-test.mjs
+          node tools/live-caption-static-audit.mjs
+          node tools/observability-static-audit.mjs
           node tools/portable-root-test.mjs
           node tools/caption-lab-test.mjs
           node tools/bundled-lab-sample-test.mjs
+
+  audit:
+    name: audit
+    if: always()
+    needs: [syntax, guards, observability, captions]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every parallel suite to pass
+        run: |
+          if [ "${{ needs.syntax.result }}" != "success" ] || [ "${{ needs.guards.result }}" != "success" ] || [ "${{ needs.observability.result }}" != "success" ] || [ "${{ needs.captions.result }}" != "success" ]; then
+            echo "One or more audit suites did not pass."
+            exit 1
+          fi
+          echo "All parallel audit suites passed."

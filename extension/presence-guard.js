@@ -6,6 +6,8 @@
   var consumed = new Set(), busy = false, activeLease = null;
   var sessionWriteQueue = Promise.resolve(), startupReady = Promise.resolve();
   var lastPresenceCheck = { state: "unknown", trigger: "startup", checkedAt: null, error: null };
+  var lastPresenceCheckAt = 0;
+  var cachedLabLock = false, cachedAutoAnswerEnabled = false;
   var RESTORE_RETRY_ALARM = "signal-presence-restore-retry";
   var restoreRetryPending = false;
   var PROFILE = "https://app.cloudinterpreter.com/profile/cmu2wuz1v0uwr07adbzb9djfz";
@@ -20,6 +22,7 @@
       checkedAt: new Date().toISOString(),
       error: result && result.error ? String(result.error).slice(0, 120) : null
     };
+    lastPresenceCheckAt = Date.now();
     return publish();
   }
   function clearRestoreRetry() {
@@ -77,7 +80,9 @@
     publish();
     return snapshot();
   }
-  // MV3 may suspend an idle worker. Each authorization independently revalidates idle state.
+  // MV3 may suspend an idle worker. The worker restores and revalidates before handling messages;
+  // idle.onStateChanged revokes synchronously, with a periodic query as a second line of defense.
+  // The hot authorization path reuses that recent, in-memory result instead of querying the OS again.
   function continuity() { lastContinuityAt = Date.now(); }
   function idleState(seconds) {
     return new Promise(function (resolve) {
@@ -119,8 +124,10 @@
       disarm(armReason);
       return { ok: false, error: armReason, state: snapshot() };
     }
-    var stored = await chrome.storage.local.get(["signalLabLock"]);
-    if (stored.signalLabLock === true || epoch !== generation) return { ok: false, error: "lab-or-state-changed", state: snapshot() };
+    var stored = await chrome.storage.local.get(["signalLabLock", "effectifConfig"]);
+    cachedLabLock = stored.signalLabLock === true;
+    cachedAutoAnswerEnabled = !!(stored.effectifConfig && stored.effectifConfig.autoAnswerEnabled === true);
+    if (cachedLabLock || epoch !== generation) return { ok: false, error: "lab-or-state-changed", state: snapshot() };
     try { chrome.idle.setDetectionInterval(seconds); } catch (_) { return { ok: false, error: "idle-unavailable", state: snapshot() }; }
     threshold = seconds; lastContinuityAt = Date.now(); armed = true; reason = "explicit-availability";
     try { await saveSessionArm(); }
@@ -203,22 +210,27 @@
     busy = true;
     try {
       var epoch = generation, started = Date.now();
-      // The incoming dialog is short-lived. Run independent read-only checks in parallel,
-      // then apply the same authorization gates before granting the one-use lease.
-      var checks = await Promise.all([
-        chrome.storage.local.get(["signalLabLock", "effectifConfig"]),
-        idleState(threshold),
-        chrome.tabs.query({ url: "https://app.cloudinterpreter.com/call/*" }),
-        chrome.tabs.get(sender.tab.id)
-      ]);
-      var values = checks[0], presence = checks[1], activeCalls = checks[2], tab = checks[3];
-      await recordPresenceCheck(presence, "authorization");
-      if (values.signalLabLock === true || !values.effectifConfig || values.effectifConfig.autoAnswerEnabled !== true) return { ok: false, error: "disabled-or-lab" };
+      // Configuration and laboratory lock are kept current by chrome.storage.onChanged.
+      // Presence is rechecked on explicit arm, worker restore, OS state changes and every 15 s.
+      // Reuse a fresh active sample on the hot path; refresh only when it is missing or stale.
+      if (cachedLabLock) return { ok: false, error: "disabled-or-lab", state: snapshot() };
+      if (!cachedAutoAnswerEnabled) return { ok: false, error: "disabled-or-lab", state: snapshot() };
+      var presence = lastPresenceCheck;
+      var presenceAgeMs = lastPresenceCheckAt > 0 ? Math.max(0, Date.now() - lastPresenceCheckAt) : Infinity;
+      var presencePath = "cached";
+      if (presence.state !== "active" || presenceAgeMs > 20000) {
+        presence = await idleState(threshold);
+        presencePath = "refreshed";
+        recordPresenceCheck(presence, "authorization-refresh").catch(function () {});
+        presenceAgeMs = 0;
+      }
       if (presence.state === "idle") { disarm("idle-confirm-again"); return { ok: false, error: reason, state: snapshot() }; }
       if (presence.state === "locked") { disarm("locked-confirm-again"); return { ok: false, error: reason, state: snapshot() }; }
       if (presence.state !== "active") return { ok: false, error: "presence-check-unavailable", state: snapshot() };
+      // sender.tab.url is the browser-supplied URL for this message and profile(sender) already
+      // verifies both frame URL and tab URL. The extra tabs.get round-trip was redundant.
+      var activeCalls = await chrome.tabs.query({ url: "https://app.cloudinterpreter.com/call/*" });
       if (activeCalls.length) return { ok: false, error: "call-already-open" };
-      if (!isAuthorizedProfileUrl(tab.url)) return { ok: false, error: "route-changed" };
       var key = sender.tab.id + ":" + requestId;
       if (consumed.has(key) || !armed || epoch !== generation || Date.now() - started > 1000) return { ok: false, error: "stale-or-used" };
       consumed.add(key);
@@ -227,9 +239,10 @@
         requestId: requestId, tabId: sender.tab.id, generation: generation,
         expiresAt: Date.now() + 15000
       };
-      return { ok: true, generation: generation, expiresAt: Date.now() + 500, verificationMs: Date.now() - started, state: snapshot() };
+      return { ok: true, generation: generation, expiresAt: Date.now() + 500,
+        verificationMs: Date.now() - started, verificationPath: presencePath,
+        presenceAgeMs: Number.isFinite(presenceAgeMs) ? presenceAgeMs : null, state: snapshot() };
     } catch (_) {
-      // An unavailable browser/storage API rejects this attempt, not the explicit session authorization.
       recordPresenceCheck({ state: "unavailable", error: "authorization-api-error" }, "authorization-exception").catch(function () {});
       return { ok: false, error: "authorization-verification-unavailable", state: snapshot() };
     }
@@ -254,6 +267,8 @@
       var session = await chrome.storage.session.get([SESSION_KEY]);
       var saved = session && session[SESSION_KEY];
       if (!saved || saved.armed !== true || saved.explicit !== true) {
+        cachedLabLock = false;
+        cachedAutoAnswerEnabled = false;
         await publish();
         return;
       }
@@ -263,8 +278,9 @@
         return;
       }
       var current = await chrome.storage.local.get(["signalLabLock", "effectifConfig"]);
-      if (current.signalLabLock === true || !current.effectifConfig ||
-          current.effectifConfig.autoAnswerEnabled !== true) {
+      cachedLabLock = current.signalLabLock === true;
+      cachedAutoAnswerEnabled = !!(current.effectifConfig && current.effectifConfig.autoAnswerEnabled === true);
+      if (cachedLabLock || !cachedAutoAnswerEnabled) {
         disarm(current.signalLabLock === true ? "laboratory" : "settings-changed-confirm-again");
         return;
       }
@@ -329,9 +345,13 @@
   }, 15000);
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local") return;
-    if (changes.signalLabLock && changes.signalLabLock.newValue === true) disarm("laboratory");
+    if (changes.signalLabLock) {
+      cachedLabLock = changes.signalLabLock.newValue === true;
+      if (cachedLabLock) disarm("laboratory");
+    }
     if (changes.effectifConfig) {
       var after = changes.effectifConfig.newValue || {};
+      cachedAutoAnswerEnabled = after.autoAnswerEnabled === true;
       if (after.autoAnswerEnabled !== true || (armed && Number(after.presenceIdleSeconds) !== threshold)) disarm("settings-changed-confirm-again");
     }
   });

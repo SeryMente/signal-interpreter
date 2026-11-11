@@ -1,17 +1,19 @@
-importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js");
+importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","groq-transcriber.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js");
+try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key file; never commit credentials. */ }
 (function () {
   "use strict";
 
   function extensionResource(path) { if(path === "manifest.json") return path; var m=chrome.runtime.getManifest(); return m.background && String(m.background.service_worker).indexOf("extension/")===0 ? "extension/"+path : path; }
   function runExtensionScript(spec) { if(spec.files) spec=Object.assign({},spec,{files:spec.files.map(extensionResource)}); return chrome.scripting.executeScript(spec); }
-  var GROQ_MODEL = "whisper-large-v3-turbo";
+  var GROQ_MODEL = "whisper-large-v3";
   var AUTHORIZED_ORIGIN = "https://app.cloudinterpreter.com";
   var AUTHORIZED_PROFILE_PATH = "/profile/cmu2wuz1v0uwr07adbzb9djfz";
   var OFFICIAL_STATS_URL = AUTHORIZED_ORIGIN + "/profile/cmu2wuz1v0uwr07adbzb9djfz/logs";
-  var GROQ_USD_PER_AUDIO_HOUR = 0.04;
+  var GROQ_USD_PER_AUDIO_HOUR = 0.111;
   var DEFAULT_CONFIG = {
     targetHost: "app.cloudinterpreter.com",
     autoAnswerEnabled: false,
+    presenceIdleSeconds: 180,
     observationEnabled: true,
     networkTelemetryEnabled: true,
     performanceTelemetryEnabled: true,
@@ -40,6 +42,8 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     exchangeRateUpdatedAt: null,
     exchangeRateSource: "Frankfurter / European Central Bank",
     groqModel: GROQ_MODEL,
+    groqDialogueEnabled: false,
+    groqZeroDataRetentionConfirmed: false,
     groqEstimatedUsdPerAudioHour: GROQ_USD_PER_AUDIO_HOUR
   };
   var offscreenCreation = null;
@@ -649,6 +653,13 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     }
     return{ok:false,verified:false,muted:false,trackCount:0,senderCount:0,error:lastError||"probe-failed",attempts:3};
   }
+  function pendingMicrophoneUnmuteEligible(state, probe, activeCall) {
+    return activeCall === true && !!state && state.microphoneMuteRequested === false &&
+      state.microphoneMuted === true && state.microphoneMuteStatus === "error" &&
+      !!probe && probe.verified === true && probe.muted === true &&
+      Number(probe.trackCount || 0) > 0;
+  }
+
   async function hotloadHeartbeat(trigger) {
     var now = Date.now();
     if (now - hotloadLastHeartbeatAt < HOTLOAD_HEARTBEAT_MIN_MS) return;
@@ -659,8 +670,20 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     state.hotLoadLease = Object.assign({}, state.hotLoadLease || baseState().hotLoadLease, {
       schema: HOTLOAD_SCHEMA, phase: "active-call", lastHeartbeatAt: iso(), runtimeVersion: chrome.runtime.getManifest().version
     });
-    var expectedMuted=!!state.microphoneMuted;
     var micProbe=await probeMainClientMicrophone(state.callSourceTabId,"hotload-heartbeat").catch(function(error){return{ok:false,verified:false,muted:false,trackCount:0,senderCount:0,error:String(error)}});
+    if(pendingMicrophoneUnmuteEligible(state,micProbe,hasActiveCall(state))){
+      var lateUnmute=await setMainClientMicrophoneMuted(state.callSourceTabId,false,"late-track-explicit-unmute-retry").catch(function(error){return{ok:false,verified:false,muted:true,error:String(error)}});
+      if(lateUnmute&&lateUnmute.verified===true&&lateUnmute.muted===false){
+        state.microphoneMuted=false;state.microphoneMuteRequested=false;state.microphoneMuteStatus="applied";
+        state.microphoneOutputMuted=false;state.microphoneOutputStatus="applied";
+        state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:false});
+        micProbe=lateUnmute;
+        record("EXTENSION_MICROPHONE_LATE_TRACK_UNMUTE_RECOVERED",{callId:state.callId,tabId:state.callSourceTabId,trackCount:Number(lateUnmute.trackCount||0),senderCount:Number(lateUnmute.senderCount||0),source:"explicit-unmute-intent-preserved"},"info","microphone");
+      }else{
+        record("EXTENSION_MICROPHONE_LATE_TRACK_UNMUTE_DEFERRED",{callId:state.callId,tabId:state.callSourceTabId,trackCount:Number(lateUnmute&&lateUnmute.trackCount||micProbe.trackCount||0),error:lateUnmute&&lateUnmute.error||"verification-pending",policy:"remain-muted-retry-on-next-active-call-heartbeat"},"warn","microphone");
+      }
+    }
+    var expectedMuted=!!state.microphoneMuted;
     state.microphoneOutputTrackCount=Number(micProbe&&micProbe.trackCount||0);
     state.microphoneOutputSenderCount=Number(micProbe&&micProbe.senderCount||0);
     var micProbeMatches=micProbe&&micProbe.verified===true&&!!micProbe.muted===expectedMuted;
@@ -671,7 +694,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:expectedMuted});
       record("EXTENSION_MICROPHONE_OUTPUT_HEARTBEAT_VERIFIED",{callId:state.callId,tabId:state.callSourceTabId,muted:expectedMuted,trackCount:state.microphoneOutputTrackCount,senderCount:state.microphoneOutputSenderCount,attempts:Number(micProbe.attempts||1),trigger:trigger||"alarm"},"info","microphone");
     }else{
-      state.microphoneOutputMuted=expectedMuted;
+      state.microphoneOutputMuted=micProbe&&typeof micProbe.muted==="boolean"?!!micProbe.muted:expectedMuted;
       state.microphoneOutputStatus="pending";
       if(state.microphoneMuteStatus!=="error")state.microphoneMuteStatus="pending";
       state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:expectedMuted});
@@ -2611,6 +2634,211 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     s.segments=Array.isArray(s.segments)?s.segments.slice(-100):[];s.segmentCount=Math.max(Number(s.segmentCount)||0,s.segments.length);s.detectedSpeakerIds=s.detectedSpeakerIds&&typeof s.detectedSpeakerIds==="object"?s.detectedSpeakerIds:{};return s;
   }
   function signalSessionCopy(s,includeSegments){var copy=normalizeSignalSession(s);if(!includeSegments)copy.segments=[];return JSON.parse(JSON.stringify(copy));}
+
+  var signalGroqDialogueCaptures = new Map();
+  function groqDialogueCallIdFromUrl(rawUrl) {
+    try { var u=new URL(String(rawUrl||"")); var m=u.pathname.match(/^\/call\/([^/]+)\/?$/); return m?m[1]:null; } catch (_) { return null; }
+  }
+  function groqDialogueSourceKey(source) {
+    return source==="groq-interpreter"?"groq-interpreter":source==="groq-remote"?"groq-remote":null;
+  }
+  function groqDialogueLanguage(value) {
+    var language=String(value||"").toLowerCase();
+    if(language==="en"||language.indexOf("english")===0||language.indexOf("en-")===0)return "en";
+    if(language==="es"||language.indexOf("spanish")===0||language.indexOf("es-")===0)return "es";
+    return "unknown";
+  }
+  async function getGroqDialoguePolicy(sender, requestedCallId) {
+    if(!sender||!sender.tab||sender.tab.id==null||sender.frameId!==0)
+      return {ok:false,canCapture:false,reasonCode:"sender-not-authorized"};
+    var senderUrl=String(sender.url||sender.tab.url||"");
+    var routeCallId=groqDialogueCallIdFromUrl(senderUrl);
+    if(!isAuthorizedCloudUrl(senderUrl)||!isCloudCallUrl(senderUrl)||!routeCallId||
+       (requestedCallId&&String(requestedCallId)!==routeCallId))
+      return {ok:false,canCapture:false,reasonCode:"call-route-not-authorized"};
+    var stored=await chrome.storage.local.get(["effectifConfig","effectifState"]);
+    var config=Object.assign({},DEFAULT_CONFIG,stored.effectifConfig||{});
+    var state=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
+    if(!hasActiveCall(state)||String(state.callId)!==routeCallId||
+       Number(state.callSourceTabId)!==Number(sender.tab.id))
+      return {ok:false,canCapture:false,reasonCode:"call-not-active"};
+    if(config.groqDialogueEnabled!==true)
+      return {ok:false,canCapture:false,reasonCode:"interpreter-channel-disabled"};
+    if(config.groqZeroDataRetentionConfirmed!==true)
+      return {ok:false,canCapture:false,reasonCode:"zdr-not-confirmed"};
+    if(!globalThis.SignalGroqTranscriber||typeof globalThis.SignalGroqTranscriber.ready!=="function"||
+       !(await globalThis.SignalGroqTranscriber.ready()))
+      return {ok:false,canCapture:false,reasonCode:"groq-key-missing"};
+    return {ok:true,canCapture:true,reasonCode:null,callId:routeCallId,tabId:Number(sender.tab.id),
+      model:GROQ_MODEL,remoteSpeakerVerified:false,zdrConfirmed:true};
+  }
+  function createGroqDialogueCaptureState(meta) {
+    return Object.assign({},meta,{
+      active:true,
+      abortController:new AbortController(),
+      queue:SignalDialogue.createConcurrentSourceQueue(2)
+    });
+  }
+  async function loadGroqDialogueCapture(captureId) {
+    var active=signalGroqDialogueCaptures.get(String(captureId||""));
+    if(active&&active.active)return active;
+    if(!chrome.storage.session)return null;
+    var saved=await chrome.storage.session.get(["signalGroqDialogueCapture"]);
+    var meta=saved.signalGroqDialogueCapture;
+    if(!meta||meta.active!==true||String(meta.captureId)!==String(captureId||""))return null;
+    active=createGroqDialogueCaptureState(meta);
+    signalGroqDialogueCaptures.set(active.captureId,active);
+    return active;
+  }
+  async function stopSignalGroqDialogueCapture(captureId,reason,notifyTab) {
+    var id=String(captureId||"");
+    var capture=signalGroqDialogueCaptures.get(id);
+    if(!capture&&chrome.storage.session){
+      var saved=await chrome.storage.session.get(["signalGroqDialogueCapture"]);
+      if(saved.signalGroqDialogueCapture&&String(saved.signalGroqDialogueCapture.captureId)===id)
+        capture=saved.signalGroqDialogueCapture;
+    }
+    if(!capture)return {ok:true,active:false,reasonCode:"already-stopped"};
+    capture.active=false;
+    if(capture.abortController)try{capture.abortController.abort();}catch(_){}
+    signalGroqDialogueCaptures.delete(id);
+    if(chrome.storage.session)await chrome.storage.session.remove("signalGroqDialogueCapture").catch(function(){});
+    if(notifyTab&&capture.tabId!=null)
+      chrome.tabs.sendMessage(Number(capture.tabId),{type:"SIGNAL_GROQ_DIALOGUE_CAPTURE_STOP",captureId:id,callId:capture.callId,reason:String(reason||"background-stop")}).catch(function(){});
+    if(capture.tabId!=null)
+      chrome.tabs.sendMessage(Number(capture.tabId),{type:"SIGNAL_GROQ_DIALOGUE_STOP",captureId:id,reason:String(reason||"stopped")}).catch(function(){});
+    recordSignalDiagnostic("SIGNAL_GROQ_DIALOGUE_STOPPED",{callId:capture.callId,tabId:capture.tabId,reason:String(reason||"stopped")});
+    return {ok:true,active:false};
+  }
+  async function stopAllSignalGroqDialogueCaptures(reason) {
+    var ids=Array.from(signalGroqDialogueCaptures.keys());
+    if(!ids.length&&chrome.storage.session){
+      var saved=await chrome.storage.session.get(["signalGroqDialogueCapture"]);
+      if(saved.signalGroqDialogueCapture&&saved.signalGroqDialogueCapture.captureId)
+        ids.push(String(saved.signalGroqDialogueCapture.captureId));
+    }
+    await Promise.all(ids.map(function(id){return stopSignalGroqDialogueCapture(id,reason,true);}));
+  }
+  async function startSignalGroqDialogueCapture(message,sender) {
+    var callId=String(message&&message.callId||""),captureId=String(message&&message.captureId||"");
+    if(!captureId||captureId.length>120)return {ok:false,reasonCode:"capture-id-invalid"};
+    var policy=await getGroqDialoguePolicy(sender,callId);
+    if(!policy.canCapture)return policy;
+    await stopAllSignalGroqDialogueCaptures("replaced-by-new-capture");
+    var startedAt=Number(message.startedAt);
+    if(!Number.isFinite(startedAt)||startedAt<=0)return {ok:false,reasonCode:"capture-clock-invalid"};
+    var capture=createGroqDialogueCaptureState({
+      captureId:captureId,callId:callId,tabId:policy.tabId,startedAt:startedAt,
+      model:GROQ_MODEL,createdAt:Date.now()
+    });
+    signalGroqDialogueCaptures.set(captureId,capture);
+    if(chrome.storage.session)await chrome.storage.session.set({signalGroqDialogueCapture:{
+      captureId:captureId,callId:callId,tabId:policy.tabId,startedAt:startedAt,
+      model:GROQ_MODEL,createdAt:capture.createdAt,active:true
+    }});
+    chrome.tabs.sendMessage(policy.tabId,{type:"SIGNAL_GROQ_DIALOGUE_RESET",captureId:captureId,model:GROQ_MODEL}).catch(function(){});
+    recordSignalDiagnostic("SIGNAL_GROQ_DIALOGUE_STARTED",{callId:callId,tabId:policy.tabId,model:GROQ_MODEL,sources:["groq-remote","groq-interpreter"]});
+    return {ok:true,model:GROQ_MODEL,captureId:captureId,zeroDataRetentionConfirmed:true};
+  }
+  function decodeGroqWav(base64) {
+    if(typeof base64!=="string"||base64.length<120||base64.length>10*1024*1024)
+      return {ok:false,reasonCode:"audio-chunk-size-invalid"};
+    var binary;
+    try{binary=atob(base64);}catch(_){return {ok:false,reasonCode:"audio-chunk-base64-invalid"};}
+    if(binary.length<46)return {ok:false,reasonCode:"audio-chunk-invalid"};
+    var bytes=new Uint8Array(binary.length);
+    for(var i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+    var view=new DataView(bytes.buffer);
+    var riff=String.fromCharCode(bytes[0],bytes[1],bytes[2],bytes[3]);
+    var wave=String.fromCharCode(bytes[8],bytes[9],bytes[10],bytes[11]);
+    var format=view.getUint16(20,true),channels=view.getUint16(22,true),sampleRate=view.getUint32(24,true),bits=view.getUint16(34,true);
+    if(riff!=="RIFF"||wave!=="WAVE"||format!==1||channels!==1||sampleRate!==16000||bits!==16||
+       view.getUint32(40,true)!==bytes.length-44)
+      return {ok:false,reasonCode:"audio-wav-format-invalid"};
+    return {ok:true,bytes:bytes,sampleRate:sampleRate,durationMs:((bytes.length-44)/2)/sampleRate*1000};
+  }
+  async function processGroqDialogueChunk(message,sender) {
+    var source=groqDialogueSourceKey(message&&message.source);
+    if(!source)return {ok:false,reasonCode:"audio-source-invalid"};
+    var capture=await loadGroqDialogueCapture(message.captureId);
+    if(!capture||capture.active!==true)return {ok:false,reasonCode:"capture-not-active"};
+    var sequence=Number(message.sequence),lane=capture.queue.status(source);
+    if(!Number.isInteger(sequence)||sequence<1)return {ok:false,reasonCode:"audio-sequence-invalid"};
+    if(sequence<=lane.lastSequence)return {ok:true,duplicate:true,segments:0};
+    if(lane.pending>=2)return {ok:false,reasonCode:"transcription-backlog"};
+    var audio=decodeGroqWav(message.base64);
+    if(!audio.ok)return audio;
+    if(Math.abs(Number(message.durationMs||0)-audio.durationMs)>150)
+      return {ok:false,reasonCode:"audio-duration-mismatch"};
+    var offset=Number(message.chunkStartOffsetMs);
+    if(!Number.isFinite(offset)||offset<0||offset>24*60*60*1000)
+      return {ok:false,reasonCode:"audio-offset-invalid"};
+    if(!capture.queue.setSequence(source,sequence))return {ok:true,duplicate:true,segments:0};
+    return await capture.queue.enqueue(source,async function(){
+      if(!capture.active)return {ok:false,reasonCode:"capture-not-active"};
+      var policy=await getGroqDialoguePolicy(sender,message.callId);
+      if(!policy.canCapture||policy.tabId!==capture.tabId||String(message.callId)!==capture.callId)
+        return {ok:false,reasonCode:policy.reasonCode||"capture-policy-revoked"};
+      var prompt=source==="groq-interpreter"
+        ?"Transcribe the interpreter's own spoken words faithfully. Preserve medical terminology, names, numbers, doses, and units. Do not translate, summarize, or infer missing words."
+        :"Transcribe the remote call audio faithfully. Preserve medical terminology, names, numbers, doses, and units. Do not infer speaker identity from language or content. Do not translate or summarize.";
+      var blob=new Blob([audio.bytes],{type:"audio/wav"});
+      var result=null,attempt=0;
+      while(attempt<2){
+        attempt++;
+        result=await globalThis.SignalGroqTranscriber.transcribe(blob,{
+          model:GROQ_MODEL,filename:source+"-"+sequence+".wav",timeoutMs:20000,
+          zeroDataRetentionConfirmed:true,prompt:prompt,
+          signal:capture.abortController&&capture.abortController.signal
+        });
+        if(result&&result.ok===true)break;
+        if(!capture.active||capture.abortController&&capture.abortController.signal.aborted)
+          return {ok:false,reasonCode:"capture-stopped"};
+        var status=Number(result&&result.httpStatus||0);
+        var retryable=status===429||status>=500||status===0;
+        if(!retryable||attempt>=2)return {
+          ok:false,
+          reasonCode:status===429?"groq-rate-limited":status===401?"groq-authentication-failed":
+            status===413?"audio-chunk-too-large":"groq-transcription-failed",
+          httpStatus:status||null,retryAfterMs:result&&result.retryAfterMs||null,
+          latencyMs:result&&result.latencyMs||null
+        };
+        var waitMs=status===429?Number(result.retryAfterMs||1000):350;
+        if(!Number.isFinite(waitMs)||waitMs<0)waitMs=1000;
+        if(waitMs>2000)return {ok:false,reasonCode:"groq-rate-limited",httpStatus:429,retryAfterMs:waitMs};
+        await new Promise(function(resolve){setTimeout(resolve,waitMs);});
+      }
+      if(!capture.active||capture.abortController&&capture.abortController.signal.aborted)
+        return {ok:false,reasonCode:"capture-stopped-before-result"};
+      var completionPolicy=await getGroqDialoguePolicy(sender,message.callId);
+      if(!completionPolicy.canCapture||completionPolicy.tabId!==capture.tabId){
+        await stopSignalGroqDialogueCapture(capture.captureId,completionPolicy.reasonCode||"capture-policy-revoked",true);
+        return {ok:false,reasonCode:completionPolicy.reasonCode||"capture-policy-revoked"};
+      }
+      var sourceSegments=Array.isArray(result&&result.segments)?result.segments:[];
+      if(!sourceSegments.length&&String(result&&result.text||"").trim())
+        sourceSegments=[{id:0,start:0,end:audio.durationMs/1000,text:result.text}];
+      var incoming=sourceSegments.map(function(segment,index){
+        return {
+          id:SignalDialogue.stableSegmentId(capture.captureId,source,sequence,segment.id==null?index:segment.id),
+          captureId:capture.captureId,source:source,sequence:sequence,segmentIndex:index,
+          startMs:Math.round(capture.startedAt+offset+Number(segment.start)*1000),
+          endMs:Math.round(capture.startedAt+offset+Number(segment.end)*1000),
+          text:String(segment.text||"").trim(),language:groqDialogueLanguage(result.language),
+          avgLogprob:segment.avgLogprob,noSpeechProb:segment.noSpeechProb,compressionRatio:segment.compressionRatio
+        };
+      }).filter(function(item){return item.text&&Number.isFinite(item.startMs)&&Number.isFinite(item.endMs)&&item.endMs>=item.startMs;});
+      var sorted=SignalDialogue.mergeSegments(incoming);
+      if(sorted.length){
+        try{
+          await chrome.tabs.sendMessage(capture.tabId,{
+            type:"SIGNAL_GROQ_DIALOGUE_SEGMENTS",captureId:capture.captureId,segments:sorted
+          });
+        }catch(_){return {ok:false,reasonCode:"overlay-unavailable"};}
+      }
+      return {ok:true,segments:sorted.length,latencyMs:result.latencyMs,model:GROQ_MODEL};
+    });
+  }
   async function loadSignalSessions(){var stored=await chrome.storage.local.get(["signalInterpreterSessions","signalInterpreterActiveSessionId"]);return{sessions:(Array.isArray(stored.signalInterpreterSessions)?stored.signalInterpreterSessions:[]).map(normalizeSignalSession),activeSessionId:stored.signalInterpreterActiveSessionId||null};}
   async function saveSignalSessions(sessions,activeSessionId){await chrome.storage.local.set({signalInterpreterSessions:sessions,signalInterpreterActiveSessionId:activeSessionId||null});signalActiveSessionId=activeSessionId||null;}
   async function ensureSignalSession(info){
@@ -2824,6 +3052,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
   }
   async function stopGroqCapture(reason){
     var stopReason = String(reason || "manual");
+    await stopAllSignalGroqDialogueCaptures(stopReason);
     if (stopReason === "call-ended" || stopReason === "source-tab-closed" ||
         cachedConfig.liveCaptionOverlayEnabled === false) {
       try { SignalCaptionBridge.stop(); } catch (_) {}
@@ -2971,6 +3200,32 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     }
     if (message && message.type === "EFFECTIF_EVENT" && SignalCaptionLab.isSender(sender)) { sendResponse({ok:true,environment:"lab",published:false}); return false; }
     if (!message) return false;
+    if(message.type==="SIGNAL_GROQ_DIALOGUE_POLICY_GET"){
+      getGroqDialoguePolicy(sender,message.callId).then(sendResponse).catch(function(){sendResponse({ok:false,canCapture:false,reasonCode:"policy-check-failed"});});
+      return true;
+    }
+    if(message.type==="SIGNAL_GROQ_DIALOGUE_CAPTURE_START"){
+      startSignalGroqDialogueCapture(message,sender).then(sendResponse).catch(function(){sendResponse({ok:false,reasonCode:"capture-start-failed"});});
+      return true;
+    }
+    if(message.type==="SIGNAL_GROQ_DIALOGUE_CHUNK"){
+      processGroqDialogueChunk(message,sender).then(sendResponse).catch(function(){sendResponse({ok:false,reasonCode:"transcription-failed"});});
+      return true;
+    }
+    if(message.type==="SIGNAL_GROQ_DIALOGUE_CAPTURE_STOP"){
+      if(!sender||!sender.tab||sender.frameId!==0){
+        sendResponse({ok:false,reasonCode:"capture-stop-sender-denied"});return false;
+      }
+      loadGroqDialogueCapture(message.captureId).then(function(existing){
+        if(!existing||Number(existing.tabId)!==Number(sender.tab.id)){
+          sendResponse({ok:false,reasonCode:"capture-stop-sender-denied"});return;
+        }
+        stopSignalGroqDialogueCapture(message.captureId,message.reason||"content-stop",false)
+          .then(sendResponse).catch(function(){sendResponse({ok:false,reasonCode:"capture-stop-failed"});});
+      }).catch(function(){sendResponse({ok:false,reasonCode:"capture-stop-failed"});});
+      return true;
+    }
+
     if (message.type === "SIGNAL_CAPTION_OPEN_LOOKUP") {
       openCaptionLookup(message.kind, message.query).then(sendResponse).catch(function (error) {
         sendResponse({ ok: false, error: String(error && error.message || error).slice(0, 160) });

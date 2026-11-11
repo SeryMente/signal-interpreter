@@ -171,12 +171,33 @@ console.log("LIVE_CAPTION_STATIC_AUDIT=PASS");
 assert.equal(/getUserMedia\(\{\s*audio:\s*true/.test(offscreen),false,"offscreen must never request a microphone");
 
 assert.equal(manifest.permissions.includes("tabCapture"),false);
-assert.equal(manifest.host_permissions.includes("https://api.groq.com/*"),false);
+assert.equal(manifest.host_permissions.includes("https://api.groq.com/*"),true,
+  "Groq endpoint permission is explicit in the candidate manifest");
+const groqCaptureScript=manifest.content_scripts.find(e=>
+  (e.matches||[]).includes("https://app.cloudinterpreter.com/*")&&
+  e.world==="ISOLATED"&&(e.js||[]).includes("extension/groq-dialogue-capture.js"));
+assert.ok(groqCaptureScript,"dual capture is scoped to the Cloud Interpreter isolated content script");
+assert.ok(groqCaptureScript.js.includes("extension/dialogue-engine.js"),"dialogue engine is loaded in the call page");
 assert.equal(manifest.content_scripts.some(e=>e.js?.includes("extension/youtube-caption-adapter.js")),false);
 for(const code of [background,offscreen,popup]){
- assert.equal(/getUserMedia|MediaRecorder|createMediaStreamSource|tabCapture\.getMediaStreamId/.test(code),false,"no conversational media acquisition or replay");
+ assert.equal(/getUserMedia|MediaRecorder|createMediaStreamSource|tabCapture\\.getMediaStreamId/.test(code),false,
+   "capture APIs stay out of the worker, offscreen page and popup");
 }
+const captureController=read("extension/groq-dialogue-capture.js");
+assert.ok(captureController.includes("getDisplayMedia")&&captureController.includes("getUserMedia"),
+  "the call-page controller owns separate remote-tab and interpreter-microphone capture");
+assert.ok(captureController.includes("SIGNAL_GROQ_DIALOGUE_POLICY_GET")&&captureController.includes("SIGNAL_GROQ_DIALOGUE_CAPTURE_START"),
+  "capture requires background call-state preflight");
+assert.ok(background.includes("groqZeroDataRetentionConfirmed!==true"),
+  "background enforces explicit ZDR attestation before Groq uploads");
+assert.ok(popup.includes("groqDialogueEnabled")&&popup.includes("groqZeroDataRetentionConfirmed"),
+  "operator can explicitly enable the feature and attest ZDR");
 assert.ok(background.includes('caption.native !== true'));
-assert.ok(overlay.includes('if (source !== "chrome-live-caption") return;'));
+assert.ok(overlay.includes('var groqSource = source === "groq-interpreter" || source === "groq-remote";'),
+  "Groq sources are accepted separately from native captions");
+assert.ok(overlay.includes('if (source === "chrome-live-caption" && groqDialogueMode) return;'),
+  "native captions do not create a parallel transcript while Groq mode is active");
+assert.ok(overlay.includes("SIGNAL_GROQ_DIALOGUE_SEGMENTS")&&core.includes('source === "yo" || source === "groq-interpreter"'),
+  "one Groq timeline is rendered with interpreter source attribution");
 assert.ok(bridge.includes('native-heartbeat-timeout'));
 assert.ok(bridge.includes('Math.min(reconnectAttempt, RECONNECT_DELAYS.length - 1)'));
