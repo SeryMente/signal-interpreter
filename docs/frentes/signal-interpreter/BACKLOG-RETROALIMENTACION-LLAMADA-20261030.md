@@ -312,3 +312,36 @@ Esto no coincide con la política vigente anterior: permanecer silenciado durant
 - No code edits, no stored preference changes, no Chrome reload, no arming, no real call/audio and no human acceptance.
 
 Orden actualizado: (1) SI-REG-05 corregir semántica de micrófono, conservando controles y guards; (2) SI-REG-01 aceptar switch en Chrome sin armar presencia; (3) SI-REG-02 validar pista tardía bajo llamada activa; (4) conservar SI-REG-03 como test permanente; (5) SI-REG-04 solo cierra con aceptación del operador.
+
+---
+
+## 9. Reconciliación Groq dual · instrucción directa 2026-11-10 · G14
+
+**Estado:** PROVISIONAL · diseño/código en candidata; no aceptación funcional.
+
+La instrucción A-01/A-02 recuperada y SI-OP-03 amplían el alcance de SI-FB-02: el entregable ya no se limita al micrófono propio. Debe producir un único diálogo cronológico con dos fuentes separadas y concurrentes: audio remoto de la pestaña elegida explícitamente y micrófono propio etiquetado INTÉRPRETE. Ambas pistas van a Groq Whisper Large V3; la mezcla se realiza después de transcribir. No se infiere identidad LEP/proveedor desde idioma, acento o contenido.
+
+### Estado frente a la candidata
+
+- La PR #83 contiene captura dual por acción visible, AudioWorklet/WAV mono 16 kHz, lanes separadas, preflight de llamada activa, ZDR declarativo, cliente Groq, colas concurrentes, fusión, handlers de service worker y receptor de segmentos en overlay.
+- Estos hallazgos son de inspección estática. La captura, las peticiones, la representación real y la calidad acústica no se probaron en Chrome.
+- El HEAD observado 4737823873f826f80346cd817b877c6664769f20 mantiene PR #83 en draft/no merge, 115 commits ahead y 783 behind.
+- CI en ese HEAD: Package integrity FAILURE por hashes/invariantes; signal-observability-audit FAILURE por Global overlay toggle and hotload lifecycle regression; native-caption-host-build FAILURE por Payload SHA-256 mismatch en extension/background.js.
+- Hay archivos de pruebas sintéticas para captura, WAV/flush/overlap, fusión/concurrencia y transcriptor, pero las suites posteriores quedan omitidas en el CI actual. No declararlas PASS hasta ejecutarlas en el HEAD exacto.
+
+### Pendientes operativos
+
+1. Corregir y cotejar el inventario SHA-256 y sus invariantes; conservar read-back.
+2. Resolver la regresión overlay/hotload y el SHA mismatch del instalador.
+3. Ejecutar de forma explícita las suites dual capture, WAV, transcriber, dialogue engine, privacy/policy revocation y UI/overlay.
+4. Probar cancelación, pérdida de fuente, mute manual, fin de llamada, salida de ruta y permisos revocados; confirmar liberación de ambas pistas.
+5. Verificar que el flujo nuevo SIGNAL_GROQ_DIALOGUE_* no se confunda con la ruta legacy native-text-only.
+6. Medir la ventana/solapamiento y límites Groq efectivos; 6–6.5 s es candidato, no óptimo aprobado.
+7. Obtener corpus bilingüe autorizado y medir WER/CER, latencia p50/p95, deriva, pérdida y duplicación.
+8. Obtener credencial/ZDR en el perfil de destino únicamente cuando el operador lo autorice; la casilla ZDR no acredita la consola del proveedor.
+9. Solicitar aceptación real del operador solo después de CI verde y pruebas sintéticas completas.
+
+**Límites que siguen vigentes:** no llamadas ni captura real, no credenciales, no activación de preferencias de producción, no recarga de Chrome, no merge, deploy ni release. Preservar los guards fail-closed del micrófono saliente y Connect; el micrófono de entrada para ASR es un canal separado, no una autorización para habilitar el audio saliente.
+
+Fuente literal y estado detallado: INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md §8; conversación recuperada: originales/CHATGPT-SI-RECUPERADO-GROQ-20261110.txt; crónica: cronica/C-SIGNAL-RECUPERACION-GROQ-20261110-G14.md.
+
