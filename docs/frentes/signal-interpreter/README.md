@@ -46,3 +46,10 @@ La conversación preservada es texto aportado por el operador, no una exportaci�
 
 - [Recibo de custodia de la exportación SI del 2026-11-11](evidencias/RECIBO-EXPORT-CHATGPT-SI-20261111-0913.json). El TXT completo está preservado únicamente en el checkout local de Fila 4, con SHA cotejado y exclusión Git; no se publica por tratarse de una exportación de conversación privada. La última salida visible literal se incorpora a la [crónica G14 actualizada](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md) §11.2.
 
+## Última retoma verificada · G14 · 2026-11-11 · 9301dade
+
+- [OCP único, §12.8](OBJETO-CANONICO.md) · gobierno, base/head actual, estado CI y compuertas.
+- [Crónica de retoma G14, §12](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md) · evidencia, sincronización, cambios y límites.
+- [Tareas provisionales Groq dual, §7](TAREAS-PROVISIONALES-GROQ-DUAL-G14.md) · backlog reconciliado.
+
+PR #84 permanece OPEN/DRAFT/NOT MERGED; head `9301dade6cde46a181a7260397223d2d45ea0478`, base `5f80297e1b08bcca4736e549363f47187748df11`, 36 archivos; `observations/` fuera del diff. El CI de ese SHA no tenía ejecuciones/checks observables en el último read-back. No confundir validación local ni CI de otros SHA con aceptación. Chrome/Groq/ZDR/audio real y benchmark acústico siguen pendientes.
