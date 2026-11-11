@@ -6,7 +6,7 @@ const source=fs.readFileSync("extension/groq-dialogue-capture.js","utf8");
 
 function createHarness(displaySurface="browser",options={}){
   const sent=[],elements=[],intervals=[],windowListeners={},tracks=[],audioNodes=[],pendingChunkResolvers=[];
-  let policy=true,displayCalls=0,micCalls=0,contextClosed=false,fakeNow=Date.now();
+  let policy=true,displayCalls=0,micCalls=0,contextClosed=false,fakeNow=Date.now(),monotonicNow=0;
   const FakeDate=class extends Date{static now(){return fakeNow;}};
   function element(tag){
     const item={tag,style:{},children:[],listeners:{},isConnected:true,disabled:false,
@@ -66,7 +66,7 @@ function createHarness(displaySurface="browser",options={}){
         if(message.type==="SIGNAL_GROQ_DIALOGUE_CAPTURE_START")return{ok:true,captureId:message.captureId};
         if(message.type==="SIGNAL_GROQ_DIALOGUE_CHUNK"){
           if(options.holdChunks===true)return new Promise(resolve=>pendingChunkResolvers.push(()=>resolve({ok:true,segments:1})));
-          return{ok:true,segments:1};
+          return{ok:true,segments:1,visibleSegments:1,visibleLatencyMs:120,latencyBasis:"capture-window-ready-to-visible-text"};
         }
         if(message.type==="SIGNAL_GROQ_DIALOGUE_CAPTURE_STOP")return{ok:true};
         return{ok:true};
@@ -90,6 +90,7 @@ function createHarness(displaySurface="browser",options={}){
     }},
     window:{addEventListener(name,fn){windowListeners[name]=fn;}},
     AudioContext:AudioContextFake,AudioWorkletNode:WorkletNode,MediaStream:Stream,
+    performance:{timeOrigin:1700000000000,now(){monotonicNow+=17;return monotonicNow;}},
     setInterval(fn){intervals.push(fn);return intervals.length;},clearInterval(){},
     setTimeout(fn,ms){fakeNow+=Number(ms)||0;setImmediate(fn);return 1;},clearTimeout(){},
     btoa:(value)=>Buffer.from(value,"binary").toString("base64"),
@@ -144,6 +145,8 @@ const chunks=h.sent.filter(x=>x.type==="SIGNAL_GROQ_DIALOGUE_CHUNK");
 assert.equal(chunks.length,3,"two remote windows and one interpreter window are uploaded independently");
 assert.deepEqual(Array.from(chunks,x=>x.source).sort(),["groq-interpreter","groq-remote","groq-remote"]);
 assert.ok(chunks.every(x=>x.mimeType==="audio/wav"&&x.sampleRate===16000&&x.durationMs===6500));
+assert.ok(chunks.every(x=>Number.isFinite(x.windowReadyAtMs)&&Number.isFinite(x.windowReadyTimeOriginMs)),
+  "every audio window records its monotonic ready timestamp without using HTTP completion time");
 const remoteChunks=chunks.filter(x=>x.source==="groq-remote");
 assert.deepEqual(Array.from(remoteChunks,x=>x.sequence),[1,2],"same-source uploads retain capture sequence");
 assert.deepEqual(Array.from(remoteChunks,x=>x.chunkStartOffsetMs),[0,6000],"remote windows advance six seconds with 500 ms overlap");
@@ -157,6 +160,8 @@ assert.equal(h.tracks.every(t=>t.stopped),true,"all acquired microphone and tab 
 assert.equal(h.contextClosed,true,"shared audio context is closed");
 assert.match(h.status(),/Captura detenida/,"a fully drained stop is reported as complete");
 assert.doesNotMatch(h.status(),/INCOMPLETA/,"a successful flush never raises the incomplete warning");
+assert.match(h.status(),/latencia visible p95 remoto 120 ms/,"remote visible latency uses the overlay acknowledgement");
+assert.match(h.status(),/latencia visible p95 intérprete 120 ms/,"interpreter visible latency uses the overlay acknowledgement");
 console.log("GROQ_DUAL_CAPTURE_SYNTHETIC=PASS");
 
 const incomplete=createHarness("browser",{holdChunks:true});
