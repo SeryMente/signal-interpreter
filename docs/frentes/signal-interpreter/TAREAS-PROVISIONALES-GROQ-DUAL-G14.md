@@ -351,3 +351,28 @@ La auditoría local encontró 58/58 sintaxis y 43/43 suites ejecutables; package
 **Estado:** DOCUMENTACIÓN DE RETOMA PERSISTIDA Y LEÍDA DE VUELTA EN MAIN.
 
 Se actualizan OCP, crónica y navegación con base/head, cambios, pruebas, límites y siguiente acción. G14 sigue titular único; FOL1 PREPARADA/NO ACTIVA; folios PENDIENTES/NO ASIGNADOS. MCP normativo DESACTIVADO.
+
+## 8. Seguimiento de retoma · 2026-11-11 · HEAD 305d8d86
+
+Este bloque supersede únicamente el checkpoint anterior; conserva el orden y las compuertas de SI-GROQ-01 a SI-GROQ-12.
+
+### SI-GROQ-01 · PR y CI
+
+**Estado:** CÓDIGO PUBLICADO; CI NUEVO EN EJECUCIÓN.
+
+- Commit `305d8d862be629af0fc96e35701adc29be15013c` en `feat/groq-dual-main-20261111`, fast-forward confirmado.
+- PR #84 OPEN / DRAFT / NOT MERGED; metadata más reciente `mergeable=true`; HEAD exacto `305d8d862be629af0fc96e35701adc29be15013c`.
+- Runs del HEAD: Package integrity `43115403310`, native-caption-host-build `43115403381`, signal-observability-audit `43115404314`, IN_PROGRESS al último sondeo.
+- Compare: 12 commits de la rama y 47 de main. Main incorpora snapshots `observations/**` y actualizaciones de OCP/crónica; no perseguir esos snapshots mediante sincronización ciega.
+
+### SI-GROQ-05 · benchmark estructural
+
+**Estado:** EVALUADOR AMPLIADO; BENCHMARK ACÚSTICO PENDIENTE.
+
+Además de WER/CER, términos críticos, atribución y latencia, el informe incluye turnos omitidos/extra (precisión/recall/F1), inversiones cronológicas y conservación de relaciones de solapamiento entre los canales. Los parámetros de agrupación/solapamiento son configurables. No constituye diarización ni sustituye referencia humana. Tests de diálogo perfecto, desorden, turno omitido/extra y solapamiento perdido PASS.
+
+Validación local: captions 14/14; hashes 66/66; regresiones críticas 8/8; syntax y pruebas estructurales PASS. El audit completo `observations/` no se ejecutó localmente por sparse checkout.
+
+### Compuertas no alteradas
+
+Chrome autorizado, ZDR/cuotas, credencial local, API con audio y prueba acústica humana continúan pendientes. No habilitar flags, captura real, merge, deploy, release ni aceptación por inferencia. G14 continúa titular único; FOL1 PREPARADA/NO ACTIVA; folios PENDIENTES/NO ASIGNADOS; MCP normativo DESACTIVADO.
