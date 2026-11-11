@@ -111,7 +111,6 @@ assert.equal(report.metrics.bySource["groq-remote"].macroWerCi95.upper95, 0);
 assert.equal(report.metrics.bySource["groq-interpreter"].macroWerCi95.upper95, 0);
 assert.equal(report.metrics.bySource["groq-remote"].criticalTerms.recall, 1);
 assert.equal(report.metrics.bySource["groq-interpreter"].criticalTerms.recall, 1);
-assert.equal(report.metrics.crossSourceOverlap?.recall, undefined);
 assert.equal(report.metrics.crossSourceOverlap.recall, 1);
 assert.equal(report.metrics.chronology.hypothesisOutOfOrderAdjacentPairs, 0);
 assert.ok(report.stratified.languagePair);
