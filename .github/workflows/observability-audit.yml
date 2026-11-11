@@ -42,6 +42,8 @@ jobs:
           node --check tools/groq-transcriber-tests.mjs
           node --check tools/evaluate-dialogue-quality.mjs
           node --check tools/dialogue-quality-evaluation-tests.mjs
+          node --check tools/evaluate-dialogue-benchmark.mjs
+          node --check tools/dialogue-quality-benchmark-tests.mjs
           node --check tools/live-caption-core-test.mjs
           node --check tools/live-caption-bridge-tests.mjs
           node --check tools/live-caption-offscreen-tests.mjs
@@ -145,6 +147,7 @@ jobs:
         run: |
           node tools/groq-transcriber-tests.mjs
           node tools/dialogue-quality-evaluation-tests.mjs
+          node tools/dialogue-quality-benchmark-tests.mjs
           node tools/call-caption-runtime-test.mjs
           node tools/call-export-runtime-test.mjs
           node tools/live-caption-core-test.mjs
