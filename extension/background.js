@@ -2773,6 +2773,10 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
     var offset=Number(message.chunkStartOffsetMs);
     if(!Number.isFinite(offset)||offset<0||offset>24*60*60*1000)
       return {ok:false,reasonCode:"audio-offset-invalid"};
+    var windowReadyAtMs=Number(message.windowReadyAtMs);
+    var windowReadyTimeOriginMs=Number(message.windowReadyTimeOriginMs);
+    var timingAvailable=Number.isFinite(windowReadyAtMs)&&windowReadyAtMs>=0&&
+      Number.isFinite(windowReadyTimeOriginMs)&&windowReadyTimeOriginMs>0;
     if(!capture.queue.setSequence(source,sequence))return {ok:true,duplicate:true,segments:0};
     return await capture.queue.enqueue(source,async function(){
       if(!capture.active)return {ok:false,reasonCode:"capture-not-active"};
@@ -2824,19 +2828,41 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
           captureId:capture.captureId,source:source,sequence:sequence,segmentIndex:index,
           startMs:Math.round(capture.startedAt+offset+Number(segment.start)*1000),
           endMs:Math.round(capture.startedAt+offset+Number(segment.end)*1000),
+          callRelativeStartMs:Math.round(offset+Number(segment.start)*1000),
+          callRelativeEndMs:Math.round(offset+Number(segment.end)*1000),
           text:String(segment.text||"").trim(),language:groqDialogueLanguage(result.language),
           avgLogprob:segment.avgLogprob,noSpeechProb:segment.noSpeechProb,compressionRatio:segment.compressionRatio
         };
       }).filter(function(item){return item.text&&Number.isFinite(item.startMs)&&Number.isFinite(item.endMs)&&item.endMs>=item.startMs;});
       var sorted=SignalDialogue.mergeSegments(incoming);
+      var visibleAck=null;
       if(sorted.length){
         try{
-          await chrome.tabs.sendMessage(capture.tabId,{
-            type:"SIGNAL_GROQ_DIALOGUE_SEGMENTS",captureId:capture.captureId,segments:sorted
+          visibleAck=await chrome.tabs.sendMessage(capture.tabId,{
+            type:"SIGNAL_GROQ_DIALOGUE_SEGMENTS",captureId:capture.captureId,segments:sorted,
+            windowReadyAtMs:timingAvailable?windowReadyAtMs:null,
+            windowReadyTimeOriginMs:timingAvailable?windowReadyTimeOriginMs:null
           });
         }catch(_){return {ok:false,reasonCode:"overlay-unavailable"};}
       }
-      return {ok:true,segments:sorted.length,latencyMs:result.latencyMs,model:GROQ_MODEL};
+      var visibleLatencyMs=null,visibleSegments=0;
+      if(visibleAck&&visibleAck.ok===true){
+        visibleSegments=Math.max(0,Number(visibleAck.acceptedSegments)||0);
+        var ackOrigin=Number(visibleAck.performanceTimeOriginMs);
+        var visibleAtMs=Number(visibleAck.visibleAtMs);
+        if(timingAvailable&&visibleAck.visible===true&&visibleSegments>0&&
+           Number.isFinite(ackOrigin)&&Math.abs(ackOrigin-windowReadyTimeOriginMs)<=1&&
+           Number.isFinite(visibleAtMs)&&visibleAtMs>=windowReadyAtMs){
+          var measured=visibleAtMs-windowReadyAtMs;
+          if(measured<=60000)visibleLatencyMs=Number(measured.toFixed(1));
+        }
+      }
+      return {
+        ok:true,segments:sorted.length,visibleSegments:visibleSegments,
+        visibleLatencyMs:visibleLatencyMs,
+        latencyBasis:visibleLatencyMs===null?null:"capture-window-ready-to-visible-text",
+        apiRequestLatencyMs:result.latencyMs,model:GROQ_MODEL
+      };
     });
   }
   async function loadSignalSessions(){var stored=await chrome.storage.local.get(["signalInterpreterSessions","signalInterpreterActiveSessionId"]);return{sessions:(Array.isArray(stored.signalInterpreterSessions)?stored.signalInterpreterSessions:[]).map(normalizeSignalSession),activeSessionId:stored.signalInterpreterActiveSessionId||null};}
