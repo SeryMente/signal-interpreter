@@ -16,7 +16,7 @@
 Reconocer tu voz como INTÉRPRETE
 Signfiica: Que capture la entrada de audio, y la transcvriba y la muestre en el dialogo, usando,  enla medida de lo util, pero adecuada para el proposito y el caso de uso especial de Signal Interpreter, lo que ya se construyo en Khora que usa whisper pra transcribir muy rapido. No signficia que sea el estandar, significa que puede ser util. Pero considera las necesidades de Signal intepreter por separado. 
 
-Calidad maxima. No me conformare con menos
+Calidad maxima. Reportame en 10 minutos.
 ```
 
 ### A-02 · instrucción sobre diálogo combinado, velocidad y documentación
