@@ -42,6 +42,21 @@ assert.equal(overlappedRepeat.length,2,"only identical same-source text inside a
 assert.equal(overlappedRepeat[0].startMs,5500);
 assert.equal(overlappedRepeat[0].endMs,6600);
 assert.equal(overlappedRepeat[0].id,"remote-window-1","reconciled text retains the first stable segment id");
+const cjkDifferent=d.mergeSegments([
+ {id:"remote-cjk-1",source:"groq-remote",sequence:1,startMs:1000,endMs:3000,text:"患者は東京にいます"},
+ {id:"remote-cjk-2",source:"groq-remote",sequence:2,startMs:2000,endMs:4000,text:"患者は大阪にいます"}
+]);
+assert.equal(cjkDifferent.length,2,"different CJK segments are never mistaken for empty normalized duplicates");
+const cjkRepeat=d.mergeSegments([
+ {id:"remote-cjk-repeat-1",source:"groq-remote",sequence:1,startMs:1000,endMs:3000,text:"来週の火曜日に予約があります"},
+ {id:"remote-cjk-repeat-2",source:"groq-remote",sequence:2,startMs:2000,endMs:4000,text:"来週の火曜日に予約があります"}
+]);
+assert.equal(cjkRepeat.length,1,"identical CJK speech in adjacent overlapping windows is reconciled");
+const symbolOnly=d.mergeSegments([
+ {id:"remote-symbol-1",source:"groq-remote",sequence:1,startMs:1000,endMs:2000,text:"👍"},
+ {id:"remote-symbol-2",source:"groq-remote",sequence:2,startMs:1500,endMs:2500,text:"🔥"}
+]);
+assert.equal(symbolOnly.length,2,"empty normalized keys are never treated as duplicates");
 assert.equal(d.mergeSegments([
  {id:"remote-a",source:"groq-remote",sequence:1,startMs:1000,endMs:2000,text:"No."},
  {id:"remote-b",source:"groq-remote",sequence:3,startMs:1500,endMs:2500,text:"No."}

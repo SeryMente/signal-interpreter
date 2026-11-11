@@ -31,11 +31,14 @@
     return a.startMs-b.startMs||a.endMs-b.endMs||sourceRank(a.source)-sourceRank(b.source)||a.sequence-b.sequence||a.segmentIndex-b.segmentIndex||a.id.localeCompare(b.id);
   }
   function normalizedTranscriptKey(value){
-    return normalize(value).toLowerCase().replace(/[^a-z0-9áéíóúüñ]+/g," ").trim();
+    var text=normalize(value);
+    try{text=text.normalize("NFKC");}catch(_){}
+    return text.toLowerCase().replace(/[^\p{L}\p{M}\p{N}]+/gu," ").trim();
   }
   function sameOverlappedWindowSegment(a,b){
     if(a.source!==b.source||Math.abs(a.sequence-b.sequence)!==1)return false;
-    if(normalizedTranscriptKey(a.text)!==normalizedTranscriptKey(b.text))return false;
+    var aKey=normalizedTranscriptKey(a.text),bKey=normalizedTranscriptKey(b.text);
+    if(!aKey||aKey!==bKey)return false;
     var overlap=Math.min(a.endMs,b.endMs)-Math.max(a.startMs,b.startMs);
     var shorter=Math.min(a.endMs-a.startMs,b.endMs-b.startMs);
     if(overlap<=0||shorter<=0)return false;
