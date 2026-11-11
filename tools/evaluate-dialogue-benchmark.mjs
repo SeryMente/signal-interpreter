@@ -64,7 +64,11 @@ function validateEvaluationShape(evaluation) {
 }
 
 function validateAcceptance(profile) {
-  assertAllowedKeys(profile, ["id", ...REQUIRED_ACCEPTANCE], "acceptanceProfile");
+  assertAllowedKeys(profile, ["schema", "status", "id", ...REQUIRED_ACCEPTANCE], "acceptanceProfile");
+  assert(profile.schema === "signal-interpreter-dialogue-benchmark-acceptance-profile/v1",
+    "acceptance profile schema is invalid");
+  assert(profile.status === "RATIFIED" || profile.status === "PROPOSED_NOT_RATIFIED",
+    "acceptance profile ratification status is invalid");
   for (const key of REQUIRED_ACCEPTANCE) {
     assert(Object.hasOwn(profile, key), "acceptanceProfile is missing a required criterion");
   }
@@ -485,6 +489,13 @@ export function evaluateDialogueBenchmark(manifest) {
       reason: "languagePair, noise and overlap strata are all required"
     });
   }
+  if (manifest.acceptanceProfile.status !== "RATIFIED") {
+    allCriteria.push({
+      id: "acceptanceProfile.ratification",
+      status: "BLOCKED",
+      reason: "candidate thresholds require explicit ratification before the frozen test is opened"
+    });
+  }
   const finalStatus = allCriteria.some(item => item.status === "BLOCKED")
     ? "BLOCKED" : allCriteria.some(item => item.status === "FAIL") ? "FAIL" : "PASS";
   return {
@@ -509,6 +520,7 @@ export function evaluateDialogueBenchmark(manifest) {
     stratified,
     acceptance: {
       profileId: String(manifest.acceptanceProfile.id || "UNNAMED"),
+      profileStatus: manifest.acceptanceProfile.status,
       status: finalStatus,
       criteria: allCriteria
     }
