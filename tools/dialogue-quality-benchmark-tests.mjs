@@ -65,6 +65,7 @@ function makeManifest() {
       consentStatus: "authorized",
       nonClinical: true,
       rawAudioStoredOutsideRepository: true,
+      transcriptsStoredOutsideRepository: true,
       clockBasis: "shared-monotonic",
       independentAnnotators: 2,
       adjudicationComplete: true
