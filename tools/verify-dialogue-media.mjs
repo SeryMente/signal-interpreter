@@ -126,8 +126,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     const manifest = JSON.parse(fs.readFileSync(realManifestPath, "utf8"));
     const result = verifyDialogueMedia(manifest, audioDirectory);
     process.stdout.write(JSON.stringify(result, null, 2) + "\n");
-  } catch (error) {
-    console.error("Media verification failed: " + String(error && error.message || error));
+  } catch {
+    console.error("Media verification failed: audio, manifest, or storage boundary is invalid.");
     process.exit(1);
   }
 }
