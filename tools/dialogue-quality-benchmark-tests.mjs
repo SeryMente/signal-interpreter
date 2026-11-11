@@ -66,6 +66,7 @@ function makeRecording(index, overrides = {}) {
 function makeManifest() {
   return {
     schema: "signal-interpreter-dialogue-benchmark/v1",
+    purpose: "acceptance",
     corpus: {
       id: "si-dual-nonclinical-fixture",
       version: "1.0.0",
@@ -138,6 +139,24 @@ assert.ok(report.stratified.overlap);
 const deterministic = evaluateDialogueBenchmark(manifest);
 assert.deepEqual(deterministic.metrics.bySource["groq-remote"].macroWerCi95,
   report.metrics.bySource["groq-remote"].macroWerCi95, "bootstrap CI must be deterministic");
+
+const tuningManifest = makeManifest();
+tuningManifest.purpose = "tuning";
+tuningManifest.corpus.split = "validation";
+tuningManifest.acceptanceProfile.status = "PROPOSED_NOT_RATIFIED";
+const tuningReport = evaluateDialogueBenchmark(tuningManifest);
+assert.equal(tuningReport.acceptance.status, "TUNING_ONLY");
+assert.deepEqual(tuningReport.acceptance.criteria, []);
+assert.equal(tuningReport.metrics.bySource["groq-remote"].weightedWer, 0);
+assert.equal(tuningReport.sample.recordings, 4);
+
+const acceptanceWrongSplit = makeManifest();
+acceptanceWrongSplit.corpus.split = "validation";
+assert.throws(() => evaluateDialogueBenchmark(acceptanceWrongSplit), /tuning requires the validation split/);
+
+const tuningWrongSplit = makeManifest();
+tuningWrongSplit.purpose = "tuning";
+assert.throws(() => evaluateDialogueBenchmark(tuningWrongSplit), /tuning requires the validation split/);
 
 const serialized = JSON.stringify(report);
 for (const phrase of ["Please confirm", "Tuesday", "Por favor confirme", "diez treinta"]) {
