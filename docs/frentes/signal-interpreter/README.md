@@ -27,6 +27,8 @@ Repositorio público: no cargar originales privados, secretos ni datos de llamad
 - [Conversación recuperada, literal](originales/CHATGPT-SI-RECUPERADO-GROQ-20261110.txt)
 - [Instrucciones verbatim y plan provisional reconciliado](INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md)
 - [Crónica de recuperación y evidencia](cronica/C-SIGNAL-RECUPERACION-GROQ-20261110-G14.md)
+- [Crónica de integración selectiva y CI · 2026-11-11](cronica/C-SIGNAL-GROQ-DUAL-PORT-20261111-G14.md)
+- [PR #84 · implementación dual sobre main](https://github.com/SeryMente/signal-interpreter/pull/84) · draft, CI 3/3 PASS, aceptación Chrome/Groq pendiente.
 - [SI-OP-03 · transcripción dual Groq](REGLAS-OPERATIVAS.md)
 - [Backlog de retroalimentación y estado Groq dual](BACKLOG-RETROALIMENTACION-LLAMADA-20261030.md)
 
