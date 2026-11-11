@@ -39,15 +39,15 @@ jobs:
           node --check extension/offscreen.js
           node --check tools/hotload-active-call-test.mjs
           node --check extension/groq-transcriber.js
+          node --check extension/groq-dialogue-capture.js
           node --check tools/groq-transcriber-tests.mjs
+          node --check tools/groq-dialogue-capture-tests.mjs
           node --check tools/evaluate-dialogue-quality.mjs
           node --check tools/dialogue-quality-evaluation-tests.mjs
           node --check tools/evaluate-dialogue-benchmark.mjs
           node --check tools/dialogue-quality-benchmark-tests.mjs
           node --check tools/verify-dialogue-media.mjs
           node --check tools/dialogue-media-verification-tests.mjs
-          node --check tools/evaluate-dialogue-benchmark.mjs
-          node --check tools/dialogue-quality-benchmark-tests.mjs
           node --check tools/live-caption-core-test.mjs
           node --check tools/live-caption-bridge-tests.mjs
           node --check tools/live-caption-offscreen-tests.mjs
@@ -150,6 +150,7 @@ jobs:
       - name: Run captions
         run: |
           node tools/groq-transcriber-tests.mjs
+          node tools/groq-dialogue-capture-tests.mjs
           node tools/dialogue-quality-evaluation-tests.mjs
           node tools/dialogue-quality-benchmark-tests.mjs
           node tools/dialogue-media-verification-tests.mjs
