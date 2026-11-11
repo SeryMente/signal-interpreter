@@ -483,3 +483,17 @@ G14 continúa como agente único. FOL1 sigue PREPARADA/NO ACTIVA; folios permane
 - La última salida visible exacta del modelo anterior (10/11/2026 19:42:55; `gpt-6-t-mini-mini`) está transcrita literalmente en la [crónica G14, §11.2](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md). Deja de aplicar la instrucción histórica del prompt que la declaraba NO DISPONIBLE; no reconstruir otras salidas que no estén en el archivo.
 - La exportación confirma el contexto y la secuencia de decisiones, pero no sustituye la verificación actual del PR/HEAD/CI. El último corte reconsultado fue PR #84 OPEN/DRAFT/NOT MERGED en HEAD `1c7aca92cc89337aeb4c9907426847f941fa35bd`, CI 3/3 SUCCESS; consultar nuevamente antes de continuar.
 - El checkout Git local no se declaró sincronizado: la identidad operadora RDC encontró la protección `dubious ownership`; no se cambió safe.directory, ACL ni propiedad. GitHub `main` permanece como fuente canónica verificada.
+
+### 12.8 Seguimiento G14 · cabeza 9301dade · 2026-11-11
+
+**Gobierno releído:** DUG `v388 · NX-388m`, Metacanon `1.29`, GOW `2.18`, blob `4db0ebadfd1e48b2bdec9236ba7f344921e4a865`; §ARR/`gow-sec-14` consultado. CNP pertinente: P001, P004, P005, P038, P043. Control `2f02cab6b3697f31b2af3d141204c4431fbc05cb`: G14 ACTIVO, agente único; UUIDv7 local `01a1bd8b-8291-7906-b862-6088593acfe5`; FOL1 PREPARADA/NO ACTIVA; folio PENDIENTE/NO ASIGNADO. MCP normativo DESACTIVADO.
+
+**Código/PR:** PR #84 OPEN / DRAFT / NOT MERGED; base `5f80297e1b08bcca4736e549363f47187748df11`; head `9301dade6cde46a181a7260397223d2d45ea0478`; siete commits adelante, cero detrás; 36 archivos; mergeable=true. La sincronización absorbió cinco commits de observabilidad de `main`; `observations/` no está en el diff. La rama local usada fue `work/g14-groq-dual-clean-20261111`, bajo `C:\Users\fila4\Desktop\SeryMente\Repositorios\signal-interpreter`, operada como `CENTRAL\fila4`.
+
+**Mejoras:** deduplicación Unicode NFKC con regresiones CJK/símbolos; estado visible `Captura INCOMPLETA` cuando flush/colas no terminan; harness de evaluación bilingüe por segmento para WER/CER, términos críticos, atribución y latencia p50/p95, con salida solo de métricas. Pruebas específicas y CLI sintética PASS. Inventario de distribución 66/66 hashes; ocho suites críticas PASS; 58/58 sintaxis y 43/43 suites ejecutables localmente. El test de datos `observability-package-audit.mjs observations` no se ejecutó localmente por sparse-checkout; fixture sí ejecutado.
+
+**CI:** para `9301dade6cde46a181a7260397223d2d45ea0478`, la consulta de workflow runs y estado combinado no devolvió ejecuciones/checks. Clasificar como **NO OBSERVADO / PENDIENTE**; no reutilizar 3/3 SUCCESS de otros SHA. Reconsultar hasta que los tres workflows estén asociados a este SHA exacto.
+
+**Compuertas:** no llamada real, no audio real, no API Groq con audio, no clave local verificada, no ZDR/cuotas de cuenta, no Chrome autorizado cargado, no aceptación acústica, no merge/deploy/release. Flags Groq/ZDR permanecen false. El evaluador no implica que existan resultados acústicos; corpus y transcripciones quedan fuera de Git.
+
+**Siguiente acción:** verificar 3/3 CI sobre `9301dade`; resolver fallos si aparecen. Después continuar las compuertas SI-GROQ-02/03/04, sin eludir política de Chrome ni transmitir audio antes de ZDR/credencial verificados.

@@ -311,3 +311,44 @@ La autorización G14 y los límites de RDC se conservan: trabajo y artefactos en
 ### 11.4 Instrucción de continuidad
 
 Continuar en la misma titularidad G14, sin redescubrir arquitectura ni reabrir PR #83 (cerrada sin merge). La superficie canónica vigente es GitHub `main`; al iniciar el siguiente trabajo, releer PR #84, HEAD y checks actuales antes de reutilizar evidencia. Después continuar con validación técnica del runtime/ciclo de vida y compuertas pendientes, sin degradar cobertura ni habilitar audio/Groq/Chrome real por inferencia. La ventana de 40 minutos mencionada en A-03 pertenecía al 10/11/2026 y es histórica, no un límite vigente para esta sesión.
+
+## 12. Retoma posterior · cabeza 9301dade · 2026-11-11
+
+### 12.1 Gobierno y continuidad comprobados
+
+- Metodología releída en `SeryMente/metodologia/main`: DUG v388 · NX-388m; Metacanon 1.29; GOW 2.18; blob `4db0ebadfd1e48b2bdec9236ba7f344921e4a865`. §ARR / `gow-sec-14` consultado. CNP pertinente: P001, P004, P005, P038 y P043.
+- `CONTROL-RESPONSABILIDAD.json` releído en `main`, blob `2f02cab6b3697f31b2af3d141204c4431fbc05cb`: G14 ACTIVO, agente único; alias UUIDv7 local `01a1bd8b-8291-7906-b862-6088593acfe5`; G13 SUSTITUIDO; FOL1 PREPARADA/NO ACTIVA; folio PENDIENTE/NO ASIGNADO. Sin transferencia ni corresponsable.
+- Confirmación operativa del operador: `MantenimientoRCI` es identidad operadora/elevada; los repositorios y artefactos se materializan bajo el perfil y carpeta de trabajo de Fila 4. Se ejecutó Git como `CENTRAL\fila4`, no como MantenimientoRCI.
+- RDC activo revalidado. Dispositivo PC10RCIF4EI4; sesión usada como `CENTRAL\fila4`; checkout `C:\Users\fila4\Desktop\SeryMente\Repositorios\signal-interpreter`.
+
+### 12.2 Integración Git y PR
+
+- Rama local de trabajo: `work/g14-groq-dual-clean-20261111`.
+- Rama remota de PR: `feat/groq-dual-main-20261111`.
+- Se observó que `main` avanzó desde `1db0b7b26fad41b017f35c5a4af3d3811a7e7060` hasta `5f80297e1b08bcca4736e549363f47187748df11`; los cinco commits nuevos eran de `observations/`.
+- Se integró la nueva base mediante merge normal, sin conflictos; HEAD resultante `9301dade6cde46a181a7260397223d2d45ea0478`. El árbol de trabajo quedó limpio.
+- Push normal y read-back remoto completados: `feat/groq-dual-main-20261111` ahora apunta a `9301dade6cde46a181a7260397223d2d45ea0478`.
+- GitHub PR #84 releída: OPEN / DRAFT / NOT MERGED; base `5f80297e1b08bcca4736e549363f47187748df11`; head `9301dade6cde46a181a7260397223d2d45ea0478`; 36 archivos; 7 commits adelante, 0 detrás; mergeable=true. `observations/` permanece fuera del diff.
+- La descripción del PR se reemplazó y leyó de vuelta para reflejar la base/head nuevos, el evaluador y las compuertas pendientes.
+
+### 12.3 Cambios y pruebas nuevos
+
+- Motor de diálogo: normalización Unicode NFKC y clases Unicode de letras/marcas/números; impide que texto CJK o solo símbolos se convierta en clave vacía y se elimine como duplicado. Regresiones: frases japonesas diferentes, frase idéntica en ventanas contiguas y símbolos distintos.
+- Ciclo de cierre: el estado cambia a `Captura INCOMPLETA` cuando el flush final no se confirma en 2 s o quedan transcripciones pendientes al agotar 25 s de drenaje. Se identifica la cola afectada y se liberan pistas y AudioContext. Regresiones para cierre normal/incompleto, revocación y superficie de captura inválida.
+- Se añadió `tools/evaluate-dialogue-quality.mjs`, `tools/dialogue-quality-evaluation-tests.mjs` y `tools/README-dialogue-quality.md`. Contrato bilingüe por segmento; WER/CER general y por fuente; recall de términos críticos por fuente/idioma; atribución de hablante sobre tokens alineados; latencia p50/p95/máxima global y por canal. La salida contiene métricas únicamente.
+- El evaluador pasó fixtures sintéticos bilingües y CJK y una ejecución CLI con fixture temporal; se verificó que no imprimiera texto de conversación y el fixture temporal se eliminó.
+- Workflow `signal-observability-audit` ampliado a 58 comprobaciones `node --check` y 14 suites en el job captions, una de ellas el evaluador. No se eliminaron suites previas.
+- Validación local en la cabeza integrada antes del último merge de sincronización: 58/58 sintaxis, 43/43 suites ejecutables del workflow, `verify-release-package.mjs` 66/66 hashes y ocho suites críticas PASS. La auditoría `observability-package-audit.mjs observations` no se ejecutó localmente porque `observations/` está deliberadamente fuera del sparse-checkout; su prueba fixture sí se ejecutó. CI usa el checkout íntegro.
+- La compilación y protocolo Native Messaging del host ya se habían validado independientemente; no se ejecutó el instalador ni se modificó el registro.
+
+### 12.4 CI, límites y estado
+
+- Para SHA `9301dade6cde46a181a7260397223d2d45ea0478`, `fetch_commit_workflow_runs` no devolvió ejecuciones y el estado combinado no devolvió checks en el último read-back. Estado de CI: **NO OBSERVADO / PENDIENTE**, no SUCCESS ni FAIL.
+- No hubo merge, deploy o release. La PR continúa draft.
+- No se hizo llamada real, no se capturó audio real, no se llamó al endpoint Groq con audio, no se verificó ZDR/cuotas en la consola, no existe clave Groq local verificada y no se cargó la extensión en Chrome autorizado. Los switches Groq/ZDR permanecen false.
+- No existen resultados acústicos reales WER/CER, latencia p50/p95, jitter, drift, pérdida/duplicación ni aceptación funcional. El evaluador facilita medirlos, pero los fixtures sintéticos no sustituyen un corpus acústico.
+- El perfil habitual de Chrome no se modificó y no se eludió la política organizacional que bloquea Developer Mode / Load unpacked.
+
+### 12.5 Siguiente acción
+
+Reconsultar Actions para el SHA `9301dade6cde46a181a7260397223d2d45ea0478`; exigir 3/3 workflows SUCCESS sobre esa misma cabeza y agregado obligatorio. Si se detecta fallo, revisar el job/log concreto y corregir en la misma rama. Después continuar SI-GROQ-02/03/04 por sus dependencias externas; no activar audio ni flags por inferencia. Mantener G14 como agente único y folios pendientes.

@@ -301,3 +301,53 @@ Los estados describen trabajo de desarrollo. VERIFICADO significa que la evidenc
 - No se ha completado aceptación funcional de Chrome, merge, deploy o release.
 - La extensión conserva flags false por defecto.
 - MCP normativo continúa DESACTIVADO; G14 sigue agente único; FOL1 PREPARADA/NO ACTIVA; folios PENDIENTES/NO ASIGNADOS.
+
+## 7. Seguimiento de retoma · 2026-11-11 · cabeza 9301dade
+
+Este bloque supersede únicamente los valores de checkpoint/HEAD de secciones anteriores; no altera las instrucciones originales ni reescribe evidencia histórica.
+
+### SI-GROQ-01 · PR #84 y sincronización
+
+**Estado:** BASE SINCRONIZADA; CI DEL HEAD ACTUAL NO OBSERVADO.
+
+- Base `main`: `5f80297e1b08bcca4736e549363f47187748df11`.
+- Head publicado: `9301dade6cde46a181a7260397223d2d45ea0478`.
+- PR #84 OPEN / DRAFT / NOT MERGED; 36 archivos; siete commits adelante, cero detrás; mergeable=true.
+- `observations/` sigue fuera del diff.
+- Última consulta CI de este SHA: sin ejecuciones ni checks devueltos. No imputar PASS de `81d77ba4` ni de cabezas anteriores.
+
+### SI-GROQ-05 · corpus y evaluación
+
+**Estado:** HARNESS LOCAL IMPLEMENTADO; BENCHMARK ACÚSTICO PENDIENTE.
+
+Se añadieron `tools/evaluate-dialogue-quality.mjs`, pruebas y guía. Calcula WER/CER por fuente, términos críticos por fuente/idioma, atribución y latencias p50/p95/máxima. Fixture CLI temporal bilingüe pasó; no se conserva corpus ni transcripción en Git. No existe aún resultado real de WER/CER ni umbral aprobado.
+
+### SI-GROQ-06 · ciclo de vida de captura
+
+**Estado:** REGRESIONES SINTÉTICAS PASS; CHROME REAL PENDIENTE.
+
+Captura remota y micrófono del intérprete separados; permisos revocados y superficie no-browser fallan cerrado; las pistas se liberan. El cierre identifica transcripciones no drenadas como `Captura INCOMPLETA`. No equivale a validación de runtime Chrome o audio real.
+
+### SI-GROQ-07 · fusión y presentación
+
+**Estado:** RECONCILIACIÓN UNICODE REFORZADA; OVERLAY E2E PENDIENTE.
+
+Se protege la deduplicación de idiomas con escritura Unicode y segmentos solo con símbolos. Se conserva la distinción entre dos fuentes; no inferir identidad del hablante remoto. La presentación visual en Chrome sigue pendiente.
+
+### SI-GROQ-08 / SI-GROQ-09 · optimización y umbrales
+
+**Estado:** PENDIENTE DE MEDICIÓN Y APROBACIÓN.
+
+Las ventanas 6,5 s / overlap 500 ms / avance 6 s siguen siendo candidatas. El evaluador facilita mediciones, pero no aprueba umbrales ni demuestra precisión acústica.
+
+### SI-GROQ-11 · CI
+
+**Estado:** WORKFLOW AMPLIADO; HEAD ACTUAL PENDIENTE DE CI REMOTO.
+
+La auditoría local encontró 58/58 sintaxis y 43/43 suites ejecutables; package 66/66 hashes y ocho suites críticas PASS. Un único test de datos `observability-package-audit.mjs observations` no se ejecutó en el checkout sparse; su test fixture sí. El SHA `9301dade` todavía no tenía ejecuciones/checks observables al último read-back.
+
+### SI-GROQ-12 · continuidad
+
+**Estado:** DOCUMENTACIÓN DE RETOMA PERSISTIDA Y LEÍDA DE VUELTA EN MAIN.
+
+Se actualizan OCP, crónica y navegación con base/head, cambios, pruebas, límites y siguiente acción. G14 sigue titular único; FOL1 PREPARADA/NO ACTIVA; folios PENDIENTES/NO ASIGNADOS. MCP normativo DESACTIVADO.
