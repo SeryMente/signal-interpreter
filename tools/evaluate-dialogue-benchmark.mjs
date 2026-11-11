@@ -45,11 +45,21 @@ function assertAllowedKeys(value, allowed, label) {
 function validateEvaluationShape(evaluation) {
   assertAllowedKeys(evaluation, ["schema", "language", "reference", "hypothesis", "criticalTerms", "structureOptions"], "evaluation");
   assertAllowedKeys(evaluation.reference, ["segments"], "reference");
-  assertAllowedKeys(evaluation.hypothesis, ["segments", "latenciesMs"], "hypothesis");
+  assertAllowedKeys(evaluation.hypothesis, ["segments", "latenciesMs", "latencySummaryBySource"], "hypothesis");
   for (const side of [evaluation.reference, evaluation.hypothesis]) {
     for (const segment of side.segments || []) {
       assertAllowedKeys(segment, ["source", "speakerId", "language", "startMs", "endMs", "latencyMs", "text"], "evaluation segment");
     }
+  }
+  const summaries=evaluation.hypothesis.latencySummaryBySource;
+  assertAllowedKeys(summaries, SOURCES, "latency summary by source");
+  for (const source of SOURCES) {
+    const item=summaries[source];
+    assertAllowedKeys(item, ["samples", "p50Ms", "p95Ms", "maxMs"], "source latency summary");
+    assert(Number.isInteger(item.samples)&&item.samples>0&&
+      finite(item.p50Ms)&&item.p50Ms>=0&&finite(item.p95Ms)&&item.p95Ms>=item.p50Ms&&
+      finite(item.maxMs)&&item.maxMs>=item.p95Ms,
+      "source latency summary must have positive sample count and ordered p50/p95/max values");
   }
 }
 
@@ -250,10 +260,11 @@ function summarizeRows(rows, iterations, seed) {
     const referenceTurns = turns.reduce((sum, item) => sum + item.referenceTurns, 0);
     const hypothesisTurns = turns.reduce((sum, item) => sum + item.hypothesisTurns, 0);
     const matchedTurns = turns.reduce((sum, item) => sum + item.matchedTurns, 0);
-    const latencySamples = rows.flatMap(row => row.evaluation.hypothesis.segments
-      .filter(segment => segment.source === source && segment.latencyMs != null)
-      .map(segment => Number(segment.latencyMs))
-      .filter(value => finite(value) && value >= 0));
+    const latencySummaries = rows.map(row => row.evaluation.hypothesis.latencySummaryBySource[source]);
+    const latencySamples = latencySummaries.reduce((sum, item) => sum + item.samples, 0);
+    const recordingP50s = latencySummaries.map(item => item.p50Ms);
+    const worstRecordingP95Ms = Math.max(...latencySummaries.map(item => item.p95Ms));
+    const worstRecordingMaxMs = Math.max(...latencySummaries.map(item => item.maxMs));
     const macroWerValues = sourceRows.map(item => item.wordErrorRate).filter(finite);
     const macroCerValues = sourceRows.map(item => item.characterErrorRate).filter(finite);
     const turnPrecision = hypothesisTurns ? matchedTurns / hypothesisTurns : null;
@@ -289,10 +300,11 @@ function summarizeRows(rows, iterations, seed) {
           ? null : Number((2 * turnPrecision * turnRecall / (turnPrecision + turnRecall)).toFixed(4))
       },
       latency: {
-        samples: latencySamples.length,
-        p50Ms: percentile(latencySamples, 0.5),
-        p95Ms: percentile(latencySamples, 0.95),
-        maxMs: latencySamples.length ? Math.max(...latencySamples) : null
+        samples: latencySamples,
+        p50OfRecordingP50Ms: percentile(recordingP50s, 0.5),
+        p95Ms: worstRecordingP95Ms,
+        maxMs: worstRecordingMaxMs,
+        p95Aggregation: "worst-recording-p95"
       }
     };
   }
