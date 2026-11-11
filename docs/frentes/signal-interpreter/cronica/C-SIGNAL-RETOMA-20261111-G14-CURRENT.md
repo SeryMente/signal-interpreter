@@ -384,3 +384,31 @@ La ventana de 6.5 s / overlap de 500 ms / hop de 6 s sigue siendo candidata: no 
 ### 13.5 Continuidad
 
 Retomar desde PR #84 y desde el benchmark de calidad de extremo a extremo; no redescubrir arquitectura ni convertir Limitless/Voicemeeter en dependencias. La siguiente mejora útil debe aportar evidencia de fidelidad/legibilidad/latencia por fuente, sin rebajar controles de privacidad ni atribuir hablantes sin ground truth. La última salida del modelo anterior continúa preservada literalmente en §11.2; no volver a reconstruirla.
+
+## 14. Nueva mejora del evaluador y CI en curso · 2026-11-11 · HEAD 305d8d86
+
+### 14.1 Trabajo publicado
+
+- Desde Fila 4 (`CENTRAL\\fila4`), en `C:\\Users\\fila4\\Desktop\\SeryMente\\Repositorios\\signal-interpreter`, se amplió `tools/evaluate-dialogue-quality.mjs`, junto con `tools/dialogue-quality-evaluation-tests.mjs` y `tools/README-dialogue-quality.md`.
+- Commit local y remoto de la rama de PR: `305d8d862be629af0fc96e35701adc29be15013c`; push normal/fast-forward confirmado a `feat/groq-dual-main-20261111`. Árbol de trabajo local limpio tras el commit.
+- Nuevas métricas estructurales: turnos agrupados por fuente/`speakerId` con silencio configurable; precisión/recall/F1 y turnos omitidos/extra; inversiones cronológicas adyacentes en el orden original; pares de solapamiento entre audio remoto e intérprete preservados/omitidos/extra y diferencia en milisegundos. El informe continúa sin emitir texto.
+- La heurística de turnos no constituye diarización ni inventa hablantes. Con referencia sin identidad, el track se mantiene como desconocido. Los defaults 1,200 ms / 100 ms son parámetros de evaluación, no umbrales de producto aprobados.
+
+### 14.2 Evidencia local Fila 4
+
+- Suite captions del workflow: 14/14 PASS.
+- Inventario/verificador del paquete: 66/66 SHA-256 PASS.
+- Regresiones críticas de audio/Connect/presence: 8/8 PASS.
+- Syntax check del evaluador y su suite, prueba estructural, suite CLI del evaluador y `git diff --check`: PASS.
+- No se ejecutó localmente `observability-package-audit.mjs observations` por sparse checkout; el resultado CI remoto queda pendiente.
+
+### 14.3 Estado remoto revalidado
+
+- PR #84 OPEN / DRAFT / NOT MERGED; head `305d8d862be629af0fc96e35701adc29be15013c`; último read-back de metadata `mergeable=true`.
+- CI de este SHA se observó IN_PROGRESS: Package integrity run `43115403310`; native-caption-host-build `43115403381`; signal-observability-audit `43115404314`. No trasladar los PASS del SHA anterior `366fdd85` a este commit.
+- `main` observado: `496cbb928fdef71468efe51562a94812f3b4d57b`. Compare rama→main: `main` 47 commits delante y rama 12 commits delante; cambios del lado main: snapshots `observations/**` y actualizaciones de `OBJETO-CANONICO.md`/esta crónica. No hacer merge/sync automático de los snapshots.
+- Issue #85 permanece abierta como seguimiento interno de colas Actions históricas sin jobs; no es ticket de soporte GitHub.
+
+### 14.4 Compuertas externas y continuidad
+
+Siguen sin ejecutarse audio/captura real, llamada Groq con audio, verificación de ZDR/cuotas, credencial local ni instalación en Chrome autorizado. Flags false. No hay WER/CER acústico ni latencia real; no aceptación, merge, deploy o release. Próximo paso: recoger los tres workflows del SHA `305d8d86`, diagnosticar fallos si los hubiera y no declarar aceptación de calidad sin corpus humano autorizado.
