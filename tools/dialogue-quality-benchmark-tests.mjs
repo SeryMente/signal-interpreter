@@ -33,9 +33,13 @@ function makeRecording(index, overrides = {}) {
       },
       hypothesis: {
         segments: [
-          { source: "groq-remote", speakerId: null, language: "en", startMs: 0, endMs: 2400, latencyMs: 350, text: remoteText },
-          { source: "groq-interpreter", speakerId: null, language: "es", startMs: 900, endMs: 3300, latencyMs: 420, text: interpreterText }
-        ]
+          { source: "groq-remote", speakerId: null, language: "en", startMs: 0, endMs: 2400, text: remoteText },
+          { source: "groq-interpreter", speakerId: null, language: "es", startMs: 900, endMs: 3300, text: interpreterText }
+        ],
+        latencySummaryBySource: {
+          "groq-remote": { samples: 6, p50Ms: 350, p95Ms: 500, maxMs: 800 },
+          "groq-interpreter": { samples: 6, p50Ms: 420, p95Ms: 550, maxMs: 900 }
+        }
       },
       criticalTerms: [
         { term: "Tuesday", source: "groq-remote", language: "en" },
@@ -116,6 +120,11 @@ assert.equal(report.metrics.bySource["groq-remote"].weightedCer, 0);
 assert.equal(report.metrics.bySource["groq-interpreter"].weightedCer, 0);
 assert.equal(report.metrics.bySource["groq-remote"].macroWerCi95.upper95, 0);
 assert.equal(report.metrics.bySource["groq-interpreter"].macroWerCi95.upper95, 0);
+assert.equal(report.metrics.bySource["groq-remote"].latency.samples, 24);
+assert.equal(report.metrics.bySource["groq-interpreter"].latency.samples, 24);
+assert.equal(report.metrics.bySource["groq-remote"].latency.p95Ms, 500);
+assert.equal(report.metrics.bySource["groq-interpreter"].latency.p95Ms, 550);
+assert.equal(report.metrics.bySource["groq-remote"].latency.p95Aggregation, "worst-recording-p95");
 assert.equal(report.metrics.bySource["groq-remote"].criticalTerms.recall, 1);
 assert.equal(report.metrics.bySource["groq-interpreter"].criticalTerms.recall, 1);
 assert.equal(report.metrics.crossSourceOverlap.recall, 1);
@@ -178,6 +187,14 @@ assert.throws(() => evaluateDialogueBenchmark(invalidAudio), /audio must be mono
 const nonAdjudicated = makeManifest();
 nonAdjudicated.corpus.adjudicationComplete = false;
 assert.throws(() => evaluateDialogueBenchmark(nonAdjudicated), /reference disagreements must be adjudicated/);
+
+const missingLatencySummary = makeManifest();
+delete missingLatencySummary.recordings[0].evaluation.hypothesis.latencySummaryBySource["groq-remote"];
+assert.throws(() => evaluateDialogueBenchmark(missingLatencySummary), /latency summary by source is invalid/);
+
+const unorderedLatencySummary = makeManifest();
+unorderedLatencySummary.recordings[0].evaluation.hypothesis.latencySummaryBySource["groq-remote"].p95Ms = 100;
+assert.throws(() => evaluateDialogueBenchmark(unorderedLatencySummary), /ordered p50\/p95\/max values/);
 
 const duplicateIds = makeManifest();
 duplicateIds.recordings[1].id = duplicateIds.recordings[0].id;
