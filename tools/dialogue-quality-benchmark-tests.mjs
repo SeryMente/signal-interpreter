@@ -155,6 +155,22 @@ assert.ok(underSampledReport.acceptance.criteria.some(item =>
   item.id === "recordings.minimum" && item.status === "BLOCKED"
 ));
 
+const insufficientWords = makeManifest();
+insufficientWords.acceptanceProfile.minReferenceWordsBySource["groq-remote"] = 1000;
+const insufficientWordsReport = evaluateDialogueBenchmark(insufficientWords);
+assert.equal(insufficientWordsReport.acceptance.status, "BLOCKED");
+assert.ok(insufficientWordsReport.acceptance.criteria.some(item =>
+  item.id === "groq-remote.referenceWords" && item.status === "BLOCKED"
+));
+
+const insufficientLatency = makeManifest();
+insufficientLatency.acceptanceProfile.minLatencySamplesBySource["groq-interpreter"] = 1000;
+const insufficientLatencyReport = evaluateDialogueBenchmark(insufficientLatency);
+assert.equal(insufficientLatencyReport.acceptance.status, "BLOCKED");
+assert.ok(insufficientLatencyReport.acceptance.criteria.some(item =>
+  item.id === "groq-interpreter.latencySamples" && item.status === "BLOCKED"
+));
+
 const degraded = makeManifest();
 degraded.recordings[0].evaluation.hypothesis.segments[0].text =
   "Please confirm Monday at ten thirty.";
