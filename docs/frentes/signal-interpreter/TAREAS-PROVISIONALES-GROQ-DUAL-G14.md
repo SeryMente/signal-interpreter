@@ -406,3 +406,22 @@ Siguen pendientes Chrome autorizado, verificación ZDR/cuotas, credencial local,
 - Control: G14 ACTIVO, agente único, generación 14; FOL1 PREPARADA/NO ACTIVA; folios PENDIENTES/NO ASIGNADOS; MCP normativo DESACTIVADO.
 - PR #84 HEAD `305d8d862be629af0fc96e35701adc29be15013c`; 3/3 workflows y 7/7 jobs SUCCESS. Evaluador estructural en PR; aceptación acústica real pendiente.
 - Compuertas pendientes: Chrome autorizado, ZDR/cuotas, credencial local, API Groq con corpus autorizado y benchmark de referencia humana. No hay captura/audio real ni aceptación; flags false; sin merge, deploy o release.
+## 12. Benchmark multi-grabación y validación de latencia · 2026-11-11
+
+### SI-GROQ-05 · evaluación de calidad
+
+**Estado:** HARNESS IMPLEMENTADO + CI 3/3 WORKFLOWS / 7/7 JOBS SUCCESS; BENCHMARK ACÚSTICO REAL BLOQUEADO.
+
+- tools/evaluate-dialogue-benchmark.mjs: métricas por grabación y fuente; WER/CER ponderado y macro; bootstrap por clip; términos críticos; atribución; turn F1; cronología; solapamiento intercanal; estratificación por idioma, ruido, overlap, red y chunk profile.
+- purpose=tuning + split=validation entrega TUNING_ONLY; no produce PASS/FAIL. purpose=acceptance + split=test requiere perfil RATIFIED y muestra suficiente; sin ratificación devuelve BLOCKED.
+- tools/verify-dialogue-media.mjs valida hashes, RIFF/WAVE, PCM s16le, mono 16 kHz y media/manifiesto fuera de Git. Tests usan WAV sintéticos.
+- Latencia visible: captura ready → overlay tras dos frames; documento visible y reloj compartido requeridos; por fuente p50/p95/max/n solo en memoria; HTTP separado.
+- Perfil de alta calidad sigue PROPOSED_NOT_RATIFIED: 60 grabaciones, 20 por estrato, 10.000 palabras por fuente; WER ≤10%, macro-WER CI upper ≤12%, CER ≤5%, recall crítico 100%, turn F1 ≥95%, overlap recall ≥95%, inversiones 0, peor p95 ≤2.500 ms, peor máximo ≤5.000 ms.
+
+### CI remoto
+
+HEAD 6b14c0fad64cbc8eef364c496a6a96043c9dbbf1: Package integrity run 43119571803 SUCCESS; Observability audit 43119571875 SUCCESS (5 jobs); Native caption host build 43119571912 SUCCESS. Total 3/3 workflows, 7/7 jobs.
+
+### Compuertas pendientes
+
+No existe corpus no clínico expresamente autorizado, gold transcript con dos anotadores/adjudicación, ZDR/cuotas confirmadas, credencial local ni Chrome autorizado. No hubo llamada Groq con audio ni captura real; flags false. La calidad acústica y la latencia percibida reales siguen NO VERIFICADAS. No aceptar, fusionar, desplegar ni liberar.
