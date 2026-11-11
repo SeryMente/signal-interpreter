@@ -403,8 +403,39 @@ export function evaluateDialogueBenchmark(manifest) {
   }
   const acceptance = evaluateAcceptance(summary, manifest.acceptanceProfile);
   const allCriteria = [...acceptance.criteria, ...stratumCriteria];
-  const statuses = allCriteria.map(item => item.status);
-  const gateStatus = statuses.includes("BLOCKED") ? "BLOCKED" : statuses.includes("FAIL") ? "FAIL" : "PASS";
+  const addStratumMetric = (id, observed, limit, comparator) => {
+    if (!finite(observed)) {
+      allCriteria.push({ id, status: "BLOCKED", observed, limit, reason: "insufficient or missing stratum evidence" });
+      return;
+    }
+    const passed = comparator === "min" ? observed >= limit : observed <= limit;
+    allCriteria.push({ id, status: passed ? "PASS" : "FAIL", observed, limit });
+  };
+  for (const [dimension, groups] of Object.entries(stratified)) {
+    for (const [value, group] of Object.entries(groups)) {
+      const prefix = "strata." + dimension + "." + value;
+      for (const source of SOURCES) {
+        const item = group.bySource[source];
+        addStratumMetric(prefix + "." + source + ".weightedWer", item.weightedWer,
+          manifest.acceptanceProfile.maxWeightedWerBySource[source], "max");
+        addStratumMetric(prefix + "." + source + ".macroWerCi95.upper",
+          item.macroWerCi95?.upper95, manifest.acceptanceProfile.maxMacroWerCiUpperBySource[source], "max");
+        addStratumMetric(prefix + "." + source + ".weightedCer", item.weightedCer,
+          manifest.acceptanceProfile.maxWeightedCerBySource[source], "max");
+        addStratumMetric(prefix + "." + source + ".criticalTermRecall", item.criticalTerms.recall,
+          manifest.acceptanceProfile.minCriticalTermRecallBySource[source], "min");
+        addStratumMetric(prefix + "." + source + ".turnF1", item.turns.f1,
+          manifest.acceptanceProfile.minTurnF1BySource[source], "min");
+        addStratumMetric(prefix + "." + source + ".latencyP95Ms", item.latency.p95Ms,
+          manifest.acceptanceProfile.maxLatencyP95MsBySource[source], "max");
+      }
+      addStratumMetric(prefix + ".overlapRecall", group.crossSourceOverlap.recall,
+        manifest.acceptanceProfile.minOverlapRecall, "min");
+      addStratumMetric(prefix + ".chronologyInversions",
+        group.chronology.hypothesisOutOfOrderAdjacentPairs,
+        manifest.acceptanceProfile.maxChronologyInversions, "max");
+    }
+  }
   const strataCovered = Object.keys(stratified).includes("languagePair") &&
     Object.keys(stratified).includes("noise") && Object.keys(stratified).includes("overlap");
   if (!strataCovered) {
