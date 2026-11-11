@@ -89,6 +89,8 @@ function makeManifest() {
       latencyBasis: "capture-window-ready-to-visible-text"
     },
     acceptanceProfile: {
+      schema: "signal-interpreter-dialogue-benchmark-acceptance-profile/v1",
+      status: "RATIFIED",
       id: "si-dual-fixture-perfect-1",
       minRecordings: 4,
       minRecordingsPerStratum: 1,
@@ -187,6 +189,14 @@ assert.throws(() => evaluateDialogueBenchmark(invalidAudio), /audio must be mono
 const nonAdjudicated = makeManifest();
 nonAdjudicated.corpus.adjudicationComplete = false;
 assert.throws(() => evaluateDialogueBenchmark(nonAdjudicated), /reference disagreements must be adjudicated/);
+
+const unratifiedProfile = makeManifest();
+unratifiedProfile.acceptanceProfile.status = "PROPOSED_NOT_RATIFIED";
+const unratifiedReport = evaluateDialogueBenchmark(unratifiedProfile);
+assert.equal(unratifiedReport.acceptance.status, "BLOCKED");
+assert.ok(unratifiedReport.acceptance.criteria.some(item =>
+  item.id === "acceptanceProfile.ratification" && item.status === "BLOCKED"
+));
 
 const missingLatencySummary = makeManifest();
 delete missingLatencySummary.recordings[0].evaluation.hypothesis.latencySummaryBySource["groq-remote"];
