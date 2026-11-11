@@ -5,7 +5,7 @@
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
-- Revisión documental: retoma integral G14, aceleración segura y persistencia provisional · corte 2026-11-10 local / 2026-11-11 UTC; evidencia vigente: [crónica de retoma](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md) y [tareas provisionales](TAREAS-PROVISIONALES-GROQ-DUAL-G14.md). Naturaleza: actualización del OCP heredado; no proyecto nuevo.
+- Revisión documental: retoma G14 y recuperación verificable de la exportación del 2026-11-11 · corte 2026-11-11, America/Mexico_City; evidencia: [crónica actualizada](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md), [tareas provisionales](TAREAS-PROVISIONALES-GROQ-DUAL-G14.md) y [recibo de exportación](evidencias/RECIBO-EXPORT-CHATGPT-SI-20261111-0913.json). El TXT completo está preservado localmente en Fila 4, excluido de Git y no publicado; la última salida visible se conserva literal en la crónica §11. Naturaleza: actualización del OCP heredado; no proyecto nuevo.
 - Directorio canónico: `docs/frentes/signal-interpreter/`. Este archivo es la única materialización del estado vigente y de la Versión de Contexto Universal del frente; README y prompts son navegación, no estados paralelos.
 - Base preservada: main `5751281d3fca0a1fc7cb37a69c8cd4bba3632075`, objeto anterior blob `799ed39a297a911aceab46a91f206a14a8361f7c`, sello `SI-OBJ-v1.5-evidencia-04`.
 - Estado de producto · último corte documentado G14: `main/manifest.json` permanece en **0.10.47**; PR #79 y #78 están integradas. PR #84 es la candidata selectiva Groq dual, OPEN/DRAFT/NOT MERGED, rama `feat/groq-dual-main-20261111`, HEAD validado `1c7aca92cc89337aeb4c9907426847f941fa35bd`; CI 3/3 SUCCESS en ese SHA. Pruebas independientes: 43/43 suites, 56/56 sintaxis y paquete 66/66 hashes PASS. Esto no prueba carga Chrome ni audio real. La discrepancia anterior de unmute previo a llamada sigue en el historial SI-REG-05. No hubo llamada/audio real, uso API Groq, aceptación ni release; véase la [crónica de retoma G14 vigente](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md).
@@ -473,3 +473,13 @@ El backlog operativo de continuidad queda en [TAREAS-PROVISIONALES-GROQ-DUAL-G14
 Una conversación nueva debe leer, en este orden: (1) §ARR y DUG vigentes desde Metodología main; (2) este OCP y CONTROL-RESPONSABILIDAD.json; (3) [esta crónica de retoma](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md); (4) [TAREAS-PROVISIONALES-GROQ-DUAL-G14.md](TAREAS-PROVISIONALES-GROQ-DUAL-G14.md); (5) instrucciones literales y plan provisional enlazados en §12.1; (6) PR #84 y checks del HEAD actual. No asumir que el HEAD aquí citado sigue vigente; consultarlo otra vez. No reconstruir la última salida anterior no disponible. No iniciar audio real, credenciales, ZDR, Chrome ni aceptación sin las compuertas descritas.
 
 G14 continúa como agente único. FOL1 sigue PREPARADA/NO ACTIVA; folios permanecen PENDIENTES/NO ASIGNADOS. MCP normativo DESACTIVADO.
+
+
+### 12.7 Exportación recuperada y última salida visible del ciclo anterior
+
+- Exportación TXT: `ChatGPT-SI-20261111-0913.txt`; 1,626 líneas, 75,289 bytes; SHA-256 `1564338E578D32EA685831521627FE58BC0DA8B3DC59920225939D02ED73E955`.
+- Copia byte-exacta realizada mediante RDC en Fila 4 bajo `originales/ChatGPT-SI-20261111-0913.txt`; fuente, destino y read-back cotejados. El original completo es privado/local-only y está excluido mediante `.git/info/exclude`; no se publica en este repositorio público.
+- Recibo público de custodia: [RECIBO-EXPORT-CHATGPT-SI-20261111-0913.json](evidencias/RECIBO-EXPORT-CHATGPT-SI-20261111-0913.json). No contiene el diálogo.
+- La última salida visible exacta del modelo anterior (10/11/2026 19:42:55; `gpt-6-t-mini-mini`) está transcrita literalmente en la [crónica G14, §11.2](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md). Deja de aplicar la instrucción histórica del prompt que la declaraba NO DISPONIBLE; no reconstruir otras salidas que no estén en el archivo.
+- La exportación confirma el contexto y la secuencia de decisiones, pero no sustituye la verificación actual del PR/HEAD/CI. El último corte reconsultado fue PR #84 OPEN/DRAFT/NOT MERGED en HEAD `1c7aca92cc89337aeb4c9907426847f941fa35bd`, CI 3/3 SUCCESS; consultar nuevamente antes de continuar.
+- El checkout Git local no se declaró sincronizado: la identidad operadora RDC encontró la protección `dubious ownership`; no se cambió safe.directory, ACL ni propiedad. GitHub `main` permanece como fuente canónica verificada.
