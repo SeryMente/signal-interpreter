@@ -40,7 +40,10 @@ try {
 
   const manifest = {
     schema: "signal-interpreter-dialogue-benchmark/v1",
-    corpus: { rawAudioStoredOutsideRepository: true },
+    corpus: {
+      rawAudioStoredOutsideRepository: true,
+      transcriptsStoredOutsideRepository: true
+    },
     recordings: [{
       id: "clip-001",
       media: {
