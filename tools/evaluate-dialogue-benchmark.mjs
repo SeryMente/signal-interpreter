@@ -558,7 +558,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     process.stdout.write(JSON.stringify(report, null, 2) + "\n");
     if (report.acceptance.status !== "PASS" && report.acceptance.status !== "TUNING_ONLY") process.exitCode = 3;
   } catch (error) {
-    console.error("Benchmark failed: " + String(error && error.message || error));
+    const safeReason = error instanceof TypeError ? error.message : "manifest is inaccessible or invalid.";
+    console.error("Benchmark failed: " + safeReason);
     process.exit(1);
   }
 }
