@@ -4,9 +4,10 @@ import vm from "node:vm";
 
 const source=fs.readFileSync("extension/groq-dialogue-capture.js","utf8");
 
-function createHarness(displaySurface="browser"){
-  const sent=[],elements=[],intervals=[],windowListeners={},tracks=[],audioNodes=[];
-  let policy=true,displayCalls=0,micCalls=0,contextClosed=false;
+function createHarness(displaySurface="browser",options={}){
+  const sent=[],elements=[],intervals=[],windowListeners={},tracks=[],audioNodes=[],pendingChunkResolvers=[];
+  let policy=true,displayCalls=0,micCalls=0,contextClosed=false,fakeNow=Date.now();
+  const FakeDate=class extends Date{static now(){return fakeNow;}};
   function element(tag){
     const item={tag,style:{},children:[],listeners:{},isConnected:true,disabled:false,
       append(...children){this.children.push(...children);},
@@ -63,7 +64,10 @@ function createHarness(displaySurface="browser"){
         if(message.type==="SIGNAL_GROQ_DIALOGUE_POLICY_GET")
           return policy?{ok:true,canCapture:true,model:"whisper-large-v3"}:{ok:false,canCapture:false,reasonCode:"call-not-active"};
         if(message.type==="SIGNAL_GROQ_DIALOGUE_CAPTURE_START")return{ok:true,captureId:message.captureId};
-        if(message.type==="SIGNAL_GROQ_DIALOGUE_CHUNK")return{ok:true,segments:1};
+        if(message.type==="SIGNAL_GROQ_DIALOGUE_CHUNK"){
+          if(options.holdChunks===true)return new Promise(resolve=>pendingChunkResolvers.push(()=>resolve({ok:true,segments:1})));
+          return{ok:true,segments:1};
+        }
         if(message.type==="SIGNAL_GROQ_DIALOGUE_CAPTURE_STOP")return{ok:true};
         return{ok:true};
       }
@@ -87,9 +91,9 @@ function createHarness(displaySurface="browser"){
     window:{addEventListener(name,fn){windowListeners[name]=fn;}},
     AudioContext:AudioContextFake,AudioWorkletNode:WorkletNode,MediaStream:Stream,
     setInterval(fn){intervals.push(fn);return intervals.length;},clearInterval(){},
-    setTimeout(fn){queueMicrotask(fn);return 1;},clearTimeout(){},
+    setTimeout(fn,ms){fakeNow+=Number(ms)||0;setImmediate(fn);return 1;},clearTimeout(){},
     btoa:(value)=>Buffer.from(value,"binary").toString("base64"),
-    Uint8Array,ArrayBuffer,Math,Date,Number,String,Promise,Error,JSON
+    Uint8Array,ArrayBuffer,Math,Date:FakeDate,Number,String,Promise,Error,JSON
   };
   vm.createContext(ctx);
   vm.runInContext(source,ctx,{timeout:2000});
@@ -100,6 +104,8 @@ function createHarness(displaySurface="browser"){
     get micCalls(){return micCalls;},
     get contextClosed(){return contextClosed;},
     button(){return elements.find(x=>x.tag==="button");},
+    status(){const node=elements.find(x=>x.tag==="p");return node?String(node.textContent||""):"";},
+    releaseChunks(){pendingChunkResolvers.splice(0).forEach(resolve=>resolve());},
     async flush(){for(let i=0;i<8;i++)await new Promise(resolve=>setImmediate(resolve));}
   };
 }
@@ -149,7 +155,26 @@ await h.flush();
 assert.ok(h.sent.some(x=>x.type==="SIGNAL_GROQ_DIALOGUE_CAPTURE_STOP"));
 assert.equal(h.tracks.every(t=>t.stopped),true,"all acquired microphone and tab tracks are released");
 assert.equal(h.contextClosed,true,"shared audio context is closed");
+assert.match(h.status(),/Captura detenida/,"a fully drained stop is reported as complete");
+assert.doesNotMatch(h.status(),/INCOMPLETA/,"a successful flush never raises the incomplete warning");
 console.log("GROQ_DUAL_CAPTURE_SYNTHETIC=PASS");
+
+const incomplete=createHarness("browser",{holdChunks:true});
+await incomplete.flush();
+await incomplete.button().listeners.click();
+await incomplete.flush();
+incomplete.audioNodes[0].port.onmessage({data:{type:"window",source:"audio",packet:wavWindow(16000,7)}});
+await incomplete.flush();
+assert.equal(incomplete.sent.filter(x=>x.type==="SIGNAL_GROQ_DIALOGUE_CHUNK").length,1,"one remote transcription remains deliberately pending");
+await incomplete.button().listeners.click();
+await incomplete.flush();
+assert.match(incomplete.status(),/Captura INCOMPLETA/,"an undrained transcription is never presented as a complete stop");
+assert.match(incomplete.status(),/pendientes remoto 1/,"the incomplete status identifies the source with pending work");
+assert.equal(incomplete.tracks.every(t=>t.stopped),true,"incomplete shutdown still releases both audio sources");
+assert.equal(incomplete.contextClosed,true,"incomplete shutdown still closes the shared audio context");
+incomplete.releaseChunks();
+await incomplete.flush();
+console.log("GROQ_CAPTURE_INCOMPLETE_DRAIN_VISIBLE=PASS");
 
 const revoked=createHarness();
 await revoked.flush();

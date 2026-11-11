@@ -193,21 +193,26 @@
       var flushes=current.lanes.map(function(lane){
         try{return lane.flush();}catch(_){return Promise.resolve();}
       });
-      await Promise.race([
-        Promise.all(flushes),
-        new Promise(function(resolve){setTimeout(resolve,2000);})
+      var flushCompleted=await Promise.race([
+        Promise.all(flushes).then(function(){return true;}),
+        new Promise(function(resolve){setTimeout(function(){resolve(false);},2000);})
       ]);
       var deadline=Date.now()+25000;
       while(Date.now()<deadline&&(current.pending["groq-remote"]>0||current.pending["groq-interpreter"]>0))
         await new Promise(function(resolve){setTimeout(resolve,100);});
+      var pendingRemote=current.pending["groq-remote"],pendingInterpreter=current.pending["groq-interpreter"];
+      var incomplete=flushCompleted!==true||pendingRemote>0||pendingInterpreter>0;
       if(capture&&capture.captureId===current.captureId)capture=null;
       current.lanes.forEach(function(lane){try{lane.source.disconnect();lane.node.disconnect();}catch(_){}});
       current.streams.forEach(function(stream){stream.getTracks().forEach(function(track){try{track.stop();}catch(_){} });});
       if(current.context&&current.context.state!=="closed")await current.context.close().catch(function(){});
       await send({type:"SIGNAL_GROQ_DIALOGUE_CAPTURE_STOP",captureId:current.captureId,callId:current.callId,reason:String(reason||"stopped")});
       if(button){button.disabled=false;button.textContent="Iniciar diálogo Groq";}
-      setStatus("Captura detenida · segmentos remotos "+current.delivered["groq-remote"]+" · intérprete "+current.delivered["groq-interpreter"]);
       await refreshPolicy();
+      var finalStatus=incomplete
+        ? "Captura INCOMPLETA · flush final "+(flushCompleted?"confirmado":"no confirmado")+" · pendientes remoto "+pendingRemote+" · intérprete "+pendingInterpreter
+        : "Captura detenida · segmentos remotos "+current.delivered["groq-remote"]+" · intérprete "+current.delivered["groq-interpreter"];
+      setStatus(finalStatus,incomplete);
     })();
     return current.stopPromise;
   }
