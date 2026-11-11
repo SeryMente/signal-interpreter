@@ -57,9 +57,9 @@ El verificador comprueba ubicación fuera del repositorio, RIFF/WAVE, PCM entero
 El manifiesto signal-interpreter-dialogue-benchmark/v1 incluye:
 
 - corpus: ID/version/split/frozenAt, consentimiento, no-clínico, almacenamiento separado, reloj común, revisores y adjudicación.
-- system: modelo fijado whisper-large-v3, SHA del build, duración de ventana, overlap, concurrencia 2 y base de latencia.
+- system: modelo fijado whisper-large-v3, SHA del build, duración de ventana, overlap, concurrencia 2, timestamps call-start-relative y base de latencia capture-window-ready-to-visible-text.
 - acceptanceProfile: todos los límites numéricos pre-registrados.
-- recordings[]: ID anónimo clip-*, estratos, metadata de ambas pistas y evaluación signal-interpreter-dialogue-evaluation/v1 con referencia e hipótesis.
+- recordings[]: ID anónimo clip-*, estratos, metadata de ambas pistas y evaluación signal-interpreter-dialogue-evaluation/v1 con referencia, hipótesis y hypothesis.latencySummaryBySource para ambos canales.
 
 No se admite apiKey, token, ruta de audio o campo extra en el manifiesto. Las transcripciones sí son necesarias para el cálculo, por eso el manifiesto completo es local/privado y su CLI rechaza rutas dentro del repositorio.
 
@@ -80,10 +80,10 @@ Propuesta para revisar y fijar **antes de ejecutar el test congelado**:
 | F1 de turnos, cada fuente | ≥ 95 % |
 | Recall de pares solapados entre fuentes | ≥ 95 % |
 | Inversiones cronológicas en hipótesis | 0 |
-| Latencia p95, desde ventana lista hasta texto visible | ≤ 2.500 ms |
-| Latencia máxima, misma definición | ≤ 5.000 ms |
+| Peor p95 por grabación, desde ventana lista hasta texto visible | ≤ 2.500 ms |
+| Peor máximo por grabación, misma definición | ≤ 5.000 ms |
 
-El runner aplica los criterios globales y vuelve a aplicarlos en cada categoría languagePair, noise, overlap, network y chunkProfile; un resultado limpio no puede ocultar un estrato deficiente. Los intervalos bootstrap remuestrean grabaciones completas, no palabras ni segmentos, para evitar tratar tokens correlacionados de un mismo clip como observaciones independientes.
+El runner aplica los criterios globales y vuelve a aplicarlos en cada categoría languagePair, noise, overlap, network y chunkProfile; un resultado limpio no puede ocultar un estrato deficiente. Los intervalos bootstrap remuestrean grabaciones completas, no palabras ni segmentos, para evitar tratar tokens correlacionados de un mismo clip como observaciones independientes. Para latencia, suma samples entre grabaciones, usa la mediana de los p50 por grabación, el peor p95 individual y el peor máximo individual; es una compuerta deliberadamente conservadora, no un p95 global reconstruido sin las muestras crudas.
 
 Los límites son deliberadamente estrictos y están **propuestos**. No se deben rebajar después de observar el test. Si el corpus no permite estimar un criterio, el resultado será BLOCKED, no PASS.
 
@@ -144,5 +144,5 @@ La salida contiene métricas, intervalos y el estado de cada criterio; nunca imp
 
 - El harness y el validador de media tienen tests sintéticos en CI; eso no equivale a un benchmark acústico.
 - No existe todavía un corpus de audio autorizado ni gold transcript adjudicado.
-- La ruta actual del producto no aporta aún un valor de latencia de ventana-lista a texto-visible al esquema del evaluador. No usar la latencia HTTP de Groq como sustituto. La instrumentación de ese evento queda pendiente antes de medir el criterio de latencia.
+- La captura mide en memoria la latencia desde ventana lista hasta acuse de render visible (dos frames) y muestra p50/p95/máximo por canal al detener la captura. El manifiesto privado guarda solo ese resumen por canal y grabación; no incorpora la latencia HTTP de Groq. Si el overlay está oculto o los relojes no comparten origen, la muestra se excluye y la aceptación queda bloqueada por tamaño insuficiente.
 - No se ha transmitido audio a Groq ni se ha hecho captura real.
