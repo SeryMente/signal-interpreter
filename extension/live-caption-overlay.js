@@ -1238,11 +1238,40 @@
     }
     if(message.type==="SIGNAL_GROQ_DIALOGUE_SEGMENTS"){
       if(!isCloudCallRoute()||!groqDialogueMode||String(message.captureId||"")!==groqDialogueCaptureId)return false;
+      var acceptedSegments=0;
       (Array.isArray(message.segments)?message.segments:[]).forEach(function(segment){
         if(!segment||!segment.text||!Number.isFinite(Number(segment.startMs)))return;
+        var previousCount=rows.length;
         addRow(segment.text,segment.language,segment.source,true,segment.startMs,segment.id);
+        if(rows.length>previousCount)acceptedSegments++;
       });
-      return false;
+      if(typeof sendResponse!=="function")return false;
+      if(acceptedSegments<=0){
+        sendResponse({ok:true,acceptedSegments:0,visible:false,reasonCode:"no-new-visible-segments"});
+        return false;
+      }
+      if(document.visibilityState!=="visible"){
+        sendResponse({ok:true,acceptedSegments:acceptedSegments,visible:false,reasonCode:"document-hidden"});
+        return false;
+      }
+      var acknowledgeVisible=function(){
+        if(runtimeDisposed||!host||!host.isConnected){
+          sendResponse({ok:false,acceptedSegments:acceptedSegments,visible:false,reasonCode:"overlay-disposed"});
+          return;
+        }
+        sendResponse({
+          ok:true,acceptedSegments:acceptedSegments,visible:true,
+          performanceTimeOriginMs:Number(performance.timeOrigin),
+          visibleAtMs:Number(performance.now()),
+          renderFrames:2
+        });
+      };
+      if(typeof window.requestAnimationFrame==="function"){
+        window.requestAnimationFrame(function(){window.requestAnimationFrame(acknowledgeVisible);});
+      }else{
+        setTimeout(acknowledgeVisible,50);
+      }
+      return true;
     }
     if(message.type==="SIGNAL_GROQ_DIALOGUE_STOP"){
       if(String(message.captureId||"")!==groqDialogueCaptureId)return false;
