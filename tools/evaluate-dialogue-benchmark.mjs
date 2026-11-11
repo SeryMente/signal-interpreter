@@ -361,18 +361,24 @@ function buildStratifiedSummaries(rows, iterations, seed) {
 function evaluateAcceptance(summary, profile) {
   const criteria = [];
   const blocked = (id, observed, limit, reason) => criteria.push({ id, status: "BLOCKED", observed, limit, reason });
+  const minimumEvidence = (id, observed, minimum) => {
+    if (!finite(observed) || observed < minimum) {
+      return blocked(id, observed, minimum, "insufficient evidence; minimum sample requirement not met");
+    }
+    criteria.push({ id, status: "PASS", observed, limit: minimum });
+  };
   const passFail = (id, observed, limit, comparator) => {
     if (!finite(observed)) return blocked(id, observed, limit, "insufficient or missing evidence");
     const passed = comparator === "min" ? observed >= limit : observed <= limit;
     criteria.push({ id, status: passed ? "PASS" : "FAIL", observed, limit });
   };
-  passFail("recordings.minimum", summary.recordings, profile.minRecordings, "min");
+  minimumEvidence("recordings.minimum", summary.recordings, profile.minRecordings);
   passFail("chronology.inversions", summary.chronology.hypothesisOutOfOrderAdjacentPairs, profile.maxChronologyInversions, "max");
   passFail("overlap.recall", summary.crossSourceOverlap.recall, profile.minOverlapRecall, "min");
   for (const source of SOURCES) {
     const item = summary.bySource[source];
-    passFail(source + ".referenceWords", item.referenceWords, profile.minReferenceWordsBySource[source], "min");
-    passFail(source + ".latencySamples", item.latency.samples, profile.minLatencySamplesBySource[source], "min");
+    minimumEvidence(source + ".referenceWords", item.referenceWords, profile.minReferenceWordsBySource[source]);
+    minimumEvidence(source + ".latencySamples", item.latency.samples, profile.minLatencySamplesBySource[source]);
     passFail(source + ".weightedWer", item.weightedWer, profile.maxWeightedWerBySource[source], "max");
     passFail(source + ".macroWerCi95.upper", item.macroWerCi95?.upper95, profile.maxMacroWerCiUpperBySource[source], "max");
     passFail(source + ".weightedCer", item.weightedCer, profile.maxWeightedCerBySource[source], "max");
