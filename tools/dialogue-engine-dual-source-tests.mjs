@@ -5,7 +5,7 @@ import vm from "node:vm";
 const source=fs.readFileSync("extension/dialogue-engine.js","utf8");
 const ctx={};vm.createContext(ctx);vm.runInContext(source,ctx);
 const d=ctx.SignalDialogue;
-assert.equal(d.normalize("  Hola\\u200B   mundo  "),"Hola mundo","zero-width and repeated spaces are normalized");
+assert.equal(d.normalize("  Hola\u200B   mundo  "),"Hola mundo","zero-width and repeated spaces are normalized");
 assert.equal(d.stableSegmentId("c1","groq-interpreter",2,0),"c1:groq-interpreter:2:0");
 assert.equal(d.speakerLabel("groq-interpreter"),"INTÉRPRETE");
 assert.equal(d.speakerLabel("groq-remote"),"AUDIO REMOTO · HABLANTE NO VERIFICADO");
@@ -27,7 +27,7 @@ const formatted=d.formatDialogue([
  {id:"format-1",source:"groq-interpreter",startMs:1000,endMs:2000,text:"Hola"},
  {id:"format-2",source:"groq-remote",startMs:3000,endMs:4000,text:"Hello"}
 ]);
-assert.ok(formatted.includes("\\n\\n"),"dialogue rendering separates turns with paragraph breaks");
+assert.ok(formatted.includes("\n\n"),"dialogue rendering separates turns with paragraph breaks");
 const crossSourceRepeat=d.mergeSegments([
  {id:"a",source:"groq-interpreter",startMs:1000,endMs:2000,text:"Sí."},
  {id:"b",source:"groq-remote",startMs:1000,endMs:2000,text:"Sí."}
