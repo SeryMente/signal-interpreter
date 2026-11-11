@@ -517,3 +517,11 @@ G14 continúa como agente único. FOL1 sigue PREPARADA/NO ACTIVA; folios permane
 - PR #84 OPEN / DRAFT / NOT MERGED; HEAD `305d8d862be629af0fc96e35701adc29be15013c`; último read-back de metadata: `mergeable=true`. Comparación: 12 commits exclusivos de la rama y 47 de `main`; los cambios del lado `main` son snapshots `observations/**` y las dos actualizaciones de OCP/crónica de este frente. No se sincroniza a ciegas ni se usa esa divergencia para atribuir cambios de producto.
 - CI del SHA nuevo en ejecución al último sondeo: Package integrity `43115403310`; native-caption-host-build `43115403381`; signal-observability-audit `43115404314`. No reportar PASS/FAIL hasta completar las tres.
 - No cambia ninguna compuerta externa: no Groq API con audio, audio real, ZDR/cuotas verificados, clave local ni Chrome autorizado. Flags false; sin aceptación, merge, deploy o release.
+
+### 12.11 CI remoto aprobado para el evaluador estructural · 2026-11-11
+
+- HEAD exacto `305d8d862be629af0fc96e35701adc29be15013c`: Package integrity run `43115403310` SUCCESS; native-caption-host-build `43115403381` SUCCESS; signal-observability-audit `43115404314` SUCCESS.
+- Auditoría: jobs `guards`, `syntax`, `observability`, `captions`, `audit` completados en SUCCESS. Package integrity y host nativo también completados en SUCCESS. Total: 7/7 jobs de los tres workflows en el mismo SHA.
+- PR #84: OPEN / DRAFT / NOT MERGED; head `305d8d862be629af0fc96e35701adc29be15013c`; última doble lectura de metadata `mergeable=true`. Sin merge/deploy/release.
+- Corte de divergencia leído justo antes de la actualización documental: merge-base `8bfc2eaf5feb277ca821f12958df5f96e5845e0f`; `main` `aad9da320e8e9df7015c3627a893b21f49329119`; 50 commits del lado main y 12 exclusivos de la rama. Los archivos distintos del lado main eran 60 rutas `observations/**` y las tres rutas documentales del frente. No sincronizar snapshots automáticamente.
+- CI verde no acredita audio real ni calidad acústica. Chrome autorizado, Groq/ZDR/cuotas, credencial local, corpus humano y aceptación siguen pendientes; flags false.
