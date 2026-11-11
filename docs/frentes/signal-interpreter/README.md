@@ -22,6 +22,16 @@ Repositorio público: no cargar originales privados, secretos ni datos de llamad
 - **Estado actual de producto:** `main/manifest.json` declara 0.10.47; PR #79/#78 fusionadas; PR #80 draft/no mergeable. El workspace fila4 repitió pruebas sintéticas: Presence Guard 85, Presence Connect 35, Auto-Answer Runtime 15, Microphone Guard PASS y paquete 60/60. No hubo reload Chrome ni aceptación E2E. SI-REG-05 registra conflicto estático entre unmute inmediato prellamada y política de mute durante espera/timbrado.
 - **Backlog vigente:** SI-FB-01–SI-FB-06 y SI-REG-01–SI-REG-05. Véase [crónica de retoma G14 · 2026-11-10](cronica/C-SIGNAL-RETOMA-20261110-G14-CURRENT.md) para la salida literal, pruebas repetidas, CI observado, límites y checkpoint.
 
+## Retoma vigente y tareas provisionales · G14 · 2026-11-11
+
+- [Checkpoint actual G14: estado, CI, pruebas independientes, entorno y límites](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md)
+- [Tareas provisionales Groq dual: 12 tareas priorizadas con dependencias, acciones y criterios de salida](TAREAS-PROVISIONALES-GROQ-DUAL-G14.md)
+- [Instrucciones recientes del operador, conservadas literalmente](originales/CHATGPT-SI-AUTORIZACIONES-RETOMA-20261110-G14.txt)
+- [Prompt operativo único actualizado al estado G14](PROMPT-SIGNAL-INTERPRETER.md)
+- [OCP único](OBJETO-CANONICO.md) · sección 12 es el estado operativo vigente y supersede las referencias antiguas de estado sin borrar historia.
+
+La última cabeza de PR documentada en este checkpoint es 1c7aca92cc89337aeb4c9907426847f941fa35bd; revalidar PR #84 y CI al iniciar cada sesión nueva. CI 3/3 SUCCESS en ese SHA, pruebas locales 43/43 suites, package 66/66 hashes. No se ha aceptado en Chrome ni en audio real; no hubo llamada Groq con audio, verificación ZDR, merge, deploy ni release.
+
 ## Recuperación del frente Groq dual · 2026-11-10 · G14
 
 - [Conversación recuperada, literal](originales/CHATGPT-SI-RECUPERADO-GROQ-20261110.txt)
