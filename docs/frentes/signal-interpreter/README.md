@@ -44,3 +44,5 @@ La última cabeza de PR documentada en este checkpoint es 1c7aca92cc89337aeb4c99
 
 La conversación preservada es texto aportado por el operador, no una exportación nativa. El estado vigente y los límites se rigen por OBJETO-CANONICO.md.
 
+- [Recibo de custodia de la exportación SI del 2026-11-11](evidencias/RECIBO-EXPORT-CHATGPT-SI-20261111-0913.json). El TXT completo está preservado únicamente en el checkout local de Fila 4, con SHA cotejado y exclusión Git; no se publica por tratarse de una exportación de conversación privada. La última salida visible literal se incorpora a la [crónica G14 actualizada](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md) §11.2.
+
