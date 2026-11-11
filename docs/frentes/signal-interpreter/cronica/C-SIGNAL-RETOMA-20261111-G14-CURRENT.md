@@ -352,3 +352,35 @@ Continuar en la misma titularidad G14, sin redescubrir arquitectura ni reabrir P
 ### 12.5 Siguiente acción
 
 Reconsultar Actions para el SHA `9301dade6cde46a181a7260397223d2d45ea0478`; exigir 3/3 workflows SUCCESS sobre esa misma cabeza y agregado obligatorio. Si se detecta fallo, revisar el job/log concreto y corregir en la misma rama. Después continuar SI-GROQ-02/03/04 por sus dependencias externas; no activar audio ni flags por inferencia. Mantener G14 como agente único y folios pendientes.
+
+## 13. Recuperación de contexto y criterio de calidad del diálogo · 2026-11-11
+
+### 13.1 Referencias explicadas por el operador
+
+El operador aclaró que **Limitless.ai es un ejemplo del nivel de calidad esperado en la transcripción de un diálogo en vivo**. No pidió integrar Limitless. La referencia sirve para fijar la expectativa de resultado: el producto debe presentar una conversación continua y útil, no solo reconocer palabras aisladas.
+
+También explicó el antecedente de haber usado **Voicemeeter y VB-CABLE** para enrutar el audio de una llamada hacia una entrada de audio y construir una solución de transcripción. Se registra como experiencia previa de ruteo, no como requisito de adoptar esos componentes. La arquitectura actual de SI conserva dos pistas separadas: audio remoto de navegador y micrófono propio del intérprete.
+
+### 13.2 Criterio rector de calidad
+
+La salida principal de SI debe ser un **diálogo fiel, legible y cronológicamente correcto en vivo**. No debe resumir, parafrasear ni completar lo inaudible. Debe conservar negaciones, cifras, nombres, términos críticos, cambios de idioma, correcciones, interrupciones y solapamientos. Los turnos deben leerse naturalmente sin cortes arbitrarios ni fusiones entre hablantes. La puntuación y agrupación pueden mejorar legibilidad, pero no cambiar el contenido.
+
+La atribución es una dimensión independiente de la exactitud léxica: INTÉRPRETE se asigna por procedencia del micrófono propio; el audio remoto conserva AUDIO REMOTO · HABLANTE NO VERIFICADO mientras no haya pista separada o metadata verificable. No inferir identidades de participantes por voz, idioma, acento, género o contenido.
+
+### 13.3 Puerta de benchmark
+
+El harness existente de WER/CER, términos críticos, atribución y latencia es una base instrumental; no acredita por sí solo calidad acústica alta. La aceptación exige un corpus autorizado y referencia humana alineada por fuente/segmento que incluya español e inglés, cambios de idioma, nombres y cifras, ruido, variación de volumen, interrupciones y voces simultáneas. Medir WER/CER por canal y global, recall de términos críticos, atribución con ground truth, turnos incorrectos, pérdida/duplicación, cronología/desfase y latencia p50/p95. Revisar además legibilidad del diálogo completo. Los umbrales deben fijarse antes de la prueba, no ajustarse después de ver el resultado.
+
+La ventana de 6.5 s / overlap de 500 ms / hop de 6 s sigue siendo candidata: no se declara óptima sin medir precisión, latencia, pérdida, duplicados, cuota y coste.
+
+### 13.4 Estado GitHub revalidado en esta retoma
+
+- RDC comprobado en PC10RCIF4EI4 como CENTRAL\fila4; repositorio de trabajo C:\Users\fila4\Desktop\SeryMente\Repositorios\signal-interpreter; árbol limpio al inicio, rama work/g14-groq-dual-clean-20261111, HEAD local 366fdd8514cd5e027b702864ab331e8ca27efcbc.
+- PR #84 reconsultada: OPEN / DRAFT / NOT MERGED; head 366fdd8514cd5e027b702864ab331e8ca27efcbc; GitHub devolvió mergeable=false. Los runs exactos 43100336938, 43100336979, 43100337042 finalizaron SUCCESS. La auditoría tuvo jobs guards, captions, syntax, observability y audit; el host nativo y package integrity también pasaron.
+- main observado en 7fc3597ac734976b3b9fe0491841ccdf0561bc72. La comparación desde el merge-base 8bfc2eaf5feb277ca821f12958df5f96e5845e0f identifica 19 commits adicionales en main, todos limitados a observations/**; por eso se mantiene separada la rama de código y no se absorbe cada snapshot automático.
+- Issue #85 sigue abierta como seguimiento interno de ejecuciones antiguas de Actions sin jobs/cancelación coherente. No se ha abierto un ticket de soporte de GitHub.
+- Persisten las compuertas: no hay prueba acústica real, llamada Groq con audio, credencial local verificada, ZDR/cuotas de cuenta confirmados ni carga Chrome autorizada. Flags false; sin aceptación, merge, deploy o release.
+
+### 13.5 Continuidad
+
+Retomar desde PR #84 y desde el benchmark de calidad de extremo a extremo; no redescubrir arquitectura ni convertir Limitless/Voicemeeter en dependencias. La siguiente mejora útil debe aportar evidencia de fidelidad/legibilidad/latencia por fuente, sin rebajar controles de privacidad ni atribuir hablantes sin ground truth. La última salida del modelo anterior continúa preservada literalmente en §11.2; no volver a reconstruirla.
