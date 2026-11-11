@@ -162,7 +162,7 @@ assert.match(h.status(),/Captura detenida/,"a fully drained stop is reported as 
 assert.doesNotMatch(h.status(),/INCOMPLETA/,"a successful flush never raises the incomplete warning");
 assert.match(h.status(),/latencia visible remoto p50 120 ms · p95 120 ms · max 120 ms \(n=2\)/,
   "remote visible latency percentiles use the overlay paint acknowledgement");
-assert.match(h.status(),/latencia visible intérprete p50 120 ms · p95 120 ms · max 120 ms \(n=1\)/,
+assert.match(h.status(),/· intérprete p50 120 ms · p95 120 ms · max 120 ms \(n=1\)/,
   "interpreter visible latency percentiles use the overlay paint acknowledgement");
 console.log("GROQ_DUAL_CAPTURE_SYNTHETIC=PASS");
 
