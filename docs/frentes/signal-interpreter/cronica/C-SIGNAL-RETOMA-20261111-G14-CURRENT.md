@@ -449,3 +449,22 @@ Se releyó `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.h
 ### 16.3 Estado del frente tras la corrección
 
 PR #84 OPEN / DRAFT / NOT MERGED; HEAD `305d8d862be629af0fc96e35701adc29be15013c`; CI 3/3 workflows / 7/7 jobs SUCCESS. Evaluador estructural publicado y documentado; sigue pendiente el benchmark acústico humano autorizado. Las compuertas Chrome autorizado, ZDR/cuotas Groq, credencial local y prueba API controlada no se han abierto. Flags siguen false; no aceptación, merge, deploy ni release.
+## 17. Benchmark de alta calidad, latencia visible y CI final · 2026-11-11
+
+### 17.1 Runner y protocolo
+
+El HEAD 6b14c0fad64cbc8eef364c496a6a96043c9dbbf1 incorpora tools/evaluate-dialogue-benchmark.mjs, tools/verify-dialogue-media.mjs, sus regresiones y tools/README-dialogue-benchmark.md. El runner agrega múltiples grabaciones con WER/CER ponderado y macro, bootstrap por grabación, términos críticos, atribución, turnos, cronología, solapamientos y cortes por estratos. El verificador exige WAV PCM s16le mono 16 kHz y manifiesto/audio privados fuera del repo, cotejando SHA-256 y duración.
+
+El protocolo diferencia purpose=tuning + split=validation (salida TUNING_ONLY, sin PASS/FAIL) y purpose=acceptance + split=test (requiere perfil ratificado, muestra suficiente y test congelado). El perfil tools/dialogue-benchmark-acceptance-profile-high-quality.json sigue PROPOSED_NOT_RATIFIED: ≥60 grabaciones, ≥20 por estrato, ≥10.000 palabras por fuente, WER ≤10%, macro-WER bootstrap upper ≤12%, CER ≤5%, recall crítico 100%, F1 de turnos ≥95%, recall de overlap ≥95%, cronología 0 inversiones, peor p95 visible ≤2.500 ms y peor máximo ≤5.000 ms. No está aprobado ni se ejecutó el test.
+
+### 17.2 Latencia visible instrumentada
+
+La ventana de audio marca el evento ready con reloj monotónico. El overlay confirma segmentos nuevos tras dos frames cuando el documento está visible; el background calcula la diferencia solo si ambos eventos comparten performance.timeOrigin. Se excluye la latencia si la página está oculta, el overlay no está disponible o los relojes no coinciden. La captura mantiene p50/p95/max y número de ventanas por fuente en memoria hasta detenerse. La latencia HTTP de Groq queda separada y no sustituye la latencia percibida. Los segmentos guardan offsets relativos al inicio de grabación para benchmark; no se persisten transcripciones ni audio.
+
+### 17.3 CI final
+
+En el SHA exacto 6b14c0fad64cbc8eef364c496a6a96043c9dbbf1: Package integrity 43119571803 SUCCESS; Observability audit 43119571875 SUCCESS con guards/captions/syntax/observability/audit; Native caption host build 43119571912 SUCCESS con compilación, empaquetado, framing Native Messaging y cierre limpio. Total 3/3 workflows y 7/7 jobs SUCCESS.
+
+### 17.4 Estado y bloqueos
+
+PR #84 OPEN / DRAFT / NOT MERGED; HEAD 6b14c0fad64cbc8eef364c496a6a96043c9dbbf1; última metadata mergeable=true. CI sintético/estructural PASS no es aceptación acústica. No hay corpus no clínico consentido, dos anotadores y gold adjudicado, credencial local, ZDR/cuotas verificadas ni Chrome autorizado. No se invocó Groq con audio ni se capturó audio real; flags siguen false. G14 conserva titularidad única; FOL1 preparada/no activa; folios pendientes/no asignados; MCP normativo desactivado. No merge, deploy ni release.
