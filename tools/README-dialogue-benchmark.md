@@ -65,7 +65,7 @@ No se admite apiKey, token, ruta de audio o campo extra en el manifiesto. Las tr
 
 ## Perfil candidato de alta calidad
 
-Propuesta para revisar y fijar **antes de ejecutar el test congelado**:
+Propuesta para revisar y fijar **antes de ejecutar el test congelado**. El perfil está separado en `tools/dialogue-benchmark-acceptance-profile-high-quality.json` con estado `PROPOSED_NOT_RATIFIED`; el runner bloqueará el resultado mientras no cambie a `RATIFIED` mediante aprobación explícita, antes de abrir el test:
 
 | Criterio | Umbral candidato |
 | --- | ---: |
@@ -85,7 +85,7 @@ Propuesta para revisar y fijar **antes de ejecutar el test congelado**:
 
 El runner aplica los criterios globales y vuelve a aplicarlos en cada categoría languagePair, noise, overlap, network y chunkProfile; un resultado limpio no puede ocultar un estrato deficiente. Los intervalos bootstrap remuestrean grabaciones completas, no palabras ni segmentos, para evitar tratar tokens correlacionados de un mismo clip como observaciones independientes. Para latencia, suma samples entre grabaciones, usa la mediana de los p50 por grabación, el peor p95 individual y el peor máximo individual; es una compuerta deliberadamente conservadora, no un p95 global reconstruido sin las muestras crudas.
 
-Los límites son deliberadamente estrictos y están **propuestos**. No se deben rebajar después de observar el test. Si el corpus no permite estimar un criterio, el resultado será BLOCKED, no PASS.
+Los límites son deliberadamente estrictos y están **propuestos**. No se deben rebajar después de observar el test. El estado `PROPOSED_NOT_RATIFIED` siempre produce BLOCKED; solo un perfil aprobado y congelado antes del test puede declarar aceptación. Si el corpus no permite estimar un criterio, el resultado será BLOCKED, no PASS.
 
 ### Revisión humana complementaria
 
