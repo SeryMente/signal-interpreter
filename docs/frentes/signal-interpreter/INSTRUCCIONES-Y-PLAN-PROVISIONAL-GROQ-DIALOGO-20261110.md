@@ -303,3 +303,34 @@ No se deben reutilizar como estado actual los tres SUCCESS de una cabeza anterio
 - No merge, activación, deploy, release ni aceptación funcional en nombre del operador.
 
 La secuencia de aceptación es: verificar ZDR/cuotas en la cuenta, instalar una clave local ignorada por Git, ejecutar corpus bilingüe sintético no clínico contra Groq, cargar la extensión en un Chrome autorizado, validar una llamada controlada y obtener aceptación expresa.
+
+
+---
+
+## 10. Tareas provisionales y checkpoint de continuidad G14 · 2026-11-11 UTC
+
+El registro ejecutable y priorizado se conserva en [TAREAS-PROVISIONALES-GROQ-DUAL-G14.md](TAREAS-PROVISIONALES-GROQ-DUAL-G14.md); la crónica de evidencia/entorno en [C-SIGNAL-RETOMA-20261111-G14-CURRENT.md](cronica/C-SIGNAL-RETOMA-20261111-G14-CURRENT.md). La nueva instrucción literal del operador está en [CHATGPT-SI-AUTORIZACIONES-RETOMA-20261110-G14.txt](originales/CHATGPT-SI-AUTORIZACIONES-RETOMA-20261110-G14.txt). No reproducir o resumir esos originales como si fueran la fuente literal; leerlos directamente.
+
+### 10.1 Estado reconciliado más reciente
+
+- PR #84 abierta/draft/no merge; rama `feat/groq-dual-main-20261111`; HEAD probado `1c7aca92cc89337aeb4c9907426847f941fa35bd`.
+- CI en ese HEAD: Package integrity `42941191180`, signal-observability-audit `42941191052`, native-caption-host-build `42941191195` = 3/3 SUCCESS.
+- Auditoría paralela: 56 syntax checks, 16 guard suites, 14 observability suites, 13 caption suites y job aggregate; 99 comandos originales preservados.
+- Fila 4: dos checkouts independientes; 43 suites PASS, 56 syntax checks PASS, 66/66 hashes PASS y 8 critical audio/Connect/presence suites PASS. Checkout secundario de prueba eliminado. Sin agente Hiku accesible ni Claude Code autenticado; G14 permanece único responsable.
+- Chrome: el navegador gestionado bloqueó Developer Mode / Load unpacked; perfil temporal eliminado; perfil habitual intacto.
+- Groq: sin clave local/variables de entorno; no API calls ni audio real; ZDR y cuotas de cuenta no comprobados. Flags false por defecto.
+- No WER/CER, latencia p50/p95, jitter, drift, pérdidas/duplicados, coste/ASH real ni aceptación acústica. No merge, deploy ni release.
+
+### 10.2 Orden de ejecución siguiente
+
+1. Releer Metodología DUG/§ARR, OCP y control G14. Confirmar el HEAD actual de PR #84 y CI; no asumir que sigue en `1c7aca92...`.
+2. Resolver el entorno Chrome autorizado sin eludir políticas corporativas. Si sigue bloqueado, dejar evidencia del bloqueo y avanzar solo en pruebas headless/sintéticas.
+3. Verificar ZDR y cuotas efectivas de la cuenta Groq; registrar solo estado no sensible.
+4. Preparar credencial local ignorada por Git después de ZDR; jamás introducirla en chat, logs o repositorio.
+5. Correr smoke tests Groq con corpus sintético no clínico y medir WER/CER, p50/p95, drift, pérdida, duplicación y coste/ASH.
+6. Validar captura dual, revocación, parada/liberación, roles, fusión temporal y overlay en Chrome autorizado.
+7. Fijar umbrales de calidad y pedir aceptación explícita del operador antes de merge/release.
+
+### 10.3 Política de aceleración
+
+Conservar el paralelismo CI actual y la cancelación de ejecuciones obsoletas. No recortar suites. Una sesión secundaria puede repetir pruebas o revisar de forma independiente, pero no crea otra titularidad ni escribe sobre el checkout principal. Toda escritura en la rama de integración tiene un único escritor y revisión del diff; todo PASS debe corresponder al mismo SHA exacto.
