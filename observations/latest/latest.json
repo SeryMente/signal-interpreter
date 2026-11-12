@@ -1,16 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-718e6864-fdf2-4d27-af61-d720d01fba42",
-  "createdAt": "2026-11-12T17:27:22.198Z",
+  "batchId": "batch-aaa1439a-c540-451d-82e7-6a27085ee6cb",
+  "createdAt": "2026-11-12T17:28:22.030Z",
   "trigger": "event-window",
   "extensionVersion": "0.10.47",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "bb4e6ebc-367b-4272-8113-096c1c649f32",
-      "sequence": 67345,
-      "timestamp": "2026-11-12T17:26:51.443Z",
-      "ingestedAt": "2026-11-12T17:26:51.534Z",
+      "id": "b70b7180-e12b-4031-819e-294a0e30c06a",
+      "sequence": 67346,
+      "timestamp": "2026-11-12T17:27:51.444Z",
+      "ingestedAt": "2026-11-12T17:27:51.522Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "content",
@@ -20,7 +20,7 @@
       "phase": "event",
       "action": "AUTO_ANSWER_READINESS",
       "outcome": "observed",
-      "traceId": "a4935bb2-cffa-47d4-baf6-4d47b6e4b1e6",
+      "traceId": "139bd85c-abf0-4bf7-8321-f9c599bd7175",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -46,7 +46,7 @@
         "visibility": "hidden",
         "focused": false,
         "online": true,
-        "monotonicMs": 3199093,
+        "monotonicMs": 3259093,
         "callId": null,
         "pageLifecycleId": "f2851904-f7da-42a4-8171-4de0a6e1e359",
         "sourceTabId": 220927045,
@@ -79,25 +79,85 @@
         "runtimeVersion": "0.10.47",
         "reason": "heartbeat"
       }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "a9563299-8a43-4180-9a4a-b968f6ce6e19",
+      "sequence": 67347,
+      "timestamp": "2026-11-12T17:28:17.676Z",
+      "ingestedAt": "2026-11-12T17:28:17.723Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.47",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "bb1ea059-04da-4b72-9bc3-cdec09976bf6",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220926967,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.47",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220926967,
+        "sourceWindowId": 220925964,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://chatgpt.com/"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/",
+        "extensionVersion": "0.10.47",
+        "previousRoute": "/c/6af4f7a6-15f4-83e8-8186-c0fc6a61b049",
+        "currentRoute": "/",
+        "activeCallRoute": false
+      }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 67345,
-    "lastSequence": 67345,
-    "firstTimestamp": "2026-11-12T17:26:51.443Z",
-    "lastTimestamp": "2026-11-12T17:26:51.443Z",
+    "firstSequence": 67346,
+    "lastSequence": 67347,
+    "firstTimestamp": "2026-11-12T17:27:51.444Z",
+    "lastTimestamp": "2026-11-12T17:28:17.676Z",
     "actions": {
-      "AUTO_ANSWER_READINESS": 1
+      "AUTO_ANSWER_READINESS": 1,
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "RUNTIME": 1,
+      "CAPTION": 1
     }
   }
 }
