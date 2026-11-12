@@ -228,7 +228,20 @@
     status("Verificando micrófono…");
     try{
       var response=await new Promise(function(resolve){
+        var settled=false;
+        var watchdog=setTimeout(function(){
+          if(settled)return;
+          settled=true;
+          resolve({
+            ok:false,verified:false,muted:!!state.microphoneMuted,
+            requestedMuted:!state.microphoneMuted,outputMuted:true,
+            error:"Timeout del control del micrófono; la pista queda en estado no verificado y debe permanecer silenciada."
+          });
+        },12000);
         chrome.runtime.sendMessage({type:"SIGNAL_EXTENSION_MICROPHONE_TOGGLE",source:"popup-button"},function(result){
+          if(settled)return;
+          settled=true;
+          clearTimeout(watchdog);
           if(chrome.runtime.lastError) resolve({ok:false,verified:false,muted:true,error:chrome.runtime.lastError.message});
           else resolve(result||{ok:false,verified:false,muted:true,error:"Sin respuesta del worker"});
         });
