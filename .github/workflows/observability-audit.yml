@@ -35,6 +35,14 @@ jobs:
           node --check extension/offscreen.js
           node --check tools/hotload-active-call-test.mjs
           node --check extension/groq-transcriber.js
+          node --check extension/groq-dialogue-capture.js
+          node --check extension/whisper-window-processor.js
+          node --check tools/groq-dialogue-capture-tests.mjs
+          node --check tools/whisper-window-processor-tests.mjs
+          node --check extension/groq-dialogue-capture.js
+          node --check extension/whisper-window-processor.js
+          node --check tools/groq-dialogue-capture-tests.mjs
+          node --check tools/whisper-window-processor-tests.mjs
           node --check tools/groq-transcriber-tests.mjs
           node --check tools/live-caption-core-test.mjs
           node --check tools/live-caption-bridge-tests.mjs
@@ -136,7 +144,11 @@ jobs:
       - name: Global overlay toggle and hotload lifecycle regression
         run: node tools/overlay-global-toggle-regression-test.mjs
       - name: Groq transcriber unit test
-        run: node tools/groq-transcriber-tests.mjs
+        run: |
+          node tools/groq-transcriber-tests.mjs
+          node tools/groq-dialogue-capture-tests.mjs
+          node tools/whisper-window-processor-tests.mjs
+          node tools/dialogue-engine-dual-source-tests.mjs
       - name: Independent call preview runtime regression
         run: node tools/call-caption-runtime-test.mjs
       - name: Automatic call export and privacy runtime regression

@@ -34,7 +34,9 @@ assert.match(content, /activeCallEarnings && activeCallEarnings\.callId === stat
 assert.match(content, /reconcileOverlayDateRollover\(\)/);
 assert.match(content, /EFFECTIF_REFRESH_EXCHANGE_RATE/);
 assert.match(content, /totalUsd = baseUsd \+ \(activePeriod \? liveUsd : 0\)/);
-assert.match(content, /setInterval\(renderOverlay, 100\)/);
+assert.match(content, /setInterval\(renderOverlay, 1000\)/);
+assert.match(content, /function scheduleOverlayMutationRender\(\)/);
+assert.match(content, /if \(currentCallId\(\)\) scheduleOverlayMutationRender\(\)/);
 
 const historicalFn = background.match(/async function syncOfficialEarningsRangeUnsafe\(period\)\{[\s\S]*?\n  \}\n  function syncOfficialPlatformData/);
 assert(historicalFn, "syncOfficialEarningsRangeUnsafe no encontrado");
