@@ -295,7 +295,7 @@ Fuente del tramo literal: texto pegado por el operador en la conversación actua
 
 ### SI-REG-05 — Toggle global preparado y mute seguro por ciclo de llamada · P0
 
-**Estado:** CORRECCIÓN IMPLEMENTADA EN RAMA `fix/global-mic-toggle-precall-20261112`; prueba de regresión dedicada añadida a CI; aceptación Chrome/llamada real pendiente.
+**Estado:** CORRECCIÓN FORMAL FUSIONADA EN main · Signal Interpreter 0.10.49 · PR #92 MERGED · CI 4/4 SUCCESS. Prueba de regresión dedicada integrada en CI. Aceptación Chrome/llamada real del operador pendiente.
 
 **Decisión funcional aclarada por el operador (2026-11-12):** el switch debe aceptar el clic y pasar a verde desde cualquier pantalla, incluida la pantalla de espera. Cuando no hay llamada activa, ese estado verde representa **intención/preparación**, no una pista saliente abierta. El audio efectivo permanece en mute y no se captura ni transmite. La intención preparada no se hereda en una llamada nueva: cada llamada arranca en OFF y requiere activación manual del operador.
 
@@ -321,6 +321,16 @@ Fuente del tramo literal: texto pegado por el operador en la conversación actua
 9. Desactivar/desinstalar la extensión es la salida de emergencia; se debe verificar en Chrome que las pistas quedan detenidas y que recargar la pestaña de Cloud Interpreter limpia los wrappers de MAIN-world asociados a ese documento.
 
 La política de mute efectivo en espera se mantiene intacta. La aclaración del operador permite que el **control** se encienda/prepárese manualmente en espera; no permite abrir el **canal de salida** antes de una llamada activa.
+
+**Evidencia de integración formal · 2026-11-12:**
+
+- PR #92 [Release Signal Interpreter 0.10.49 — global microphone toggle](https://github.com/SeryMente/signal-interpreter/pull/92), fusionada en main mediante merge commit 95f2fffedf4989eec451258f745178910089bcd1. La PR #91 anterior se cerró sin merge porque su rama quedó detrás de actualizaciones de observations/**; la rama sincronizada de #92 preservó íntegro ese avance.
+- HEAD probado de la PR: 8125e07c270f690c715bd56284a9035c64b643cc.
+- CI exacto: Package integrity run 43280502635 SUCCESS (8/8); Signal Interpreter extension package run 43280502686 SUCCESS (11/11); signal-observability-audit run 43280502833 SUCCESS (46/46); native-caption-host-build run 43280502873 SUCCESS (10/10, sincronización del payload embebido omitida porque el host fuente no cambió).
+- Artefacto SignalInterpreter-extension-package, ID 13972461935, 916,294 bytes, SHA-256 75d335b41b0ba0ed27923cc54bdfe29af4dfd7c7caec4f525fa6c0ab3509bed5. ZIP interno SignalInterpreter-0.10.49.zip, 923,661 bytes, SHA-256 d2956b3d95dd8d467735a8569ad0daba67b066e9e3bb71506231366adf06390d.
+- Lectura de vuelta en main: manifiesto 0.10.49; worker y popup contienen la semántica preparada/salida cerrada, el inicio de llamada forzado en mute y el watchdog.
+- Carpeta Chrome local reemplazada desde el ZIP cotejado: 49 archivos, 1,702,759 bytes; SHA-256 de manifiesto A019D2C9F584128AFE2334A5B15AA4DC209C03E54E3B7CA3C7DE65369298D2B4, worker FDCE9F7F50A75DCA1DA1E6C91B7D9EE4E0214118779B7A793DD1CC2E101FBD04, popup 6C9AA756486B59E98569C0EC4907F23661A6D9F7EC30030902306749F94454D4. Rollback del hotfix local: SI-extension-pre-0.10.49-20261112.zip, SHA-256 FFBC3F9EA66CD4444902F736979976E6EFE59532AEE9693B9F69DC09348C7155.
+- **Aceptación todavía no ejecutada:** Chrome no se ha recargado tras la sustitución; no se ha observado el switch en la pantalla de espera ni probado una llamada real. Desactivar/desinstalar y recargar la pestaña para limpiar el wrapper MAIN-world también queda pendiente. No declarar la aceptación de usuario por CI ni por hashes.
 
 ### Evidencia compartida del último ciclo local
 
