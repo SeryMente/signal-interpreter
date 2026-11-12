@@ -2664,7 +2664,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     return{ok:false,muted:!!muted,verified:false,inactive:false,error:lastError||"verification-failed",attempts:3};
   }
 
-  async function setExtensionMicrophoneMutedInternal(muted, source) {
+  async function setExtensionMicrophoneMutedInternal(muted, source, requestedTabId) {
     var desired=!!muted;
     var stored=await chrome.storage.local.get(["effectifState"]);
     var state=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
@@ -2675,7 +2675,8 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var previousOutputStatus=String(state.microphoneOutputStatus||"unapplied");
     var captureActive=!!(state.groqCapture&&state.groqCapture.status==="connected");
     var outputRequired=hasActiveCall(state);
-    if (!desired && !outputRequired) {
+    var outputTabId=outputRequired?Number(state.callSourceTabId):Number(requestedTabId);
+    if (!desired && !outputRequired && !Number.isFinite(outputTabId)) {
       state.microphoneMuted=true; state.microphoneMuteRequested=true; state.microphoneMuteStatus="blocked";
       state.microphoneOutputMuted=true; state.microphoneOutputStatus="idle-safe";
       state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
@@ -2714,10 +2715,10 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       if(!captureResult.verified)captureResult.error=captureError||"verification-failed";
     }
 
-    var outputResult=outputRequired
-      ? await setMainClientMicrophoneMuted(state.callSourceTabId,desired,source||"background")
-      : {ok:true,muted:desired,verified:true,inactive:true,trackCount:0,senderCount:0};
-    var allVerified=captureResult.verified&&(!outputRequired||outputResult.verified===true);
+    var outputResult=Number.isFinite(outputTabId)
+      ? await setMainClientMicrophoneMuted(outputTabId,desired,source||"background")
+      : {ok:false,muted:desired,verified:false,inactive:true,error:"No se encontró la pestaña autorizada de Cloud Interpreter."};
+    var allVerified=captureResult.verified&&outputResult.verified===true;
 
     if(!allVerified){
       var recoveryMuted=true;
@@ -2728,10 +2729,10 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
           await chrome.runtime.sendMessage({target:"offscreen",type:"SIGNAL_SET_MICROPHONE_MUTED",muted:recoveryMuted});
         }catch(_){}
       }
-      if(outputRequired){
+      if(Number.isFinite(outputTabId)){
         try{
           await setMainClientMicrophoneMuted(
-            state.callSourceTabId,
+            outputTabId,
             recoveryMuted,
             desired ? "fail-closed-explicit-mute" : "fail-closed-after-unmute-error"
           );
@@ -2795,17 +2796,17 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     });
     return run;
   }
-  function toggleExtensionMicrophoneMuted(source) {
+  function toggleExtensionMicrophoneMuted(source, requestedTabId) {
     var run = microphoneMuteQueue.then(async function () {
       var stored = await chrome.storage.local.get(["effectifState"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       var recovering = state.microphoneMuteStatus === "error" || state.microphoneOutputStatus === "error";
-      var desired = hasActiveCall(state) ? (recovering ? false : !state.microphoneMuted) : true;
+      var desired = recovering ? false : !state.microphoneMuted;
       if (recovering) record("EXTENSION_MICROPHONE_TOGGLE_RECOVERY_RETRY", {
         source: source || "toggle", desired: desired, previousMuted: !!state.microphoneMuted,
         policy: "error-state-prioritizes-unmute-to-avoid-stuck-muted"
       }, "warn", "microphone");
-      return setExtensionMicrophoneMutedInternal(desired, source || "toggle");
+      return setExtensionMicrophoneMutedInternal(desired, source || "toggle", requestedTabId);
     }, async function () {
       var stored = await chrome.storage.local.get(["effectifState"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
@@ -3227,20 +3228,21 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       return true;
     }
     if (message.type === "SIGNAL_EXTENSION_MICROPHONE_TOGGLE") {
-      if (message.gesture) record("EXTENSION_MICROPHONE_GESTURE_TRIGGERED", {
-        source: message.source || "unknown", gesture: String(message.gesture),
-        holdMs: Number(message.holdMs || 0), tabId: sender && sender.tab ? sender.tab.id : null
-      }, "info", "microphone");
-      toggleExtensionMicrophoneMuted(message.source || "ui").then(sendResponse).catch(function (error) {
-        chrome.storage.local.get(["effectifState"]).then(function(stored){
-          var current=stored.effectifState||{};
-          sendResponse({
-            ok:false, error:String(error), verified:false,
-            muted:typeof current.microphoneMuted==="boolean"?current.microphoneMuted:false,
-            requestedMuted:typeof current.microphoneMuteRequested==="boolean"?current.microphoneMuteRequested:false
-          });
-        }).catch(function(){sendResponse({ok:false,error:String(error),verified:false,muted:false,requestedMuted:false});});
-      });
+      (async function () {
+        var targetTabId=sender&&sender.tab?Number(sender.tab.id):NaN;
+        if(!Number.isFinite(targetTabId)){
+          var activeTabs=await chrome.tabs.query({active:true,lastFocusedWindow:true}).catch(function(){return[];});
+          var activeTab=activeTabs&&activeTabs[0];
+          if(activeTab&&isAuthorizedCloudUrl(activeTab.url||""))targetTabId=Number(activeTab.id);
+        }
+        if(!Number.isFinite(targetTabId)){
+          sendResponse({ok:false,muted:true,verified:false,error:"Abre Cloud Interpreter y vuelve a intentar el control del micrófono."});
+          return;
+        }
+        toggleExtensionMicrophoneMuted(message.source||"ui",targetTabId).then(sendResponse).catch(function(error){
+          sendResponse({ok:false,muted:true,verified:false,error:String(error)});
+        });
+      })();
       return true;
     }
     if (message.type === "EFFECTIF_END_CALL") {
