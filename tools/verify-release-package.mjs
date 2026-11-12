@@ -82,6 +82,7 @@ assert.ok(background.includes("function aggregateCloudActionStatus"), "global Cl
 assert.ok(background.includes('globalStatus==="active"?"blue":globalStatus'), "external blue icon is not gated by Cloud active status");
 assert.ok(background.includes("fail-closed-on-unmute-verification-error"), "microphone unmute error is not fail-closed");
 assert.ok(background.includes("function nextMicrophoneToggleMuted(state)"), "pre-call manual toggle intent is missing");
+assert.equal((background.match(/var desired = nextMicrophoneToggleMuted\(state\);/g) || []).length, 2, "both toggle queue paths must share the same state transition");
 assert.ok(background.includes("EXTENSION_MICROPHONE_PRECALL_INTENT_SAVED"), "pre-call intent persistence is missing");
 assert.ok(background.includes("outputMuted:true"), "pre-call output must remain muted");
 assert.ok(background.includes('setExtensionMicrophoneMuted(true, "call-start-safe")'), "new calls must begin with an explicit mute");
