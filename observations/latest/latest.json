@@ -1,80 +1,16 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-02c64662-7536-4390-9612-4261f6a779f2",
-  "createdAt": "2026-11-12T18:35:44.798Z",
-  "trigger": "alarm",
+  "batchId": "batch-2b9f0793-709d-4a2f-bae5-328800874c14",
+  "createdAt": "2026-11-12T18:36:44.351Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.48",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "9e81c7b2-3f2f-4cd4-8c5f-5ba8a02ed817",
-      "sequence": 67602,
-      "timestamp": "2026-11-12T18:35:42.493Z",
-      "ingestedAt": "2026-11-12T18:35:42.576Z",
-      "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.48",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "bf7fc10e-31ad-4efe-bf50-e501ee20ac40",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220927901,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.48",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/c/6af4cb[PHONE]e8-a812-d9d4bf59581a",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220927901,
-        "sourceWindowId": 220927142,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://chatgpt.com/c/6af4cb[PHONE]e8-a812-d9d4bf59581a"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/c/6af4cb[PHONE]e8-a812-d9d4bf59581a",
-        "extensionVersion": "0.10.48",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "c7946386-19ef-4287-9aff-6842f938cb14",
-      "sequence": 67603,
-      "timestamp": "2026-11-12T18:35:42.494Z",
-      "ingestedAt": "2026-11-12T18:35:43.126Z",
+      "id": "3770a4aa-7780-48c7-8917-ac70796375a5",
+      "sequence": 67606,
+      "timestamp": "2026-11-12T18:36:13.921Z",
+      "ingestedAt": "2026-11-12T18:36:13.979Z",
       "level": "info",
       "category": "CAPTION",
       "component": "live-caption-overlay",
@@ -82,14 +18,14 @@
       "host": "",
       "url": "",
       "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
       "outcome": "observed",
-      "traceId": "b1604451-2fe2-4703-85db-56b5211f98fb",
+      "traceId": "bd29a04b-613f-42e3-8952-b104176d5cda",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220927901,
+      "tabId": 220927878,
       "session": {
         "callId": null
       },
@@ -104,14 +40,14 @@
       "error": null,
       "metrics": {},
       "context": {
-        "route": "/c/6af4cb[PHONE]e8-a812-d9d4bf59581a",
-        "visibility": "hidden",
+        "route": "/c/local-chatgpt%3A959d14a[PHONE]f2-a881-3aa6d4056235",
+        "visibility": "visible",
         "online": true,
-        "sourceTabId": 220927901,
+        "sourceTabId": 220927878,
         "sourceWindowId": 220927142,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://chatgpt.com/c/6af4cb[PHONE]e8-a812-d9d4bf59581a"
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://chatgpt.com/c/local-chatgpt%3A959d14a[PHONE]f2-a881-3aa6d4056235"
       },
       "privacy": {
         "rawTextStored": false,
@@ -120,7 +56,129 @@
       },
       "payload": {
         "callId": null,
-        "route": "/c/6af4cb[PHONE]e8-a812-d9d4bf59581a",
+        "route": "/c/local-chatgpt%3A959d14a[PHONE]f2-a881-3aa6d4056235",
+        "extensionVersion": "0.10.48",
+        "previousRoute": "/c/6af5f6d[PHONE]e8-b749-a50832ac1448",
+        "currentRoute": "/c/local-chatgpt%3A959d14a[PHONE]f2-a881-3aa6d4056235",
+        "activeCallRoute": false
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "c3c37056-9228-49c6-952a-24099f8d9af6",
+      "sequence": 67607,
+      "timestamp": "2026-11-12T18:36:33.629Z",
+      "ingestedAt": "2026-11-12T18:36:33.720Z",
+      "level": "warn",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.48",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
+      "outcome": "degraded",
+      "traceId": "111cd793-d836-4765-8cf4-64f16176ccb9",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220927913,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.48",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "page-not-allowed",
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/c/6af5f6d[PHONE]e8-b749-a50832ac1448",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220927913,
+        "sourceWindowId": 220927142,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://chatgpt.com/c/6af5f6d[PHONE]e8-b749-a50832ac1448"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/c/6af5f6d[PHONE]e8-b749-a50832ac1448",
+        "extensionVersion": "0.10.48",
+        "visible": false,
+        "reason": "page-not-allowed",
+        "hostConnected": false,
+        "contextReady": true,
+        "pageAllowed": false,
+        "callActive": false,
+        "sourceTabMatched": false,
+        "rowCount": 0,
+        "display": "unmounted"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "c1aca087-d782-4655-9533-f3682602a785",
+      "sequence": 67608,
+      "timestamp": "2026-11-12T18:36:33.630Z",
+      "ingestedAt": "2026-11-12T18:36:34.216Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.48",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
+      "outcome": "observed",
+      "traceId": "af920847-b99b-4eaa-bbec-69051807f2dc",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220927913,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.48",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/c/6af5f6d[PHONE]e8-b749-a50832ac1448",
+        "visibility": "hidden",
+        "online": true,
+        "sourceTabId": 220927913,
+        "sourceWindowId": 220927142,
+        "observedTabStatus": "complete",
+        "observedTabActive": false,
+        "observedTabUrl": "https://chatgpt.com/c/6af5f6d[PHONE]e8-b749-a50832ac1448"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/c/6af5f6d[PHONE]e8-b749-a50832ac1448",
         "extensionVersion": "0.10.48",
         "enabled": true,
         "scope": "source-only",
@@ -133,26 +191,85 @@
         "contextSyncAttempts": 1,
         "contextSyncFailures": 0
       }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "279dd417-4e60-4400-bac6-efec94f648b4",
+      "sequence": 67609,
+      "timestamp": "2026-11-12T18:36:34.173Z",
+      "ingestedAt": "2026-11-12T18:36:34.684Z",
+      "level": "info",
+      "category": "CAPTION",
+      "component": "live-caption-overlay",
+      "extensionVersion": "0.10.48",
+      "host": "",
+      "url": "",
+      "phase": "lifecycle",
+      "action": "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED",
+      "outcome": "observed",
+      "traceId": "68ebcebb-772c-4740-a82d-81e73acd944a",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": 220927878,
+      "session": {
+        "callId": null
+      },
+      "environment": {
+        "extensionVersion": "0.10.48",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": null,
+      "error": null,
+      "metrics": {},
+      "context": {
+        "route": "/c/6af606c4-e388-83e8-9a[PHONE]a9f4b8",
+        "visibility": "visible",
+        "online": true,
+        "sourceTabId": 220927878,
+        "sourceWindowId": 220927142,
+        "observedTabStatus": "complete",
+        "observedTabActive": true,
+        "observedTabUrl": "https://chatgpt.com/c/6af606c4-e388-83e8-9a[PHONE]a9f4b8"
+      },
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "callId": null,
+        "route": "/c/6af606c4-e388-83e8-9a[PHONE]a9f4b8",
+        "extensionVersion": "0.10.48",
+        "previousRoute": "/c/local-chatgpt%3A959d14a[PHONE]f2-a881-3aa6d4056235",
+        "currentRoute": "/c/6af606c4-e388-83e8-9a[PHONE]a9f4b8",
+        "activeCallRoute": false
+      }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 4,
     "errors": 0,
     "warnings": 1,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 1,
     "invariantSignals": 0,
-    "firstSequence": 67602,
-    "lastSequence": 67603,
-    "firstTimestamp": "2026-11-12T18:35:42.493Z",
-    "lastTimestamp": "2026-11-12T18:35:42.494Z",
+    "firstSequence": 67606,
+    "lastSequence": 67609,
+    "firstTimestamp": "2026-11-12T18:36:13.921Z",
+    "lastTimestamp": "2026-11-12T18:36:34.173Z",
     "actions": {
+      "LIVE_CAPTION_OVERLAY_ROUTE_CHANGED": 2,
       "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
       "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
     },
     "categories": {
-      "CAPTION": 2
+      "CAPTION": 4
     }
   }
 }
