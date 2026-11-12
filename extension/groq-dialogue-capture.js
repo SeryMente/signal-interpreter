@@ -8,6 +8,7 @@
     "zdr-not-confirmed":"Confirma ZDR después de verificarlo en la consola de Groq",
     "groq-key-missing":"No hay una clave Groq local disponible",
     "permission-denied":"No se concedió el permiso de micrófono o pestaña",
+    "microphone-processing-unverified":"El navegador no confirmó el audio del micrófono sin AEC, supresión de ruido ni ganancia automática",
     "tab-audio-missing":"La pestaña compartida no entregó audio",
     "tab-selection-invalid":"Selecciona la pestaña del navegador con la llamada",
     "capture-failed":"No se pudo iniciar la captura",

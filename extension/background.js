@@ -3500,9 +3500,17 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
       return true;
     }
     if (message.type === "EFFECTIF_TEST_SOUND") {
-      playSound(message.volume).then(function () {
-        record("ALERT_SOUND_TESTED", {}, "info", "popup"); sendResponse({ ok: true });
-      }).catch(function (error) { sendResponse({ ok: false, error: String(error) }); });
+      chrome.storage.local.get(["effectifState"]).then(function(stored){
+        var testState=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
+        if(hasActiveCall(testState)){
+          record("ALERT_SOUND_TEST_BLOCKED_DURING_CALL",{callId:testState.callId||null},"warn","popup");
+          sendResponse({ok:false,error:"blocked-during-active-call"});
+          return;
+        }
+        return playSound(message.volume).then(function(){
+          record("ALERT_SOUND_TESTED",{}, "info","popup");sendResponse({ok:true});
+        });
+      }).catch(function(error){sendResponse({ok:false,error:String(error)});});
       return true;
     }
     if (message.type === "EFFECTIF_PLATFORM_SNAPSHOT") {
