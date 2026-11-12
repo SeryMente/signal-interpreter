@@ -20,7 +20,7 @@ assert.equal(policy.nextMicrophoneToggleMuted({ microphoneMuted: true }), false,
   "first click from safe default must prepare MIC ON");
 assert.equal(policy.nextMicrophoneToggleMuted({ microphoneMuted: false }), true,
   "second click must toggle back to MIC OFF");
-assert.equal((background.match(/var desired = nextMicrophoneToggleMuted\\(state\\);/g) || []).length, 2,
+assert.equal((background.match(/var desired = nextMicrophoneToggleMuted\(state\);/g) || []).length, 2,
   "success and rejected-queue paths must share the same global toggle transition");
 
 let storedState = { microphoneMuted: true, groqCapture: { microphoneMuted: true, status: "idle" } };
