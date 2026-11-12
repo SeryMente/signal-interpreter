@@ -8,6 +8,7 @@ on:
       - "extension/**"
       - "tools/verify-release-package.mjs"
       - "tools/microphone-preflight-test.mjs"
+      - "tools/microphone-global-toggle-test.mjs"
       - ".github/workflows/extension-package.yml"
   push:
     branches: [main]
@@ -33,6 +34,8 @@ jobs:
         run: node tools/verify-release-package.mjs
       - name: Test local microphone preflight lifecycle
         run: node tools/microphone-preflight-test.mjs
+      - name: Test global microphone toggle and safe call lifecycle
+        run: node tools/microphone-global-toggle-test.mjs
       - name: Build installable unpacked-extension ZIP
         shell: bash
         run: |
