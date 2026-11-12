@@ -164,15 +164,15 @@ Chrome no se recargó desde esta ejecución; la actualización física del códi
 ### 10.3 Integración formal candidata
 
 - Versión del manifiesto: **0.10.49**.
-- Rama: `fix/global-mic-toggle-precall-20261112`.
-- PR #91: [Release Signal Interpreter 0.10.49 — global microphone toggle](https://github.com/SeryMente/signal-interpreter/pull/91).
-- Base de la PR: `main` en `f9f0c592e33f48b2c6a8bf26927373fda9b1f21b`; compare observado: 23 commits ahead, 0 behind.
+- Rama: `fix/global-mic-toggle-precall-20261112-main-sync`.
+- PR #92: [Release Signal Interpreter 0.10.49 — global microphone toggle](https://github.com/SeryMente/signal-interpreter/pull/92).
+- Base de la PR: `main` en `73da70f92e2c446736ba9714b3d75a32f6b96348`; rama sincronizada desde el main actualizado, 0 commits detrás. La PR #91 inicial quedó obsoleta al avanzar main y se cerró sin merge.
 - Cambios: worker, popup, instalador, manifiesto, inventario SHA-256, README, backlog, objeto canónico, verificador de paquete, workflow de empaquetado y regresión dedicada.
 - `tools/microphone-global-toggle-test.mjs` cubre: toggle ON preparado en espera, salida aún bloqueada, segundo clic OFF, inicio de llamada silenciado, ausencia de auto-unmute, remute al cierre, ambos caminos de la cola y deadlines finitos.
 - `verify-release-package.mjs` deja de exigir la política anterior de bloqueo del control y auto-unmute al aceptar; ahora exige intención prellamada, salida cerrada y mute explícito al inicio.
 - `payload-sha256.json` se actualizó con los hashes SHA-256 del worker, popup, manifiesto, instalador y verificador de paquete.
 
-**Estado al escribir esta crónica:** PR #91 OPEN / NOT MERGED. El endpoint de workflows/status no devolvió ejecuciones asociadas al HEAD en esta consulta; CI se clasifica **NO VERIFICADO**, no PASS. No hay artefacto 0.10.49 descargado ni instalado aún.
+**Estado al escribir esta crónica:** PR #92 OPEN / NOT MERGED. El endpoint de workflows/status no devolvió ejecuciones asociadas al HEAD en esta consulta; CI se clasifica **NO VERIFICADO**, no PASS. No hay artefacto 0.10.49 descargado ni instalado aún.
 
 ### 10.4 Aceptación pendiente
 
