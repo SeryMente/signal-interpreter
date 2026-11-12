@@ -42,7 +42,7 @@ if(allowEmpty===true&&before.verified&&before.stable&&Number(before.trackCount||
 if(!before.verified||!before.stable){
   // A hotload or platform track transition can leave a live track briefly inconsistent.
   // Re-establish and verify a muted baseline, then continue this same explicit unmute request.
-  muted=true;state.muted=true;
+  muted=true;state.muted=true;syncMuteEnforcement();
   tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_){}});
   var safe=await stableReport(3,25);
   if(!safe.verified||!safe.stable||Number(safe.trackCount||0)<1){
@@ -51,11 +51,11 @@ if(!before.verified||!before.stable){
   }
   recoveredBaseline=true;
 }
-muted=false;state.muted=false;
+muted=false;state.muted=false;syncMuteEnforcement();
 tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=true}catch(_){}});
 var r=await stableReport(3,20);
 if(!r.verified||!r.stable){
-  muted=true;state.muted=true;
+  muted=true;state.muted=true;syncMuteEnforcement();
   tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_){}});
   r=await stableReport(3,20);
   ack(id,{ok:false,muted:true,verified:false,stable:!!r.stable,stableSamples:r.stableSamples||0,trackCount:r.trackCount,senderCount:r.senderCount,error:"El unmute no pudo verificarse de forma estable; el micrófono permanece silenciado.",recoveredBaseline:recoveredBaseline});
