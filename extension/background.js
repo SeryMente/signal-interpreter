@@ -2814,8 +2814,12 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     record("EXTENSION_MICROPHONE_MUTE_APPLIED",{desired:desired,source:source||"unknown",callId:state.callId||null,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,recoveredBaseline:!!outputResult.recoveredBaseline,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)},"info","microphone");
     if(cachedConfig.soundEnabled!==false){
       try{
-        await playSound(Math.max(0.05,Number(cachedConfig.volume||0.8)),desired?"mute-on":"mute-off");
-        record("EXTENSION_MICROPHONE_SOUND_PLAYED",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",volume:Number(cachedConfig.volume||0.8)},"info","microphone");
+        Promise.resolve(playSound(Math.max(0.05,Number(cachedConfig.volume||0.8)),desired?"mute-on":"mute-off"))
+          .then(function(){
+            record("EXTENSION_MICROPHONE_SOUND_PLAYED",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",volume:Number(cachedConfig.volume||0.8)},"info","microphone");
+          }).catch(function(soundError){
+            record("EXTENSION_MICROPHONE_SOUND_ERROR",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",error:String(soundError)},"warn","microphone");
+          });
       }catch(soundError){
         record("EXTENSION_MICROPHONE_SOUND_ERROR",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",error:String(soundError)},"warn","microphone");
       }
