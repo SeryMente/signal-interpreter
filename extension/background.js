@@ -2837,7 +2837,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       var stored = await chrome.storage.local.get(["effectifState"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       var recovering = state.microphoneMuteStatus === "error" || state.microphoneOutputStatus === "error";
-      var desired = hasActiveCall(state) ? (recovering ? false : !state.microphoneMuted) : true;
+      var desired = nextMicrophoneToggleMuted(state);
       if (recovering) record("EXTENSION_MICROPHONE_TOGGLE_RECOVERY_RETRY", {
         source: source || "toggle", desired: desired, previousMuted: !!state.microphoneMuted,
         policy: "retry-last-request; legacy-error-defaults-to-unmute"
