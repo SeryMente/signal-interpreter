@@ -5,7 +5,7 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const expectedVersion = "0.10.48";
+const expectedVersion = "0.10.49";
 const readText = (p) => readFileSync(resolve(root, p), "utf8");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex").toUpperCase();
 const manifest = JSON.parse(readText("manifest.json"));
@@ -81,8 +81,17 @@ assert.ok(background.includes('blue: "#3b82f6"'), "contextual blue indicator is 
 assert.ok(background.includes("function aggregateCloudActionStatus"), "global Cloud status aggregator is absent");
 assert.ok(background.includes('globalStatus==="active"?"blue":globalStatus'), "external blue icon is not gated by Cloud active status");
 assert.ok(background.includes("fail-closed-on-unmute-verification-error"), "microphone unmute error is not fail-closed");
-assert.ok(background.includes("EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL"), "idle unmute guard is missing");
-assert.ok(background.includes('setExtensionMicrophoneMuted(false, "call-accepted")'), "call-accepted unmute is missing");
+assert.ok(background.includes("function nextMicrophoneToggleMuted(state)"), "pre-call manual toggle intent is missing");
+assert.equal((background.match(/var desired = nextMicrophoneToggleMuted\(state\);/g) || []).length, 2, "both toggle queue paths must share the same state transition");
+assert.ok(background.includes("EXTENSION_MICROPHONE_PRECALL_INTENT_SAVED"), "pre-call intent persistence is missing");
+assert.ok(background.includes("outputMuted:true"), "pre-call output must remain muted");
+assert.ok(background.includes('setExtensionMicrophoneMuted(true, "call-start-safe")'), "new calls must begin with an explicit mute");
+assert.ok(!background.includes('setExtensionMicrophoneMuted(false, "call-accepted")'), "call acceptance must not auto-unmute");
+assert.ok(existsSync(resolve(root, "tools/microphone-global-toggle-test.mjs")), "global microphone toggle regression test is missing");
+assert.ok(background.includes("CALL_START_MICROPHONE_MUTED"), "call-start mute verification is missing");
+assert.ok(background.includes("function withMicrophoneTimeout(promise, timeoutMs, fallback)"), "microphone message deadline is missing");
+assert.ok(background.includes("1000,"), "content message must have a finite response timeout");
+assert.ok(popupJs.includes("},12000);"), "popup toggle watchdog is missing");
 assert.ok(background.includes('setMainClientMicrophoneMuted(state.callSourceTabId,true,"call-ended")'), "call-end mute is missing");
 assert.ok(micGuard.includes("var muted=old?!!old.muted:true;"), "main-world microphone default is not muted");
 assert.ok(presenceGuard.includes("signalPresenceGuardSession") && presenceGuard.includes("Promise.all(["), "presence continuity/parallel authorization is missing");
