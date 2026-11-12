@@ -469,3 +469,10 @@ No existe corpus no clínico expresamente autorizado, gold transcript con dos an
 - No se cambia la pista WebRTC saliente ni se inserta DSP en la reproducción remota. La copia ASR del micrófono y la copia ASR de la pestaña permanecen independientes.
 - Prueba sintética ampliada: comprueba inicio/parada del watchdog y las frecuencias de render declaradas. No demuestra reducción medida de CPU, ausencia de jitter en hardware ni calidad acústica real.
 - La aceptación sigue reservada al operador; no realizar llamadas, captura real, recarga Chrome, merge, deploy o release desde este ciclo.
+
+### 14.1 · Validación de regresión en fila4
+
+- En el staging aislado bajo C:\\Users\\fila4\\Desktop\\SeryMente\\Temporal\\SI-audio-quality-tests-20261112, `MICROPHONE_MAIN_GUARD_TEST=PASS` con la versión exacta de los cuatro archivos materializados desde la rama candidata.
+- `CALL_EARNINGS_BASELINE_TEST=PASS` tras alinear el límite de extracción del test con el handler vigente `alertOnConnect(event)`.
+- El test de MIC conserva el contrato real de prellamada: sin llamada/pestaña autorizada, guarda intención de unmute pero mantiene `microphoneOutputMuted=true`, `microphoneOutputStatus=idle-safe` y cero pistas activas. No se simula un bloqueo que el código no implementa.
+- La ejecución local fue sintética; no se capturó audio real, no se abrió una llamada ni se recargó Chrome.
