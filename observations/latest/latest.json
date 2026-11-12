@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-a367ea32-112c-4508-bf41-c9380de84977",
-  "createdAt": "2026-11-12T11:40:24.344Z",
+  "batchId": "batch-41f5c323-93ae-4731-a658-0dd9df686d27",
+  "createdAt": "2026-11-12T11:44:07.865Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.47",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "d3392239-0eb6-4487-be4c-98589f9f22f5",
-      "sequence": 67004,
-      "timestamp": "2026-11-12T11:40:06.418Z",
-      "ingestedAt": "2026-11-12T11:40:06.418Z",
+      "id": "1962cbef-541c-4ab5-b12f-2ee411501cad",
+      "sequence": 67006,
+      "timestamp": "2026-11-12T11:44:06.150Z",
+      "ingestedAt": "2026-11-12T11:44:06.150Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "background",
       "extensionVersion": "0.10.47",
       "host": "",
       "url": "",
-      "phase": "event",
-      "action": "TELEMETRY_MAINTENANCE",
-      "outcome": "observed",
-      "traceId": "2a680b1b-9fb7-4885-a142-68f4bf18c5e9",
+      "phase": "started",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
+      "outcome": "success",
+      "traceId": "7751bf7e-3973-4d2c-8f11-82e0834897a8",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -44,42 +44,25 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "pruned": {
-          "cutoff": "[PHONE]T11:40:06.111Z",
-          "expiredEvents": 0,
-          "expiredSnapshots": 0,
-          "expiredSignalSegments": 0,
-          "excessEvents": 0,
-          "excessSignalSegments": 0
-        },
-        "stats": {
-          "database": "signal-interpreter-telemetry",
-          "events": 48082,
-          "snapshots": 0,
-          "signalSegments": 0,
-          "oldestEventAt": "[PHONE]T15:01:58.352Z",
-          "newestEventAt": "[PHONE]T11:39:12.374Z",
-          "usageBytes": 37340777,
-          "quotaBytes": 39826900585
-        }
+        "trigger": "hourly"
       }
     },
     {
       "schema": "khora-effectif-event/v4",
-      "id": "6621ee60-3dc9-4fcc-8404-725c22e868fa",
-      "sequence": 67005,
-      "timestamp": "2026-11-12T11:40:09.365Z",
-      "ingestedAt": "2026-11-12T11:40:09.365Z",
-      "level": "warn",
+      "id": "5f6e85fc-fd4a-46eb-a8a9-c75e331a455a",
+      "sequence": 67007,
+      "timestamp": "2026-11-12T11:44:06.640Z",
+      "ingestedAt": "2026-11-12T11:44:06.640Z",
+      "level": "info",
       "category": "RUNTIME",
       "component": "background",
       "extensionVersion": "0.10.47",
       "host": "",
       "url": "",
       "phase": "event",
-      "action": "OBSERVATION_SYNC_RETRY_SCHEDULED",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED",
       "outcome": "observed",
-      "traceId": "83746c41-1dba-4bde-905f-c74d56adeb94",
+      "traceId": "bbd30059-8b6e-46e4-a9c9-2f263f1498e9",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -93,8 +76,8 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
-      "error": "Error: Relay HTTP 409",
+      "reasonCode": "CLOUD_TAB_UNAVAILABLE",
+      "error": null,
       "metrics": {},
       "context": {},
       "privacy": {
@@ -103,27 +86,27 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "retryMs": 15000,
-        "error": "Error: Relay HTTP 409",
-        "sequence": null
+        "trigger": "hourly",
+        "reasonCode": "CLOUD_TAB_UNAVAILABLE",
+        "policy": "no-tab-create-no-navigation-no-reload; retry-next-hour"
       }
     }
   ],
   "summary": {
     "eventsTotal": 2,
     "errors": 0,
-    "warnings": 1,
+    "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 67004,
-    "lastSequence": 67005,
-    "firstTimestamp": "2026-11-12T11:40:06.418Z",
-    "lastTimestamp": "2026-11-12T11:40:09.365Z",
+    "firstSequence": 67006,
+    "lastSequence": 67007,
+    "firstTimestamp": "2026-11-12T11:44:06.150Z",
+    "lastTimestamp": "2026-11-12T11:44:06.640Z",
     "actions": {
-      "TELEMETRY_MAINTENANCE": 1,
-      "OBSERVATION_SYNC_RETRY_SCHEDULED": 1
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED": 1
     },
     "categories": {
       "RUNTIME": 2
