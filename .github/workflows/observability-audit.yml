@@ -51,6 +51,7 @@ jobs:
           node --check extension/live-caption-overlay.js
           node --check extension/youtube-caption-adapter.js
           node --check extension/ui/popup.js
+          node --check extension/ui/microphone-preflight.js
           node --check extension/observability-relay.js
           node --check tools/observability-relay/api/batch.js
           node --check extension/observation-sync.js
@@ -98,6 +99,8 @@ jobs:
         run: node tools/global-microphone-hotkey-test.mjs
       - name: Microphone feedback unit test
         run: node tools/microphone-feedback-test.mjs
+      - name: Local microphone preflight lifecycle unit test
+        run: node tools/microphone-preflight-test.mjs
       - name: Platform screenshot unit test
         run: node tools/platform-screenshot-test.mjs
       - name: GitHub package pipeline unit test
