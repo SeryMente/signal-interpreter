@@ -89,6 +89,9 @@ assert.ok(background.includes('setExtensionMicrophoneMuted(true, "call-start-saf
 assert.ok(!background.includes('setExtensionMicrophoneMuted(false, "call-accepted")'), "call acceptance must not auto-unmute");
 assert.ok(existsSync(resolve(root, "tools/microphone-global-toggle-test.mjs")), "global microphone toggle regression test is missing");
 assert.ok(background.includes("CALL_START_MICROPHONE_MUTED"), "call-start mute verification is missing");
+assert.ok(background.includes("function withMicrophoneTimeout(promise, timeoutMs, fallback)"), "microphone message deadline is missing");
+assert.ok(background.includes("1000,"), "content message must have a finite response timeout");
+assert.ok(popupJs.includes("},12000);"), "popup toggle watchdog is missing");
 assert.ok(background.includes('setMainClientMicrophoneMuted(state.callSourceTabId,true,"call-ended")'), "call-end mute is missing");
 assert.ok(micGuard.includes("var muted=old?!!old.muted:true;"), "main-world microphone default is not muted");
 assert.ok(presenceGuard.includes("signalPresenceGuardSession") && presenceGuard.includes("Promise.all(["), "presence continuity/parallel authorization is missing");
