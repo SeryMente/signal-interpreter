@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-8d34d044-4c00-40cb-a8b2-5e1be9fe5905",
-  "createdAt": "2026-11-12T02:39:13.034Z",
-  "trigger": "critical",
+  "batchId": "batch-0b556227-e12c-4ba8-8913-487887cf3485",
+  "createdAt": "2026-11-12T02:40:07.860Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.47",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "3271840e-7526-47a2-98d6-2dbaa7787283",
-      "sequence": 66966,
-      "timestamp": "2026-11-12T02:39:12.599Z",
-      "ingestedAt": "2026-11-12T02:39:12.599Z",
-      "level": "warn",
-      "category": "BILLING",
+      "id": "a9054626-d739-4bfb-9dc4-08ea719dfc3b",
+      "sequence": 66967,
+      "timestamp": "2026-11-12T02:40:06.412Z",
+      "ingestedAt": "2026-11-12T02:40:06.412Z",
+      "level": "info",
+      "category": "RUNTIME",
       "component": "background",
       "extensionVersion": "0.10.47",
       "host": "",
       "url": "",
-      "phase": "error",
-      "action": "EXCHANGE_RATE_ERROR",
-      "outcome": "error",
-      "traceId": "7cfa991a-7904-4005-aff7-a6c73d671773",
+      "phase": "event",
+      "action": "TELEMETRY_MAINTENANCE",
+      "outcome": "observed",
+      "traceId": "6548d636-8938-4a20-bbd5-3f759357a801",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -34,8 +34,8 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": "alarm",
-      "error": "Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy.",
+      "reasonCode": null,
+      "error": null,
       "metrics": {},
       "context": {},
       "privacy": {
@@ -44,29 +44,44 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "pair": "USD/MXN",
-        "message": "Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy.",
-        "reason": "alarm"
+        "pruned": {
+          "cutoff": "[PHONE]T02:40:06.107Z",
+          "expiredEvents": 0,
+          "expiredSnapshots": 0,
+          "expiredSignalSegments": 0,
+          "excessEvents": 0,
+          "excessSignalSegments": 0
+        },
+        "stats": {
+          "database": "signal-interpreter-telemetry",
+          "events": 48045,
+          "snapshots": 0,
+          "signalSegments": 0,
+          "oldestEventAt": "[PHONE]T15:01:58.352Z",
+          "newestEventAt": "[PHONE]T02:39:12.599Z",
+          "usageBytes": 37270807,
+          "quotaBytes": 39989363991
+        }
       }
     }
   ],
   "summary": {
     "eventsTotal": 1,
     "errors": 0,
-    "warnings": 1,
-    "critical": true,
+    "warnings": 0,
+    "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 66966,
-    "lastSequence": 66966,
-    "firstTimestamp": "2026-11-12T02:39:12.599Z",
-    "lastTimestamp": "2026-11-12T02:39:12.599Z",
+    "firstSequence": 66967,
+    "lastSequence": 66967,
+    "firstTimestamp": "2026-11-12T02:40:06.412Z",
+    "lastTimestamp": "2026-11-12T02:40:06.412Z",
     "actions": {
-      "EXCHANGE_RATE_ERROR": 1
+      "TELEMETRY_MAINTENANCE": 1
     },
     "categories": {
-      "BILLING": 1
+      "RUNTIME": 1
     }
   }
 }
