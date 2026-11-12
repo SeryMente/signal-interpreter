@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-710f417b-3f5e-443d-851b-c7e5b6e3a96c",
-  "createdAt": "2026-11-11T23:44:07.857Z",
-  "trigger": "alarm",
+  "batchId": "batch-812479b3-7e6d-45c5-8cb9-0268f2251b4f",
+  "createdAt": "2026-11-12T00:39:43.051Z",
+  "trigger": "event-window",
   "extensionVersion": "0.10.47",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "5659c8ac-e532-422c-a4f4-ccb5b80c32e1",
-      "sequence": 66955,
-      "timestamp": "2026-11-11T23:44:06.175Z",
-      "ingestedAt": "2026-11-11T23:44:06.175Z",
+      "id": "e0fe2dcf-751d-4f9e-a8a9-ac2e773d4726",
+      "sequence": 66957,
+      "timestamp": "2026-11-12T00:39:12.533Z",
+      "ingestedAt": "2026-11-12T00:39:12.533Z",
       "level": "info",
-      "category": "RUNTIME",
+      "category": "BILLING",
       "component": "background",
       "extensionVersion": "0.10.47",
       "host": "",
       "url": "",
-      "phase": "started",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
+      "phase": "completed",
+      "action": "EXCHANGE_RATE_UPDATED",
       "outcome": "success",
-      "traceId": "7c4f4663-474e-415e-b19a-c95e29a45e82",
+      "traceId": "3407854b-9f8a-4c44-8bb4-41cdcbdbba94",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -34,7 +34,7 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
+      "reasonCode": "alarm",
       "error": null,
       "metrics": {},
       "context": {},
@@ -44,72 +44,31 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "4d6dbff1-b425-4df4-a25a-3bc2d71206f8",
-      "sequence": 66956,
-      "timestamp": "2026-11-11T23:44:06.821Z",
-      "ingestedAt": "2026-11-11T23:44:06.821Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.47",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED",
-      "outcome": "observed",
-      "traceId": "fe679cd5-cf59-49c3-ad25-f1083887836a",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.47",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "CLOUD_TAB_UNAVAILABLE",
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "hourly",
-        "reasonCode": "CLOUD_TAB_UNAVAILABLE",
-        "policy": "no-tab-create-no-navigation-no-reload; retry-next-hour"
+        "pair": "USD/MXN",
+        "rate": 18.6077,
+        "rateDate": "[PHONE]",
+        "source": "Frankfurter / blended daily",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 66955,
-    "lastSequence": 66956,
-    "firstTimestamp": "2026-11-11T23:44:06.175Z",
-    "lastTimestamp": "2026-11-11T23:44:06.821Z",
+    "firstSequence": 66957,
+    "lastSequence": 66957,
+    "firstTimestamp": "2026-11-12T00:39:12.533Z",
+    "lastTimestamp": "2026-11-12T00:39:12.533Z",
     "actions": {
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED": 1
+      "EXCHANGE_RATE_UPDATED": 1
     },
     "categories": {
-      "RUNTIME": 2
+      "BILLING": 1
     }
   }
 }
