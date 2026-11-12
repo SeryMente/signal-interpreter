@@ -5,8 +5,10 @@ if(background.includes("if(config.soundEnabled!==false){"))throw Error("micropho
 if(!background.includes("function requestKeyboardMicrophoneToggle(source)"))throw Error("hotkey-command-and-fallback-dispatch-missing");
 if(!background.includes("fail-closed-on-unmute-verification-error"))throw Error("fail-closed-unmute-recovery-missing");
 if(background.includes("never-reapply-stale-mute-on-unmute-failure"))throw Error("unsafe-unmute-error-policy-regression");
-if(!background.includes("EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL"))throw Error("idle-unmute-guard-missing");
-if(!background.includes("microphoneMuted: true,"))throw Error("idle-default-mute-missing");
+if(!background.includes("EXTENSION_MICROPHONE_PRECALL_INTENT_SAVED"))throw Error("precall-manual-toggle-intent-missing");
+if(!background.includes("function nextMicrophoneToggleMuted(state)"))throw Error("global-mic-toggle-transition-missing");
+if(!background.includes("microphoneOutputMuted: true,"))throw Error("idle-output-must-remain-muted");
+if(!background.includes('setExtensionMicrophoneMuted(true, "call-start-safe")'))throw Error("call-start-mute-required");
 const main=fs.readFileSync("extension/mic-guard-main.js","utf8");
 if(!main.includes("var muted=old?!!old.muted:true;"))throw Error("main-world-default-mute-missing");
 if(!main.includes("recoveryBaselineAttempted")||!main.includes("recoveredBaseline:recoveredBaseline"))throw Error("pre-unmute-baseline-recovery-missing");
