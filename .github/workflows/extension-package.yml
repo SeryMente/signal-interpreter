@@ -1,0 +1,53 @@
+name: Signal Interpreter extension package
+on:
+  pull_request:
+    paths:
+      - "manifest.json"
+      - "INSTALAR.ps1"
+      - "payload-sha256.json"
+      - "extension/**"
+      - "tools/verify-release-package.mjs"
+      - "tools/microphone-preflight-test.mjs"
+      - ".github/workflows/extension-package.yml"
+  push:
+    branches: [main]
+    paths:
+      - "manifest.json"
+      - "INSTALAR.ps1"
+      - "payload-sha256.json"
+      - "extension/**"
+      - "tools/verify-release-package.mjs"
+      - "tools/microphone-preflight-test.mjs"
+      - ".github/workflows/extension-package.yml"
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify installer inventory and package identity
+        run: node tools/verify-release-package.mjs
+      - name: Test local microphone preflight lifecycle
+        run: node tools/microphone-preflight-test.mjs
+      - name: Build installable unpacked-extension ZIP
+        shell: bash
+        run: |
+          VERSION="$(node -p "JSON.parse(require('fs').readFileSync('manifest.json','utf8')).version")"
+          mkdir -p "dist/SignalInterpreter"
+          cp manifest.json "dist/SignalInterpreter/manifest.json"
+          cp -R extension "dist/SignalInterpreter/extension"
+          (cd dist && zip -qr "SignalInterpreter-${VERSION}.zip" SignalInterpreter)
+          sha256sum "dist/SignalInterpreter-${VERSION}.zip" | tee "dist/SignalInterpreter-${VERSION}.zip.sha256"
+      - name: Upload installable extension package
+        uses: actions/upload-artifact@v4
+        with:
+          name: SignalInterpreter-extension-package
+          path: |
+            dist/SignalInterpreter-*.zip
+            dist/SignalInterpreter-*.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
