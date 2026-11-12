@@ -20,7 +20,7 @@ assert.doesNotMatch(backgroundSource,/requestCallAlert\(/,
   "no extension-generated call alert may be injected into live call playback");
 assert.match(backgroundSource,/soundEnabled!==false&&!outputRequired/,
   "mute tones must not be added to active call playback");
-assert.match(backgroundSource,/EFFECTIF_TEST_SOUND[\\s\\S]*hasActiveCall\\(testState\\)/,
+assert.match(backgroundSource,/EFFECTIF_TEST_SOUND[\s\S]*hasActiveCall\(testState\)/,
   "the service worker must reject manual test tones during active calls");
 assert.doesNotMatch(contentSource,/playPageCallBeep\("confirmed-answer-route"/,
   "call confirmation beeps must not be mixed into original call playback");
