@@ -161,26 +161,29 @@ Se modificó la carpeta descomprimida que Chrome carga desde el directorio `sign
 
 Chrome no se recargó desde esta ejecución; la actualización física del código del directorio no equivale a que el runtime de Chrome ya esté ejecutándolo. Queda pendiente pulsar Reload en `chrome://extensions` y comprobar el switch verde/preparado en la pantalla de espera. No se realizó llamada real ni se verificó pista acústica en este ciclo.
 
-### 10.3 Integración formal candidata
+### 10.3 Integración formal y CI · 0.10.49
 
 - Versión del manifiesto: **0.10.49**.
-- Rama: `fix/global-mic-toggle-precall-20261112-main-sync`.
-- PR #92: [Release Signal Interpreter 0.10.49 — global microphone toggle](https://github.com/SeryMente/signal-interpreter/pull/92).
-- Base de la PR: `main` en `73da70f92e2c446736ba9714b3d75a32f6b96348`; rama sincronizada desde el main actualizado, 0 commits detrás. La PR #91 inicial quedó obsoleta al avanzar main y se cerró sin merge.
-- Cambios: worker, popup, instalador, manifiesto, inventario SHA-256, README, backlog, objeto canónico, verificador de paquete, workflow de empaquetado y regresión dedicada.
-- `tools/microphone-global-toggle-test.mjs` cubre: toggle ON preparado en espera, salida aún bloqueada, segundo clic OFF, inicio de llamada silenciado, ausencia de auto-unmute, remute al cierre, ambos caminos de la cola y deadlines finitos.
-- `verify-release-package.mjs` deja de exigir la política anterior de bloqueo del control y auto-unmute al aceptar; ahora exige intención prellamada, salida cerrada y mute explícito al inicio.
-- `payload-sha256.json` se actualizó con los hashes SHA-256 del worker, popup, manifiesto, instalador y verificador de paquete.
+- Rama sincronizada: fix/global-mic-toggle-precall-20261112-main-sync.
+- PR #92: [Release Signal Interpreter 0.10.49 — global microphone toggle](https://github.com/SeryMente/signal-interpreter/pull/92) · **CLOSED / MERGED**.
+- Merge commit: 95f2fffedf4989eec451258f745178910089bcd1.
+- HEAD probado de la PR: 8125e07c270f690c715bd56284a9035c64b643cc. La rama se creó desde el main vigente y preservó las actualizaciones concurrentes de observations/**. PR #91 se cerró sin merge por quedar divergente; PR #92 fue su reemplazo sincronizado.
+- CI del HEAD exacto de PR #92:
+  - Package integrity run 43280502635: **SUCCESS (8/8)**.
+  - Signal Interpreter extension package run 43280502686: **SUCCESS (11/11)**.
+  - Signal observability audit run 43280502833: **SUCCESS (46/46)**.
+  - Native caption host build run 43280502873: **SUCCESS (10/10)**; el paso de sincronizar payload embebido fue omitido porque la fuente del host no cambió.
+- Artefacto SignalInterpreter-extension-package, ID 13972461935, 916,294 bytes; SHA-256 del ZIP exterior 75d335b41b0ba0ed27923cc54bdfe29af4dfd7c7caec4f525fa6c0ab3509bed5. Paquete interno SignalInterpreter-0.10.49.zip, 923,661 bytes; SHA-256 d2956b3d95dd8d467735a8569ad0daba67b066e9e3bb71506231366adf06390d, coincidente con el sidecar.
+- payload-sha256.json y los verificadores de release quedaron alineados con los hashes finales. Lectura de vuelta desde main: manifest 0.10.49; worker y popup contienen la semántica de intención preparada, salida bloqueada sin llamada, mute explícito al inicio y deadlines finitos.
 
-**Estado al escribir esta crónica:** PR #92 OPEN / NOT MERGED. El endpoint de workflows/status no devolvió ejecuciones asociadas al HEAD en esta consulta; CI se clasifica **NO VERIFICADO**, no PASS. No hay artefacto 0.10.49 descargado ni instalado aún.
+### 10.4 Materialización local y aceptación pendiente
 
-### 10.4 Aceptación pendiente
+- El ZIP de release se descargó, se extrajo y se verificaron SHA-256 exterior/interior/sidecar antes de copiarlo.
+- La carpeta de carga Chrome fue sustituida en C:\Users\fila4\Desktop\SeryMente\Repositorios\signal-interpreter\extension. Read-back: versión **0.10.49**, **49 archivos**, **1,702,759 bytes**.
+- Hashes locales: manifiesto A019D2C9F584128AFE2334A5B15AA4DC209C03E54E3B7CA3C7DE65369298D2B4; worker FDCE9F7F50A75DCA1DA1E6C91B7D9EE4E0214118779B7A793DD1CC2E101FBD04; popup 6C9AA756486B59E98569C0EC4907F23661A6D9F7EC30030902306749F94454D4.
+- Rollback previo a la sustitución formal: SI-extension-pre-0.10.49-20261112.zip, 919,287 bytes; SHA-256 cotejado FFBC3F9EA66CD4444902F736979976E6EFE59532AEE9693B9F69DC09348C7155. Se conserva también el respaldo anterior del paquete 0.10.48 y el backup previo al hotfix.
+- **Aceptación operativa aún pendiente:** Chrome no se ha recargado después de sustituir la carpeta. Falta pulsar Reload en chrome://extensions, verificar visualmente el primer clic verde/preparado y el segundo clic OFF desde la pantalla de espera, y probar en una llamada controlada MIC OFF inicial, unmute manual, toggle de regreso a OFF y remute al cierre.
+- También sigue pendiente verificar la salida de emergencia: desactivar/desinstalar la extensión, confirmar liberación de recursos y recargar la pestaña Cloud Interpreter para limpiar el wrapper MAIN-world del documento. No hubo llamada real ni captura acústica durante este ciclo; CI y hashes no equivalen a aceptación física del operador.
 
-1. CI de paquete, integridad, observabilidad y host nativo en el HEAD final de PR #91.
-2. Carga/reload de 0.10.49 en Chrome; pantalla de espera, primer clic verde/preparado y segundo clic OFF, ambos sin abrir salida.
-3. Llamada controlada: OFF al iniciar, unmute solo por clic manual, estado real de pista/sender coincidente, siguiente clic a OFF y remute al finalizar/perder sesión.
-4. Verificar salida de emergencia al desactivar/desinstalar la extensión; la intervención MAIN-world está ligada al documento, por lo que recargar la pestaña de Cloud Interpreter es el mecanismo de limpieza del contexto.
-5. Aceptación explícita del operador. Ninguna prueba sintética sustituye la verificación de Chrome y del dispositivo.
-
-La versión 0.10.48 sigue siendo solo el paquete provisional local del ciclo anterior; no atribuirle la corrección formal ni la aceptación de este contrato.
+La versión 0.10.48 fue sustituida por 0.10.49 en la carpeta de carga local; no atribuir a 0.10.48 la corrección formal ni la aceptación de este contrato.
 
