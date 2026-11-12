@@ -4,7 +4,7 @@ import vm from "node:vm";
 const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
 const popup = fs.readFileSync("extension/ui/popup.html", "utf8");
 const source = fs.readFileSync("extension/ui/microphone-preflight.js", "utf8");
-assert.equal(manifest.version, "0.10.49");
+assert.equal(manifest.version, "0.10.50");
 assert.ok(popup.includes('id="micPreflightStart"'));
 assert.ok(popup.includes('id="micPreflightStop"'));
 assert.ok(popup.includes('id="micPreflightMeter"'));

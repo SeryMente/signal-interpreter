@@ -569,7 +569,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     if (active) await scheduleSafeRuntimeReload("update-available-active-call", true);
     else await scheduleSafeRuntimeReload("update-available-no-call");
   }
-  async function executeMainMicrophoneCommand(tabId, op, muted, source) {
+  async function executeMainMicrophoneCommand(tabId, op, muted, source, allowEmpty) {
     var targetTabId=Number(tabId);
     if(!Number.isFinite(targetTabId))return{ok:false,verified:false,muted:!!muted,trackCount:0,senderCount:0,error:"No hay una pestaña de llamada controlable."};
     try{
@@ -613,6 +613,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
                 op:input.op,
                 requestId:requestId,
                 muted:!!input.muted,
+                allowEmpty:input.allowEmpty===true,
                 reason:input.source||"background-direct"
               })}));
             }catch(error){
@@ -624,7 +625,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
             },1500);
           });
         },
-        args:[{op:op,muted:!!muted,source:source||"background-direct"}]
+        args:[{op:op,muted:!!muted,allowEmpty:allowEmpty===true,source:source||"background-direct"}]
       });
       var result=executions&&executions[0]&&executions[0].result;
       return result||{ok:false,verified:false,muted:!!muted,trackCount:0,senderCount:0,error:"Direct microphone command returned no result."};
@@ -2656,14 +2657,14 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       new Promise(function(resolve){timer=setTimeout(function(){resolve(fallback);},timeoutMs);})
     ]).finally(function(){if(timer)clearTimeout(timer);});
   }
-  async function setMainClientMicrophoneMuted(tabId, muted, source) {
+  async function setMainClientMicrophoneMuted(tabId, muted, source, allowEmpty) {
     var targetTabId=Number(tabId);
     if(!Number.isFinite(targetTabId))return{ok:false,muted:!!muted,verified:false,inactive:true,error:"No hay una pestaña de llamada controlable."};
     var lastError=null;
     for(var attempt=1;attempt<=2;attempt+=1){
       try{
         var response=await withMicrophoneTimeout(
-          chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:!!muted,source:source||"background"}),
+          chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:!!muted,allowEmpty:allowEmpty===true,source:source||"background"}),
           1000,
           {ok:false,verified:false,muted:!!muted,error:"Timeout esperando verificación del contenido; se intentará el canal MAIN directo."}
         );
@@ -2673,7 +2674,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         }
         lastError=response&&response.error||"La salida del micrófono no pudo verificarse.";
       }catch(error){lastError=String(error);}
-      var direct=await executeMainMicrophoneCommand(targetTabId,"set",!!muted,source||"background-direct");
+      var direct=await executeMainMicrophoneCommand(targetTabId,"set",!!muted,source||"background-direct",allowEmpty===true);
       if(direct&&direct.verified===true&&!!direct.muted===!!muted){
         record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(direct.trackCount||0),senderCount:Number(direct.senderCount||0),recoveredBaseline:!!direct.recoveredBaseline,attempts:attempt,transport:"direct-main"},"info","microphone");
         return Object.assign({},direct,{ok:true,inactive:false,attempts:attempt,transport:"direct-main"});
@@ -2711,11 +2712,52 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var captureActive=!!(state.groqCapture&&state.groqCapture.status==="connected");
     var outputRequired=hasActiveCall(state);
     if (!outputRequired) {
+      var controlTabs=[];
+      try { controlTabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"}); } catch (_) {}
+      controlTabs=(controlTabs||[]).filter(function(tab){return tab&&tab.id!=null&&isAuthorizedCloudUrl(tab.url);});
+      var controlTab=controlTabs.find(function(tab){return Number(tab.id)===Number(state.callSourceTabId);})||
+        controlTabs.find(function(tab){return tab.active===true;})||controlTabs[0]||null;
+      if(controlTab){
+        var preCallOutput=await setMainClientMicrophoneMuted(controlTab.id,desired,source||"pre-call-toggle",true);
+        if(!preCallOutput||preCallOutput.verified!==true||!!preCallOutput.muted!==desired){
+          state.microphoneMuted=true;
+          state.microphoneMuteRequested=desired;
+          state.microphoneMuteStatus="error";
+          state.microphoneOutputMuted=true;
+          state.microphoneOutputStatus="error";
+          state.microphoneOutputTrackCount=Number(preCallOutput&&preCallOutput.trackCount||0);
+          state.microphoneOutputSenderCount=Number(preCallOutput&&preCallOutput.senderCount||0);
+          state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
+          await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+          record("EXTENSION_MICROPHONE_PRECALL_OUTPUT_VERIFY_ERROR",{
+            desired:desired,source:source||"unknown",tabId:controlTab.id,error:preCallOutput&&preCallOutput.error||"verification-failed"
+          },"error","microphone");
+          return {ok:false,muted:true,requestedMuted:desired,verified:false,outputMuted:true,error:preCallOutput&&preCallOutput.error||"No se pudo verificar el micrÃ³fono en la pestaÃ±a activa."};
+        }
+        state.microphoneMuted=desired;
+        state.microphoneMuteRequested=desired;
+        state.microphoneMuteStatus="applied";
+        state.microphoneOutputMuted=desired;
+        state.microphoneOutputStatus="applied";
+        state.microphoneOutputTrackCount=Number(preCallOutput.trackCount||0);
+        state.microphoneOutputSenderCount=Number(preCallOutput.senderCount||0);
+        state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
+        await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
+        record("EXTENSION_MICROPHONE_PRECALL_OUTPUT_APPLIED",{
+          desired:desired,source:source||"unknown",tabId:controlTab.id,trackCount:Number(preCallOutput.trackCount||0),
+          senderCount:Number(preCallOutput.senderCount||0),allowEmpty:true
+        },"info","microphone");
+        return {
+          ok:true,muted:desired,requestedMuted:desired,verified:true,prepared:false,
+          inactive:true,outputMuted:desired,outputVerified:true,
+          trackCount:Number(preCallOutput.trackCount||0),senderCount:Number(preCallOutput.senderCount||0)
+        };
+      }
       state=applyPreCallMicrophoneIntent(state,desired);
       await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
       record("EXTENSION_MICROPHONE_PRECALL_INTENT_SAVED",{
         desired:desired,source:source||"unknown",outputMuted:true,
-        policy:"manual-toggle-intent-only-no-call-output-remains-fail-closed"
+        policy:"no-authorized-cloud-tab-no-output-to-control"
       },"info","microphone");
       return {
         ok:true,muted:desired,requestedMuted:desired,verified:true,prepared:!desired,
