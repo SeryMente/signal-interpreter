@@ -262,3 +262,15 @@ small,.status-line{font-size:14px;line-height:1.5;color:#bac3cf}.mic-card,.quick
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 
 .header-actions{display:grid;justify-items:end;gap:8px}.header-actions #openLab{min-width:70px;background:#26364d;border-color:#526d91}#earningSummary{max-width:180px;line-height:1.4;font-size:14px}
+
+/* 0.10.48 — local microphone preflight, isolated from call mute state. */
+.mic-preflight-card { display:grid; gap:9px; padding:12px; }
+.mic-preflight-badge { border:1px solid #526d91; border-radius:999px; padding:4px 8px; color:#cfe4ff; background:#26364d; font:700 11px/1.2 ui-monospace,monospace; }
+.mic-preflight-badge[data-state="testing"] { color:#d1fae5; border-color:#356a4d; background:#183024; }
+.mic-preflight-badge[data-state="failed"] { color:#ffe0e0; border-color:#7a4444; background:#351c1c; }
+.mic-preflight-status { margin:0; color:#c0ccd8; min-height:2.8em; font-size:13px; line-height:1.45; }
+.mic-preflight-level { display:flex; align-items:center; gap:10px; }
+.mic-preflight-level meter { width:100%; height:14px; accent-color:#42b883; }
+.mic-preflight-level output { min-width:42px; color:#d9e6f2; text-align:right; font:700 12px ui-monospace,monospace; }
+.mic-preflight-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.mic-preflight-note { color:#8fa0af; line-height:1.45; }
