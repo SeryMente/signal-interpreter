@@ -205,7 +205,7 @@ const preCallMirror = {
 }
 
 const startCallAt = background.indexOf("function startCall(event)");
-const alertAt = background.indexOf("var callAlertInFlight", startCallAt);
+const alertAt = background.indexOf("function alertOnConnect(event)", startCallAt);
 assert.ok(startCallAt >= 0 && alertAt > startCallAt, "startCall no encontrado");
 const startCall = background.slice(startCallAt, alertAt);
 assert.ok(startCall.indexOf("captureCallEarningsBaseline(callId, state.callStartedAt)") <
