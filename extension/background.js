@@ -2660,11 +2660,11 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var targetTabId=Number(tabId);
     if(!Number.isFinite(targetTabId))return{ok:false,muted:!!muted,verified:false,inactive:true,error:"No hay una pestaña de llamada controlable."};
     var lastError=null;
-    for(var attempt=1;attempt<=3;attempt+=1){
+    for(var attempt=1;attempt<=2;attempt+=1){
       try{
         var response=await withMicrophoneTimeout(
           chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:!!muted,source:source||"background"}),
-          1700,
+          1000,
           {ok:false,verified:false,muted:!!muted,error:"Timeout esperando verificación del contenido; se intentará el canal MAIN directo."}
         );
         if(response&&response.verified===true&&!!response.muted===!!muted){
