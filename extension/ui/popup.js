@@ -98,6 +98,8 @@
     var label = $("micToggleLabel");
     var meta = $("micToggleMeta");
     var unmuteRetryPending = error && state.microphoneMuteRequested === false;
+    var preparedWithoutCall = !muted && muteStatus === "prepared" &&
+      state.microphoneOutputMuted === true && outputStatus === "idle-safe";
     if (error) {
       if (label) label.textContent = "MIC ERR";
       if (meta) meta.textContent = unmuteRetryPending
@@ -109,6 +111,12 @@
       button.title = unmuteRetryPending
         ? "Activación no verificada. Signal Interpreter no volverá a aplicar mute automáticamente; pulsa para reintentar."
         : "No se pudo verificar el mute. Pulsa para volver a solicitar el mute o usa el atajo para reintentar.";
+    } else if (preparedWithoutCall) {
+      if (label) label.textContent = "MIC ON";
+      if (meta) meta.textContent = "Preparado · salida en mute";
+      button.classList.remove("is-muted", "is-error");
+      button.setAttribute("aria-pressed", "false");
+      button.title = "Activación preparada. No hay llamada activa; la salida permanece en mute. Cada llamada nueva inicia silenciada.";
     } else if (muted) {
       if (label) label.textContent = "MIC OFF";
       if (meta) meta.textContent = "Silenciado · verificado";
@@ -126,6 +134,7 @@
     var statusNode = $("micStatus");
     if (statusNode) statusNode.textContent = error
       ? (unmuteRetryPending ? "Activación solicitada; verificación pendiente" : "Mute solicitado; verificación pendiente")
+      : preparedWithoutCall ? "Activación preparada; salida bloqueada hasta una llamada"
       : muted ? "Entrada de audio desactivada" : "Entrada de audio activa";
   }
 
@@ -219,20 +228,36 @@
     status("Verificando micrófono…");
     try{
       var response=await new Promise(function(resolve){
+        var settled=false;
+        var watchdog=setTimeout(function(){
+          if(settled)return;
+          settled=true;
+          resolve({
+            ok:false,verified:false,muted:!!state.microphoneMuted,
+            requestedMuted:!state.microphoneMuted,outputMuted:true,
+            error:"Timeout del control del micrófono; la pista queda en estado no verificado y debe permanecer silenciada."
+          });
+        },12000);
         chrome.runtime.sendMessage({type:"SIGNAL_EXTENSION_MICROPHONE_TOGGLE",source:"popup-button"},function(result){
+          if(settled)return;
+          settled=true;
+          clearTimeout(watchdog);
           if(chrome.runtime.lastError) resolve({ok:false,verified:false,muted:true,error:chrome.runtime.lastError.message});
           else resolve(result||{ok:false,verified:false,muted:true,error:"Sin respuesta del worker"});
         });
       });
       if(response&&response.ok&&response.verified===true){
+        var preparedWithoutCall = response.prepared === true && response.inactive === true;
         state=Object.assign({},state,{
           microphoneMuted:!!response.muted,
           microphoneMuteRequested:!!response.muted,
-          microphoneMuteStatus:"applied",
-          microphoneOutputMuted:!!response.muted,
-          microphoneOutputStatus:"applied"
+          microphoneMuteStatus:preparedWithoutCall ? "prepared" : "applied",
+          microphoneOutputMuted:response.inactive === true ? true : !!response.muted,
+          microphoneOutputStatus:response.inactive === true ? "idle-safe" : "applied"
         });
-        status(response.muted ? "MIC OFF · verificado" : "MIC ON · verificado");
+        status(preparedWithoutCall
+          ? "MIC PREPARADO · salida en mute hasta la llamada"
+          : response.muted ? "MIC OFF · verificado" : "MIC ON · verificado");
       }else{
         var requestedMuted = response && typeof response.requestedMuted === "boolean"
           ? response.requestedMuted

@@ -1646,6 +1646,13 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       state.callMissingSinceAt = null;
       state.callModality = event.payload && event.payload.modality ||
         state.pendingCall && state.pendingCall.modality || "OPI";
+      // Every new call starts fail-closed, regardless of a pre-call prepared toggle.
+      state.microphoneMuted = true;
+      state.microphoneMuteRequested = true;
+      state.microphoneMuteStatus = "pending";
+      state.microphoneOutputMuted = true;
+      state.microphoneOutputStatus = "pending";
+      state.groqCapture = Object.assign({}, state.groqCapture || {}, { microphoneMuted: true });
       state.hotLoadLease = {
         schema: HOTLOAD_SCHEMA, phase: "active-call", leaseId: uid(), callId: callId,
         callStartedAt: measuredStartAt, callSourceTabId: state.callSourceTabId,
@@ -1677,9 +1684,11 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       }, "info", "background");
     }).then(async function (state) {
       if (!state || state.callId !== callId) return;
-      var micResult=await setExtensionMicrophoneMuted(false, "call-accepted");
-      if (!micResult || micResult.verified !== true || micResult.muted !== false) {
-        record("CALL_ACCEPTED_MICROPHONE_UNMUTE_NOT_VERIFIED",{callId:callId,tabId:state.callSourceTabId,error:micResult&&micResult.error||"verification-failed"},"error","microphone");
+      var micResult=await setExtensionMicrophoneMuted(true, "call-start-safe");
+      if (!micResult || micResult.verified !== true || micResult.muted !== true) {
+        record("CALL_START_MICROPHONE_MUTE_NOT_VERIFIED",{callId:callId,tabId:state.callSourceTabId,error:micResult&&micResult.error||"verification-failed"},"error","microphone");
+      } else {
+        record("CALL_START_MICROPHONE_MUTED",{callId:callId,tabId:state.callSourceTabId,policy:"operator-must-unmute-explicitly"},"info","microphone");
       }
       if (cachedConfig.liveCaptionOverlayEnabled !== false && state.callSourceTabId != null) {
         var nativeCaptionStarted = false;
@@ -2640,13 +2649,24 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var result = { ok: false, reasonCode: "native-text-only", error: "Esta versión usa solo Live Caption de Chrome. No captura ni reproduce audio de la llamada." };
     if (sendResponse) sendResponse(result); return result;
   }
+  function withMicrophoneTimeout(promise, timeoutMs, fallback) {
+    var timer=null;
+    return Promise.race([
+      Promise.resolve(promise),
+      new Promise(function(resolve){timer=setTimeout(function(){resolve(fallback);},timeoutMs);})
+    ]).finally(function(){if(timer)clearTimeout(timer);});
+  }
   async function setMainClientMicrophoneMuted(tabId, muted, source) {
     var targetTabId=Number(tabId);
     if(!Number.isFinite(targetTabId))return{ok:false,muted:!!muted,verified:false,inactive:true,error:"No hay una pestaña de llamada controlable."};
     var lastError=null;
-    for(var attempt=1;attempt<=3;attempt+=1){
+    for(var attempt=1;attempt<=2;attempt+=1){
       try{
-        var response=await chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:!!muted,source:source||"background"});
+        var response=await withMicrophoneTimeout(
+          chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:!!muted,source:source||"background"}),
+          1000,
+          {ok:false,verified:false,muted:!!muted,error:"Timeout esperando verificación del contenido; se intentará el canal MAIN directo."}
+        );
         if(response&&response.verified===true&&!!response.muted===!!muted){
           record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(response.trackCount||0),senderCount:Number(response.senderCount||0),recoveredBaseline:!!response.recoveredBaseline,attempts:attempt,transport:"content"},"info","microphone");
           return Object.assign({},response,{ok:true,inactive:false,attempts:attempt,transport:"content"});
@@ -2664,6 +2684,21 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     return{ok:false,muted:!!muted,verified:false,inactive:false,error:lastError||"verification-failed",attempts:3};
   }
 
+  function nextMicrophoneToggleMuted(state) {
+    return !state.microphoneMuted;
+  }
+  function applyPreCallMicrophoneIntent(state, desiredMuted) {
+    return Object.assign({}, state || {}, {
+      microphoneMuted: !!desiredMuted,
+      microphoneMuteRequested: !!desiredMuted,
+      microphoneMuteStatus: desiredMuted ? "applied" : "prepared",
+      microphoneOutputMuted: true,
+      microphoneOutputStatus: "idle-safe",
+      microphoneOutputTrackCount: 0,
+      microphoneOutputSenderCount: 0,
+      groqCapture: Object.assign({}, state && state.groqCapture || {}, { microphoneMuted: true })
+    });
+  }
   async function setExtensionMicrophoneMutedInternal(muted, source) {
     var desired=!!muted;
     var stored=await chrome.storage.local.get(["effectifState"]);
@@ -2675,14 +2710,17 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var previousOutputStatus=String(state.microphoneOutputStatus||"unapplied");
     var captureActive=!!(state.groqCapture&&state.groqCapture.status==="connected");
     var outputRequired=hasActiveCall(state);
-    if (!desired && !outputRequired) {
-      state.microphoneMuted=true; state.microphoneMuteRequested=true; state.microphoneMuteStatus="blocked";
-      state.microphoneOutputMuted=true; state.microphoneOutputStatus="idle-safe";
-      state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
+    if (!outputRequired) {
+      state=applyPreCallMicrophoneIntent(state,desired);
       await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
-      record("EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL",{source:source||"unknown",policy:"mute-required-until-call-accepted"},"warn","microphone");
-      return {ok:false,muted:true,requestedMuted:false,verified:false,reasonCode:"call-not-active",
-        error:"El micrófono solo se habilita después de confirmar una llamada activa."};
+      record("EXTENSION_MICROPHONE_PRECALL_INTENT_SAVED",{
+        desired:desired,source:source||"unknown",outputMuted:true,
+        policy:"manual-toggle-intent-only-no-call-output-remains-fail-closed"
+      },"info","microphone");
+      return {
+        ok:true,muted:desired,requestedMuted:desired,verified:true,prepared:!desired,
+        inactive:true,outputMuted:true,outputVerified:true,trackCount:0,senderCount:0
+      };
     }
     state.microphoneMuted=desired;
     state.microphoneMuteRequested=desired;
@@ -2776,8 +2814,12 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     record("EXTENSION_MICROPHONE_MUTE_APPLIED",{desired:desired,source:source||"unknown",callId:state.callId||null,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,recoveredBaseline:!!outputResult.recoveredBaseline,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)},"info","microphone");
     if(cachedConfig.soundEnabled!==false){
       try{
-        await playSound(Math.max(0.05,Number(cachedConfig.volume||0.8)),desired?"mute-on":"mute-off");
-        record("EXTENSION_MICROPHONE_SOUND_PLAYED",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",volume:Number(cachedConfig.volume||0.8)},"info","microphone");
+        Promise.resolve(playSound(Math.max(0.05,Number(cachedConfig.volume||0.8)),desired?"mute-on":"mute-off"))
+          .then(function(){
+            record("EXTENSION_MICROPHONE_SOUND_PLAYED",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",volume:Number(cachedConfig.volume||0.8)},"info","microphone");
+          }).catch(function(soundError){
+            record("EXTENSION_MICROPHONE_SOUND_ERROR",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",error:String(soundError)},"warn","microphone");
+          });
       }catch(soundError){
         record("EXTENSION_MICROPHONE_SOUND_ERROR",{desired:desired,source:source||"unknown",cue:desired?"mute-on":"mute-off",error:String(soundError)},"warn","microphone");
       }
@@ -2800,7 +2842,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       var stored = await chrome.storage.local.get(["effectifState"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       var recovering = state.microphoneMuteStatus === "error" || state.microphoneOutputStatus === "error";
-      var desired = hasActiveCall(state) ? (recovering ? false : !state.microphoneMuted) : true;
+      var desired = nextMicrophoneToggleMuted(state);
       if (recovering) record("EXTENSION_MICROPHONE_TOGGLE_RECOVERY_RETRY", {
         source: source || "toggle", desired: desired, previousMuted: !!state.microphoneMuted,
         policy: "error-state-prioritizes-unmute-to-avoid-stuck-muted"
@@ -2810,7 +2852,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       var stored = await chrome.storage.local.get(["effectifState"]);
       var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
       var recovering = state.microphoneMuteStatus === "error" || state.microphoneOutputStatus === "error";
-      var desired = hasActiveCall(state) ? (recovering ? false : !state.microphoneMuted) : true;
+      var desired = nextMicrophoneToggleMuted(state);
       if (recovering) record("EXTENSION_MICROPHONE_TOGGLE_RECOVERY_RETRY", {
         source: source || "toggle", desired: desired, previousMuted: !!state.microphoneMuted,
         policy: "retry-last-request; legacy-error-defaults-to-unmute"
