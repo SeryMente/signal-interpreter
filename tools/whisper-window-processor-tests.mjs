@@ -52,12 +52,12 @@ console.log("WHISPER_WINDOW_OVERLAP_RECONCILIATION_INPUT=PASS");
 
 const samePhase=new Processor({processorOptions:{windowSeconds:1}});
 ctx.currentFrame=0;
-samePhase.process([[new Float32Array(128).fill(0.25),new Float32Array(128).fill(0.25)]],[[new Float32Array(128)]]);
+samePhase.process([[new Float32Array(16000).fill(0.25),new Float32Array(16000).fill(0.25)]],[[new Float32Array(16000)]]);
 assert.equal(new DataView(samePhase.port.messages[0].packet.buffer).getInt16(44,true),8192,
   "in-phase stereo channels downmix normally");
 const antiPhase=new Processor({processorOptions:{windowSeconds:1}});
 ctx.currentFrame=0;
-antiPhase.process([[new Float32Array(128).fill(0.25),new Float32Array(128).fill(-0.25)]],[[new Float32Array(128)]]);
+antiPhase.process([[new Float32Array(16000).fill(0.25),new Float32Array(16000).fill(-0.25)]],[[new Float32Array(16000)]]);
 assert.equal(new DataView(antiPhase.port.messages[0].packet.buffer).getInt16(44,true),8192,
   "strong anti-phase stereo retains the stronger channel instead of cancelling speech");
 console.log("WHISPER_STEREO_ANTIPHASE_PROTECTION=PASS");
