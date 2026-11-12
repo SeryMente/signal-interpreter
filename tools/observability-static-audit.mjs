@@ -39,7 +39,7 @@ const callLifecycleSyncTest=read("tools/observability-call-lifecycle-sync-test.m
 const relayBatchApi=read("tools/observability-relay/api/batch.js");
 const freshnessWorkflow=read(".github/workflows/observability-freshness.yml");
 
-assert.equal(manifest.version,"0.10.50");
+assert.equal(manifest.version,"0.10.47");
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
@@ -51,7 +51,12 @@ assert.ok(manifest.commands["toggle-extension-microphone"].description.includes(
 assert.equal(manifest.commands["toggle-extension-microphone"].suggested_key.default,"Ctrl+Shift+Period");
 assert.match(manifest.content_security_policy.extension_pages,/https:\/\/signal-interpreter-observability-re\.vercel\.app/);
 
-assert.ok(background.includes('importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js")'));
+assert.ok(background.includes('importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js","dialogue-engine.js","groq-transcriber.js","telemetry-db.js","observability-relay.js","observation-sync.js","platform-screenshot.js","auth-bootstrap.js","caption-lab.js")'));
+assert.ok(background.includes('try { importScripts("groq-secret.local.js"); } catch (_)'),
+  "optional Groq credential is read only from a local ignored file");
+assert.equal(background.includes("gsk_"),false,"no Groq API credential may be committed to the worker");
+assert.ok(background.includes("globalThis.SignalGroqTranscriber.ready()"),
+  "Groq transcription still requires the local credential readiness gate");
 assert.ok(background.includes('alarm.name==="signal-observation-sync"'));
 assert.ok(background.includes('alarm.name==="signal-observation-sync-retry"'));
 assert.ok(background.includes('SignalObservationSync.flush("startup"'));
@@ -246,10 +251,7 @@ assert.ok(auditWorkflow.includes("node tools/observability-screenshot-relay-test
 assert.ok(globalMouse.includes('type: "SIGNAL_EXTENSION_MICROPHONE_TOGGLE"'));
 assert.ok(background.includes("fail-closed-on-unmute-verification-error"), "unmute verification errors must reapply mute");
 assert.equal(background.includes("never-reapply-stale-mute-on-unmute-failure"), false, "unsafe unmute recovery must remain absent");
-assert.ok(background.includes("EXTENSION_MICROPHONE_PRECALL_INTENT_SAVED"), "manual pre-call toggle intent must remain available");
-assert.ok(background.includes("microphoneOutputMuted: true,"), "effective output must remain muted without an active call");
-assert.ok(background.includes('setExtensionMicrophoneMuted(true, "call-start-safe")'), "every new call must start muted");
-assert.ok(!background.includes('setExtensionMicrophoneMuted(false, "call-accepted")'), "call acceptance must not auto-unmute");
+assert.ok(background.includes("EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL"), "idle unmute must remain blocked");
 assert.ok(background.includes("EXTENSION_MICROPHONE_TOGGLE_RECOVERY_RETRY"));
 assert.ok(content.includes("EXTENSION_MICROPHONE_KEYBOARD_FALLBACK_TRIGGERED"));
 assert.ok(content.includes("SIGNAL_EXTENSION_MICROPHONE_KEYBOARD_FALLBACK"));

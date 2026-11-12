@@ -209,9 +209,10 @@
   }
 
   function roleForSource(source, language) {
-    if (source === "yo") return "INTÉRPRETE";
-    if (source === "cliente" || source === "chrome-live-caption") return roleForLanguage(language); // Tab mix: language lane, not physical microphone or speaker verification.
-    return roleForLanguage(language);
+    if (source === "yo" || source === "groq-interpreter") return "INTÉRPRETE";
+    if (source === "groq-remote") return "AUDIO REMOTO · NO VERIFICADO";
+    if (source === "cliente" || source === "chrome-live-caption") return roleForLanguage(language); // Language is not speaker identity.
+    return "HABLANTE NO VERIFICADO";
   }
 
   function languageLabel(language) {

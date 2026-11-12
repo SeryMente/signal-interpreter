@@ -3,6 +3,7 @@
   var DEFAULT_CONFIG = {
     targetHost: "app.cloudinterpreter.com",
     autoAnswerEnabled: false,
+    presenceIdleSeconds: 180,
     observationEnabled: true,
     networkTelemetryEnabled: true,
     performanceTelemetryEnabled: true,
@@ -14,7 +15,9 @@
     volume: 0.8,
     transcriptionAvailable: true,
     transcriptionEnabled: true,
-    groqModel: "whisper-large-v3-turbo",
+    groqModel: "whisper-large-v3",
+    groqDialogueEnabled: false,
+    groqZeroDataRetentionConfirmed: false,
     opiRatePerMinute: 0.20,
     vriRatePerMinute: 0.25,
     currency: "USD",
@@ -171,7 +174,14 @@
     if ($("captionBilingualTabEnabled")) { $("captionBilingualTabEnabled").checked = false; $("captionBilingualTabEnabled").disabled = true; }
     $("volume").value = String(config.volume);
     $("volumeValue").textContent = Math.round(config.volume * 100) + "%";
-    $("groqModel").value = config.groqModel || "whisper-large-v3-turbo";
+    $("groqModel").value = config.groqModel || "whisper-large-v3";
+    $("groqDialogueEnabled").checked = config.groqDialogueEnabled === true;
+    $("groqZdrConfirmed").checked = config.groqZeroDataRetentionConfirmed === true;
+    $("groqStatus").textContent = config.groqDialogueEnabled !== true
+      ? "Diálogo Groq desactivado"
+      : (config.groqZeroDataRetentionConfirmed === true
+        ? "Large V3 · dos fuentes · clave local requerida"
+        : "Large V3 · confirma ZDR antes de enviar audio");
     var loginUsernameInput = $("cloudInterpreterUsername");
     if (loginUsernameInput && document.activeElement !== loginUsernameInput) {
       loginUsernameInput.value = cloudInterpreterLoginUsername;
@@ -282,6 +292,12 @@
     }catch(error){ status("MIC ERR · permanece silenciado",true); }
     finally{ button.disabled=false; renderMicrophone(); }
   });
+  $("groqDialogueEnabled").addEventListener("change",function(){
+    save({groqDialogueEnabled:this.checked});
+  });
+  $("groqZdrConfirmed").addEventListener("change",function(){
+    save({groqZeroDataRetentionConfirmed:this.checked});
+  });
   if ($("captionInterpreterEnabled")) $("captionInterpreterEnabled").addEventListener("change", function () {
     save({ liveCaptionInterpreterEnabled: false });
   });
@@ -298,7 +314,12 @@
   }
 
   refreshYoutubeCaptionCaptureButton();
-  if($("openLab"))$("openLab").onclick=function(){chrome.tabs.create({url:chrome.runtime.getURL("extension/ui/lab.html")});};
+  function extensionPageUrl(path) {
+    var backgroundPath = String((chrome.runtime.getManifest().background || {}).service_worker || "");
+    var prefix = backgroundPath.indexOf("extension/") === 0 ? "extension/" : "";
+    return chrome.runtime.getURL(prefix + String(path || "").replace(/^\/+/, ""));
+  }
+  if($("openLab"))$("openLab").onclick=function(){chrome.tabs.create({url:extensionPageUrl("ui/lab.html")});};
 
   var openTranscript=$("openTranscript");
   if(openTranscript)openTranscript.addEventListener("click",function(){chrome.tabs.query({active:true,currentWindow:true}).then(function(tabs){var tab=tabs&&tabs[0];if(!tab)throw new Error("No hay pestaña activa.");return chrome.runtime.sendMessage({type:"OPEN_SIGNAL_LIVE_WINDOW",tabId:tab.id,sourceUrl:tab.url||"",sourceTitle:tab.title||""});}).catch(function(){status("No se pudo abrir el historial",true);});});
