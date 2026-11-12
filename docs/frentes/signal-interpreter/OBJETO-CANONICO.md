@@ -559,3 +559,17 @@ G14 continúa como agente único. FOL1 sigue PREPARADA/NO ACTIVA; folios permane
 - Exportación conversacional del 2026-11-12: 1,778 líneas, 69,731 bytes, SHA-256 `1D3DCFE0BC98F310DAE873ACE5F9DB925959B26E46AC3B7D7F9E0D72E8896D77`. Original y copia Markdown normalizada preservados localmente y excluidos de Git. No publicar el diálogo privado. El recibo público [RECIBO-EXPORT-CHATGPT-SI-20261112-1125.json](evidencias/RECIBO-EXPORT-CHATGPT-SI-20261112-1125.json) registra metadatos y hash, no el contenido.
 - Crónica de continuidad: [C-SIGNAL-RETOMA-20261112-G14-CURRENT.md](cronica/C-SIGNAL-RETOMA-20261112-G14-CURRENT.md).
 - Gobierno sin cambios: DUG Samantha v389 · NX-389m · Metacanon 1.30 · GOW 2.19 (edad no calculada); G14 ACTIVO, agente único; FOL1 PREPARADA/NO ACTIVA; folios PENDIENTES/NO ASIGNADOS; MCP normativo DESACTIVADO. No se transfiere titularidad.
+
+## 14. Control global del micrófono · intención preparada y salida fail-closed · 0.10.49
+
+El control visible del micrófono y el estado efectivo del canal saliente son dimensiones distintas y no deben colapsarse:
+
+- **Sin llamada activa:** el switch acepta la interacción desde cualquier pantalla. El estado de intención se guarda en `microphoneMuted`/`microphoneMuteRequested`; un clic puede mostrar ON/verde como `prepared`. El canal efectivo permanece bloqueado mediante `microphoneOutputMuted=true`, `microphoneOutputStatus=idle-safe` y `groqCapture.microphoneMuted=true`. La intención preparada no adquiere dispositivo, no crea pista saliente y no abre captura.
+- **Llamada nueva:** la transición de inicio invalida cualquier intención prellamada y restablece switch y salida a mute. La aceptación de ruta no genera unmute automático.
+- **Llamada activa:** un clic explícito solicita la operación al guard MAIN-world; la UI solo declara ON después de verificar `MediaStreamTrack.enabled`, los senders y estabilidad de la observación. El toggle inverso silencia la pista real.
+- **Cierre/fallo:** la pista se silencia antes de borrar el contexto de llamada. Los errores e incertidumbres permanecen fail-closed. La prueba local del dispositivo físico (`Probar micrófono`) sigue separada del toggle saliente.
+
+La implementación formal se desarrolla en la rama `fix/global-mic-toggle-precall-20261112` para la versión `0.10.49`. La regresión `tools/microphone-global-toggle-test.mjs` cubre: clic ON preparado en espera, salida todavía silenciada, clic OFF, reset a mute al comenzar llamada, ausencia de auto-unmute y remute al finalizar. Se integra como compuerta del workflow `extension-package`.
+
+**Aceptación pendiente:** ejecución CI del HEAD final; carga/recarga de la versión en Chrome; comprobación visible del verde en espera; llamada controlada para verificar MIC OFF inicial, unmute solicitado, toggle a OFF y remute de cierre; verificación del camino de emergencia al desactivar/desinstalar la extensión y recargar la pestaña para retirar los wrappers del documento. Las pruebas sintéticas no equivalen a aceptación física del operador.
+
