@@ -573,3 +573,42 @@ La implementación formal de 0.10.49 está fusionada en main mediante PR #92, me
 
 **Aceptación física pendiente:** Chrome debe recargarse para ejecutar el paquete 0.10.49 materializado en la carpeta de carga local. Después deben comprobarse el verde/preparado en espera, el segundo clic OFF, MIC OFF inicial en llamada, activación y silenciamiento manual sobre la pista/sender real, remute al finalizar, y el camino de emergencia al desactivar/desinstalar y recargar la pestaña para retirar los wrappers del documento. Las pruebas sintéticas, hashes y CI no equivalen a aceptación física del operador.
 
+
+
+## 15. Transcripción dual: aislamiento, fidelidad y controles de calidad · 2026-11-12
+
+### Estado y procedencia
+
+- Las instrucciones literales del operador permanecen en `INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md`, A-01…A-04, sin modificación. Este registro documenta implementación y límites; no sustituye la fuente verbatim.
+- Línea base de integración: `main` HEAD `961220cbccbcdd77b1124b05faf2c90edd4dc104`, versión `0.10.50`.
+- Implementación selectiva en rama `feat/groq-dual-quality-20261112`; PR #94 OPEN / DRAFT / NOT MERGED. HEAD al abrirla: `7465ff8db0b3527c0ec25fbafb1995d0a0429750`; todo cambio posterior se coteja contra el HEAD final de la rama.
+- No se modifica `main`; no se fusiona, despliega, libera ni carga la extensión en Chrome.
+
+### Decisiones de implementación
+
+1. Mantener salida de llamada original y captura ASR como rutas separadas. La captura de pestaña no suprime la reproducción local; el AudioWorklet entrega salida silenciosa y extrae la copia para transcripción.
+2. Eliminar sonidos generados por la extensión durante una llamada: beeps/voz de confirmación, tonos al silenciar/reactivar y prueba manual de sonido. El test de sonido se permite fuera de llamada.
+3. Capturar la voz propia en una segunda pista independiente. Solicitar AEC, NS y AGC desactivados en la copia ASR y fallar cerrado si `getSettings()` no confirma los tres en `false`. No reconfigurar ni sustituir la pista WebRTC saliente.
+4. No iniciar captura si MIC no está ON y su estado de salida no está verificado. MIC OFF y fin de llamada detienen las dos fuentes.
+5. En el cierre, liberar tracks antes de drenar colas; contar pendientes/fallos y marcar incompleta cualquier sesión con flush no confirmado, trabajos pendientes o errores.
+6. Proteger el downmix mono ante correlación negativa fuerte; conservar fuente y cronología, fusionar después de procesar los dos canales.
+7. Usar `whisper-large-v3` como motor predeterminado, sin fallback silencioso a Turbo. Las ventanas actuales (6.5 s con 500 ms de solapamiento) son candidatas, no parámetros acústicamente ratificados.
+
+### Evidencia objetiva y límites
+
+- El código de la rama implementa las salvaguardas descritas y añade regresiones sintéticas y de contrato. El SHA-256 del paquete incluye los nuevos assets de captura y los archivos modificados.
+- El estado CI observado inicialmente para HEAD `7465ff8db0b3527c0ec25fbafb1995d0a0429750` era IN_PROGRESS en cuatro workflows; no constituye PASS. Debe consultarse de nuevo para el HEAD final.
+- `displaySurface === "browser"` no acredita la identidad exacta de la pestaña. Es requisito resolver o documentar aceptación explícita de selección de origen antes de considerar segura la experiencia.
+- Los indicadores de calidad de Whisper se conservan, pero no existe umbral calibrado. No se ha demostrado aún que los segmentos satisfagan el estándar de calidad del operador.
+- No hay corpus acústico autorizado y adjudicado, ni medición WER/CER, recall de términos críticos, turnos, solapamientos, pérdida/duplicación, deriva o latencia p50/p95. El perfil de benchmark continúa PROPOSED_NOT_RATIFIED.
+- Sin credencial, ZDR/cuotas de cuenta verificados, API Groq con audio, llamada/audio real, prueba Chrome ni aceptación humana. La modificación de una copia ASR no demuestra medición ni degradación de la pista de llamada original.
+- Las instrucciones A-01…A-04 permanecen como fuente literal; toda afirmación de "calidad máxima", "sin costuras" o "perfecto al primer intento" queda pendiente de benchmark y aceptación, no inferida de tests sintéticos o CI.
+
+### Siguiente compuerta
+
+1. Confirmar CI completo sobre el SHA exacto final.
+2. Resolver la verificación de identidad de la pestaña compartida.
+3. Obtener comprobación autorizada de ZDR/cuotas y credencial local; sin registrarlas.
+4. Ejecutar benchmark no clínico/expresamente autorizado con referencias humanas y perfiles de señal variados.
+5. Medir calidad y latencia por canal y global; no ratificar perfil antes de fijar criterios.
+6. Solo después, solicitar prueba controlada en Chrome autorizado y aceptación expresa del operador.

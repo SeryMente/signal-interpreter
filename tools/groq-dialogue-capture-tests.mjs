@@ -6,6 +6,10 @@ const source=fs.readFileSync("extension/groq-dialogue-capture.js","utf8");
 const backgroundSource=fs.readFileSync("extension/background.js","utf8");
 const contentSource=fs.readFileSync("extension/content.js","utf8");
 const popupSource=fs.readFileSync("extension/ui/popup.js","utf8");
+assert.match(source,/echoCancellation:false,noiseSuppression:false,autoGainControl:false/,
+  "the ASR microphone copy must not request browser AEC, noise suppression, or automatic gain by default");
+assert.match(source,/settings\[key\]===false[\s\S]*microphone-processing-unverified/,
+  "capture must fail closed unless the browser confirms all three microphone processing controls are off");
 assert.match(backgroundSource,/state\.microphoneMuted!==false[\s\S]*microphone-muted-or-unverified/,
   "Groq capture requires an explicitly enabled and verified outgoing microphone");
 assert.match(backgroundSource,/stopAllSignalGroqDialogueCaptures\("microphone-muted"\)/,
@@ -103,8 +107,10 @@ function createHarness(displaySurface="browser",options={}){
       async getUserMedia(options){
         micCalls++;
         assert.equal(options.video,false);
-        assert.equal(options.audio.echoCancellation,true);
-        return new Stream([new Track("audio")]);
+        assert.equal(options.audio.echoCancellation,false);
+        assert.equal(options.audio.noiseSuppression,false);
+        assert.equal(options.audio.autoGainControl,false);
+        return new Stream([new Track("audio",{echoCancellation:false,noiseSuppression:false,autoGainControl:false})]);
       }
     }},
     window:{addEventListener(name,fn){windowListeners[name]=fn;}},

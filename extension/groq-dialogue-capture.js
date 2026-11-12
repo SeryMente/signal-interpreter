@@ -167,10 +167,21 @@
         throw Object.assign(Error(showReason(latestPolicy&&latestPolicy.reasonCode)),{reasonCode:latestPolicy&&latestPolicy.reasonCode||"policy-unavailable"});
       setStatus("Solicitando micrófono propio…");
       micStream=await navigator.mediaDevices.getUserMedia({
-        audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false
+        // Keep the ASR copy free of browser AEC/NS/AGC; outgoing WebRTC audio remains independent.
+        audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false
       });
-      if(!micStream.getAudioTracks().some(function(t){return t.readyState==="live";}))
+      var micTracks=micStream.getAudioTracks().filter(function(t){return t.readyState==="live";});
+      if(!micTracks.length)
         throw Object.assign(Error("permission-denied"),{reasonCode:"permission-denied"});
+      var processingKeys=["echoCancellation","noiseSuppression","autoGainControl"];
+      var micProcessingVerified=micTracks.every(function(track){
+        try{
+          var settings=typeof track.getSettings==="function"?track.getSettings():null;
+          return !!settings&&processingKeys.every(function(key){return settings[key]===false;});
+        }catch(_){return false;}
+      });
+      if(!micProcessingVerified)
+        throw Object.assign(Error("microphone-processing-unverified"),{reasonCode:"microphone-processing-unverified"});
       tabStream.getVideoTracks().forEach(function(track){try{track.stop();}catch(_){}});
       context=new AudioContext({sampleRate:16000,latencyHint:"interactive"});
       if(context.sampleRate!==16000)throw Object.assign(Error("audio-sample-rate-unsupported"),{reasonCode:"audio-sample-rate-unsupported"});

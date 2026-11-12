@@ -425,3 +425,36 @@ HEAD 6b14c0fad64cbc8eef364c496a6a96043c9dbbf1: Package integrity run 43119571803
 ### Compuertas pendientes
 
 No existe corpus no clínico expresamente autorizado, gold transcript con dos anotadores/adjudicación, ZDR/cuotas confirmadas, credencial local ni Chrome autorizado. No hubo llamada Groq con audio ni captura real; flags false. La calidad acústica y la latencia percibida reales siguen NO VERIFICADAS. No aceptar, fusionar, desplegar ni liberar.
+
+## 13. Port selectivo de calidad y aislamiento sobre main · 2026-11-12
+
+**Estado:** IMPLEMENTACIÓN EN RAMA AISLADA · PR #94 OPEN / DRAFT / NOT MERGED · ACEPTACIÓN ACÚSTICA PENDIENTE.
+
+### SI-GROQ-01 · Procedencia y línea base
+
+- A-01, A-02, A-03 y A-04 permanecen conservados verbatim en `INSTRUCCIONES-Y-PLAN-PROVISIONAL-GROQ-DIALOGO-20261110.md`; este seguimiento no los sustituye ni reescribe.
+- Rama `feat/groq-dual-quality-20261112`, creada desde `main` HEAD `961220cbccbcdd77b1124b05faf2c90edd4dc104` (manifest 0.10.50). La rama divergente anterior no se actualizó a ciegas.
+- PR #94: [Audio: dual-source Groq transcription with playback isolation and lifecycle safeguards](https://github.com/SeryMente/signal-interpreter/pull/94), abierta en Draft. No merge, deploy, release ni carga en Chrome.
+
+### SI-GROQ-02 · Aislamiento de la llamada y del micrófono
+
+- La captura de audio remoto permanece en una copia de `getDisplayMedia`; se declara `suppressLocalAudioPlayback:false`. El worklet emite silencio en su salida de AudioContext: no sustituye ni mezcla con la reproducción original.
+- La copia del micrófono solicita `echoCancellation:false`, `noiseSuppression:false` y `autoGainControl:false`. El inicio falla cerrado si `MediaStreamTrack.getSettings()` no confirma los tres valores en `false`; la aplicación efectiva sigue pendiente de prueba en Chrome/dispositivo autorizado.
+- Se retiraron beep/locución de confirmación y tonos de mute durante llamadas activas; la prueba manual de sonido se bloquea mientras haya llamada.
+- La política de captura requiere MIC ON y estado de salida verificado. MIC OFF y fin de llamada detienen las dos fuentes.
+
+### SI-GROQ-03 · Integridad de captura y transcripción
+
+- Dos fuentes y colas independientes se procesan mediante `whisper-large-v3` y se fusionan por reloj/offset; etiqueta propia `INTÉRPRETE`, fuente remota `AUDIO REMOTO · HABLANTE NO VERIFICADO`.
+- El downmix estéreo protege contra cancelación por correlación negativa fuerte, eligiendo el canal de mayor energía en ese caso. Es protección de la copia mono; debe evaluarse también con audio real.
+- Las pistas se detienen al comenzar el cierre, antes de drenar solicitudes. Los pendientes y fallos se muestran como captura incompleta; no se informa cierre completo si existe pérdida/pendiente conocida.
+- Inventario SHA-256 extendido a los dos assets de captura nuevos y reconciliado para los archivos modificados.
+
+### SI-GROQ-04 · Calidad, velocidad y compuertas
+
+- Modelo predeterminado: `whisper-large-v3`, orientado a precisión multilingüe según documentación vigente de Groq; Turbo no es fallback automático.
+- Se conservan métricas devueltas por segmento; todavía no hay umbral de confianza calibrado para aceptar/descartar texto. No inventar thresholds ni ocultar segmentos por una regla arbitraria.
+- La ventana de 6.5 s y solapamiento de 500 ms siguen siendo parámetros candidatos; latencia p50/p95, coste, pérdidas, duplicados, WER/CER y términos críticos requieren benchmark autorizado.
+- La selección `displaySurface === "browser"` distingue navegador de ventana/monitor, pero no demuestra por sí sola que se seleccionó exactamente la pestaña de Cloud Interpreter. La identidad de pestaña compartida sigue siendo riesgo/compuerta pendiente.
+- CI inicial asociado a HEAD `7465ff8db0b3527c0ec25fbafb1995d0a0429750` observado en curso: Package integrity run 43316225686; Signal Interpreter extension package run 43316225803; signal-observability-audit run 43316225694; native-caption-host-build run 43316225586. No declarar PASS/FAIL sin read-back del SHA final.
+- Sin clave real, verificación de ZDR/cuotas, API Groq con audio, llamada, audio real, Chrome cargado o aceptación humana. La calidad acústica y la latencia percibida siguen NO VERIFICADAS. Perfil de benchmark sigue PROPOSED_NOT_RATIFIED.
