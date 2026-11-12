@@ -1971,14 +1971,14 @@
       timeout=setTimeout(function(){finish({ok:false,muted:false,verified:false,error:"MAIN microphone guard probe timed out."});},1200);
     });
   }
-  function requestMainMicrophoneMute(muted, reason) {
+  function requestMainMicrophoneMute(muted, reason, allowEmpty) {
     return new Promise(function(resolve){
       var requestId=crypto.randomUUID(),settled=false,timeout=null;
       function cleanup(){if(timeout)clearTimeout(timeout);window.removeEventListener(micMainAckEvent,onAck,true);}
       function finish(result){if(settled)return;settled=true;cleanup();resolve(result);}
       function onAck(event){var ack=null;try{ack=JSON.parse(String(event&&event.detail||""));}catch(_){}if(!ack||ack.requestId!==requestId)return;finish(ack);}
       window.addEventListener(micMainAckEvent,onAck,true);
-      try{document.dispatchEvent(new CustomEvent(micMainCommandEvent,{detail:JSON.stringify({schema:"signal-main-mic-command/v1",op:"set",requestId:requestId,muted:!!muted,reason:reason||"background"})}));}
+      try{document.dispatchEvent(new CustomEvent(micMainCommandEvent,{detail:JSON.stringify({schema:"signal-main-mic-command/v1",op:"set",requestId:requestId,muted:!!muted,allowEmpty:allowEmpty===true,reason:reason||"background"})}));}
       catch(error){finish({ok:false,muted:!!muted,verified:false,error:String(error)});return;}
       timeout=setTimeout(function(){finish({ok:false,muted:!!muted,verified:false,error:"MAIN microphone guard did not acknowledge the request."});},900);
     });
@@ -2454,7 +2454,7 @@
       return true;
     }
     if (message && message.type === "SIGNAL_MAIN_MICROPHONE_SET") {
-      requestMainMicrophoneMute(!!message.muted,message.source||message.reason||"background").then(function(result){if(sendResponse)sendResponse(result);}).catch(function(error){if(sendResponse)sendResponse({ok:false,muted:!!message.muted,verified:false,error:String(error)});});
+      requestMainMicrophoneMute(!!message.muted,message.source||message.reason||"background",message.allowEmpty===true).then(function(result){if(sendResponse)sendResponse(result);}).catch(function(error){if(sendResponse)sendResponse({ok:false,muted:!!message.muted,verified:false,error:String(error)});});
       return true;
     }
     if (message && message.type === "SIGNAL_MAIN_MICROPHONE_PROBE") {
