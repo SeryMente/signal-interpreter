@@ -1,154 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-f9d5e47e-b025-4290-bf88-9645e066ab85",
-  "createdAt": "2026-11-12T17:42:36.552Z",
-  "trigger": "event-window",
+  "batchId": "batch-e214a5b5-d613-4fd7-b1b1-72209fb90163",
+  "createdAt": "2026-11-12T17:50:42.322Z",
+  "trigger": "critical",
   "extensionVersion": "0.10.47",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "83dc2e68-22ee-423b-a823-5e88db9fcce3",
-      "sequence": 67378,
-      "timestamp": "2026-11-12T17:42:31.668Z",
-      "ingestedAt": "2026-11-12T17:42:31.725Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.47",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "374dc641-191a-4754-acbf-80c1e5cd0e4e",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220926967,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.47",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": null,
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/c/6af5f6d[PHONE]e8-b749-a50832ac1448",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220926967,
-        "sourceWindowId": 220925964,
-        "observedTabStatus": "loading",
-        "observedTabActive": true,
-        "observedTabUrl": "https://chatgpt.com/c/6af5f6d[PHONE]e8-b749-a50832ac1448"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/c/6af5f6d[PHONE]e8-b749-a50832ac1448",
-        "extensionVersion": "0.10.47",
-        "hostRemoved": true
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "be7c8496-a336-45ce-b8e9-056a6bef54b0",
-      "sequence": 67379,
-      "timestamp": "2026-11-12T17:42:33.838Z",
-      "ingestedAt": "2026-11-12T17:42:33.895Z",
+      "id": "8c4402c8-8b7e-4deb-95bb-5551eefb933c",
+      "sequence": 67398,
+      "timestamp": "2026-11-12T17:50:41.083Z",
+      "ingestedAt": "2026-11-12T17:50:41.083Z",
       "level": "warn",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "category": "RUNTIME",
+      "component": "background",
       "extensionVersion": "0.10.47",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED",
-      "outcome": "degraded",
-      "traceId": "54ba3ff6-7f24-4886-90d4-1a86e557fa18",
+      "phase": "error",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR",
+      "outcome": "error",
+      "traceId": "254d5c4b-92bb-4534-8ed1-5a6cc0fcd9bd",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220926967,
-      "session": {
-        "callId": null
-      },
-      "environment": {
-        "extensionVersion": "0.10.47",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "page-not-allowed",
-      "error": null,
-      "metrics": {},
-      "context": {
-        "route": "/c/6af5f6d[PHONE]e8-b749-a50832ac1448",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220926967,
-        "sourceWindowId": 220925964,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://chatgpt.com/c/6af5f6d[PHONE]e8-b749-a50832ac1448"
-      },
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "callId": null,
-        "route": "/c/6af5f6d[PHONE]e8-b749-a50832ac1448",
-        "extensionVersion": "0.10.47",
-        "visible": false,
-        "reason": "page-not-allowed",
-        "hostConnected": false,
-        "contextReady": true,
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "rowCount": 0,
-        "display": "unmounted"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "f348a1a2-bdba-44a9-9dc7-86062d51fdf7",
-      "sequence": 67380,
-      "timestamp": "2026-11-12T17:42:33.839Z",
-      "ingestedAt": "2026-11-12T17:42:34.340Z",
-      "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
-      "extensionVersion": "0.10.47",
-      "host": "",
-      "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED",
-      "outcome": "observed",
-      "traceId": "715e74f3-57c7-4da0-a5cb-ead945e4b3ca",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": 220926967,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.47",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -157,59 +35,37 @@
       "expected": null,
       "observed": null,
       "reasonCode": null,
-      "error": null,
+      "error": "Error: No se pudo sincronizar silenciosamente: Error: Cannot access contents of the page. Extension manifest must request permission to access the respective host.",
       "metrics": {},
-      "context": {
-        "route": "/c/6af5f6d[PHONE]e8-b749-a50832ac1448",
-        "visibility": "hidden",
-        "online": true,
-        "sourceTabId": 220926967,
-        "sourceWindowId": 220925964,
-        "observedTabStatus": "loading",
-        "observedTabActive": false,
-        "observedTabUrl": "https://chatgpt.com/c/6af5f6d[PHONE]e8-b749-a50832ac1448"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/c/6af5f6d[PHONE]e8-b749-a50832ac1448",
-        "extensionVersion": "0.10.47",
-        "enabled": true,
-        "scope": "source-only",
-        "pageAllowed": false,
-        "callActive": false,
-        "sourceTabMatched": false,
-        "sourceTabKnown": false,
-        "routeFallbackApplied": false,
-        "historyRows": 0,
-        "contextSyncAttempts": 1,
-        "contextSyncFailures": 0
+        "trigger": "hourly",
+        "error": "Error: No se pudo sincronizar silenciosamente: Error: Cannot access contents of the page. Extension manifest must request permission to access the respective host."
       }
     }
   ],
   "summary": {
-    "eventsTotal": 3,
+    "eventsTotal": 1,
     "errors": 0,
     "warnings": 1,
-    "critical": false,
+    "critical": true,
     "scopeRejected": 0,
-    "contextEvents": 1,
+    "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 67378,
-    "lastSequence": 67380,
-    "firstTimestamp": "2026-11-12T17:42:31.668Z",
-    "lastTimestamp": "2026-11-12T17:42:33.839Z",
+    "firstSequence": 67398,
+    "lastSequence": 67398,
+    "firstTimestamp": "2026-11-12T17:50:41.083Z",
+    "lastTimestamp": "2026-11-12T17:50:41.083Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1,
-      "LIVE_CAPTION_OVERLAY_VISIBILITY_CHANGED": 1,
-      "LIVE_CAPTION_OVERLAY_CONTEXT_APPLIED": 1
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_ERROR": 1
     },
     "categories": {
-      "CAPTION": 3
+      "RUNTIME": 1
     }
   }
 }
