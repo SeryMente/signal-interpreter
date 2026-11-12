@@ -2649,13 +2649,24 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     var result = { ok: false, reasonCode: "native-text-only", error: "Esta versión usa solo Live Caption de Chrome. No captura ni reproduce audio de la llamada." };
     if (sendResponse) sendResponse(result); return result;
   }
+  function withMicrophoneTimeout(promise, timeoutMs, fallback) {
+    var timer=null;
+    return Promise.race([
+      Promise.resolve(promise),
+      new Promise(function(resolve){timer=setTimeout(function(){resolve(fallback);},timeoutMs);})
+    ]).finally(function(){if(timer)clearTimeout(timer);});
+  }
   async function setMainClientMicrophoneMuted(tabId, muted, source) {
     var targetTabId=Number(tabId);
     if(!Number.isFinite(targetTabId))return{ok:false,muted:!!muted,verified:false,inactive:true,error:"No hay una pestaña de llamada controlable."};
     var lastError=null;
     for(var attempt=1;attempt<=3;attempt+=1){
       try{
-        var response=await chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:!!muted,source:source||"background"});
+        var response=await withMicrophoneTimeout(
+          chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:!!muted,source:source||"background"}),
+          1700,
+          {ok:false,verified:false,muted:!!muted,error:"Timeout esperando verificación del contenido; se intentará el canal MAIN directo."}
+        );
         if(response&&response.verified===true&&!!response.muted===!!muted){
           record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(response.trackCount||0),senderCount:Number(response.senderCount||0),recoveredBaseline:!!response.recoveredBaseline,attempts:attempt,transport:"content"},"info","microphone");
           return Object.assign({},response,{ok:true,inactive:false,attempts:attempt,transport:"content"});
