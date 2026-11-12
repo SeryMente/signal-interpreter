@@ -1,34 +1,32 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-a9e0d706-56e1-4e69-a763-665d80542bd5",
-  "createdAt": "2026-11-12T17:56:41.452Z",
-  "trigger": "event-window",
+  "batchId": "batch-33f39212-f552-4356-8d8b-910c80a8a35c",
+  "createdAt": "2026-11-12T17:59:11.326Z",
+  "trigger": "alarm",
   "extensionVersion": "0.10.48",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "130f3d41-7956-48eb-90d4-d4455115ba03",
-      "sequence": 67554,
-      "timestamp": "2026-11-12T17:56:19.514Z",
-      "ingestedAt": "2026-11-12T17:56:19.669Z",
+      "id": "c3e017d9-b5f0-413e-8d8b-51b9177d49be",
+      "sequence": 67555,
+      "timestamp": "2026-11-12T17:59:09.355Z",
+      "ingestedAt": "2026-11-12T17:59:09.355Z",
       "level": "info",
-      "category": "CAPTION",
-      "component": "live-caption-overlay",
+      "category": "RUNTIME",
+      "component": "background",
       "extensionVersion": "0.10.48",
       "host": "",
       "url": "",
-      "phase": "lifecycle",
-      "action": "LIVE_CAPTION_OVERLAY_PAGEHIDE",
-      "outcome": "observed",
-      "traceId": "893d7d54-33b6-45da-826a-4244464087de",
+      "phase": "started",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
+      "outcome": "success",
+      "traceId": "037d05c3-204d-4e58-a365-1cd6af47e1fa",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
       "durationMs": null,
-      "tabId": 220927068,
-      "session": {
-        "callId": null
-      },
+      "tabId": null,
+      "session": {},
       "environment": {
         "extensionVersion": "0.10.48",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
@@ -39,46 +37,79 @@
       "reasonCode": null,
       "error": null,
       "metrics": {},
-      "context": {
-        "route": "/u/1/inbox",
-        "visibility": "visible",
-        "online": true,
-        "sourceTabId": 220927068,
-        "sourceWindowId": 220925964,
-        "observedTabStatus": "complete",
-        "observedTabActive": true,
-        "observedTabUrl": "https://mail.proton.me/u/1/inbox"
-      },
+      "context": {},
       "privacy": {
         "rawTextStored": false,
         "captionTextStored": "[OMITTED]",
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "callId": null,
-        "route": "/u/1/inbox",
+        "trigger": "hourly"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "8307c5f9-790c-4edd-b050-52e574dba21f",
+      "sequence": 67556,
+      "timestamp": "2026-11-12T17:59:09.587Z",
+      "ingestedAt": "2026-11-12T17:59:09.587Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "background",
+      "extensionVersion": "0.10.48",
+      "host": "",
+      "url": "",
+      "phase": "event",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED",
+      "outcome": "observed",
+      "traceId": "14588af8-ba6e-4d2e-aece-2e28e51dbc5d",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
         "extensionVersion": "0.10.48",
-        "hostRemoved": true
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "CLOUD_TAB_UNAVAILABLE",
+      "error": null,
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "trigger": "hourly",
+        "reasonCode": "CLOUD_TAB_UNAVAILABLE",
+        "policy": "no-tab-create-no-navigation-no-reload; retry-next-hour"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 67554,
-    "lastSequence": 67554,
-    "firstTimestamp": "2026-11-12T17:56:19.514Z",
-    "lastTimestamp": "2026-11-12T17:56:19.514Z",
+    "firstSequence": 67555,
+    "lastSequence": 67556,
+    "firstTimestamp": "2026-11-12T17:59:09.355Z",
+    "lastTimestamp": "2026-11-12T17:59:09.587Z",
     "actions": {
-      "LIVE_CAPTION_OVERLAY_PAGEHIDE": 1
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED": 1
     },
     "categories": {
-      "CAPTION": 1
+      "RUNTIME": 2
     }
   }
 }
