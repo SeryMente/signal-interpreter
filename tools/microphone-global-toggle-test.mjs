@@ -83,6 +83,9 @@ const closeCall = background.slice(closeCallAt, background.indexOf("function sav
 assert.match(closeCall, /setMainClientMicrophoneMuted\(state\.callSourceTabId,true,"call-ended"\)/,
   "call end must remute the outgoing track");
 
+assert.ok(background.includes("function withMicrophoneTimeout(promise, timeoutMs, fallback)"));
+assert.ok(background.includes("1000,"));
+assert.ok(popup.includes("},12000);"), "popup must release a pending toggle within its watchdog");
 assert.ok(popup.includes("preparedWithoutCall"));
 assert.ok(popup.includes("Preparado · salida en mute"));
 assert.ok(popupCss.includes(".mic-button {") && popupCss.includes("background: #183024;"),
