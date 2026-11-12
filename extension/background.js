@@ -1761,75 +1761,6 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
       });
     });
   }
-  var callAlertInFlight = new Map();
-  function requestCallAlert(callId, trigger) {
-    if (!callId || callAlertInFlight.has(callId)) return;
-    callAlertInFlight.set(callId, Date.now());
-    chrome.storage.local.get(["effectifConfig", "effectifCallAlert", "effectifPageBeep"], function (stored) {
-      var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-      if (!config.soundEnabled || !callId) {
-        callAlertInFlight.delete(callId);
-        return;
-      }
-      var now = Date.now();
-      var previous = stored.effectifCallAlert || {};
-      var pageBeep = stored.effectifPageBeep || {};
-      if (pageBeep.callId === callId && pageBeep.playedAt && now - Number(pageBeep.playedAt) < 5000) {
-        callAlertInFlight.delete(callId);
-        record("CALL_ALERT_SOUND_SUPPRESSED_PAGE_BEEP", { callId: callId, trigger: trigger || "call-route-confirmed", pageBeepAt: pageBeep.playedAt }, "info", "runtime");
-        return;
-      }
-      if (previous.callId === callId && previous.playedAt) {
-        callAlertInFlight.delete(callId);
-        return;
-      }
-      if (previous.callId === callId && previous.requestedAt && now - Number(previous.requestedAt) < 4000 && !previous.failedAt) {
-        callAlertInFlight.delete(callId);
-        return;
-      }
-      var marker = {
-        callId: callId,
-        requestedAt: now,
-        playedAt: null,
-        failedAt: null,
-        attempts: 0,
-        trigger: trigger || "call-route-confirmed"
-      };
-      chrome.storage.local.set({ effectifCallAlert: marker });
-      record("CALL_ALERT_SOUND_REQUESTED", {
-        callId: marker.callId, trigger: marker.trigger, requestedAt: now
-      }, "info", "background");
-      function attemptSound(attempt) {
-        marker.attempts = attempt;
-        playSound(Math.max(0.95, Number(config.volume || 0))).then(function () {
-          var playedAt = Date.now();
-          chrome.storage.local.set({
-            effectifCallAlert: Object.assign({}, marker, { playedAt: playedAt, failedAt: null })
-          });
-          callAlertInFlight.delete(callId);
-          record("CALL_ALERT_SOUND_PLAYED", {
-            callId: marker.callId, trigger: marker.trigger,
-            latencyMs: playedAt - now, attempts: attempt, prominent: true
-          }, "info", "offscreen");
-        }).catch(function (error) {
-          if (attempt < 3) {
-            setTimeout(function () { attemptSound(attempt + 1); }, attempt === 1 ? 250 : 600);
-            return;
-          }
-          chrome.storage.local.set({
-            effectifCallAlert: Object.assign({}, marker, { failedAt: Date.now(), error: String(error) })
-          });
-          callAlertInFlight.delete(callId);
-          record("CALL_ALERT_SOUND_ERROR", {
-            callId: marker.callId, trigger: marker.trigger,
-            latencyMs: Date.now() - now, attempts: attempt, message: String(error)
-          }, "error", "offscreen");
-        });
-      }
-      attemptSound(1);
-    });
-  }
-
   function alertOnConnect(event) {
     mutateState(async function (state) {
       var payload = event.payload || {};
@@ -3489,7 +3420,7 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
           state.autoAnswerTelemetry.confirmations = Number(state.autoAnswerTelemetry.confirmations || 0) + 1;
           state.autoAnswerTelemetry.lastConfirmedAt = event.timestamp;
         }, "answer-flow-confirmed").catch(function () {});
-        requestCallAlert(event.payload && event.payload.callId || null, "answer-flow-confirmed");
+
       }
       if (event.action === "CONNECT_ROUTE_TIMEOUT") {
         mutateState(async function (state) {

@@ -462,6 +462,7 @@
     });
   });
   $("sound").addEventListener("click", function () {
+    if(state&&state.callStartedAt){status("La prueba de sonido se bloquea durante una llamada activa.",true);return;}
     chrome.runtime.sendMessage({ type: "EFFECTIF_TEST_SOUND", volume: config.volume }, function (response) {
       status(response && response.ok ? "Sonido reproducido" : "No se pudo reproducir el sonido", !(response && response.ok));
     });
