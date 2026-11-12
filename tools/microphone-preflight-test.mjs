@@ -74,4 +74,17 @@ assert.equal(await denied.controller.start(),false);
 assert.equal(denied.controller.getState(),"failed");
 assert.match(denied.elements.status.textContent,/Chrome bloqueó el permiso/);
 assert.equal(denied.elements.startButton.disabled,false);
+
+let resolvePending;
+const pending = makeHarness(() => new Promise((resolve) => { resolvePending = resolve; }));
+const pendingStart = pending.controller.start();
+await Promise.resolve();
+assert.equal(typeof resolvePending, "function", "permission request must be in flight");
+await pending.controller.dispose();
+assert.equal(pending.closed, true, "closing the popup must close a pending AudioContext");
+resolvePending({ getAudioTracks: () => [pending.track], getTracks: () => [pending.track] });
+assert.equal(await pendingStart, false, "late permission grant must not revive a closed preflight");
+assert.equal(pending.track.stopCount, 1, "late permission grant must stop newly acquired tracks");
+assert.equal(pending.controller.getState(), "idle");
+
 console.log("MICROPHONE_PREFLIGHT_TEST=PASS");

@@ -82,12 +82,23 @@
       var token = generation, acquiredStream = null, context = null, localSource = null;
       setUi("requesting", "Solicitando permiso de micrófono a Chrome…");
       try {
+        context = new AudioContextCtor();
+        audioContext = context;
+        if (context.state === "suspended" && typeof context.resume === "function") await context.resume();
+        if (token !== generation) {
+          if (audioContext === context) audioContext = null;
+          if (context.state !== "closed" && typeof context.close === "function") await context.close().catch(function () {});
+          return false;
+        }
         acquiredStream = await mediaDevices.getUserMedia({ audio: true, video: false });
-        if (token !== generation) { releaseTracks(acquiredStream); return false; }
+        if (token !== generation) {
+          releaseTracks(acquiredStream);
+          if (audioContext === context) audioContext = null;
+          if (context.state !== "closed" && typeof context.close === "function") await context.close().catch(function () {});
+          return false;
+        }
         var tracks = acquiredStream && typeof acquiredStream.getAudioTracks === "function" ? acquiredStream.getAudioTracks() : [];
         if (!tracks.length || tracks.every(function (track) { return track.readyState === "ended"; })) throw new Error("No se recibió una pista de audio activa.");
-        context = new AudioContextCtor();
-        if (context.state === "suspended" && typeof context.resume === "function") await context.resume();
         if (token !== generation) {
           releaseTracks(acquiredStream);
           if (context && typeof context.close === "function") await context.close().catch(function () {});
@@ -107,6 +118,7 @@
       } catch (error) {
         releaseTracks(acquiredStream);
         try { if (localSource && typeof localSource.disconnect === "function") localSource.disconnect(); } catch (_) {}
+        if (audioContext === context) audioContext = null;
         try { if (context && context.state !== "closed" && typeof context.close === "function") await context.close(); } catch (_) {}
         if (token === generation) setUi("failed", permissionError(error));
         return false;

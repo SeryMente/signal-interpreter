@@ -36,6 +36,23 @@
         </div>
       </section>
 
+      <section class="mic-preflight-card sub-card" aria-labelledby="mic-preflight-title">
+        <div class="sub-head">
+          <div><strong id="mic-preflight-title">Prueba local del micrófono</strong><small>Antes de iniciar llamadas · sin enviar audio</small></div>
+          <span id="micPreflightBadge" class="mic-preflight-badge" data-state="idle">LISTO</span>
+        </div>
+        <p id="micPreflightStatus" class="mic-preflight-status" role="status" aria-live="polite">Comprueba tu dispositivo y habla para ver el nivel de entrada.</p>
+        <div class="mic-preflight-level">
+          <meter id="micPreflightMeter" min="0" max="1" value="0">0%</meter>
+          <output id="micPreflightLevel">0%</output>
+        </div>
+        <div class="mic-preflight-actions">
+          <button id="micPreflightStart" class="button secondary" type="button">Probar micrófono</button>
+          <button id="micPreflightStop" class="button secondary" type="button" disabled>Detener prueba</button>
+        </div>
+        <small class="mic-preflight-note">Captura local de hasta 15 segundos. Se detiene al cerrar el panel. No cambia MIC OFF/ON de una llamada.</small>
+      </section>
+
       <section class="quick-controls" aria-label="Controles principales">
         <label class="control-row">
           <span><strong>Estoy disponible</strong><small>Automático solo para llamadas telefónicas · vídeo manual</small></span>
@@ -170,6 +187,7 @@
     </main>
     <script src="../telemetry-db.js"></script>
     <script src="../observability-relay.js"></script>
+    <script src="microphone-preflight.js"></script>
     <script src="time-format.js"></script>
     <script src="popup.js"></script>
   </body>
