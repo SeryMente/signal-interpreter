@@ -135,3 +135,52 @@ La PR #90 implementa únicamente la prueba previa local del micrófono. No integ
 - **MCP normativo:** DESACTIVADO.
 
 Esta crónica no cambia titularidad ni convierte la verificación sintética en aceptación real.
+
+## 10. Corrección del switch global · hotfix local y release candidato 0.10.49
+
+### 10.1 Contrato precisado
+
+El operador aclaró que el control debe aceptar un clic desde la pantalla de espera, aunque sin llamada activa el canal saliente deba seguir en mute. Se separan por tanto dos estados:
+
+- **Intención del switch:** en espera puede quedar ON/verde como `prepared`; el segundo clic lo devuelve a OFF.
+- **Salida efectiva:** sin llamada activa permanece muted; no se habilita `MediaStreamTrack`, sender saliente ni captura de llamada. Al detectar cada llamada nueva se reinicia el switch y la salida a OFF/mute. El operador debe activar manualmente dentro de una llamada confirmada.
+- **Prueba física previa:** `Probar micrófono` sigue siendo independiente; confirma dispositivo/nivel local, no la pista saliente de una llamada.
+
+En llamada activa, el éxito visual depende de la verificación de pista/sender por el guard, no solo de la etiqueta CSS. Fin de llamada, desconexión, pérdida de ruta/sesión y error mantienen el remute fail-closed.
+
+### 10.2 Hotfix provisional local
+
+Se modificó la carpeta descomprimida que Chrome carga desde el directorio `signal-interpreter/extension`, preservando antes la versión anterior en un ZIP de rollback:
+
+- Respaldo: `SI-extension-pre-global-mic-toggle-hotfix-20261112.zip`.
+- Bytes: 918,856.
+- SHA-256 cotejado con read-back: `88BFF761269D0D98AEB9354574CC7B737C2191FDE0D4643B8B0FB0CEE3F0BABF`.
+- Sintaxis JavaScript: **26/26 PASS**.
+- Referencias del manifiesto: **13/13 PASS**.
+- `MICROPHONE_GLOBAL_TOGGLE_TEST=PASS` sobre el código provisional.
+
+Chrome no se recargó desde esta ejecución; la actualización física del código del directorio no equivale a que el runtime de Chrome ya esté ejecutándolo. Queda pendiente pulsar Reload en `chrome://extensions` y comprobar el switch verde/preparado en la pantalla de espera. No se realizó llamada real ni se verificó pista acústica en este ciclo.
+
+### 10.3 Integración formal candidata
+
+- Versión del manifiesto: **0.10.49**.
+- Rama: `fix/global-mic-toggle-precall-20261112`.
+- PR #91: [Release Signal Interpreter 0.10.49 — global microphone toggle](https://github.com/SeryMente/signal-interpreter/pull/91).
+- Base de la PR: `main` en `f9f0c592e33f48b2c6a8bf26927373fda9b1f21b`; compare observado: 23 commits ahead, 0 behind.
+- Cambios: worker, popup, instalador, manifiesto, inventario SHA-256, README, backlog, objeto canónico, verificador de paquete, workflow de empaquetado y regresión dedicada.
+- `tools/microphone-global-toggle-test.mjs` cubre: toggle ON preparado en espera, salida aún bloqueada, segundo clic OFF, inicio de llamada silenciado, ausencia de auto-unmute, remute al cierre, ambos caminos de la cola y deadlines finitos.
+- `verify-release-package.mjs` deja de exigir la política anterior de bloqueo del control y auto-unmute al aceptar; ahora exige intención prellamada, salida cerrada y mute explícito al inicio.
+- `payload-sha256.json` se actualizó con los hashes SHA-256 del worker, popup, manifiesto, instalador y verificador de paquete.
+
+**Estado al escribir esta crónica:** PR #91 OPEN / NOT MERGED. El endpoint de workflows/status no devolvió ejecuciones asociadas al HEAD en esta consulta; CI se clasifica **NO VERIFICADO**, no PASS. No hay artefacto 0.10.49 descargado ni instalado aún.
+
+### 10.4 Aceptación pendiente
+
+1. CI de paquete, integridad, observabilidad y host nativo en el HEAD final de PR #91.
+2. Carga/reload de 0.10.49 en Chrome; pantalla de espera, primer clic verde/preparado y segundo clic OFF, ambos sin abrir salida.
+3. Llamada controlada: OFF al iniciar, unmute solo por clic manual, estado real de pista/sender coincidente, siguiente clic a OFF y remute al finalizar/perder sesión.
+4. Verificar salida de emergencia al desactivar/desinstalar la extensión; la intervención MAIN-world está ligada al documento, por lo que recargar la pestaña de Cloud Interpreter es el mecanismo de limpieza del contexto.
+5. Aceptación explícita del operador. Ninguna prueba sintética sustituye la verificación de Chrome y del dispositivo.
+
+La versión 0.10.48 sigue siendo solo el paquete provisional local del ciclo anterior; no atribuirle la corrección formal ni la aceptación de este contrato.
+
