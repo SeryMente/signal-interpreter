@@ -5,7 +5,7 @@ if(background.includes("if(config.soundEnabled!==false){"))throw Error("micropho
 if(!background.includes("function requestKeyboardMicrophoneToggle(source)"))throw Error("hotkey-command-and-fallback-dispatch-missing");
 if(!background.includes("fail-closed-on-unmute-verification-error"))throw Error("fail-closed-unmute-recovery-missing");
 if(background.includes("never-reapply-stale-mute-on-unmute-failure"))throw Error("unsafe-unmute-error-policy-regression");
-if(!background.includes("EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL"))throw Error("idle-unmute-guard-missing");
+if(!background.includes("EXTENSION_MICROPHONE_PRECALL_INTENT_SAVED"))throw Error("pre-call-microphone-intent-audit-missing");
 if(!background.includes("microphoneMuted: true,"))throw Error("idle-default-mute-missing");
 const main=fs.readFileSync("extension/mic-guard-main.js","utf8");
 if(!main.includes("var muted=old?!!old.muted:true;"))throw Error("main-world-default-mute-missing");
@@ -34,18 +34,27 @@ if(!background.includes('state.microphoneOutputMuted=micProbe&&typeof micProbe.m
 const internalStart=background.indexOf("async function setExtensionMicrophoneMutedInternal");
 const internalEnd=background.indexOf("  function setExtensionMicrophoneMuted(muted, source)",internalStart);
 if(internalStart<0||internalEnd<=internalStart)throw Error("background-microphone-guard-boundary-missing");
+const preCallStart=background.indexOf("function applyPreCallMicrophoneIntent");
+const preCallEnd=background.indexOf("  async function setExtensionMicrophoneMutedInternal",preCallStart);
+if(preCallStart<0||preCallEnd<=preCallStart)throw Error("pre-call-intent-helper-boundary-missing");
 const noCallWrites=[],noCallEvents=[];
-const noCallGuard=vm.runInNewContext(background.slice(internalStart,internalEnd)+";setExtensionMicrophoneMutedInternal",{
-  chrome:{storage:{local:{get:async()=>({effectifState:{}}),set:async patch=>noCallWrites.push(patch)}}},
-  baseState:()=>({}),normalizeStateShape:value=>value,normalizeHotloadState:value=>value,
+const noCallGuard=vm.runInNewContext(background.slice(preCallStart,preCallEnd)+background.slice(internalStart,internalEnd)+";setExtensionMicrophoneMutedInternal",{
+  chrome:{storage:{local:{get:async()=>({effectifState:{}}),set:async patch=>noCallWrites.push(patch)}},tabs:{query:async()=>[]}},
+  baseState:()=>({microphoneMuted:true,microphoneOutputMuted:true,groqCapture:{microphoneMuted:true}}),
+  normalizeStateShape:value=>value,normalizeHotloadState:value=>value,
   hasActiveCall:()=>false,cloneStateForStorage:value=>JSON.parse(JSON.stringify(value)),
-  record:(...args)=>noCallEvents.push(args)
+  record:(...args)=>noCallEvents.push(args),AUTHORIZED_ORIGIN:"https://app.cloudinterpreter.com",isAuthorizedCloudUrl:()=>true
 });
-const noCallResult=await noCallGuard(false,"regression-no-active-call");
-if(noCallResult.ok!==false||noCallResult.reasonCode!=="call-not-active"||noCallResult.muted!==true)throw Error("unmute-without-active-call-must-be-blocked");
-const blockedState=noCallWrites.at(-1)?.effectifState;
-if(!blockedState||blockedState.microphoneMuted!==true||blockedState.microphoneOutputMuted!==true||blockedState.microphoneMuteStatus!=="blocked"||blockedState.microphoneOutputStatus!=="idle-safe")throw Error("blocked-no-call-state-must-remain-muted");
-if(!noCallEvents.some(event=>event[0]==="EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL"))throw Error("blocked-no-call-unmute-event-must-be-recorded");
+const noCallResult=await noCallGuard(false,"regression-precall-intent");
+if(noCallResult.ok!==true||noCallResult.muted!==false||noCallResult.prepared!==true||
+   noCallResult.outputMuted!==true||noCallResult.outputVerified!==true||noCallResult.trackCount!==0)
+  throw Error("pre-call-unmute-intent-must-not-open-a-live-output-track");
+const preCallState=noCallWrites.at(-1)?.effectifState;
+if(!preCallState||preCallState.microphoneMuted!==false||preCallState.microphoneOutputMuted!==true||
+   preCallState.microphoneOutputStatus!=="idle-safe"||preCallState.groqCapture.microphoneMuted!==true)
+  throw Error("pre-call-intent-must-remain-output-muted-without-a-live-call");
+if(!noCallEvents.some(event=>event[0]==="EXTENSION_MICROPHONE_PRECALL_INTENT_SAVED"))
+  throw Error("pre-call-intent-must-be-auditable-without-audio-data");
 class E{constructor(){this.l=new Map()}addEventListener(t,f){let a=this.l.get(t)||[];a.push(f);this.l.set(t,a)}removeEventListener(t,f){this.l.set(t,(this.l.get(t)||[]).filter(x=>x!==f))}dispatchEvent(e){for(const f of(this.l.get(e.type)||[]).slice())f(e)}}
 class T extends E{constructor(id){super();this.kind="audio";this.id=id;this.enabled=true;this.readyState="live"}clone(){return new T(this.id+"-clone")}}
 class S{constructor(t){this.t=t}getAudioTracks(){return[this.t]}}
