@@ -6,12 +6,12 @@ var muted=old?!!old.muted:true;
 var tracks=old&&old.tracks instanceof Map?old.tracks:new Map();
 var senders=old&&old.senders instanceof Set?old.senders:new Set();
 var patches=old&&old.patches?old.patches:{gum:false,addTrack:false,addTransceiver:false,replaceTrack:false,clone:false};
-var timer=old&&old.timer?old.timer:null;if(timer)clearInterval(timer);
+var timer=old&&old.timer!=null?old.timer:null;if(timer!==null)clearInterval(timer);timer=null;
 function now(){return new Date().toISOString()}
 function ack(id,p){try{document.dispatchEvent(new CustomEvent(AE,{detail:JSON.stringify(Object.assign({version:"1.0",requestId:id||null,timestamp:now()},p||{}))}))}catch(_){}}
 function audio(t){return!!t&&t.kind==="audio"&&typeof t.id==="string"}
 function known(t){return audio(t)&&tracks.has(t.id)}
-function remember(t){if(!audio(t))return;tracks.set(t.id,t);try{if(muted)t.enabled=false}catch(_){}}
+function remember(t){if(!audio(t))return;tracks.set(t.id,t);try{if(muted)t.enabled=false}catch(_){}syncMuteEnforcement();}
 function stream(s){try{s.getAudioTracks().forEach(remember)}catch(_){}return s}
 function sender(s){if(!s)return;try{if(audio(s.track))remember(s.track);if(known(s.track))senders.add(s)}catch(_) {}}
 function patchGum(){try{var md=navigator.mediaDevices;if(!md||typeof md.getUserMedia!=="function")return;var cur=md.getUserMedia;if(cur.__signalMicWrapped){patches.gum=true;return}var orig=cur.bind(md),wrap=function(c){return orig(c).then(function(s){if(c&&c.audio)stream(s);return s})};Object.defineProperty(wrap,"__signalMicWrapped",{value:true});Object.defineProperty(md,"getUserMedia",{value:wrap,configurable:true,writable:true});patches.gum=true}catch(_){}}
@@ -22,17 +22,20 @@ if(typeof p.addTransceiver==="function"&&!p.addTransceiver.__signalMicWrapped){v
 }catch(_){}try{var sp=window.RTCRtpSender&&window.RTCRtpSender.prototype;if(sp&&typeof sp.replaceTrack==="function"&&!sp.replaceTrack.__signalMicWrapped){var or=sp.replaceTrack,rw=function(t){if(audio(t)){remember(t);if(muted)try{t.enabled=false}catch(_) {}}var r=or.apply(this,arguments);if(known(t))sender(this);return r};Object.defineProperty(rw,"__signalMicWrapped",{value:true});Object.defineProperty(sp,"replaceTrack",{value:rw,configurable:true,writable:true});patches.replaceTrack=true}}catch(_){}}
 function patchClone(){try{var p=window.MediaStreamTrack&&window.MediaStreamTrack.prototype;if(!p||typeof p.clone!=="function"||p.clone.__signalMicWrapped)return;var oc=p.clone,cw=function(){var c=oc.apply(this,arguments);if(known(this)){remember(c);if(muted)try{c.enabled=false}catch(_) {}}return c};Object.defineProperty(cw,"__signalMicWrapped",{value:true});Object.defineProperty(p,"clone",{value:cw,configurable:true,writable:true});patches.clone=true}catch(_){}}
 function patch(){patchGum();patchPC();patchClone()}
+function hasLiveTrack(){var found=false;tracks.forEach(function(t){try{if(t.readyState!=="ended")found=true}catch(_){}});return found}
+function stopMuteEnforcement(){if(timer!==null){clearInterval(timer);timer=null}if(state)state.timer=null}
+function syncMuteEnforcement(){if(!muted||!hasLiveTrack()){stopMuteEnforcement();return}if(timer===null){timer=setInterval(function(){if(!muted||!hasLiveTrack()){stopMuteEnforcement();return}tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_){}})},50)}if(state)state.timer=timer}
 function report(){var live=Array.from(tracks.values()).filter(function(t){try{return t.readyState!=="ended"}catch(_){return false}});tracks.clear();live.forEach(function(t){tracks.set(t.id,t)});Array.from(senders).forEach(function(s){try{if(!s.track||s.track.readyState==="ended"||!known(s.track))senders.delete(s)}catch(_){}});
 var tok=(live.length===0&&muted)||(live.length>0&&live.every(function(t){try{return t.enabled===!muted}catch(_){return false}})),sok=senders.size===0||Array.from(senders).every(function(s){try{return!!s.track&&s.track.enabled===!muted}catch(_){return false}});return{trackCount:live.length,senderCount:senders.size,verified:tok&&sok}}
 function wait(ms){return new Promise(function(resolve){setTimeout(resolve,ms)})}
 async function stableReport(samples,gap){var first=null,last=null;for(var i=0;i<samples;i+=1){last=report();if(!last.verified)return Object.assign({},last,{stable:false,stableSamples:i+1});if(!first)first=last;else if(last.trackCount!==first.trackCount||last.senderCount!==first.senderCount)return Object.assign({},last,{verified:false,stable:false,unstable:true,stableSamples:i+1});if(i+1<samples)await wait(gap)}return Object.assign({},last,{stable:true,stableSamples:samples})}
-async function forceMute(id){muted=true;state.muted=true;patch();tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_) {}});var r=await stableReport(3,20);ack(id,{ok:r.verified&&r.stable,muted:true,verified:r.verified&&r.stable,stable:!!r.stable,stableSamples:r.stableSamples||0,trackCount:r.trackCount,senderCount:r.senderCount,patches:patches,error:r.verified&&r.stable?null:"No se pudo verificar de forma estable la pista saliente del micrófono."})}
+async function forceMute(id){muted=true;state.muted=true;syncMuteEnforcement();patch();tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_) {}});var r=await stableReport(3,20);ack(id,{ok:r.verified&&r.stable,muted:true,verified:r.verified&&r.stable,stable:!!r.stable,stableSamples:r.stableSamples||0,trackCount:r.trackCount,senderCount:r.senderCount,patches:patches,error:r.verified&&r.stable?null:"No se pudo verificar de forma estable la pista saliente del micrófono."})}
 async function unmute(id,allowEmpty){
 patch();
 var recoveredBaseline=false;
 var before=await stableReport(2,15);
 if(allowEmpty===true&&before.verified&&before.stable&&Number(before.trackCount||0)===0&&Number(before.senderCount||0)===0){
-  muted=false;state.muted=false;
+  muted=false;state.muted=false;syncMuteEnforcement();
   ack(id,{ok:true,muted:false,verified:true,stable:true,stableSamples:before.stableSamples||2,trackCount:0,senderCount:0,patches:patches,preCall:true});
   return;
 }
@@ -60,9 +63,8 @@ if(!r.verified||!r.stable){
 }
 ack(id,{ok:true,muted:false,verified:true,stable:true,stableSamples:r.stableSamples||3,trackCount:r.trackCount,senderCount:r.senderCount,patches:patches,recoveredBaseline:recoveredBaseline});
 }
-document.addEventListener(CE,function(e){var m=null;try{m=JSON.parse(String(e&&e.detail||""))}catch(_){}if(!m||m.schema!=="signal-main-mic-command/v1")return;if(m.op==="set"){if(m.muted)forceMute(m.requestId);else unmute(m.requestId,m.allowEmpty===true)}else if(m.op==="probe"){patch();stableReport(2,15).then(function(r){ack(m.requestId,{ok:true,muted:muted,verified:r.verified,stable:!!r.stable,stableSamples:r.stableSamples||0,trackCount:r.trackCount,senderCount:r.senderCount,patches:patches})}).catch(function(error){ack(m.requestId,{ok:false,muted:muted,verified:false,stable:false,error:String(error),patches:patches})})}},true);
+document.addEventListener(CE,function(e){var m=null;try{m=JSON.parse(String(e&&e.detail||""))}catch(_){}if(!m||m.schema!=="signal-main-mic-command/v1")return;if(m.op==="set"){if(m.muted)forceMute(m.requestId);else unmute(m.requestId,m.allowEmpty===true)}else if(m.op==="probe"){patch();syncMuteEnforcement();stableReport(2,15).then(function(r){ack(m.requestId,{ok:true,muted:muted,verified:r.verified,stable:!!r.stable,stableSamples:r.stableSamples||0,trackCount:r.trackCount,senderCount:r.senderCount,patches:patches})}).catch(function(error){ack(m.requestId,{ok:false,muted:muted,verified:false,stable:false,error:String(error),patches:patches})})}},true);
 var state=old||{version:"1.0",startedAt:now(),commandEvent:CE,ackEvent:AE,tracks:tracks,senders:senders,patches:patches,muted:muted,timer:null};
-state.tracks=tracks;state.senders=senders;state.patches=patches;state.muted=muted;patch();
-timer=setInterval(function(){patch();if(muted)tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_) {}})},50);
+state.tracks=tracks;state.senders=senders;state.patches=patches;state.muted=muted;patch();syncMuteEnforcement();
 state.timer=timer;state.lastPatchedAt=now();window[K]=state;
 })();
