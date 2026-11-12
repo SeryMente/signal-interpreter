@@ -293,15 +293,34 @@ Fuente del tramo literal: texto pegado por el operador en la conversación actua
 
 **Estado:** no aceptada. Paquete local 60/60 SHA-256; Chrome no recargado; no se verificó MIC ON físico ni llamada real. CI consultada en head #80: Package integrity, signal-observability-audit y native-caption-host-build SUCCESS; no equivalen a E2E/aceptación del operador.
 
-### SI-REG-05 — Guard de unmute inmediato frente al ciclo de llamada · P0
+### SI-REG-05 — Toggle global preparado y mute seguro por ciclo de llamada · P0
 
-**Estado:** ABIERTO · conflicto de política identificado por inspección estática en el workspace local; impacto real en dispositivo NO VERIFICADO.
+**Estado:** CORRECCIÓN IMPLEMENTADA EN RAMA `fix/global-mic-toggle-precall-20261112`; prueba de regresión dedicada añadida a CI; aceptación Chrome/llamada real pendiente.
 
-El paquete conserva botón MIC, comando `Ctrl+Shift+Period` (`Ctrl+Shift+.`) y gesto global izquierdo+derecho durante 240 ms. `mic-guard-main.js` inicia silenciado y valida pistas/senders. El reintento de pista tardía de `hotloadHeartbeat()` exige llamada activa. Sin embargo, `setExtensionMicrophoneMutedInternal(false, ...)` no bloquea el unmute inmediato cuando `callActive=false`; despacha la orden a una pestaña autorizada. El test MIC actual exige que no exista `EXTENSION_MICROPHONE_UNMUTE_BLOCKED_NO_ACTIVE_CALL` y contempla toggle previo a llamada.
+**Decisión funcional aclarada por el operador (2026-11-12):** el switch debe aceptar el clic y pasar a verde desde cualquier pantalla, incluida la pantalla de espera. Cuando no hay llamada activa, ese estado verde representa **intención/preparación**, no una pista saliente abierta. El audio efectivo permanece en mute y no se captura ni transmite. La intención preparada no se hereda en una llamada nueva: cada llamada arranca en OFF y requiere activación manual del operador.
 
-Esto no coincide con la política vigente anterior: permanecer silenciado durante espera, timbrado, prellamada y estado incierto; habilitar pista solo tras estado confirmado de llamada activa; remute al finalizar/perder ruta. No desactivar ni retirar los controles de usuario: corregir la ejecución de la orden para que pueda conservar intención pendiente, sin habilitar una pista real antes de la llamada activa. Añadir pruebas de prellamada con pista existente/tardía, ringing, active-call, route-loss y end-call.
+**Comportamiento implementado en la rama:**
 
-**Criterios de aceptación:** mantener botón/atajo/gesto y feedback verificado; ninguna pista saliente `enabled=true` fuera de llamada activa; no mostrar MIC ON sin verificación estable; remute antes de limpiar contexto; controles Auto-Answer y pruebas no regresan.
+- Sin llamada activa, el toggle calcula su siguiente estado a partir de la intención del switch, no de `hasActiveCall`. El primer clic pasa a `MIC ON · preparado`; el segundo vuelve a OFF.
+- Mientras no exista llamada activa, `microphoneOutputMuted=true`, `microphoneOutputStatus=idle-safe` y `groqCapture.microphoneMuted=true`. No se habilita ninguna pista ni se inicia captura por el hecho de poner el switch en verde.
+- Al detectar una llamada nueva, la máquina de estado reinicia intención y salida a mute y aplica `setExtensionMicrophoneMuted(true, "call-start-safe")`. Se elimina el unmute automático al aceptar/entrar en la llamada.
+- Dentro de una llamada activa, cada clic sigue pasando por el guard y requiere verificación de la pista/sender real. El color no sustituye la lectura de `MediaStreamTrack.enabled`.
+- Fin de llamada, desconexión y pérdida de sesión conservan la política remute-before-cleanup ya existente; fallos de verificación permanecen fail-closed.
+- El preflight **Probar micrófono** permanece como función distinta: comprueba el dispositivo físico localmente, pero no controla el mute de salida.
+
+**Criterios de aceptación:**
+
+1. Desde espera/perfil, primer clic cambia el switch a verde y guarda `prepared`; no se inicia llamada ni se habilita `MediaStreamTrack`, sender saliente o captura.
+2. Segundo clic en espera revierte el switch a OFF; la salida sigue en mute.
+3. Cambiar de pantalla, cerrar/reabrir popup o cambiar de pestaña no altera ni bloquea la intención global guardada.
+4. Al comenzar cada llamada, el switch y la pista saliente quedan en OFF/mute, aunque antes estuviera preparado en ON.
+5. Solo tras estado de llamada confirmado, el clic manual puede activar la pista; la UI reporta ON únicamente después de verificación estable del guard y sender saliente.
+6. El siguiente clic silencia la pista real y devuelve el switch a OFF.
+7. Pista tardía, ringing, permisos, error, fin de llamada, desconexión, pérdida de ruta, pérdida de sesión y reinicio del worker no producen apertura accidental; los estados inciertos fallan cerrados.
+8. Las operaciones no dejan el botón bloqueado indefinidamente; errores y timeouts se muestran como no verificados, sin falsear el estado físico.
+9. Desactivar/desinstalar la extensión es la salida de emergencia; se debe verificar en Chrome que las pistas quedan detenidas y que recargar la pestaña de Cloud Interpreter limpia los wrappers de MAIN-world asociados a ese documento.
+
+La política de mute efectivo en espera se mantiene intacta. La aclaración del operador permite que el **control** se encienda/prepárese manualmente en espera; no permite abrir el **canal de salida** antes de una llamada activa.
 
 ### Evidencia compartida del último ciclo local
 
