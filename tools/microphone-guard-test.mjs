@@ -10,6 +10,10 @@ if(!background.includes("microphoneMuted: true,"))throw Error("idle-default-mute
 const main=fs.readFileSync("extension/mic-guard-main.js","utf8");
 if(!main.includes("var muted=old?!!old.muted:true;"))throw Error("main-world-default-mute-missing");
 if(!main.includes("recoveryBaselineAttempted")||!main.includes("recoveredBaseline:recoveredBaseline"))throw Error("pre-unmute-baseline-recovery-missing");
+if(!main.includes("function syncMuteEnforcement()")||!main.includes("function hasLiveTrack()"))throw Error("mute-watchdog-state-controller-missing");
+if(main.includes("timer=setInterval(function(){patch();"))throw Error("main-world-api-patching-must-not-poll-every-50ms");
+if(!content.includes("overlayTimer = setInterval(renderOverlay, 1000);")||content.includes("overlayTimer = setInterval(renderOverlay, 100);"))throw Error("overlay-refresh-must-not-render-at-10hz");
+if(!content.includes("function scheduleOverlayMutationRender()")||!content.includes("if (currentCallId()) scheduleOverlayMutationRender();"))throw Error("mutation-driven-overlay-refresh-must-be-coalesced");
 if(background.includes("var recoveryMuted=previousMuted;"))throw Error("previous-muted-state-can-lock-an-unmute");
 if(!content.includes("EXTENSION_MICROPHONE_KEYBOARD_FALLBACK_TRIGGERED"))throw Error("content-hotkey-fallback-missing");
 const helperStart=background.indexOf("function pendingMicrophoneUnmuteEligible");
@@ -51,14 +55,18 @@ class CE{constructor(type,i){this.type=type;this.detail=i&&i.detail}}
 const document=new E(),ints=[],navigator={mediaDevices:{getUserMedia:async()=>new S(new T("mic"))}};
 const preTrack=new T("preexisting"),prePc=new PC(),preSender=prePc.addTrack(preTrack,{});
 const sb={console,Map,Set,Array,Object,Promise,Date,JSON,String,Number,Boolean,Math,navigator,document,CustomEvent:CE,setInterval:f=>(ints.push(f),ints.length-1),clearInterval:i=>{ints[i]=null},setTimeout};sb.window=sb;sb.RTCPeerConnection=PC;sb.RTCRtpSender=Sender;sb.MediaStreamTrack=T;vm.runInNewContext(main,sb);
+if(ints.some(Boolean))throw Error("mute-watchdog-must-not-run-without-live-track");
 const a=[];document.addEventListener("__SIGNAL_INTERPRETER_MIC_ACK_V1__",e=>a.push(JSON.parse(e.detail)));
 async function cmd(m,id){document.dispatchEvent(new CE("__SIGNAL_INTERPRETER_MIC_COMMAND_V1__",{detail:JSON.stringify({schema:"signal-main-mic-command/v1",op:"set",requestId:id,muted:m})}));for(let i=0;i<50&&!a.some(x=>x.requestId===id);i++)await new Promise(r=>setTimeout(r,10));return a.findLast(x=>x.requestId===id)}
-const st=await navigator.mediaDevices.getUserMedia({audio:true}),tr=st.getAudioTracks()[0],pc=new sb.RTCPeerConnection(),se=pc.addTrack(tr,st);prePc.getSenders();
+const st=await navigator.mediaDevices.getUserMedia({audio:true}),tr=st.getAudioTracks()[0],pc=new sb.RTCPeerConnection(),se=pc.addTrack(tr,st);
+if(!ints.some(Boolean))throw Error("mute-watchdog-must-start-for-live-muted-track");prePc.getSenders();
 let x=await cmd(true,"1");if(!(x.verified&&x.muted&&x.stable&&x.stableSamples===3&&!tr.enabled&&!preTrack.enabled&&x.senderCount===2&&x.trackCount===2))throw Error("mute");
 tr.enabled=true;for(const f of ints)if(f)f();if(tr.enabled)throw Error("enforce");
 tr.enabled=true;x=await cmd(false,"2");if(!(x.verified&&!x.muted&&x.stable&&tr.enabled&&se.track.enabled&&x.recoveredBaseline===true))throw Error("unmute-after-reestablishing-muted-baseline");
+if(ints.some(Boolean))throw Error("mute-watchdog-must-stop-while-microphone-is-live");
 const cl=tr.clone();await se.replaceTrack(cl);x=await cmd(true,"3");if(!(x.verified&&x.muted&&x.stable&&!cl.enabled))throw Error("replace");
 se.track=null;preSender.track=null;cl.readyState="ended";preTrack.readyState="ended";tr.readyState="ended";x=await cmd(false,"4");if(x.verified||!x.muted)throw Error("no-live-track-unmute");
+if(ints.some(Boolean))throw Error("mute-watchdog-must-stop-with-no-live-track");
 const callEndMuteBoundary=background.indexOf('var endMuteResult=state.callSourceTabId!=null');
 const callEndStateClear=background.indexOf('state.callStartedAt = null; state.callId = null;',callEndMuteBoundary);
 if(callEndMuteBoundary<0||callEndStateClear<=callEndMuteBoundary)throw Error("call-end-mute-must-precede-call-state-cleanup");
