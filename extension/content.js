@@ -55,6 +55,7 @@
   var overlayRoot = null;
   var screenshotOverlayPreviousVisibility=null;
   var overlayTimer = null;
+  var overlayMutationRenderTimer = null;
   var overlayLifecycleActive = false;
   var overlayLifecycleCallId = null;
   var overlayRatingStopEmitted = false;
@@ -1851,6 +1852,7 @@
   function stopOverlay(reason) {
     if (overlayTimer) clearInterval(overlayTimer);
     overlayTimer = null;
+    if (overlayMutationRenderTimer !== null) { clearTimeout(overlayMutationRenderTimer); overlayMutationRenderTimer = null; }
     if (overlayHost) overlayHost.remove();
     overlayHost = null;
     overlayRoot = null;
@@ -2128,7 +2130,7 @@
         renderOverlay();
       });
     });
-    overlayTimer = setInterval(renderOverlay, 100);
+    overlayTimer = setInterval(renderOverlay, 1000);
     reportOverlayLifecycle("EARNINGS_OVERLAY_MOUNTED", {
       requestedCallId: overlayLifecycleCallId, mountReason: "ensure-overlay",
       controlsReady: !!(overlayRoot.getElementById("amount") && overlayRoot.getElementById("mic")),
@@ -2146,6 +2148,13 @@
         documentElementPresent: !!document.documentElement
       }, "error", "mount-failed:" + String(overlayLifecycleCallId || "none"));
     }
+  }
+  function scheduleOverlayMutationRender() {
+    if (!runtimeMarker.active || overlayMutationRenderTimer !== null) return;
+    overlayMutationRenderTimer = setTimeout(function () {
+      overlayMutationRenderTimer = null;
+      renderOverlay();
+    }, 250);
   }
   function renderOverlay() {
     // A disposed runtime must never remount an overlay after an extension reload.
@@ -2296,7 +2305,7 @@
       mediaSnapshot("mutation");
       mapScreen("mutation");
       schedulePlatformMirror("mutation");
-      if (currentCallId()) renderOverlay();
+      if (currentCallId()) scheduleOverlayMutationRender();
     });
     observer.observe(document.documentElement, {
       subtree: true, childList: true, characterData: true, attributes: true,
