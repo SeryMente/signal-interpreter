@@ -10,6 +10,10 @@ assert.match(backgroundSource,/state\.microphoneMuted!==false[\s\S]*microphone-m
   "Groq capture requires an explicitly enabled and verified outgoing microphone");
 assert.match(backgroundSource,/stopAllSignalGroqDialogueCaptures\("microphone-muted"\)/,
   "MIC OFF must stop both Groq capture lanes");
+assert.match(backgroundSource,/stopAllSignalGroqDialogueCaptures\("call-ended"\)/,
+  "call end must stop both Groq capture lanes even when native caption capture is inactive");
+assert.doesNotMatch(backgroundSource,/requestCallAlert\(/,
+  "no extension-generated call alert may be injected into live call playback");
 assert.match(backgroundSource,/soundEnabled!==false&&!outputRequired/,
   "mute tones must not be added to active call playback");
 assert.doesNotMatch(contentSource,/playPageCallBeep\("confirmed-answer-route"/,

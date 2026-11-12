@@ -1852,6 +1852,7 @@ try { importScripts("groq-secret.local.js"); } catch (_) { /* Local-only key fil
         countedInEarnings: successfulCompletion, currency: config.currency, billingRule: config.billingRule, endSource: source
       };
       closedCallId = state.callId;
+      await stopAllSignalGroqDialogueCaptures("call-ended");
       if (successfulCompletion) {
         state.completedCalls = (state.completedCalls || []).concat(call).slice(-1000);
       } else {
