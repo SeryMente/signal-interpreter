@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-71caedee-61cb-459f-a16b-ac4bd4822595",
-  "createdAt": "2026-11-12T09:40:07.859Z",
+  "batchId": "batch-153ae036-0f65-48d6-a447-6464d7f8421b",
+  "createdAt": "2026-11-12T09:44:07.862Z",
   "trigger": "alarm",
   "extensionVersion": "0.10.47",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "edd71a12-6ebd-45e4-bcb7-461737992510",
-      "sequence": 66995,
-      "timestamp": "2026-11-12T09:40:06.415Z",
-      "ingestedAt": "2026-11-12T09:40:06.415Z",
+      "id": "a6c1fada-9ec5-4718-9a38-3e968e1b4ca7",
+      "sequence": 66996,
+      "timestamp": "2026-11-12T09:44:06.157Z",
+      "ingestedAt": "2026-11-12T09:44:06.157Z",
       "level": "info",
       "category": "RUNTIME",
       "component": "background",
       "extensionVersion": "0.10.47",
       "host": "",
       "url": "",
-      "phase": "event",
-      "action": "TELEMETRY_MAINTENANCE",
-      "outcome": "observed",
-      "traceId": "af18b40f-ce19-4a9d-8309-8007c1348599",
+      "phase": "started",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
+      "outcome": "success",
+      "traceId": "8f1988e0-8af0-4db9-a0f7-1338036471e0",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -44,44 +44,72 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "pruned": {
-          "cutoff": "[PHONE]T09:40:06.110Z",
-          "expiredEvents": 0,
-          "expiredSnapshots": 0,
-          "expiredSignalSegments": 0,
-          "excessEvents": 0,
-          "excessSignalSegments": 0
-        },
-        "stats": {
-          "database": "signal-interpreter-telemetry",
-          "events": 48073,
-          "snapshots": 0,
-          "signalSegments": 0,
-          "oldestEventAt": "[PHONE]T15:01:58.352Z",
-          "newestEventAt": "[PHONE]T09:39:12.374Z",
-          "usageBytes": 37323981,
-          "quotaBytes": 39948440781
-        }
+        "trigger": "hourly"
+      }
+    },
+    {
+      "schema": "khora-effectif-event/v4",
+      "id": "767ef3d9-9329-4b5c-9c83-193e06384125",
+      "sequence": 66997,
+      "timestamp": "2026-11-12T09:44:06.592Z",
+      "ingestedAt": "2026-11-12T09:44:06.592Z",
+      "level": "info",
+      "category": "RUNTIME",
+      "component": "background",
+      "extensionVersion": "0.10.47",
+      "host": "",
+      "url": "",
+      "phase": "event",
+      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED",
+      "outcome": "observed",
+      "traceId": "ae38c388-b29b-48af-90ab-4f23ef737e89",
+      "operationId": null,
+      "parentEventId": null,
+      "attempt": 1,
+      "durationMs": null,
+      "tabId": null,
+      "session": {},
+      "environment": {
+        "extensionVersion": "0.10.47",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
+        "platform": "Win32"
+      },
+      "expected": null,
+      "observed": null,
+      "reasonCode": "CLOUD_TAB_UNAVAILABLE",
+      "error": null,
+      "metrics": {},
+      "context": {},
+      "privacy": {
+        "rawTextStored": false,
+        "captionTextStored": "[OMITTED]",
+        "credentialRedaction": "[REDACTED]"
+      },
+      "payload": {
+        "trigger": "hourly",
+        "reasonCode": "CLOUD_TAB_UNAVAILABLE",
+        "policy": "no-tab-create-no-navigation-no-reload; retry-next-hour"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 1,
+    "eventsTotal": 2,
     "errors": 0,
     "warnings": 0,
     "critical": false,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 66995,
-    "lastSequence": 66995,
-    "firstTimestamp": "2026-11-12T09:40:06.415Z",
-    "lastTimestamp": "2026-11-12T09:40:06.415Z",
+    "firstSequence": 66996,
+    "lastSequence": 66997,
+    "firstTimestamp": "2026-11-12T09:44:06.157Z",
+    "lastTimestamp": "2026-11-12T09:44:06.592Z",
     "actions": {
-      "TELEMETRY_MAINTENANCE": 1
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
+      "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED": 1
     },
     "categories": {
-      "RUNTIME": 1
+      "RUNTIME": 2
     }
   }
 }
