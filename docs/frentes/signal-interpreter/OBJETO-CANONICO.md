@@ -612,3 +612,11 @@ La implementación formal de 0.10.49 está fusionada en main mediante PR #92, me
 4. Ejecutar benchmark no clínico/expresamente autorizado con referencias humanas y perfiles de señal variados.
 5. Medir calidad y latencia por canal y global; no ratificar perfil antes de fijar criterios.
 6. Solo después, solicitar prueba controlada en Chrome autorizado y aceptación expresa del operador.
+
+### 15.1 · Presupuesto de ejecución y protección de la llamada
+
+- El guard de micrófono conserva el enforcement de 50 ms únicamente mientras MIC está silenciado y existe al menos una pista viva. Al abrir MIC, el temporizador se detiene; el parcheo de APIs queda ligado al inicio y a las transiciones explícitas, no a un sondeo continuo de 20 Hz.
+- El overlay de ingresos reduce su render periódico de 10 Hz a 1 Hz. Las mutaciones del DOM agrupan la actualización visual con un debounce de 250 ms; las acciones explícitas y los cambios de estado siguen solicitando render inmediato.
+- Los tonos y la locución de la extensión no se reproducen durante llamadas activas. La captura Groq conserva una ruta independiente, con reproducción local original habilitada y salida silenciosa del AudioWorklet.
+- Estas medidas reducen trabajo periódico programado y eliminan audio auxiliar concurrente por diseño. No equivalen a una medición de CPU, jitter, latencia acústica ni fidelidad real; esos resultados siguen pendientes de perfilado y aceptación controlada.
+- La regresión tools/microphone-guard-test.mjs verifica que el watchdog se active solo para una pista viva silenciada, se detenga al abrir MIC y que el render periódico/de mutaciones mantenga las frecuencias declaradas.
