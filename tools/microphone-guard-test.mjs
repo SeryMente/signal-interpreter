@@ -1,6 +1,6 @@
 import fs from "node:fs";import vm from "node:vm";
 const background=fs.readFileSync("extension/background.js","utf8"),content=fs.readFileSync("extension/content.js","utf8");
-if(!background.includes("if(cachedConfig.soundEnabled!==false){"))throw Error("microphone-toggle-sound-config-regression");
+if(!background.includes("if(cachedConfig.soundEnabled!==false&&!outputRequired){"))throw Error("microphone-toggle-sound-config-regression");
 if(background.includes("if(config.soundEnabled!==false){"))throw Error("microphone-toggle-undefined-config-regression");
 if(!background.includes("function requestKeyboardMicrophoneToggle(source)"))throw Error("hotkey-command-and-fallback-dispatch-missing");
 if(!background.includes("fail-closed-on-unmute-verification-error"))throw Error("fail-closed-unmute-recovery-missing");
