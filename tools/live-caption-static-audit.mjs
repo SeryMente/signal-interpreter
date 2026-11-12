@@ -15,6 +15,8 @@ const core=read("extension/live-caption-core.js");
 const bridge=read("extension/live-caption-bridge.js");
 const youtubeAdapter=read("extension/youtube-caption-adapter.js");
 const popup=read("extension/ui/popup.js");
+const groqCapture=read("extension/groq-dialogue-capture.js");
+const whisperProcessor=read("extension/whisper-window-processor.js");
 const hostManifest=JSON.parse(read("extension/native/com.signalinterpreter.captionhost.json"));
 const register=read("extension/native/register-caption-host.ps1");
 const hostSource=read("extension/native/SignalInterpreter.CaptionHost.cs");
@@ -171,7 +173,15 @@ console.log("LIVE_CAPTION_STATIC_AUDIT=PASS");
 assert.equal(/getUserMedia\(\{\s*audio:\s*true/.test(offscreen),false,"offscreen must never request a microphone");
 
 assert.equal(manifest.permissions.includes("tabCapture"),false);
-assert.equal(manifest.host_permissions.includes("https://api.groq.com/*"),false);
+assert.equal(manifest.host_permissions.includes("https://api.groq.com/*"),true,"Groq API access must be explicitly scoped to its HTTPS origin");
+assert.equal(manifest.permissions.includes("tabCapture"),false,"capture uses the user-selected browser surface, not tabCapture");
+const groqEntry=manifest.content_scripts.find(entry=>entry.js?.includes("extension/groq-dialogue-capture.js"));
+assert.ok(groqEntry,"Groq capture must be loaded as a separate content script");
+assert.deepEqual(groqEntry.matches,["https://app.cloudinterpreter.com/*"],"audio capture must be restricted to the authorized call origin");
+assert.match(groqCapture,/getDisplayMedia/);
+assert.match(groqCapture,/getUserMedia/);
+assert.match(groqCapture,/suppressLocalAudioPlayback:false/,"capturing the tab must not suppress local call playback");
+assert.match(whisperProcessor,/channel.fill\(0\)/,"the ASR AudioWorklet output must remain silent");
 assert.equal(manifest.content_scripts.some(e=>e.js?.includes("extension/youtube-caption-adapter.js")),false);
 for(const code of [background,offscreen,popup]){
  assert.equal(/getUserMedia|MediaRecorder|createMediaStreamSource|tabCapture\.getMediaStreamId/.test(code),false,"no conversational media acquisition or replay");
