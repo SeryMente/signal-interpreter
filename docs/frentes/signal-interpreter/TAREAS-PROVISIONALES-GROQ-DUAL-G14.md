@@ -458,3 +458,14 @@ No existe corpus no clínico expresamente autorizado, gold transcript con dos an
 - La selección `displaySurface === "browser"` distingue navegador de ventana/monitor, pero no demuestra por sí sola que se seleccionó exactamente la pestaña de Cloud Interpreter. La identidad de pestaña compartida sigue siendo riesgo/compuerta pendiente.
 - CI inicial asociado a HEAD `7465ff8db0b3527c0ec25fbafb1995d0a0429750` observado en curso: Package integrity run 43316225686; Signal Interpreter extension package run 43316225803; signal-observability-audit run 43316225694; native-caption-host-build run 43316225586. No declarar PASS/FAIL sin read-back del SHA final.
 - Sin clave real, verificación de ZDR/cuotas, API Groq con audio, llamada, audio real, Chrome cargado o aceptación humana. La calidad acústica y la latencia percibida siguen NO VERIFICADAS. Perfil de benchmark sigue PROPOSED_NOT_RATIFIED.
+
+## 14. Carga del renderer y preservación de audio · 2026-11-12
+
+**Implementado en PR #94; pendiente de CI final y aceptación física.**
+
+- Alertas: sin beep/locución de confirmación, sin tonos de mute durante llamada y sin prueba manual de sonido durante llamada.
+- MIC guard: elimina el parcheo de APIs cada 50 ms. El watchdog de 50 ms solo permanece cuando MIC está silenciado y hay una pista viva; al abrir MIC se cancela, y los wrappers silencian sincrónicamente cualquier pista nueva mientras MIC siga cerrado.
+- Overlay: periodicidad de render de 100 ms a 1.000 ms; las mutaciones agrupan el render en una ventana de 250 ms.
+- No se cambia la pista WebRTC saliente ni se inserta DSP en la reproducción remota. La copia ASR del micrófono y la copia ASR de la pestaña permanecen independientes.
+- Prueba sintética ampliada: comprueba inicio/parada del watchdog y las frecuencias de render declaradas. No demuestra reducción medida de CPU, ausencia de jitter en hardware ni calidad acústica real.
+- La aceptación sigue reservada al operador; no realizar llamadas, captura real, recarga Chrome, merge, deploy o release desde este ciclo.
