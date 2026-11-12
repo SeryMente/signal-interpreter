@@ -1,317 +1,33 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-12T19:17:13.735Z",
-  "windowStartAt": "2026-11-12T19:07:13.735Z",
-  "windowEndAt": "2026-11-12T19:17:13.735Z",
+  "generatedAt": "2026-11-12T19:20:15.405Z",
+  "windowStartAt": "2026-11-12T19:10:15.405Z",
+  "windowEndAt": "2026-11-12T19:20:15.405Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 332
+    "client-clock-unverified": 300
   },
-  "sourceBatchCount": 28,
+  "sourceBatchCount": 24,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 16654,
+  "receiptUnverifiedBatchCount": 16660,
   "medianClientClockSkewMs": null,
-  "eventCount": 332,
+  "eventCount": 300,
   "summary": {
-    "attempts": 1,
+    "attempts": 0,
     "answered": 0,
-    "missed": 1,
+    "missed": 0,
     "connectFailedNoRoute": 0,
     "ringUnmatched": 0,
     "unresolved": 0,
     "ringSignals": 0,
-    "dialogsDetected": 1,
-    "buttonsFound": 1,
+    "dialogsDetected": 0,
+    "buttonsFound": 0,
     "buttonsNotFound": 0,
-    "readinessSamples": 312,
-    "blocked": 1,
+    "readinessSamples": 300,
+    "blocked": 0,
     "clicks": 0
   },
-  "attempts": [
-    {
-      "attemptId": "970c262d-0d06-417f-8b68-39029d4b5989",
-      "status": "missed",
-      "modality": "VRI",
-      "tabId": 220927959,
-      "detectedAt": "2026-11-12T19:09:53.209Z",
-      "closedAt": "2026-11-12T19:09:54.591Z",
-      "clickedAt": null,
-      "answeredAt": null,
-      "missedAt": "2026-11-12T19:09:59.033Z",
-      "outcomeReason": "dialog_closed_without_connect",
-      "button": {
-        "found": true,
-        "notFound": false,
-        "disabled": false
-      },
-      "readiness": {
-        "samples": 4,
-        "last": {
-          "blockedReasons": [],
-          "ready": true,
-          "availability": "online",
-          "authorizedProfile": true,
-          "configEnabled": true,
-          "labSafetyLock": false,
-          "presenceArmed": true,
-          "presenceReason": "explicit-availability",
-          "presenceGeneration": 2,
-          "reason": "availability",
-          "reasonCode": "availability"
-        }
-      },
-      "blockedEvents": [
-        {
-          "at": "2026-11-12T19:09:53.210Z",
-          "action": "AUTO_ANSWER_BLOCKED",
-          "reasonCode": null,
-          "blockedReasons": [
-            "MODALITY_NOT_VERIFIED_OPI"
-          ]
-        }
-      ],
-      "ringSignalCount": 0,
-      "clickToAnswerLatencyMs": null,
-      "detectionToAnswerLatencyMs": null,
-      "callRefs": [],
-      "missingSignals": [],
-      "eventCount": 16,
-      "timeline": [
-        {
-          "at": "2026-11-12T19:09:53.209Z",
-          "action": "INCOMING_DIALOG_DETECTED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "VRI",
-            "connectFound": true,
-            "connectDisabled": false
-          },
-          "eventId": "173207c5-a4ce-47b9-b94e-b3fcb534d8af",
-          "sequence": 68475
-        },
-        {
-          "at": "2026-11-12T19:09:53.210Z",
-          "action": "CONNECT_BUTTON_FOUND",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "VRI"
-          },
-          "eventId": "17756678-ad54-49ff-bac6-d2f133f47317",
-          "sequence": 68476
-        },
-        {
-          "at": "2026-11-12T19:09:53.210Z",
-          "action": "AUTO_ANSWER_BLOCKED",
-          "level": "warn",
-          "reasonCode": null,
-          "details": {
-            "modality": "VRI",
-            "blockedReasons": [
-              "MODALITY_NOT_VERIFIED_OPI"
-            ],
-            "buttonFound": true,
-            "buttonDisabled": false
-          },
-          "eventId": "721e7d5c-758e-4b86-87a8-429b0a80c426",
-          "sequence": 68477
-        },
-        {
-          "at": "2026-11-12T19:09:53.210Z",
-          "action": "AUTO_ANSWER_SKIPPED_UNVERIFIED_MODALITY",
-          "level": "warn",
-          "reasonCode": "only-verified-OPI",
-          "details": {
-            "modality": "VRI",
-            "reason": "only-verified-OPI",
-            "decision": "blocked",
-            "reasonCode": "only-verified-OPI"
-          },
-          "eventId": "d034f011-b06d-42b6-9a19-f0547f4ce085",
-          "sequence": 68478
-        },
-        {
-          "at": "2026-11-12T19:09:53.491Z",
-          "action": "AUTO_ANSWER_READINESS",
-          "level": "info",
-          "reasonCode": "availability",
-          "details": {
-            "blockedReasons": [],
-            "ready": true,
-            "availability": "online",
-            "authorizedProfile": true,
-            "configEnabled": true,
-            "labSafetyLock": false,
-            "presenceArmed": true,
-            "presenceReason": "explicit-availability",
-            "presenceGeneration": 2,
-            "reason": "availability",
-            "reasonCode": "availability"
-          },
-          "eventId": "d958e15a-4928-4f16-aa0f-d22495789dd1",
-          "sequence": 68480
-        },
-        {
-          "at": "2026-11-12T19:09:53.530Z",
-          "action": "AUTO_ANSWER_BOOTSTRAP_REQUESTED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "trigger": "ring.mp3-start"
-          },
-          "eventId": "870e66f2-dd30-47d8-a7e4-e688e9d28267",
-          "sequence": 68472
-        },
-        {
-          "at": "2026-11-12T19:09:53.790Z",
-          "action": "AUTO_ANSWER_BOOTSTRAP_INJECTION_ERROR",
-          "level": "warn",
-          "reasonCode": null,
-          "details": {
-            "trigger": "ring.mp3-start",
-            "error": "Error: Could not load file: 'extension/content.js'."
-          },
-          "eventId": "c089c88e-3a5e-48d7-b19c-80affb05a2ca",
-          "sequence": 68473
-        },
-        {
-          "at": "2026-11-12T19:09:54.028Z",
-          "action": "AUTO_ANSWER_READINESS",
-          "level": "info",
-          "reasonCode": "heartbeat",
-          "details": {
-            "blockedReasons": [],
-            "ready": true,
-            "availability": "online",
-            "authorizedProfile": true,
-            "configEnabled": true,
-            "labSafetyLock": false,
-            "presenceArmed": true,
-            "presenceReason": "explicit-availability",
-            "presenceGeneration": 2,
-            "reason": "heartbeat",
-            "reasonCode": "heartbeat"
-          },
-          "eventId": "a0fcb274-7a9e-4921-809f-21212cb64e54",
-          "sequence": 68481
-        },
-        {
-          "at": "2026-11-12T19:09:54.439Z",
-          "action": "AUTO_ANSWER_READINESS",
-          "level": "info",
-          "reasonCode": "availability",
-          "details": {
-            "blockedReasons": [],
-            "ready": true,
-            "availability": "online",
-            "authorizedProfile": true,
-            "configEnabled": true,
-            "labSafetyLock": false,
-            "presenceArmed": true,
-            "presenceReason": "explicit-availability",
-            "presenceGeneration": 2,
-            "reason": "availability",
-            "reasonCode": "availability"
-          },
-          "eventId": "0203b7d4-5b47-4704-8bbd-3c8f239e1fc0",
-          "sequence": 68482
-        },
-        {
-          "at": "2026-11-12T19:09:54.591Z",
-          "action": "AUTO_ANSWER_READINESS",
-          "level": "info",
-          "reasonCode": "availability",
-          "details": {
-            "blockedReasons": [],
-            "ready": true,
-            "availability": "online",
-            "authorizedProfile": true,
-            "configEnabled": true,
-            "labSafetyLock": false,
-            "presenceArmed": true,
-            "presenceReason": "explicit-availability",
-            "presenceGeneration": 2,
-            "reason": "availability",
-            "reasonCode": "availability"
-          },
-          "eventId": "150ca2e4-9df3-4f71-bf52-8b8fcfbb34ad",
-          "sequence": 68483
-        },
-        {
-          "at": "2026-11-12T19:09:54.591Z",
-          "action": "INCOMING_DIALOG_CLOSED",
-          "level": "info",
-          "reasonCode": "dialog-removed",
-          "details": {
-            "reason": "dialog-removed",
-            "reasonCode": "dialog-removed"
-          },
-          "eventId": "6d4f6891-eb01-4a12-bf6e-4cdd5d5d057f",
-          "sequence": 68484
-        },
-        {
-          "at": "2026-11-12T19:09:55.368Z",
-          "action": "INCOMING_ATTEMPT_REGISTERED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "VRI",
-            "connectFound": true,
-            "connectDisabled": false
-          },
-          "eventId": "3145b960-adb8-4a95-936e-d1e739738120",
-          "sequence": 68479
-        },
-        {
-          "at": "2026-11-12T19:09:56.198Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "7bbc6638-8c8c-4eb1-b32f-3691dcdadb01",
-          "sequence": 68488
-        },
-        {
-          "at": "2026-11-12T19:09:56.215Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "e8ce0fed-c76a-4104-8ddc-d316b9d7e488",
-          "sequence": 68489
-        },
-        {
-          "at": "2026-11-12T19:09:57.087Z",
-          "action": "INCOMING_DIALOG_CLOSED_OBSERVED",
-          "level": "info",
-          "reasonCode": "dialog-removed",
-          "details": {
-            "reason": "dialog-removed",
-            "reasonCode": "dialog-removed"
-          },
-          "eventId": "0555ed44-6e79-4cd7-9767-fa3a7d7b680a",
-          "sequence": 68485
-        },
-        {
-          "at": "2026-11-12T19:09:59.033Z",
-          "action": "MISSED_CALL_CLASSIFIED",
-          "level": "warn",
-          "reasonCode": "dialog_closed_without_connect",
-          "details": {
-            "modality": "VRI",
-            "connectFound": true,
-            "connectDisabled": false,
-            "reason": "dialog_closed_without_connect",
-            "status": "missed",
-            "reasonCode": "dialog_closed_without_connect"
-          },
-          "eventId": "1420cabe-539c-46b6-94f0-a8e03dd9ec9f",
-          "sequence": 68492
-        }
-      ]
-    }
-  ],
+  "attempts": [],
   "privacy": {
     "rawTranscriptIncluded": false,
     "rawAudioIncluded": false,
