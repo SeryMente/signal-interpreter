@@ -1,26 +1,26 @@
 {
   "schema": "signal-interpreter-observation-batch/v1",
-  "batchId": "batch-06c42033-ad7a-4e2a-9a7e-67c34210efe6",
-  "createdAt": "2026-11-12T04:44:07.867Z",
-  "trigger": "alarm",
+  "batchId": "batch-c7e622ed-8552-4585-a97a-df15c679d467",
+  "createdAt": "2026-11-12T05:39:13.023Z",
+  "trigger": "critical",
   "extensionVersion": "0.10.47",
   "events": [
     {
       "schema": "khora-effectif-event/v4",
-      "id": "6bf753a3-9a09-4095-90b9-7b878b3b497a",
-      "sequence": 66976,
-      "timestamp": "2026-11-12T04:44:06.146Z",
-      "ingestedAt": "2026-11-12T04:44:06.147Z",
-      "level": "info",
-      "category": "RUNTIME",
+      "id": "07c0fcbe-da97-4759-98d2-0c24ba9dd01f",
+      "sequence": 66978,
+      "timestamp": "2026-11-12T05:39:12.606Z",
+      "ingestedAt": "2026-11-12T05:39:12.606Z",
+      "level": "warn",
+      "category": "BILLING",
       "component": "background",
       "extensionVersion": "0.10.47",
       "host": "",
       "url": "",
-      "phase": "started",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED",
-      "outcome": "success",
-      "traceId": "f94f4f00-4426-4975-9b85-21edf51fca2f",
+      "phase": "error",
+      "action": "EXCHANGE_RATE_ERROR",
+      "outcome": "error",
+      "traceId": "9c9550ce-789d-4cf4-9fe3-bf80cb75c272",
       "operationId": null,
       "parentEventId": null,
       "attempt": 1,
@@ -34,8 +34,8 @@
       },
       "expected": null,
       "observed": null,
-      "reasonCode": null,
-      "error": null,
+      "reasonCode": "alarm",
+      "error": "Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy.",
       "metrics": {},
       "context": {},
       "privacy": {
@@ -44,72 +44,29 @@
         "credentialRedaction": "[REDACTED]"
       },
       "payload": {
-        "trigger": "hourly"
-      }
-    },
-    {
-      "schema": "khora-effectif-event/v4",
-      "id": "adb33376-8b7f-4386-a391-fd6d687e30ee",
-      "sequence": 66977,
-      "timestamp": "2026-11-12T04:44:06.583Z",
-      "ingestedAt": "2026-11-12T04:44:06.583Z",
-      "level": "info",
-      "category": "RUNTIME",
-      "component": "background",
-      "extensionVersion": "0.10.47",
-      "host": "",
-      "url": "",
-      "phase": "event",
-      "action": "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED",
-      "outcome": "observed",
-      "traceId": "f281c5af-1ce5-4f65-8efb-89e0ffd4cf76",
-      "operationId": null,
-      "parentEventId": null,
-      "attempt": 1,
-      "durationMs": null,
-      "tabId": null,
-      "session": {},
-      "environment": {
-        "extensionVersion": "0.10.47",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/[PHONE] Safari/537.36",
-        "platform": "Win32"
-      },
-      "expected": null,
-      "observed": null,
-      "reasonCode": "CLOUD_TAB_UNAVAILABLE",
-      "error": null,
-      "metrics": {},
-      "context": {},
-      "privacy": {
-        "rawTextStored": false,
-        "captionTextStored": "[OMITTED]",
-        "credentialRedaction": "[REDACTED]"
-      },
-      "payload": {
-        "trigger": "hourly",
-        "reasonCode": "CLOUD_TAB_UNAVAILABLE",
-        "policy": "no-tab-create-no-navigation-no-reload; retry-next-hour"
+        "pair": "USD/MXN",
+        "message": "Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy. | Error: La fuente no reporta una tasa USD/MXN de hoy.",
+        "reason": "alarm"
       }
     }
   ],
   "summary": {
-    "eventsTotal": 2,
+    "eventsTotal": 1,
     "errors": 0,
-    "warnings": 0,
-    "critical": false,
+    "warnings": 1,
+    "critical": true,
     "scopeRejected": 0,
     "contextEvents": 0,
     "invariantSignals": 0,
-    "firstSequence": 66976,
-    "lastSequence": 66977,
-    "firstTimestamp": "2026-11-12T04:44:06.146Z",
-    "lastTimestamp": "2026-11-12T04:44:06.583Z",
+    "firstSequence": 66978,
+    "lastSequence": 66978,
+    "firstTimestamp": "2026-11-12T05:39:12.606Z",
+    "lastTimestamp": "2026-11-12T05:39:12.606Z",
     "actions": {
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_STARTED": 1,
-      "PLATFORM_OFFICIAL_HOURLY_SYNC_SKIPPED": 1
+      "EXCHANGE_RATE_ERROR": 1
     },
     "categories": {
-      "RUNTIME": 2
+      "BILLING": 1
     }
   }
 }
