@@ -693,3 +693,26 @@ Mantener PR #95 en draft. El siguiente paso material es una prueba acústica con
 - Este registro es una escritura documental adicional sobre main; no modifica la rama de producto ni altera el SHA aprobado por CI.
 - Decisión: mantener PR #95 en draft; no merge, rebase, deploy ni release. La siguiente acción sustantiva requiere la prueba acústica controlada y la aceptación del operador.
 
+
+
+## 20. Retoma del objetivo del sprint y compuerta acústica pendiente · 2026-11-13
+
+### Objetivo, sin desviación
+- Preservar la calidad del audio remoto de la llamada que escucha el intérprete por los auriculares.
+- Preservar la calidad del audio que el cliente recibe desde el micrófono del intérprete.
+
+Los dos extremos deben probarse por separado. El resultado no se considera resuelto por CI ni por inspección estática.
+
+### Corte verificado
+- PR #95: OPEN / DRAFT / NOT MERGED; `mergeable=true`; HEAD `c6dc398cf66c2f081e3eea151e78241cf54cba44`.
+- Cuatro workflows SUCCESS sobre el HEAD exacto. Sin reviews ni hilos de revisión.
+- `main` previo a este asiento: `77c9676d0786e8c7b05eaf082e517ddee48f8fe6`. Ocho commits main-only posteriores a la base de PR; delta inverso limitado a este OCP y su crónica, sin cambios de producto. PR: dos commits propios y siete rutas de producto/pruebas/workflow.
+- Identidad RDC verificada como `CENTRAL\\fila4`, perfil `C:\\Users\\fila4`; procesos Chrome observados bajo esa identidad. Comprobación de solo lectura; Chrome no fue manipulado.
+- Crónica actualizada y lectura de vuelta exacta: [C-SIGNAL-AUDIO-ISOLATION-20261113-G14.md](cronica/C-SIGNAL-AUDIO-ISOLATION-20261113-G14.md).
+- DUG v393 · NX-393m: metadato `document.gow_version=2.21` y objeto `glossary.version=2.22`; discrepancia registrada, DUG/GOW no modificados.
+
+### Límite de aceptación
+No se ejecutó llamada real ni captura/reproducción de audio; no existen mediciones acústicas en auriculares o en el extremo cliente. El control G14 mantiene prohibidos esos actos, junto con credenciales, aceptación humana, recarga/reinicio de Chrome, merge, deploy y release. No se eludió la restricción.
+
+### Próxima acción permitida
+Mantener PR #95 en draft. Para completar el sprint, el operador debe autorizar expresamente ampliar el control G14 a una prueba aislada y no productiva: audio de prueba no sensible, medición por separado de downlink y uplink, sin conservar las muestras y sin interferir con llamadas reales. La aceptación final será del operador. No fusionar ni desplegar antes de esa compuerta.
