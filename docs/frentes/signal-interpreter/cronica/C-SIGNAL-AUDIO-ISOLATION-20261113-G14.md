@@ -69,3 +69,12 @@ DUG v393 · NX-393m; Metacanon 1.31; GOW 2.21; fuente blob `844fc507a2a9a0bfc8f4
 - Archivos del diff de PR (7): workflow de audit, background, content, inventario SHA-256, prueba nueva de aislamiento, prueba de earnings actualizada y prueba del guard de micrófono. `observations/**` no forma parte del diff.
 - PR #95 sigue OPEN / DRAFT / NOT MERGED. No se hizo merge, rebase, release ni deploy.
 
+## Corte posterior de main · 2026-11-13 12:37 America/Mexico_City
+
+- `main` actual: `91fd9b7add5fd4c34a39e1caf4beee0c8f8dc098`.
+- Comparación desde el base original `2ad9886878278a800d351dfde76a707d1f46e2e2`: 5 commits posteriores en main y 0 commits detrás; sus únicos dos archivos afectados son el OCP y esta crónica (cinco commits documentales, sin cambio de producto).
+- Comparación actual `main...fix/call-audio-isolation-20261113`: 2 commits de producto adelante / 5 commits documentales detrás; merge-base permanece el base original.
+- Lectura directa actual de PR #95: OPEN / DRAFT / NOT MERGED, `mergeable=true`, `mergeable_state=clean`, HEAD `c6dc398cf66c2f081e3eea151e78241cf54cba44`.
+- Los cuatro checks del HEAD permanecen COMPLETED / SUCCESS. El diff de la PR sigue limitado a las siete rutas registradas; `observations/**` queda fuera.
+- No se ejecutó merge ni rebase. Se conserva la rama del producto tal como fue validada por CI.
+
