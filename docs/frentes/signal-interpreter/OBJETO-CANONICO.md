@@ -627,3 +627,41 @@ Voy a cerrar el diagnóstico contra los dos requisitos que venimos tratando lite
 - El checkout previo divergente y sucio en `C:\Users\fila4\Desktop\SeryMente\signal-interpreter` no se alteró. El trabajo se hizo en un worktree nuevo y limpio bajo `C:\Users\fila4\Desktop\SeryMente\Temporal\SI-Audio-Isolation-20261113`, como `CENTRAL\fila4`; MantenimientoRCI solo proporcionó elevación.
 - Siguiente paso técnico: esperar y verificar los workflows de PR #95 en HEAD `c6dc398c...`; corregir cualquier nueva regresión antes de considerar aceptación. Después, el operador debe probar en Chrome autorizado y realizar una comparación acústica real y controlada de ambos requisitos. La PR permanece draft, sin fusión ni liberación.
 
+## 16. Cierre de CI y revisión estática de audio · 2026-11-13
+
+Esta sección supersede el estado pendiente de CI que quedó escrito como corte provisional en §15. No modifica ni reinterpreta las salidas acústicas aún no medidas.
+
+### 16.1 CI final de PR #95
+
+- PR #95: OPEN / DRAFT / NOT MERGED; `mergeable=true`.
+- Rama: `fix/call-audio-isolation-20261113`.
+- Base: `2ad9886878278a800d351dfde76a707d1f46e2e2`.
+- HEAD exacto aprobado por CI: `c6dc398cf66c2f081e3eea151e78241cf54cba44`.
+- Cuatro workflows completados SUCCESS sobre ese mismo HEAD:
+  - Package integrity · run `43460003877`.
+  - Signal Interpreter extension package · run `43460003924`.
+  - signal-observability-audit · run `43460004062`.
+  - native-caption-host-build · run `43460003922`.
+- El primer HEAD `664d64d94f1fbb322cc63c6a0429406f729f5a26` tuvo audit FAIL porque `tools/call-earnings-baseline-tests.mjs` dependía del helper retirado `callAlertInFlight` como límite textual de `startCall`. Se corrigió la prueba usando `function alertOnConnect(event)` como límite estable. `CALL_EARNINGS_BASELINE_TEST=PASS`; segundo commit publicado en la misma rama. Los resultados 4/4 corresponden exclusivamente a `c6dc398c...`.
+
+### 16.2 Revisión de ruta RTP y audio auxiliar
+
+- Búsqueda estática en la extensión: no se encontró `setSinkId`, `RTCRtpSender.setParameters`, `createMediaStreamDestination` ni `DynamicsCompressorNode`.
+- `extension/mic-guard-main.js` observa/retiene referencias de pistas y senders y aplica `MediaStreamTrack.enabled` para mute/unmute; no inserta un procesador DSP ni sustituye la pista RTP por una pista transformada. No se modificó este archivo en PR #95.
+- No se halló modificación de constraints de captura ni resampling en la ruta RTP de micrófono atribuible al guard de la extensión.
+- La pista secundaria de micrófono para Groq en PR #84 proviene de `getUserMedia` separado y solicita echo cancellation, noise suppression y auto gain. No equivale a la pista RTP saliente y no se probó que el receptor reciba esa misma señal. Su AudioWorklet silencia la salida de reproducción.
+- Los sonidos locales que podían superponerse durante la llamada se retiraron/condicionaron en PR #95: alerta post-respuesta, beep/TTS de ruta confirmada, feedback MIC en llamada y prueba manual de sonido durante llamada. `CONNECT_ACCEPTED_PENDING` solo registra el estado y no genera audio.
+
+### 16.3 Pruebas locales y límites de aceptación
+
+- PASS: `CALL_AUDIO_ISOLATION`, `MICROPHONE_MAIN_GUARD`, `MICROPHONE_GLOBAL_TOGGLE`, `MICROPHONE_FEEDBACK`, `CALL_CAPTION_NATIVE_ONLY_RUNTIME`, `autoanswer-runtime-guard` (15 checks), hotload caption/active call, `CALL_EARNINGS_BASELINE_TEST` y regresión longitudinal.
+- `verify-release-package`: 60/60 SHA-256; manifiesto/ID y hash de host nativo PASS.
+- `node --check` de los archivos de runtime/tests tocados y `git diff --check`: PASS.
+- Inspección estática no demuestra calidad perceptual ni integridad de extremo a extremo. No hubo llamada real, captura real, medición RMS/peak/clipping/SNR, jitter/pérdida, evaluación A/B ni verificación en el receptor del cliente o en auriculares.
+- No se verificaron credencial Groq, ZDR o cuotas en la consola; no se usó API con audio. Chrome no se cargó ni recargó; no hubo aceptación del operador, merge, deploy ni release.
+- Crónica de este ciclo: [C-SIGNAL-AUDIO-ISOLATION-20261113-G14.md](cronica/C-SIGNAL-AUDIO-ISOLATION-20261113-G14.md).
+
+### 16.4 Siguiente compuerta terminal
+
+Mantener PR #95 en draft. El siguiente paso material es una prueba acústica controlada en Chrome autorizado, midiendo separadamente audio remoto en la salida del intérprete y micrófono saliente en el extremo receptor. No almacenar audio clínico ni transcripciones privadas. La decisión de aceptación y liberación permanece reservada al operador.
+
