@@ -1712,7 +1712,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         dailyCallsToday: Number(state.dailyCalls && state.dailyCalls[localDay()] || 0)
       }, "info", "background");
       record("TRANSCRIPTION_MODULE_READY", { callId: callId, engine: "groq-whisper" }, "info", "background");
-      requestCallAlert(callId, "call-route-confirmed");
+
       refreshExchangeRate("call-start").catch(function(error){
         record("CALL_START_EXCHANGE_RATE_ERROR",{callId:callId,error:String(error)},"warn","background");
       });
@@ -1739,75 +1739,6 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       });
     });
   }
-  var callAlertInFlight = new Map();
-  function requestCallAlert(callId, trigger) {
-    if (!callId || callAlertInFlight.has(callId)) return;
-    callAlertInFlight.set(callId, Date.now());
-    chrome.storage.local.get(["effectifConfig", "effectifCallAlert", "effectifPageBeep"], function (stored) {
-      var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-      if (!config.soundEnabled || !callId) {
-        callAlertInFlight.delete(callId);
-        return;
-      }
-      var now = Date.now();
-      var previous = stored.effectifCallAlert || {};
-      var pageBeep = stored.effectifPageBeep || {};
-      if (pageBeep.callId === callId && pageBeep.playedAt && now - Number(pageBeep.playedAt) < 5000) {
-        callAlertInFlight.delete(callId);
-        record("CALL_ALERT_SOUND_SUPPRESSED_PAGE_BEEP", { callId: callId, trigger: trigger || "call-route-confirmed", pageBeepAt: pageBeep.playedAt }, "info", "runtime");
-        return;
-      }
-      if (previous.callId === callId && previous.playedAt) {
-        callAlertInFlight.delete(callId);
-        return;
-      }
-      if (previous.callId === callId && previous.requestedAt && now - Number(previous.requestedAt) < 4000 && !previous.failedAt) {
-        callAlertInFlight.delete(callId);
-        return;
-      }
-      var marker = {
-        callId: callId,
-        requestedAt: now,
-        playedAt: null,
-        failedAt: null,
-        attempts: 0,
-        trigger: trigger || "call-route-confirmed"
-      };
-      chrome.storage.local.set({ effectifCallAlert: marker });
-      record("CALL_ALERT_SOUND_REQUESTED", {
-        callId: marker.callId, trigger: marker.trigger, requestedAt: now
-      }, "info", "background");
-      function attemptSound(attempt) {
-        marker.attempts = attempt;
-        playSound(Math.max(0.95, Number(config.volume || 0))).then(function () {
-          var playedAt = Date.now();
-          chrome.storage.local.set({
-            effectifCallAlert: Object.assign({}, marker, { playedAt: playedAt, failedAt: null })
-          });
-          callAlertInFlight.delete(callId);
-          record("CALL_ALERT_SOUND_PLAYED", {
-            callId: marker.callId, trigger: marker.trigger,
-            latencyMs: playedAt - now, attempts: attempt, prominent: true
-          }, "info", "offscreen");
-        }).catch(function (error) {
-          if (attempt < 3) {
-            setTimeout(function () { attemptSound(attempt + 1); }, attempt === 1 ? 250 : 600);
-            return;
-          }
-          chrome.storage.local.set({
-            effectifCallAlert: Object.assign({}, marker, { failedAt: Date.now(), error: String(error) })
-          });
-          callAlertInFlight.delete(callId);
-          record("CALL_ALERT_SOUND_ERROR", {
-            callId: marker.callId, trigger: marker.trigger,
-            latencyMs: Date.now() - now, attempts: attempt, message: String(error)
-          }, "error", "offscreen");
-        });
-      }
-      attemptSound(1);
-    });
-  }
-
   function alertOnConnect(event) {
     mutateState(async function (state) {
       var payload = event.payload || {};
@@ -2854,7 +2785,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
     if (hasActiveCall(state)) setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "microphone-state-applied").catch(function () {});
     record("EXTENSION_MICROPHONE_MUTE_APPLIED",{desired:desired,source:source||"unknown",callId:state.callId||null,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,recoveredBaseline:!!outputResult.recoveredBaseline,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)},"info","microphone");
-    if(cachedConfig.soundEnabled!==false){
+    if(!hasActiveCall(state)&&cachedConfig.soundEnabled!==false){
       try{
         Promise.resolve(playSound(Math.max(0.05,Number(cachedConfig.volume||0.8)),desired?"mute-on":"mute-off"))
           .then(function(){
@@ -3205,7 +3136,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
           state.autoAnswerTelemetry.confirmations = Number(state.autoAnswerTelemetry.confirmations || 0) + 1;
           state.autoAnswerTelemetry.lastConfirmedAt = event.timestamp;
         }, "answer-flow-confirmed").catch(function () {});
-        requestCallAlert(event.payload && event.payload.callId || null, "answer-flow-confirmed");
+
       }
       if (event.action === "CONNECT_ROUTE_TIMEOUT") {
         mutateState(async function (state) {
@@ -3284,9 +3215,17 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       return true;
     }
     if (message.type === "EFFECTIF_TEST_SOUND") {
-      playSound(message.volume).then(function () {
-        record("ALERT_SOUND_TESTED", {}, "info", "popup"); sendResponse({ ok: true });
-      }).catch(function (error) { sendResponse({ ok: false, error: String(error) }); });
+      chrome.storage.local.get(["effectifState"], function (stored) {
+        var currentState = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+        if (hasActiveCall(currentState)) {
+          record("ALERT_SOUND_TEST_BLOCKED_ACTIVE_CALL", {}, "warn", "popup");
+          sendResponse({ ok: false, error: "No se reproducen tonos durante una llamada activa." });
+          return;
+        }
+        playSound(message.volume).then(function () {
+          record("ALERT_SOUND_TESTED", {}, "info", "popup"); sendResponse({ ok: true });
+        }).catch(function (error) { sendResponse({ ok: false, error: String(error) }); });
+      });
       return true;
     }
     if (message.type === "EFFECTIF_PLATFORM_SNAPSHOT") {
