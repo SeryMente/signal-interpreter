@@ -30,6 +30,7 @@ jobs:
           node --check extension/hotkey-fallback.js
           node --check tools/global-microphone-hotkey-test.mjs
           node --check tools/microphone-feedback-test.mjs
+          node --check tools/call-audio-isolation-test.mjs
           node --check extension/platform-screenshot.js
           node --check tools/observability-relay/api/screenshot.js
           node --check extension/offscreen.js
@@ -99,6 +100,8 @@ jobs:
         run: node tools/global-microphone-hotkey-test.mjs
       - name: Microphone feedback unit test
         run: node tools/microphone-feedback-test.mjs
+      - name: Call audio isolation unit test
+        run: node tools/call-audio-isolation-test.mjs
       - name: Local microphone preflight lifecycle unit test
         run: node tools/microphone-preflight-test.mjs
       - name: Platform screenshot unit test

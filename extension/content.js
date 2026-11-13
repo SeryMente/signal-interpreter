@@ -3,7 +3,7 @@
   var RUNTIME_VERSION = chrome.runtime.getManifest().version;
   var SIGNAL_RUNTIME_MARKER = "__SIGNAL_INTERPRETER_CLOUD_RUNTIME__";
   var ANSWER_LEASE_MARKER = "__SIGNAL_INTERPRETER_ANSWER_LEASE__";
-  var CALL_BEEP_MARKER = "__SIGNAL_INTERPRETER_CALL_BEEP__";
+
   var existingRuntimeMarker = window[SIGNAL_RUNTIME_MARKER];
   if (existingRuntimeMarker && existingRuntimeMarker.active) {
     if (existingRuntimeMarker.extensionId === chrome.runtime.id && existingRuntimeMarker.version === RUNTIME_VERSION) {
@@ -102,7 +102,7 @@
   var lastIncomingBlockedSignature = "";
   var lastAvailability = "";
   var readinessTimer = null;
-  var lastSpokenCallId = "";
+
   var lastMediaSignature = "";
   var lastMediaAt = 0;
   var lastScreenSignature = "";
@@ -642,53 +642,6 @@
       ? parts[0] * 3600 + parts[1] * 60 + parts[2]
       : parts[0] * 60 + parts[1];
   }
-  function playPageCallBeep(trigger, callId, flowId) {
-    if (!config.soundEnabled) return false;
-    var now = Date.now();
-    var marker = window[CALL_BEEP_MARKER] || {};
-    if (marker.playedAt && now - Number(marker.playedAt) < 15000 &&
-        ((callId && marker.callId === callId) || (flowId && marker.flowId === flowId))) return true;
-    var volume = Math.max(0.15, Math.min(1, Number(config.volume) || 0.8));
-    window[CALL_BEEP_MARKER] = Object.assign({}, marker, { callId: callId || marker.callId || null, flowId: flowId || marker.flowId || null, requestedAt: now, playedAt: null, trigger: trigger || "call-route-entered" });
-    emit("CALL_ALERT_PAGE_BEEP_REQUESTED", { callId: callId || null, flowId: flowId || null, trigger: trigger || "call-route-entered" });
-    try {
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) throw new Error("AudioContext no disponible");
-      var ctx = new Ctx(), o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime;
-      o.frequency.setValueAtTime(880, t); o.frequency.setValueAtTime(1174.66, t + 0.12);
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume * 0.45), t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
-      o.connect(g); g.connect(ctx.destination);
-      var playedAt = Date.now();
-      o.onended = function () { try { ctx.close(); } catch (_) {} };
-      o.start(t); o.stop(t + 0.37);
-      window[CALL_BEEP_MARKER] = Object.assign({}, window[CALL_BEEP_MARKER], { playedAt: playedAt });
-      try { chrome.storage.local.set({ effectifPageBeep: { callId: callId || null, flowId: flowId || null, playedAt: playedAt, trigger: trigger || "call-route-entered" } }); } catch (_) {}
-      emit("CALL_ALERT_PAGE_BEEP_PLAYED", { callId: callId || null, flowId: flowId || null, trigger: trigger || "call-route-entered" });
-      return true;
-    } catch (error) {
-      window[CALL_BEEP_MARKER] = Object.assign({}, window[CALL_BEEP_MARKER], { error: String(error) });
-      emit("CALL_ALERT_PAGE_BEEP_ERROR", { callId: callId || null, flowId: flowId || null, trigger: trigger || "call-route-entered", error: String(error) }, "warn");
-      return false;
-    }
-  }
-  function speakConfirmedAnswer(callId, flowId) {
-    if (!config.soundEnabled || !callId || lastSpokenCallId === callId) return false;
-    lastSpokenCallId = callId;
-    try {
-      if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) throw new Error("SpeechSynthesis no disponible");
-      var utterance = new SpeechSynthesisUtterance("Llamada entrante.");
-      utterance.lang = "es-MX";
-      utterance.volume = Math.max(0.15, Math.min(1, Number(config.volume) || 0.8));
-      utterance.rate = 1;
-      utterance.pitch = 1;
-      window.speechSynthesis.speak(utterance);
-      emit("CALL_ALERT_TTS_PLAYED", { callId: callId, flowId: flowId || null, phrase: "Llamada entrante.", lang: "es-MX" });
-      return true;
-    } catch (error) {
-      emit("CALL_ALERT_TTS_ERROR", { callId: callId, flowId: flowId || null, error: String(error) }, "warn");
-      return false;
-    }
-  }
   function callActivationEvidence() {
     var endButtons = Array.from(document.querySelectorAll("button,[role='button']")).filter(visibleElement).filter(function (element) {
       return /^End call$/i.test(normalized(element.getAttribute("aria-label") || element.textContent || ""));
@@ -854,8 +807,8 @@
         window[ANSWER_LEASE_MARKER] = Object.assign({}, window[ANSWER_LEASE_MARKER] || {}, answerFlow, {
           callId: callRouteId, routeConfirmed: true, confirmedAt: iso()
         });
-        playPageCallBeep("confirmed-answer-route", callRouteId, answerFlow.flowId);
-        speakConfirmedAnswer(callRouteId, answerFlow.flowId);
+
+
         emit("ANSWER_FLOW_ROUTE_CONFIRMED", {
           flowId: answerFlow.flowId,
           callId: callRouteId,
