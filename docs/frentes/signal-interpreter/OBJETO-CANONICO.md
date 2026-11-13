@@ -674,3 +674,13 @@ Mantener PR #95 en draft. El siguiente paso material es una prueba acústica con
 - Crónica actualizada y leída de vuelta: [C-SIGNAL-AUDIO-ISOLATION-20261113-G14.md](cronica/C-SIGNAL-AUDIO-ISOLATION-20261113-G14.md), blob `ace2d89203985a6f8763128b97a52612232ad166`.
 - No se intentó merge, rebase, deploy ni release. PR permanece draft hasta completar la validación acústica controlada y la aceptación del operador.
 
+## 18. Corte final de main y estado estable de PR #95 · 2026-11-13
+
+- `main` observado al cierre: `91fd9b7add5fd4c34a39e1caf4beee0c8f8dc098` antes de esta actualización; el avance desde la base inicial de PR `2ad9886878278a800d351dfde76a707d1f46e2e2` contiene exclusivamente cinco commits documentales y dos rutas modificadas: este OCP y la crónica de aislamiento de audio. No hay cambios de producto en esos cinco commits.
+- La comparación `main...fix/call-audio-isolation-20261113` devuelve 2 commits de producto adelante / 5 documentales detrás; merge-base continúa en `2ad9886878278a800d351dfde76a707d1f46e2e2`.
+- Lectura directa actual de GitHub REST para PR #95: OPEN / DRAFT / NOT MERGED, `mergeable=true`, `mergeable_state=clean`, HEAD `c6dc398cf66c2f081e3eea151e78241cf54cba44`.
+- Los cuatro workflows siguen COMPLETED / SUCCESS sobre ese HEAD: audit, compile-and-protocol-smoke-test, package y package-integrity.
+- El diff del PR sigue en siete rutas; no incluye `observations/**`. No se hizo merge, rebase, deploy ni release.
+- Crónica con el último corte: [C-SIGNAL-AUDIO-ISOLATION-20261113-G14.md](cronica/C-SIGNAL-AUDIO-ISOLATION-20261113-G14.md), blob `61e9280b93478c4a31c2891a022e92fcc1ee2081`. Este OCP y la crónica se verificaron por read-back exacto en sus respectivas escrituras.
+- Siguiente compuerta sin cambio: validación acústica controlada, por separado en la salida de auriculares y en el extremo receptor del micrófono; requiere Chrome autorizado y una llamada de prueba acordada. No almacenar audio clínico ni transcripciones privadas.
+
