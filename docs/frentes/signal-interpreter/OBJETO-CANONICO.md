@@ -573,3 +573,57 @@ La implementación formal de 0.10.49 está fusionada en main mediante PR #92, me
 
 **Aceptación física pendiente:** Chrome debe recargarse para ejecutar el paquete 0.10.49 materializado en la carpeta de carga local. Después deben comprobarse el verde/preparado en espera, el segundo clic OFF, MIC OFF inicial en llamada, activación y silenciamiento manual sobre la pista/sender real, remute al finalizar, y el camino de emergencia al desactivar/desinstalar y recargar la pestaña para retirar los wrappers del documento. Las pruebas sintéticas, hashes y CI no equivalen a aceptación física del operador.
 
+## 15. Retoma de continuidad y aislamiento de audio · 2026-11-13
+
+Este apartado es el corte posterior más reciente de continuidad. Prevalece sobre los estados históricos de versión, PR y gobierno consignados en secciones anteriores, sin reescribir su procedencia.
+
+### 15.1 Exportación conversacional recuperada por RDC
+
+- Archivo local: `C:\Users\fila4\Downloads\ChatGPT-SI (1)-20261113-0956.md`.
+- Tamaño: 70,098 bytes; 1,166 líneas.
+- Última escritura observada: 2026-11-13 09:56:57, America/Mexico_City.
+- SHA-256: `C65FEF93296745DCA3D148975B8376CE330DAF5ED10009148D5E698FB04989CE`.
+- El archivo permanece privado en Downloads, bajo el perfil de fila4. No se publicó ni se incorporó su contenido completo al repositorio.
+- La última salida visible del modelo anterior, leída literalmente del final de esa exportación y conservada como texto de continuidad, es:
+
+Queda fijada la separación operativa: **MantenimientoRCI es la identidad que eleva y opera RDC; `CENTRAL\fila4` es el usuario de destino.** Todo archivo, configuración y artefacto del trabajo debe quedar bajo `C:\Users\fila4`; no escribiré ni instalaré nada en el perfil de MantenimientoRCI.
+
+Voy a cerrar el diagnóstico contra los dos requisitos que venimos tratando literalmente: **conservar la calidad del audio de la llamada que escuchas por los auriculares y conservar la calidad del audio que recibe el cliente desde tu micrófono**. No consideraré suficiente que el código compile o que una prueba sintética pase.
+
+### 15.2 Gobierno y control releídos
+
+- Fuente: `SeryMente/metodologia/main:gobernanza/METAPROMPT-CANONICO-SAMANTHA.html`.
+- DUG vigente al corte: **v393 · NX-393m**; Metacanon **1.31**; GOW **2.21**; blob DUG `844fc507a2a9a0bfc8f4e68884cca9f6d2912c96`. Último commit observado en la ruta del DUG: `6507334b6ef45fb5d4ba0615d788539a7d328642`, 2026-11-12T22:28:12Z.
+- §ARR leído como vocabulario de entrada; no crea reglas ni autorizaciones. GOW §SUM consultado: glosario y convenciones semánticas; revisión obligatoria al inicio y cierre de ciclo.
+- Aplicación: CNP P001, P004, P005, P038 y P043; continuidad del frente expreso bajo P037. No se modificó el DUG.
+- `CONTROL-RESPONSABILIDAD.json` releído: blob `2f02cab6b3697f31b2af3d141204c4431fbc05cb`; G14 ACTIVO, agente único; G13 SUSTITUIDO; FOL1 PREPARADA/NO ACTIVA; folio PENDIENTE/NO ASIGNADO. Alias UUIDv7 local del control: `01a1bd8b-8291-7906-b862-6088593acfe5`; no es ID nativo.
+- MCP normativo: DESACTIVADO.
+
+### 15.3 Estado vigente de main y diagnóstico de las dos rutas de audio
+
+- `main` observado en `2ad9886878278a800d351dfde76a707d1f46e2e2`, commit 2026-11-13T01:20:03Z; `manifest.json` declara versión **0.10.50**.
+- PR #92 y PR #93 están fusionadas. PR #84 continúa OPEN / DRAFT / NOT MERGED; HEAD observado `6b14c0fad64cbc8eef364c496a6a96043c9dbbf1`.
+- En PR #84, la pista de micrófono para transcripción se obtiene mediante una segunda llamada `getUserMedia` con `echoCancellation`, `noiseSuppression` y `autoGainControl` habilitados. Es una captura independiente; no es una copia demostrada de la pista RTP saliente de Cloud Interpreter. El AudioWorklet procesa ventanas para transcripción y pone a cero su salida; no reenvía ese audio capturado a `context.destination`.
+- El guard MAIN-world vigente en `extension/mic-guard-main.js` administra mute/unmute de las pistas/senders originales. La revisión no encontró inserción de filtros, compresión, resampling ni procesadores en la ruta RTP original. Esta observación es estática; no constituye medición acústica.
+- Se detectaron sonidos locales adicionales de la extensión en la salida de escucha: alerta al confirmar llamada, beep/TTS al confirmar la ruta y tonos MIC ON/OFF durante llamada. Estos sonidos podían enmascarar lo que oye el intérprete; el código no demostraba que alteraran los paquetes RTP que recibe el cliente.
+
+### 15.4 Corrección propuesta en PR #95
+
+- PR: https://github.com/SeryMente/signal-interpreter/pull/95
+- Estado al corte: OPEN / DRAFT / NOT MERGED. Rama `fix/call-audio-isolation-20261113`.
+- Base: `2ad9886878278a800d351dfde76a707d1f46e2e2`.
+- HEAD vigente de la PR tras el ajuste de la regresión: `c6dc398cf66c2f081e3eea151e78241cf54cba44`.
+- Cambios: se eliminó la alerta sonora de llamada confirmada, el beep y la voz «Llamada entrante» posteriores a la confirmación de ruta; se suprimen los tonos de feedback MIC mientras haya llamada activa; se bloquea «Probar sonido» durante llamada activa. Se mantiene intacto el estado funcional MIC y la ruta de tracks/senders RTP; no se modifica `mic-guard-main.js`.
+- Se añadió `tools/call-audio-isolation-test.mjs` y se incorporó al workflow `observability-audit`. Se actualizó `payload-sha256.json` para las dos rutas modificadas.
+- Validación local Fila 4: `CALL_AUDIO_ISOLATION=PASS`; `MICROPHONE_MAIN_GUARD_TEST=PASS`; `MICROPHONE_GLOBAL_TOGGLE_TEST=PASS`; `MICROPHONE_FEEDBACK_TEST=PASS`; `CALL_CAPTION_NATIVE_ONLY_RUNTIME_TEST=PASS`; autoanswer runtime, hotload, regresión longitudinal PASS; `verify-release-package` **60/60 SHA-256 PASS**; `git diff --check` PASS.
+- Primer HEAD de PR (`664d64d94f1fbb322cc63c6a0429406f729f5a26`): 3/4 workflows SUCCESS; `signal-observability-audit` falló porque `tools/call-earnings-baseline-tests.mjs` usaba `var callAlertInFlight` como delimitador de `startCall`, referencia que dejó de existir al eliminar el helper. Se sustituyó por el límite estable `function alertOnConnect(event)`; la prueba local `CALL_EARNINGS_BASELINE_TEST=PASS`; corrección publicada en el segundo commit.
+- El HEAD actual `c6dc398cf66c2f081e3eea151e78241cf54cba44` requiere CI nueva sobre ese SHA exacto. No reutilizar checks del commit anterior ni proclamar CI verde hasta leer la conclusión actual.
+
+### 15.5 Límites y aceptación
+
+- No se realizó llamada real, captura de audio real ni prueba acústica A/B. La corrección elimina sonidos auxiliares de la extensión durante la llamada; no mide ni demuestra por sí sola la calidad del audio remoto en auriculares ni la señal que recibe el cliente por el micrófono.
+- No se llamó a Groq con audio; no hay credencial local ni verificación de ZDR/cuotas en la consola. Flags de Groq/ZDR permanecen desactivados por defecto.
+- No se cargó ni recargó Chrome, no hubo aceptación del operador, merge, deploy ni release.
+- El checkout previo divergente y sucio en `C:\Users\fila4\Desktop\SeryMente\signal-interpreter` no se alteró. El trabajo se hizo en un worktree nuevo y limpio bajo `C:\Users\fila4\Desktop\SeryMente\Temporal\SI-Audio-Isolation-20261113`, como `CENTRAL\fila4`; MantenimientoRCI solo proporcionó elevación.
+- Siguiente paso técnico: esperar y verificar los workflows de PR #95 en HEAD `c6dc398c...`; corregir cualquier nueva regresión antes de considerar aceptación. Después, el operador debe probar en Chrome autorizado y realizar una comparación acústica real y controlada de ambos requisitos. La PR permanece draft, sin fusión ni liberación.
+
