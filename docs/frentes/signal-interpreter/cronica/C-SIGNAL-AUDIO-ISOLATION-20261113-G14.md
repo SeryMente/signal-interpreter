@@ -60,3 +60,12 @@ El bloqueo que queda no es de CI ni de integridad del paquete. Es la validación
 ## Gobierno
 
 DUG v393 · NX-393m; Metacanon 1.31; GOW 2.21; fuente blob `844fc507a2a9a0bfc8f4e68884cca9f6d2912c96`. Control reread: G14 ACTIVO, agente único; G13 SUSTITUIDO; FOL1 PREPARADA/NO ACTIVA; folios PENDIENTES/NO ASIGNADOS. MCP normativo DESACTIVADO.
+
+## Reconciliación final de base y archivos de PR
+
+- `main` avanzó a `163d79cf867b0fc4ffb5a9385fa8cdcacd48ed6c` por tres commits documentales posteriores al base de PR; no se incorporaron cambios de producto adicionales en ese avance.
+- Comparación `main...fix/call-audio-isolation-20261113`: rama 2 commits adelante y 3 detrás, con merge-base `2ad9886878278a800d351dfde76a707d1f46e2e2`.
+- Lectura directa de `GET /pulls/95`: `mergeable=true`, `mergeable_state=clean`; la discrepancia de una lectura normalizada previa (`mergeable=false`) no se mantuvo en la respuesta REST actual.
+- Archivos del diff de PR (7): workflow de audit, background, content, inventario SHA-256, prueba nueva de aislamiento, prueba de earnings actualizada y prueba del guard de micrófono. `observations/**` no forma parte del diff.
+- PR #95 sigue OPEN / DRAFT / NOT MERGED. No se hizo merge, rebase, release ni deploy.
+
