@@ -684,3 +684,12 @@ Mantener PR #95 en draft. El siguiente paso material es una prueba acústica con
 - Crónica con el último corte: [C-SIGNAL-AUDIO-ISOLATION-20261113-G14.md](cronica/C-SIGNAL-AUDIO-ISOLATION-20261113-G14.md), blob `61e9280b93478c4a31c2891a022e92fcc1ee2081`. Este OCP y la crónica se verificaron por read-back exacto en sus respectivas escrituras.
 - Siguiente compuerta sin cambio: validación acústica controlada, por separado en la salida de auriculares y en el extremo receptor del micrófono; requiere Chrome autorizado y una llamada de prueba acordada. No almacenar audio clínico ni transcripciones privadas.
 
+## 19. Confirmación terminal de PR #95 y base documental · 2026-11-13
+
+- Antes de esta actualización, `main` estaba en `96c75be18e6a88c870dc3bee1c93bf0111ba0618`; desde la base original de PR `2ad9886878278a800d351dfde76a707d1f46e2e2` había 7 commits y el diff agregado del lado main afectaba únicamente este OCP y la crónica de audio. No se detectaron cambios de producto en ese delta.
+- Lectura REST de PR #95: OPEN / DRAFT / NOT MERGED; `mergeable=true`, `mergeable_state=clean`; HEAD `c6dc398cf66c2f081e3eea151e78241cf54cba44`; base original conservada.
+- Checks del HEAD exacto: audit, compile-and-protocol-smoke-test, package y package-integrity, los cuatro COMPLETED / SUCCESS.
+- El diff de la PR conserva las siete rutas documentadas en §17. No contiene `observations/**`.
+- Este registro es una escritura documental adicional sobre main; no modifica la rama de producto ni altera el SHA aprobado por CI.
+- Decisión: mantener PR #95 en draft; no merge, rebase, deploy ni release. La siguiente acción sustantiva requiere la prueba acústica controlada y la aceptación del operador.
+
