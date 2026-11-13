@@ -665,3 +665,12 @@ Esta sección supersede el estado pendiente de CI que quedó escrito como corte 
 
 Mantener PR #95 en draft. El siguiente paso material es una prueba acústica controlada en Chrome autorizado, midiendo separadamente audio remoto en la salida del intérprete y micrófono saliente en el extremo receptor. No almacenar audio clínico ni transcripciones privadas. La decisión de aceptación y liberación permanece reservada al operador.
 
+## 17. Reconciliación de base de PR #95 tras persistencia documental · 2026-11-13
+
+- `main` avanzó a `163d79cf867b0fc4ffb5a9385fa8cdcacd48ed6c` por tres commits documentales del frente posteriores al base inicial de PR #95; no contienen cambios de producto adicionales.
+- PR #95 conserva HEAD `c6dc398cf66c2f081e3eea151e78241cf54cba44`, base original `2ad9886878278a800d351dfde76a707d1f46e2e2`, estado OPEN / DRAFT / NOT MERGED. Lectura directa actual de GitHub REST: `mergeable=true`, `mergeable_state=clean`.
+- Comparación `main...fix/call-audio-isolation-20261113`: rama 2 commits adelante / 3 detrás, merge-base `2ad9886878278a800d351dfde76a707d1f46e2e2`; los tres commits del lado main son documentales y están fuera del diff de producto de PR #95.
+- Diff exacto de la PR: 7 rutas (`.github/workflows/observability-audit.yml`, `extension/background.js`, `extension/content.js`, `payload-sha256.json`, `tools/call-audio-isolation-test.mjs`, `tools/call-earnings-baseline-tests.mjs`, `tools/microphone-guard-test.mjs`). `observations/**` no forma parte del diff.
+- Crónica actualizada y leída de vuelta: [C-SIGNAL-AUDIO-ISOLATION-20261113-G14.md](cronica/C-SIGNAL-AUDIO-ISOLATION-20261113-G14.md), blob `ace2d89203985a6f8763128b97a52612232ad166`.
+- No se intentó merge, rebase, deploy ni release. PR permanece draft hasta completar la validación acústica controlada y la aceptación del operador.
+
