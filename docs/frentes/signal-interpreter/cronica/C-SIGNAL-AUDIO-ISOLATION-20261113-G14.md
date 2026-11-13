@@ -78,3 +78,25 @@ DUG v393 · NX-393m; Metacanon 1.31; GOW 2.21; fuente blob `844fc507a2a9a0bfc8f4
 - Los cuatro checks del HEAD permanecen COMPLETED / SUCCESS. El diff de la PR sigue limitado a las siete rutas registradas; `observations/**` queda fuera.
 - No se ejecutó merge ni rebase. Se conserva la rama del producto tal como fue validada por CI.
 
+
+
+## Retoma del objetivo y corte de aceptación · 2026-11-13 12:54 America/Mexico_City
+
+### Objetivo del sprint (inalterado)
+1. Preservar la calidad del audio remoto de la llamada que escucha el intérprete por los auriculares.
+2. Preservar la calidad del audio que el cliente recibe desde el micrófono del intérprete.
+
+El cierre exige demostrar ambos trayectos por separado. CI, pruebas estructurales e inspección estática no sustituyen la prueba acústica de extremo a extremo.
+
+### Verificación actual
+- Identidad RDC comprobada en modo de solo lectura: ejecución como `CENTRAL\\fila4`, perfil `C:\\Users\\fila4`. Los procesos Chrome observados pertenecen a `CENTRAL\\fila4`; no se interactuó con Chrome ni se alteró ninguna sesión.
+- Control vigente: G14 ACTIVO, agente único; FOL1 PREPARADA y NO ACTIVA; folios PENDIENTES/NO ASIGNADOS. Las restricciones del control siguen excluyendo llamadas reales, audio real, capturas, credenciales, aceptación humana, recarga/reinicio de Chrome, merge, deploy y release.
+- PR #95: OPEN / DRAFT / NOT MERGED, `mergeable=true`; HEAD `c6dc398cf66c2f081e3eea151e78241cf54cba44`. Los cuatro workflows del HEAD exacto finalizaron SUCCESS: package integrity, extension package, observability audit y native caption host.
+- `main` observado antes de este registro: `77c9676d0786e8c7b05eaf082e517ddee48f8fe6`. Comparación contra la base `2ad9886878278a800d351dfde76a707d1f46e2e2`: ocho commits main-only; afectan exclusivamente este OCP y esta crónica, sin cambios de producto. La rama del PR conserva dos commits propios; el diff del producto sigue limitado a siete rutas documentadas en el OCP. No hay reviews ni hilos de revisión registrados.
+- No se realizó llamada real, captura, reproducción de prueba, recarga ni reinicio de Chrome; tampoco se usó Groq con audio. No hay mediciones RMS/peak/clipping/SNR, jitter, pérdida, latencia ni evaluación perceptual en los extremos.
+
+### Discrepancia de gobernanza detectada
+La fuente canónica DUG v393 · NX-393m (blob `844fc507a2a9a0bfc8f4e68884cca9f6d2912c96`) declara `gow_version=2.21` en `document`, pero el objeto `glossary.version` incorporado declara `2.22`. Se registra como inconsistencia interna de metadatos; no se alteró el DUG ni el GOW. Cualquier corrección normativa queda sujeta a P005 y a autorización expresa.
+
+### Decisión y siguiente compuerta
+Mantener PR #95 en draft y sin fusión. Para cerrar el sprint falta una prueba controlada no productiva que mida por separado el downlink en auriculares y el uplink recibido por un extremo cliente, con material de prueba no sensible y descarte de las muestras de audio. El control actual no autoriza esa ejecución; no se eludió. Se requiere que el operador amplíe expresamente el alcance del control antes de cualquier llamada o captura. La aceptación final sigue siendo humana.
