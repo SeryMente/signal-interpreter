@@ -91,7 +91,7 @@ function makeHarness({ url = "https://app.cloudinterpreter.com/profile/test", mu
 
 const success = makeHarness();
 assert.equal(await success.initialize(), true);
-assert.equal(await success.start(), true);
+assert.equal(await success.start(), true, "start failed: " + success.controller.getState() + " / " + success.elements.status.textContent);
 assert.equal(success.captureCalls, 1);
 success.sample();
 success.finish();
