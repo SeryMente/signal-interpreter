@@ -758,3 +758,12 @@ No hubo llamada real, captura/reproducción acústica en Chrome, carga/recarga, 
 Persistencia de este corte: [C-SIGNAL-0.10.51-TAB-AUDIO-PREFLIGHT-20261114-G14.md](cronica/C-SIGNAL-0.10.51-TAB-AUDIO-PREFLIGHT-20261114-G14.md). La crónica fue creada y leída de vuelta desde main; blob `562f1ca7f1c3921506e6deac3e4eb49d7f80c11a`; commit de creación `9523cb6108a8a4c2837b7dc0e63b3c1928ed31d0`.
 
 Siguiente paso: verificar workflows del HEAD `96a960f...` y mantener PR #95 en draft. La prueba acústica real requiere ampliar expresamente el control G14 y aceptación humana. No fusionar ni liberar antes de esa compuerta.
+
+
+### 21.5 Seguimiento de CI del nuevo HEAD · 2026-11-14
+
+- En `96a960f96d770486dca65aca8b96af0347d38fd7`, `Live Caption static audit` pasó y `Observability static audit` falló porque `tools/observability-static-audit.mjs:42` todavía esperaba `0.10.50`; el manifiesto ya declaraba `0.10.51`.
+- Se actualizó esa única referencia a `0.10.51`. Commit actual `e8add360435eec1c3f444353578b2f71dd1679eb`; blob leído de vuelta `b677271aecb223d0689f5f5b72eb343c0ffe251c`.
+- PR #95: OPEN / DRAFT / NOT MERGED; `mergeable=true`; HEAD `e8add360...`; 37 commits / 29 archivos modificados.
+- La consulta de workflows del HEAD `e8add360...` no devolvió ejecuciones. CI de este SHA: NO REPORTADA / NO VERIFICADA. Los PASS previos no se atribuyen a este commit; la integración disponible no expone despacho manual de workflows.
+- Mantener la PR en draft y obtener CI sobre este SHA antes de reconsiderar cualquier compuerta. Sin merge, deploy, release, Chrome ni audio real.
