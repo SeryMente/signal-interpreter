@@ -1847,17 +1847,24 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         state.transcriptionTabId = null;
         state.transcriptionStatus = { phase: "stopped", connected: false, engine: "groq" };
       }
+      var availabilityStored=await chrome.storage.local.get(["signalPlatformAvailability"]);
+      var platformAvailability=String(availabilityStored.signalPlatformAvailability&&availabilityStored.signalPlatformAvailability.state||
+        tabAvailability.get(Number(state.callSourceTabId))||"unknown");
+      var restoreMuted=availabilityMicrophoneMuted(platformAvailability);
+      if(restoreMuted===null)restoreMuted=true;
       var endMuteResult=state.callSourceTabId!=null
-        ? await setMainClientMicrophoneMuted(state.callSourceTabId,true,"call-ended")
+        ? await setMainClientMicrophoneMuted(state.callSourceTabId,restoreMuted,"call-ended-"+platformAvailability,restoreMuted===false)
         : {verified:false,error:"missing-call-source-tab"};
-      state.microphoneMuted=true; state.microphoneMuteRequested=true;
+      var finalMuted=endMuteResult.verified===true?restoreMuted:true;
+      state.microphoneMuted=finalMuted; state.microphoneMuteRequested=restoreMuted;
       state.microphoneMuteStatus=endMuteResult.verified===true?"applied":"error";
-      state.microphoneOutputMuted=true;
+      state.microphoneOutputMuted=finalMuted;
       state.microphoneOutputStatus=endMuteResult.verified===true?"applied":"error";
       state.microphoneOutputTrackCount=Number(endMuteResult.trackCount||0);
       state.microphoneOutputSenderCount=Number(endMuteResult.senderCount||0);
       state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
-      if(endMuteResult.verified!==true)record("CALL_ENDED_MICROPHONE_MUTE_NOT_VERIFIED",{callId:closedCallId,error:endMuteResult.error||"verification-failed"},"error","microphone");
+      record("CALL_ENDED_MICROPHONE_POLICY_APPLIED",{callId:closedCallId,availability:platformAvailability,requestedMuted:restoreMuted,muted:finalMuted,verified:endMuteResult.verified===true},endMuteResult.verified===true?"info":"error","microphone");
+      if(endMuteResult.verified!==true)record("CALL_ENDED_MICROPHONE_POLICY_NOT_VERIFIED",{callId:closedCallId,availability:platformAvailability,error:endMuteResult.error||"verification-failed"},"error","microphone");
       state.callStartedAt = null; state.callId = null; state.callModality = null; state.callSourceTabId = null; state.pendingCallEnd = null;
       record("CALL_TIMER_STOPPED", Object.assign({}, call, {
         confirmation: source === "rating-route" ? "rating-route" : "fallback-route",
@@ -2616,6 +2623,47 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     return{ok:false,muted:!!muted,verified:false,inactive:false,error:lastError||"verification-failed",attempts:3};
   }
 
+  function availabilityMicrophoneMuted(availability) {
+    if (availability === "online") return true;
+    if (availability === "offline") return false;
+    return null;
+  }
+  async function applyPlatformAvailabilityMicrophonePolicy(availability, tab) {
+    var desiredMuted = availabilityMicrophoneMuted(String(availability || ""));
+    if (desiredMuted === null) return { ok: false, skipped: true, reason: "availability-unknown" };
+    if (!tab || !Number.isFinite(Number(tab.id)) || !isAuthorizedProfileUrl(tab.url)) {
+      return { ok: false, skipped: true, reason: "authorized-profile-tab-required" };
+    }
+    var stored = await chrome.storage.local.get(["effectifState"]);
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    if (hasActiveCall(state)) {
+      record("PLATFORM_AVAILABILITY_MICROPHONE_POLICY_DEFERRED", {
+        availability: availability, desiredMuted: desiredMuted, callId: state.callId || null,
+        tabId: Number(tab.id), policy: "active-call-always-starts-muted"
+      }, "info", "microphone");
+      return { ok: true, skipped: true, reason: "active-call-fail-closed", muted: !!state.microphoneOutputMuted };
+    }
+    var alreadyApplied = state.microphoneMuted === desiredMuted &&
+      state.microphoneOutputMuted === desiredMuted &&
+      state.microphoneMuteStatus === "applied" && state.microphoneOutputStatus === "applied";
+    if (alreadyApplied) return { ok: true, verified: true, unchanged: true, muted: desiredMuted };
+    var result = await setExtensionMicrophoneMuted(
+      desiredMuted, "platform-availability-" + availability, Number(tab.id)
+    );
+    if (!result || result.verified !== true || !!result.muted !== desiredMuted) {
+      record("PLATFORM_AVAILABILITY_MICROPHONE_POLICY_ERROR", {
+        availability: availability, desiredMuted: desiredMuted, tabId: Number(tab.id),
+        error: result && result.error || "verification-failed"
+      }, "error", "microphone");
+      return Object.assign({ ok: false, verified: false, muted: true }, result || {});
+    }
+    record("PLATFORM_AVAILABILITY_MICROPHONE_POLICY_APPLIED", {
+      availability: availability, muted: desiredMuted, tabId: Number(tab.id),
+      policy: availability === "online" ? "waiting-for-call-muted" : "offline-microphone-on"
+    }, "info", "microphone");
+    return result;
+  }
+
   function nextMicrophoneToggleMuted(state) {
     return !state.microphoneMuted;
   }
@@ -2631,7 +2679,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       groqCapture: Object.assign({}, state && state.groqCapture || {}, { microphoneMuted: true })
     });
   }
-  async function setExtensionMicrophoneMutedInternal(muted, source) {
+  async function setExtensionMicrophoneMutedInternal(muted, source, preferredTabId) {
     var desired=!!muted;
     var stored=await chrome.storage.local.get(["effectifState"]);
     var state=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
@@ -2646,7 +2694,8 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       var controlTabs=[];
       try { controlTabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"}); } catch (_) {}
       controlTabs=(controlTabs||[]).filter(function(tab){return tab&&tab.id!=null&&isAuthorizedCloudUrl(tab.url);});
-      var controlTab=controlTabs.find(function(tab){return Number(tab.id)===Number(state.callSourceTabId);})||
+      var controlTab=controlTabs.find(function(tab){return preferredTabId!=null&&Number(tab.id)===Number(preferredTabId);})||
+        controlTabs.find(function(tab){return Number(tab.id)===Number(state.callSourceTabId);})||
         controlTabs.find(function(tab){return tab.active===true;})||controlTabs[0]||null;
       if(controlTab){
         var preCallOutput=await setMainClientMicrophoneMuted(controlTab.id,desired,source||"pre-call-toggle",true);
@@ -2799,11 +2848,11 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     }
     return{ok:true,muted:desired,verified:true,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)};
   }
-  function setExtensionMicrophoneMuted(muted, source) {
+  function setExtensionMicrophoneMuted(muted, source, preferredTabId) {
     var run = microphoneMuteQueue.then(function () {
-      return setExtensionMicrophoneMutedInternal(muted, source);
+      return setExtensionMicrophoneMutedInternal(muted, source, preferredTabId);
     }, function () {
-      return setExtensionMicrophoneMutedInternal(muted, source);
+      return setExtensionMicrophoneMutedInternal(muted, source, preferredTabId);
     });
     microphoneMuteQueue = run.catch(function (error) {
       record("EXTENSION_MICROPHONE_MUTE_QUEUE_ERROR", { error: String(error) }, "error", "microphone");
@@ -3097,7 +3146,21 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       if (event.action === "PLATFORM_SESSION_STARTED" || event.action === "PLATFORM_SESSION_ENDED") handleSession(event);
       if (event.action === "AVAILABILITY_STATE") {
         var eventTabId = sender.tab && sender.tab.id;
-        if (Number.isFinite(Number(eventTabId))) tabAvailability.set(Number(eventTabId), event.payload && event.payload.state || "unknown");
+        var availabilityState = String(event.payload && event.payload.state || "unknown");
+        if (Number.isFinite(Number(eventTabId))) tabAvailability.set(Number(eventTabId), availabilityState);
+        if (sender.tab && isAuthorizedCloudUrl(sender.tab.url) &&
+            (availabilityState === "online" || availabilityState === "offline")) {
+          var availabilitySnapshot = {
+            state: availabilityState, tabId: Number(sender.tab.id), checkedAt: event.timestamp || iso()
+          };
+          chrome.storage.local.set({ signalPlatformAvailability: availabilitySnapshot }).then(function () {
+            return applyPlatformAvailabilityMicrophonePolicy(availabilityState, sender.tab);
+          }).catch(function (error) {
+            record("PLATFORM_AVAILABILITY_MICROPHONE_POLICY_ERROR", {
+              availability: availabilityState, tabId: Number(sender.tab.id), error: String(error)
+            }, "error", "microphone");
+          });
+        }
         handleAvailability(event);
         if (Number.isFinite(Number(eventTabId))) refreshAllActionIndicators().catch(function () {});
       }

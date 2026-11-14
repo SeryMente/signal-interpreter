@@ -13,8 +13,11 @@
     }
     try { if (typeof existingRuntimeMarker.dispose === "function") existingRuntimeMarker.dispose("runtime-upgrade-replaced"); } catch (_) {}
   }
-  try { Array.from(document.querySelectorAll("#signal-interpreter-earnings-overlay")).forEach(function (node) { node.remove(); }); }
-  catch (_) { var staleEarningsOverlay = document.getElementById("signal-interpreter-earnings-overlay"); if (staleEarningsOverlay) staleEarningsOverlay.remove(); }
+  try { Array.from(document.querySelectorAll("#signal-interpreter-earnings-overlay,#signal-interpreter-call-mic-reminder")).forEach(function (node) { node.remove(); }); }
+  catch (_) {
+    var staleEarningsOverlay = document.getElementById("signal-interpreter-earnings-overlay"); if (staleEarningsOverlay) staleEarningsOverlay.remove();
+    var staleMicReminder = document.getElementById("signal-interpreter-call-mic-reminder"); if (staleMicReminder) staleMicReminder.remove();
+  }
   var runtimeMarker = { extensionId: chrome.runtime.id, version: RUNTIME_VERSION, active: true, startedAt: new Date().toISOString(), dispose: deactivateForHotload };
   window[SIGNAL_RUNTIME_MARKER] = runtimeMarker;
   try { delete window.__SIGNAL_INTERPRETER_CLOUD_V0913__; } catch (_) {}
@@ -53,6 +56,11 @@
   var activeCallEarnings = {};
   var overlayHost = null;
   var overlayRoot = null;
+  var microphoneReminderHost = null;
+  var microphoneReminderRoot = null;
+  var microphoneReminderTimer = null;
+  var microphoneReminderBusy = false;
+  var microphoneReminderError = "";
   var screenshotOverlayPreviousVisibility=null;
   var overlayTimer = null;
   var overlayLifecycleActive = false;
@@ -1937,6 +1945,93 @@
     });
   }
 
+  function removeCallMicrophoneReminder(reason) {
+    if (microphoneReminderHost) microphoneReminderHost.remove();
+    microphoneReminderHost = null;
+    microphoneReminderRoot = null;
+    microphoneReminderBusy = false;
+    microphoneReminderError = "";
+    if (reason) emit("CALL_MICROPHONE_REMINDER_HIDDEN", { reason: reason, callId: currentCallId() || null });
+  }
+  function syncCallMicrophoneReminder() {
+    if (!runtimeMarker.active) return;
+    var callId = currentCallId();
+    if (!callId || isRatingRoute() || config.overlaysGlobalEnabled === false) {
+      if (microphoneReminderHost) removeCallMicrophoneReminder(!callId ? "call-route-ended" : isRatingRoute() ? "rating-route" : "global-overlays-hidden");
+      return;
+    }
+    var microphoneReady = state && state.microphoneMuted === false &&
+      state.microphoneOutputMuted === false &&
+      state.microphoneMuteStatus === "applied" &&
+      state.microphoneOutputStatus === "applied";
+    if (microphoneReady) {
+      if (microphoneReminderHost) removeCallMicrophoneReminder("microphone-output-verified-on");
+      return;
+    }
+    if (!document.documentElement) return;
+    if (!microphoneReminderHost || !microphoneReminderHost.isConnected || !microphoneReminderRoot) {
+      try {
+        microphoneReminderHost = document.createElement("div");
+        microphoneReminderHost.id = "signal-interpreter-call-mic-reminder";
+        microphoneReminderHost.style.cssText = "all:initial;position:fixed;z-index:2147483647;top:12px;left:50%;transform:translateX(-50%);pointer-events:auto";
+        microphoneReminderRoot = microphoneReminderHost.attachShadow({ mode: "closed" });
+        microphoneReminderRoot.innerHTML = '<style>:host{all:initial}.notice{display:flex;align-items:center;gap:10px;box-sizing:border-box;max-width:calc(100vw - 24px);padding:8px 11px;border:1px solid rgba(255,190,90,.42);border-radius:10px;background:rgba(24,22,18,.96);box-shadow:0 6px 24px rgba(0,0,0,.24);backdrop-filter:blur(10px);color:#fff0d2;font:600 12px/1.2 system-ui,Segoe UI,sans-serif;white-space:nowrap}.label{display:flex;align-items:center;gap:7px}.dot{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#ffbd59;box-shadow:0 0 0 3px rgba(255,189,89,.15)}button{border:0;border-radius:7px;padding:7px 11px;background:#f0b34e;color:#20180b;font:700 11px/1 system-ui,Segoe UI,sans-serif;cursor:pointer}button:disabled{opacity:.65;cursor:wait}.error{display:none;color:#ffb6b6;font-weight:500}.notice.has-error .error{display:block}@media(max-width:480px){.notice{white-space:normal;gap:7px;font-size:11px;padding:7px 9px}button{padding:7px 8px}}</style><div class="notice" role="status" aria-live="polite"><span class="label"><i class="dot"></i><span>LLAMADA INICIADA · MICRÓFONO OFF</span></span><span class="error"></span><button type="button">ACTIVAR</button></div>';
+        document.documentElement.appendChild(microphoneReminderHost);
+        var button = microphoneReminderRoot.querySelector("button");
+        button.addEventListener("click", function () {
+          if (microphoneReminderBusy || !runtimeMarker.active) return;
+          microphoneReminderBusy = true;
+          button.disabled = true;
+          button.textContent = "VERIFICANDO…";
+          microphoneReminderError = "";
+          chrome.runtime.sendMessage({
+            type: "SIGNAL_EXTENSION_MICROPHONE_SET", muted: false, source: "call-start-mic-reminder"
+          }, function (response) {
+            var runtimeError = chrome.runtime && chrome.runtime.lastError;
+            if (runtimeError || !response || response.ok !== true || response.verified !== true || response.muted !== false) {
+              microphoneReminderBusy = false;
+              microphoneReminderError = String(runtimeError && runtimeError.message || response && response.error || "No se pudo verificar el micrófono.");
+              if (microphoneReminderRoot) {
+                var notice = microphoneReminderRoot.querySelector(".notice");
+                var error = microphoneReminderRoot.querySelector(".error");
+                var action = microphoneReminderRoot.querySelector("button");
+                notice.classList.add("has-error");
+                error.textContent = microphoneReminderError;
+                action.disabled = false;
+                action.textContent = "REINTENTAR";
+              }
+              emit("CALL_MICROPHONE_REMINDER_ACTIVATION_FAILED", { callId: callId, error: microphoneReminderError }, "error");
+              return;
+            }
+            chrome.storage.local.get(["effectifState"], function (stored) {
+              if (stored && stored.effectifState) state = stored.effectifState;
+              microphoneReminderBusy = false;
+              syncCallMicrophoneReminder();
+              if (microphoneReminderHost) {
+                var action = microphoneReminderRoot.querySelector("button");
+                if (action) { action.disabled = false; action.textContent = "ACTIVAR"; }
+              }
+              emit("CALL_MICROPHONE_REMINDER_ACTIVATION_VERIFIED", { callId: callId, muted: false }, "info");
+            });
+          });
+        });
+      } catch (error) {
+        removeCallMicrophoneReminder("mount-failed");
+        emit("CALL_MICROPHONE_REMINDER_MOUNT_FAILED", { callId: callId, error: String(error) }, "error");
+        return;
+      }
+    }
+    var notice = microphoneReminderRoot && microphoneReminderRoot.querySelector(".notice");
+    var errorNode = microphoneReminderRoot && microphoneReminderRoot.querySelector(".error");
+    var action = microphoneReminderRoot && microphoneReminderRoot.querySelector("button");
+    if (notice) notice.classList.toggle("has-error", !!microphoneReminderError);
+    if (errorNode) errorNode.textContent = microphoneReminderError;
+    if (action && !microphoneReminderBusy) {
+      action.disabled = false;
+      action.textContent = microphoneReminderError ? "REINTENTAR" : "ACTIVAR";
+    }
+  }
+
   function reportOverlayLifecycle(action, payload, level, dedupeKey) {
     var callId = payload && payload.callId || currentCallId() || overlayLifecycleCallId || null;
     var key = dedupeKey ? String(action) + "|" + String(callId || "no-call") + "|" + String(dedupeKey) : null;
@@ -2304,6 +2399,9 @@
     installNavigationObservers();
     if (navigationProbeTimer) clearInterval(navigationProbeTimer);
     navigationProbeTimer = setInterval(function () { observePlatformUrl("interval"); }, 1000);
+    if (microphoneReminderTimer) clearInterval(microphoneReminderTimer);
+    microphoneReminderTimer = setInterval(syncCallMicrophoneReminder, 200);
+    syncCallMicrophoneReminder();
     emit("PLATFORM_SESSION_STARTED", { title: safe(document.title), userAgent: navigator.userAgent, language: navigator.language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
     emit("OBSERVER_STARTED", { autoAnswerEnabled: config.autoAnswerEnabled });
     emitIntegrity("startup");
@@ -2336,6 +2434,8 @@
     }
     if (platformSurfaceTimer) { clearTimeout(platformSurfaceTimer); platformSurfaceTimer = null; }
     if (navigationProbeTimer) { clearInterval(navigationProbeTimer); navigationProbeTimer = null; }
+    if (microphoneReminderTimer) { clearInterval(microphoneReminderTimer); microphoneReminderTimer = null; }
+    removeCallMicrophoneReminder("runtime-stopped");
     if (telemetryTimer) { clearInterval(telemetryTimer); telemetryTimer = null; }
     emit("OBSERVER_STOPPED", { reason: reason || "config" });
   }
@@ -2349,6 +2449,7 @@
     syncPageFavicon();
     autoAnswer();
     renderOverlay();
+    syncCallMicrophoneReminder();
     if (!isTarget() || !config.autoAnswerEnabled || currentCallId()) { if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; } }
     syncPageFavicon();
     emitAutoAnswerReadiness("config");
@@ -2368,7 +2469,7 @@
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local") return;
     if (changes.signalLabLock) { labSafetyLock = changes.signalLabLock.newValue === true; if (labSafetyLock && answerWatchdog) {clearTimeout(answerWatchdog);answerWatchdog=null;} }
-    if (changes.effectifState) { state = changes.effectifState.newValue || {}; renderOverlay(); }
+    if (changes.effectifState) { state = changes.effectifState.newValue || {}; renderOverlay(); syncCallMicrophoneReminder(); }
     if (changes.effectifPlatformMirror) { platformMirror = changes.effectifPlatformMirror.newValue || {}; renderOverlay(); }
     if (changes.effectifCallEarnings) { activeCallEarnings = changes.effectifCallEarnings.newValue || {}; renderOverlay(); }
     if (changes.effectifConfig) {
@@ -2383,6 +2484,7 @@
         if (isTarget() && earningsOverlayEnabled()) startOverlayActivationWatchdog("global-overlays-enabled");
         else stopOverlayActivationWatchdog(!earningsOverlayEnabled() ? (config.overlaysGlobalEnabled === false ? "global-overlays-hidden" : "preference-disabled") : "host-mismatch");
         renderOverlay();
+        syncCallMicrophoneReminder();
       } else { apply(newConfig); }
     }
   });

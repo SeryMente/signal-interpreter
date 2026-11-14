@@ -55,6 +55,7 @@ jobs:
           node --check extension/ui/microphone-preflight.js
           node --check extension/ui/tab-audio-preflight.js
           node --check tools/tab-audio-preflight-test.mjs
+          node --check tools/availability-microphone-policy-test.mjs
           node --check extension/observability-relay.js
           node --check tools/observability-relay/api/batch.js
           node --check extension/observation-sync.js
@@ -84,6 +85,8 @@ jobs:
           node tools/presence-connect-test.mjs
           node tools/autoanswer-runtime-guard-test.mjs
           node tools/caption-language-spans-test.mjs
+      - name: Platform availability microphone policy regression
+        run: node tools/availability-microphone-policy-test.mjs
       - name: Platform learning unit test
         run: node tools/observability/platform-learning-test.mjs
       - name: Screenshot relay unit test

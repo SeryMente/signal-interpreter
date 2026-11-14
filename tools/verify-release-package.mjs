@@ -92,7 +92,9 @@ assert.ok(background.includes("CALL_START_MICROPHONE_MUTED"), "call-start mute v
 assert.ok(background.includes("function withMicrophoneTimeout(promise, timeoutMs, fallback)"), "microphone message deadline is missing");
 assert.ok(background.includes("1000,"), "content message must have a finite response timeout");
 assert.ok(popupJs.includes("},12000);"), "popup toggle watchdog is missing");
-assert.ok(background.includes('setMainClientMicrophoneMuted(state.callSourceTabId,true,"call-ended")'), "call-end mute is missing");
+assert.ok(background.includes("signalPlatformAvailability"), "last verified platform availability must drive post-call microphone state");
+assert.ok(background.includes("availabilityMicrophoneMuted(platformAvailability)"), "ONLINE/OFFLINE post-call microphone policy is missing");
+assert.ok(background.includes("restoreMuted===false"), "OFFLINE must explicitly restore the microphone ON after a call");
 assert.ok(micGuard.includes("var muted=old?!!old.muted:true;"), "main-world microphone default is not muted");
 assert.ok(presenceGuard.includes("signalPresenceGuardSession") && presenceGuard.includes("Promise.all(["), "presence continuity/parallel authorization is missing");
 assert.ok(contentRuntime.includes("postAuthorizationRevalidationFailureCodes") && contentRuntime.includes("revalidationFailureCodes.length > 0"), "pre-click authorization revalidation is missing");

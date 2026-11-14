@@ -156,8 +156,12 @@ assert.doesNotMatch(callStart, /setExtensionMicrophoneMuted\(false,\s*"call-acce
   "call acceptance must not auto-unmute");
 
 const closeCall = background.slice(closeCallAt, background.indexOf("function savePlatformSnapshot", closeCallAt));
-assert.match(closeCall, /setMainClientMicrophoneMuted\(state\.callSourceTabId,true,"call-ended"\)/,
-  "call end must remute the outgoing track");
+assert.match(closeCall, /signalPlatformAvailability/,
+  "call end must use the last verified platform availability");
+assert.match(closeCall, /availabilityMicrophoneMuted\(platformAvailability\)/,
+  "call end must restore microphone state from ONLINE/OFFLINE");
+assert.match(closeCall, /restoreMuted===false/,
+  "offline call end must explicitly permit verified unmute");
 
 assert.ok(background.includes("function withMicrophoneTimeout(promise, timeoutMs, fallback)"));
 assert.ok(background.includes("1000,"));
