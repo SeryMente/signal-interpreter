@@ -28,12 +28,12 @@ function element() {
   };
 }
 
-function makeHarness({ url = "https://app.cloudinterpreter.com/profile/test", muted = false, activeCall = false, signalPresent = true, captureError = null } = {}) {
+function makeHarness({ url = "https://app.cloudinterpreter.com/profile/test", muted = false, activeCall = false, signalPresent = true, captureError = null, deferInjection = false } = {}) {
   const elements = {
     startButton: element(), stopButton: element(), heardButton: element(), notHeardButton: element(),
     status: element(), badge: element(), meter: element(), level: element()
   };
-  let rafCallback = null, timerCallback = null, captureCalls = 0, closed = false, released = 0;
+  let rafCallback = null, timerCallback = null, captureCalls = 0, closed = false, released = 0, storageChanged = null, tabUpdated = null, resolveInjection = null;
   const track = { readyState: "live", onended: null, stop() { released += 1; this.readyState = "ended"; } };
   const stream = { getAudioTracks: () => [track], getTracks: () => [track] };
   const analyser = {
@@ -50,8 +50,8 @@ function makeHarness({ url = "https://app.cloudinterpreter.com/profile/test", mu
   };
   class FakeAudioContext { constructor() { return audioContext; } }
   const api = {
-    tabs: { async query() { return [{ id: 7, url, mutedInfo: { muted } }]; } },
-    storage: { local: { async get() { return { effectifState: activeCall ? { callStartedAt: new Date().toISOString() } : {} }; } } },
+    tabs: { async query() { return [{ id: 7, url, mutedInfo: { muted } }]; }, onUpdated: { addListener(fn) { tabUpdated = fn; } } },
+    storage: { local: { async get() { return { effectifState: activeCall ? { callStartedAt: new Date().toISOString() } : {} }; } }, onChanged: { addListener(fn) { storageChanged = fn; } } },
     runtime: { lastError: null },
     tabCapture: {
       capture(options, callback) {
@@ -63,7 +63,7 @@ function makeHarness({ url = "https://app.cloudinterpreter.com/profile/test", mu
         api.runtime.lastError = null;
       }
     },
-    scripting: { async executeScript() { return [{ result: { ok: true, durationMs: 1450 } }]; } }
+    scripting: { executeScript() { return deferInjection ? new Promise(resolve => { resolveInjection = resolve; }) : Promise.resolve([{ result: { ok: true, durationMs: 1450 } }]); } }
   };
   const scope = {
     chrome: api, AudioContext: FakeAudioContext, URL, Promise, Math, Number, String, Object, Array, Float32Array, Uint8Array
@@ -86,7 +86,10 @@ function makeHarness({ url = "https://app.cloudinterpreter.com/profile/test", mu
     finish() { if (timerCallback) timerCallback(); },
     get captureCalls() { return captureCalls; },
     get released() { return released; },
-    get closed() { return closed; }
+    get closed() { return closed; },
+    triggerStoredActiveCall() { if (storageChanged) storageChanged({ effectifState: { newValue: { callStartedAt: new Date().toISOString() } } }, "local"); },
+    triggerCallRoute() { if (tabUpdated) tabUpdated(7, { url: "https://app.cloudinterpreter.com/call/active-id" }, { url: "https://app.cloudinterpreter.com/call/active-id" }); },
+    resolveInjection() { if (resolveInjection) resolveInjection([{ result: { ok: true, durationMs: 1450 } }]); }
   };
 }
 
@@ -141,6 +144,31 @@ const denied = makeHarness({ captureError: "Permission denied" });
 await denied.initialize();
 assert.equal(await denied.start(), false);
 assert.equal(denied.controller.getState(), "failed");
+
+const interruptedByState = makeHarness({ deferInjection: true });
+await interruptedByState.initialize();
+const interruptedStart = interruptedByState.start();
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(typeof interruptedByState.resolveInjection, "function");
+interruptedByState.triggerStoredActiveCall();
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(interruptedByState.controller.getState(), "failed", "starting a call must cancel an active tab preflight");
+assert.equal(interruptedByState.released, 1, "call-start cancellation must release the captured track");
+assert.equal(interruptedByState.closed, true, "call-start cancellation must close the AudioContext");
+interruptedByState.resolveInjection();
+assert.equal(await interruptedStart, false, "late script completion must not revive a preflight cancelled by call start");
+
+const interruptedByRoute = makeHarness({ deferInjection: true });
+await interruptedByRoute.initialize();
+const routeStart = interruptedByRoute.start();
+await new Promise(resolve => setImmediate(resolve));
+interruptedByRoute.triggerCallRoute();
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(interruptedByRoute.controller.getState(), "failed", "navigating to /call must cancel the preflight");
+assert.equal(interruptedByRoute.released, 1, "call-route cancellation must release the captured track");
+assert.equal(interruptedByRoute.closed, true, "call-route cancellation must close the AudioContext");
+interruptedByRoute.resolveInjection();
+assert.equal(await routeStart, false);
 
 const disposed = makeHarness();
 await disposed.initialize();
