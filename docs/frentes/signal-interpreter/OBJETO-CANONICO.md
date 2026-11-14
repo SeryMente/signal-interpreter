@@ -716,3 +716,45 @@ No se ejecutó llamada real ni captura/reproducción de audio; no existen medici
 
 ### Próxima acción permitida
 Mantener PR #95 en draft. Para completar el sprint, el operador debe autorizar expresamente ampliar el control G14 a una prueba aislada y no productiva: audio de prueba no sensible, medición por separado de downlink y uplink, sin conservar las muestras y sin interferir con llamadas reales. La aceptación final será del operador. No fusionar ni desplegar antes de esa compuerta.
+
+
+## 21. Retoma 0.10.51 y preflight de salida de audio · 2026-11-14
+
+Este asiento recupera el corte exportado por el operador y supersede la espera de inventario consignada en §20. No acredita aceptación acústica ni autoriza las operaciones que siguen excluidas por G14.
+
+### 21.1 Última salida recuperada literalmente
+
+Fuente: `C:\Users\fila4\Downloads\ChatGPT-SI-20261114-1437.md`, 64,925 bytes; SHA-256 `2137268ADDE3DFB2FC6AAA599EE0BE3448C2EE01A32F3F6A16CF17D5F0F56684`; leído por RDC desde el perfil fila4. La exportación termina durante el ciclo, sin respuesta final posterior.
+
+14/11/2026, 2:13:46 p.m. · gpt-6-t-mini-mini
+
+La revisión de escritura encontró un límite de operaciones del conector antes de poder confirmar cambios. Estoy comprobando el estado de la rama para asegurar que no haya quedado ninguna actualización parcial; si sigue intacta, aplicaré el paquete en lotes pequeños con comparación de SHA antes de avanzar.
+
+La rama sigue intacta: no quedó ninguna escritura parcial. Estoy aplicando ahora una candidata `0.10.51` con permiso explícito de captura de pestaña, controles y una prueba de regresión; se mantiene en la PR de borrador y no altera `main`.
+
+El código y las pruebas ya están en la rama; ahora estoy recalculando el inventario SHA-256 con los bytes efectivamente guardados por GitHub. No voy a actualizar el inventario hasta cotejar cada archivo, porque es la compuerta que impide distribuir una mezcla de versiones.
+
+### 21.2 Gobierno y control
+
+- DUG canónico: Samantha v398, blob `410c85c9afd36202c1e56cb519c677f3bc0205a1`; encabezado `Firma de Carga NX-398m`, con una línea posterior que aún dice `NX-397m`. La discrepancia se conserva sin reinterpretación.
+- GOW v2.25; Metacanon 1.31. Se consultaron §ARR, ART-031, CNP íntegro (P044/P001/P004/P005/P038/P043), Metacanon §4 y ART-032.
+- Control blob `2f02cab6b3697f31b2af3d141204c4431fbc05cb`: G14 ACTIVO / agente único; G13 SUSTITUIDO; FOL1 PREPARADA/NO ACTIVA; folio PENDIENTE/NO ASIGNADO; MCP-NORMATIVO DESACTIVADO.
+- El campo `revision_objeto_observada` del control refiere el blob OCP `6d1aeb99f3f710986b032a03073e02ee0f55d578`, mientras que el OCP leído antes de este asiento tenía blob `9d97fab8e3332c5e82b01e96d42f27a138189b8e`. Referencia interna desactualizada; no se modificó el control ni la titularidad.
+
+### 21.3 Candidata 0.10.51 y corrección de auditoría
+
+- PR #95: OPEN / DRAFT / NOT MERGED; `mergeable=true`. Rama `fix/call-audio-isolation-20261113`, base `2ad9886878278a800d351dfde76a707d1f46e2e2`. HEAD actual `96a960f96d770486dca65aca8b96af0347d38fd7`.
+- Manifiesto raíz declara `0.10.51`; blob `a10b9f755193906efe7a9ea72ec34d88776d8b2d`. Inventario: 61 entradas; blob `c0b18de6dfe9d528cc5b6fe5db01bfdda9ddd8b6`.
+- En el HEAD previo `583d01171cee92c3cb02302f696b8ac0caa83730`, Package integrity concluyó PASS: 61/61 SHA-256, identidad del manifiesto/host y contrato estático del preflight; run `43637790671`. También concluyeron SUCCESS el workflow de paquete y el de host nativo. El audit falló únicamente en `Live Caption static audit`, porque una aserción buscaba la cadena literal `/call/`; la implementación usa el patrón escapado `^\\/call\\/` dentro de `activeCall()`. La prueba funcional sintética `tab-audio-preflight-test` sí concluyó PASS.
+- Se corrigió solo `tools/live-caption-static-audit.mjs` para verificar el bloque real `activeCall()`, `callState.callStartedAt`, el patrón de ruta y `test(path)`. Commit `96a960f96d770486dca65aca8b96af0347d38fd7`; blob de contenido leído de vuelta `e5f79cf4b3fc4809f6ec1fe0307944d07d401e98`. No se tocó el runtime ni el inventario SHA.
+- La consulta de workflows para el HEAD actual no devolvió ejecuciones; no se proclama CI verde para `96a960f...`. Los resultados del HEAD anterior no se trasladan a este.
+- El preflight de audio de pestaña se limita a `/profile/<id>`, solicita solo audio mediante `tabCapture`, inyecta tono sintético y devuelve la captura a la salida; requiere confirmación audible. Bloquea/cancela durante llamada o ruta `/call/`, libera pista y contexto, no solicita micrófono, no graba ni transmite.
+- Se detecta discrepancia pendiente de layout: la candidata contiene `manifest.json` en la raíz y su README indica cargar esa raíz; las reglas operativas del frente conservan una ruta `extension` como destino de carga. No se carga ni se materializa hasta reconciliar expresamente ambas rutas.
+
+### 21.4 Límites y siguiente acción
+
+No hubo llamada real, captura/reproducción acústica en Chrome, carga/recarga, aceptación del operador, merge, rebase, deploy o release. G14 mantiene prohibidos audio/captura real, llamadas reales y manipulación de Chrome; no se eludió el control.
+
+Persistencia de este corte: [C-SIGNAL-0.10.51-TAB-AUDIO-PREFLIGHT-20261114-G14.md](cronica/C-SIGNAL-0.10.51-TAB-AUDIO-PREFLIGHT-20261114-G14.md). La crónica fue creada y leída de vuelta desde main; blob `562f1ca7f1c3921506e6deac3e4eb49d7f80c11a`; commit de creación `9523cb6108a8a4c2837b7dc0e63b3c1928ed31d0`.
+
+Siguiente paso: verificar workflows del HEAD `96a960f...` y mantener PR #95 en draft. La prueba acústica real requiere ampliar expresamente el control G14 y aceptación humana. No fusionar ni liberar antes de esa compuerta.
