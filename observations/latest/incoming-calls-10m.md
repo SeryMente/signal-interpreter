@@ -1,43 +1,20 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-14T19:53:57.015Z → 2026-11-14T20:03:57.015Z
-- Generado: 2026-11-14T20:03:57.015Z
-- Eventos: 360 · lotes fuente: 40
+- Ventana UTC: 2026-11-14T19:54:28.790Z → 2026-11-14T20:04:28.790Z
+- Generado: 2026-11-14T20:04:28.790Z
+- Eventos: 341 · lotes fuente: 32
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 360
+- Reloj cliente sin verificación de recibo: 341
 
 ## Resumen
-- Intentos observados: 3
-- Contestadas: 0 · perdidas confirmadas: 2
-- Clic sin ruta: 0 · timbrados sin diálogo correlacionado: 1
-- Sin desenlace concluyente: 1
+- Intentos observados: 1
+- Contestadas: 0 · perdidas confirmadas: 1
+- Clic sin ruta: 0 · timbrados sin diálogo correlacionado: 0
+- Sin desenlace concluyente: 0
 - Detecciones de diálogo/botón: 1 / 1
 - Bloqueos de autocontestación: 1 · clics: 0
 
 ## Intentos
-
-### 790d01a7-471f-47d3-9372-abbcfd26f6d3 — missed
-- Detectada: 2026-11-14T19:53:57.171Z · modalidad: OPI
-- Tab: 220929880 · eventos: 8
-- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: null
-- Desenlace/motivo: "dialog_closed_without_connect"
-- Señales ausentes: INCOMING_DIALOG_DETECTED
-  - 2026-11-14T19:53:57.171Z · PERFORMANCE_HEARTBEAT · info · heartbeat
-  - 2026-11-14T19:53:57.402Z · PAGE_LIFECYCLE · info
-  - 2026-11-14T19:53:57.404Z · PAGE_VISIBILITY_CHANGED · info
-  - 2026-11-14T19:53:57.698Z · PLATFORM_SURFACE_SNAPSHOT · info
-  - 2026-11-14T19:54:00.502Z · AUTO_ANSWER_BOOTSTRAP_INJECTED · info
-  - 2026-11-14T19:54:01.091Z · INCOMING_ATTEMPT_REGISTERED · info
-  - 2026-11-14T19:54:06.548Z · INCOMING_DIALOG_CLOSED_OBSERVED · info · dialog-removed
-  - 2026-11-14T19:54:11.581Z · MISSED_CALL_CLASSIFIED · warn · dialog_closed_without_connect
-
-### ring-43696f437621b4e7ec88ac7d — ring_unmatched
-- Detectada: 2026-11-14T19:54:01.648Z · modalidad: desconocida
-- Tab: 220929880 · eventos: 1
-- Botón: {"found":false,"notFound":false,"disabled":false} · estado readiness: null
-- Desenlace/motivo: null
-- Señales ausentes: INCOMING_DIALOG_DETECTED, TERMINAL_CALL_OUTCOME
-  - 2026-11-14T19:54:01.648Z · INCOMING_RING_SIGNAL · info
 
 ### c9dbaa6f-bbf6-40e0-a237-9e989b1d6a70 — missed
 - Detectada: 2026-11-14T19:56:18.915Z · modalidad: OPI

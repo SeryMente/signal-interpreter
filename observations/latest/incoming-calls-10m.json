@@ -1,202 +1,33 @@
 {
   "schema": "signal-interpreter-incoming-call-window/v1",
-  "generatedAt": "2026-11-14T20:03:57.015Z",
-  "windowStartAt": "2026-11-14T19:53:57.015Z",
-  "windowEndAt": "2026-11-14T20:03:57.015Z",
+  "generatedAt": "2026-11-14T20:04:28.790Z",
+  "windowStartAt": "2026-11-14T19:54:28.790Z",
+  "windowEndAt": "2026-11-14T20:04:28.790Z",
   "windowMinutes": 10,
   "timeBasis": {
-    "client-clock-unverified": 360
+    "client-clock-unverified": 341
   },
-  "sourceBatchCount": 40,
+  "sourceBatchCount": 32,
   "receiptVerifiedBatchCount": 0,
-  "receiptUnverifiedBatchCount": 17128,
+  "receiptUnverifiedBatchCount": 17129,
   "medianClientClockSkewMs": null,
-  "eventCount": 360,
+  "eventCount": 341,
   "summary": {
-    "attempts": 3,
+    "attempts": 1,
     "answered": 0,
-    "missed": 2,
+    "missed": 1,
     "connectFailedNoRoute": 0,
-    "ringUnmatched": 1,
-    "unresolved": 1,
-    "ringSignals": 2,
+    "ringUnmatched": 0,
+    "unresolved": 0,
+    "ringSignals": 1,
     "dialogsDetected": 1,
     "buttonsFound": 1,
     "buttonsNotFound": 0,
-    "readinessSamples": 312,
+    "readinessSamples": 308,
     "blocked": 1,
     "clicks": 0
   },
   "attempts": [
-    {
-      "attemptId": "790d01a7-471f-47d3-9372-abbcfd26f6d3",
-      "status": "missed",
-      "modality": "OPI",
-      "tabId": 220929880,
-      "detectedAt": "2026-11-14T19:53:57.171Z",
-      "closedAt": "2026-11-14T19:54:06.548Z",
-      "clickedAt": null,
-      "answeredAt": null,
-      "missedAt": "2026-11-14T19:54:11.581Z",
-      "outcomeReason": "dialog_closed_without_connect",
-      "button": {
-        "found": false,
-        "notFound": false,
-        "disabled": false
-      },
-      "readiness": {
-        "samples": 0,
-        "last": null
-      },
-      "blockedEvents": [],
-      "ringSignalCount": 0,
-      "clickToAnswerLatencyMs": null,
-      "detectionToAnswerLatencyMs": null,
-      "callRefs": [],
-      "missingSignals": [
-        "INCOMING_DIALOG_DETECTED"
-      ],
-      "eventCount": 8,
-      "timeline": [
-        {
-          "at": "2026-11-14T19:53:57.171Z",
-          "action": "PERFORMANCE_HEARTBEAT",
-          "level": "info",
-          "reasonCode": "heartbeat",
-          "details": {
-            "reason": "heartbeat",
-            "reasonCode": "heartbeat"
-          },
-          "eventId": "f9700b47-7280-4a91-b6c5-fea636ba7c56",
-          "sequence": 2710
-        },
-        {
-          "at": "2026-11-14T19:53:57.402Z",
-          "action": "PAGE_LIFECYCLE",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "7f91c60f-fa5c-456a-aeb5-2851646eeba3",
-          "sequence": 2711
-        },
-        {
-          "at": "2026-11-14T19:53:57.404Z",
-          "action": "PAGE_VISIBILITY_CHANGED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "81fda93b-38e0-4d95-8376-e70a9e2b7a50",
-          "sequence": 2712
-        },
-        {
-          "at": "2026-11-14T19:53:57.698Z",
-          "action": "PLATFORM_SURFACE_SNAPSHOT",
-          "level": "info",
-          "reasonCode": null,
-          "details": {},
-          "eventId": "923f523b-85a3-4d2a-967c-3eba3236e165",
-          "sequence": 2715
-        },
-        {
-          "at": "2026-11-14T19:54:00.502Z",
-          "action": "AUTO_ANSWER_BOOTSTRAP_INJECTED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "trigger": "ring.mp3-start"
-          },
-          "eventId": "904d3a6c-cf4a-4f80-a426-b0728845831c",
-          "sequence": 2697
-        },
-        {
-          "at": "2026-11-14T19:54:01.091Z",
-          "action": "INCOMING_ATTEMPT_REGISTERED",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "modality": "OPI",
-            "connectFound": true,
-            "connectDisabled": false
-          },
-          "eventId": "04c1c929-6d6a-4246-819e-1a4f9181e3ef",
-          "sequence": 2698
-        },
-        {
-          "at": "2026-11-14T19:54:06.548Z",
-          "action": "INCOMING_DIALOG_CLOSED_OBSERVED",
-          "level": "info",
-          "reasonCode": "dialog-removed",
-          "details": {
-            "reason": "dialog-removed",
-            "reasonCode": "dialog-removed"
-          },
-          "eventId": "f8f0be67-101d-416f-b409-445450d1252a",
-          "sequence": 2708
-        },
-        {
-          "at": "2026-11-14T19:54:11.581Z",
-          "action": "MISSED_CALL_CLASSIFIED",
-          "level": "warn",
-          "reasonCode": "dialog_closed_without_connect",
-          "details": {
-            "modality": "OPI",
-            "connectFound": true,
-            "connectDisabled": false,
-            "reason": "dialog_closed_without_connect",
-            "status": "missed",
-            "reasonCode": "dialog_closed_without_connect"
-          },
-          "eventId": "7515781c-4f93-470a-af4d-d2ad20dd3fd6",
-          "sequence": 2717
-        }
-      ]
-    },
-    {
-      "attemptId": "ring-43696f437621b4e7ec88ac7d",
-      "status": "ring_unmatched",
-      "modality": null,
-      "tabId": 220929880,
-      "detectedAt": "2026-11-14T19:54:01.648Z",
-      "closedAt": null,
-      "clickedAt": null,
-      "answeredAt": null,
-      "missedAt": null,
-      "outcomeReason": null,
-      "button": {
-        "found": false,
-        "notFound": false,
-        "disabled": false
-      },
-      "readiness": {
-        "samples": 0,
-        "last": null
-      },
-      "blockedEvents": [],
-      "ringSignalCount": 1,
-      "clickToAnswerLatencyMs": null,
-      "detectionToAnswerLatencyMs": null,
-      "callRefs": [],
-      "missingSignals": [
-        "INCOMING_DIALOG_DETECTED",
-        "TERMINAL_CALL_OUTCOME"
-      ],
-      "eventCount": 1,
-      "timeline": [
-        {
-          "at": "2026-11-14T19:54:01.648Z",
-          "action": "INCOMING_RING_SIGNAL",
-          "level": "info",
-          "reasonCode": null,
-          "details": {
-            "signal": "ring.mp3",
-            "statusCode": 206,
-            "durationMs": 614
-          },
-          "eventId": "78ee91fb-b0da-4ad9-b9d7-97e3c0ba6622",
-          "sequence": 2699
-        }
-      ]
-    },
     {
       "attemptId": "c9dbaa6f-bbf6-40e0-a237-9e989b1d6a70",
       "status": "missed",
