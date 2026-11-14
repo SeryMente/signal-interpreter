@@ -75,6 +75,10 @@ const closeCall = background.slice(closeCallAt, background.indexOf("function sav
 assert.match(closeCall, /signalPlatformAvailability/, "call end must read the last platform availability");
 assert.match(closeCall, /availabilityMicrophoneMuted\(platformAvailability\)/);
 assert.match(closeCall, /restoreMuted===false/, "OFFLINE call end may unmute only through explicit verification");
+assert.doesNotMatch(closeCall, /tabAvailability\.get\(Number\(state\.callSourceTabId\)\)/,
+  "a stale call-tab indicator must not override the last confirmed profile state");
+assert.ok(background.includes("sender.tab && isAuthorizedProfileUrl(sender.tab.url)"),
+  "only the authorized profile may persist ONLINE/OFFLINE state");
 
 assert.ok(content.includes("function syncCallMicrophoneReminder()"), "small call-start reminder must exist");
 assert.ok(content.includes("top:12px;left:50%;transform:translateX(-50%)"),
