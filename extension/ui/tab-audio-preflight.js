@@ -52,6 +52,21 @@
       return "";
     }
 
+    function blockActiveCall(message) {
+      ready = false;
+      var reason = String(message || "La prueba se canceló al detectar una llamada activa.");
+      if (state === "preparing" || state === "testing") {
+        generation += 1;
+        cleanup().then(function () {
+          ui("failed", reason);
+        }).catch(function () {
+          ui("failed", reason);
+        });
+      } else {
+        ui("failed", reason);
+      }
+    }
+
     async function initialize() {
       if (!api || !api.tabs || !api.storage || !api.storage.local) {
         ui("failed", "No se pudo consultar Chrome desde el popup de la extensión.");
@@ -72,9 +87,8 @@
           api.storage.onChanged.addListener(function (changes, area) {
             if (area !== "local" || !changes.effectifState) return;
             callState = changes.effectifState.newValue || {};
-            if (activeCall() && (state === "idle" || state === "captured")) {
-              ready = false;
-              ui("failed", "La prueba quedó bloqueada porque Signal Interpreter detectó una llamada activa.");
+            if (activeCall()) {
+              blockActiveCall("La prueba se canceló porque Signal Interpreter detectó una llamada activa.");
             }
           });
         }
@@ -82,9 +96,8 @@
           api.tabs.onUpdated.addListener(function (tabId, changeInfo, updatedTab) {
             if (tab && Number(tabId) === Number(tab.id)) {
               tab = Object.assign({}, tab, updatedTab || {}, changeInfo || {});
-              if (activeCall() && (state === "idle" || state === "captured")) {
-                ready = false;
-                ui("failed", "La prueba se bloqueó al cambiar la pestaña a una llamada.");
+              if (activeCall()) {
+                blockActiveCall("La prueba se canceló al cambiar la pestaña a una llamada.");
               }
             }
           });
