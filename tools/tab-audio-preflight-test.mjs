@@ -56,7 +56,8 @@ function makeHarness({ url = "https://app.cloudinterpreter.com/profile/test", mu
     tabCapture: {
       capture(options, callback) {
         captureCalls += 1;
-        assert.deepEqual(options, { audio: true, video: false });
+        assert.equal(options.audio, true, "tab capture must request audio");
+        assert.equal(options.video, false, "tab capture must not request video");
         if (captureError) api.runtime.lastError = { message: captureError };
         callback(captureError ? null : stream);
         api.runtime.lastError = null;
