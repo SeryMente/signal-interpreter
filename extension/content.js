@@ -1975,14 +1975,14 @@
         microphoneReminderHost.id = "signal-interpreter-call-mic-reminder";
         microphoneReminderHost.style.cssText = "all:initial;position:fixed;z-index:2147483647;top:12px;left:50%;transform:translateX(-50%);pointer-events:auto";
         microphoneReminderRoot = microphoneReminderHost.attachShadow({ mode: "closed" });
-        microphoneReminderRoot.innerHTML = '<style>:host{all:initial}.notice{display:flex;align-items:center;gap:10px;box-sizing:border-box;max-width:calc(100vw - 24px);padding:8px 11px;border:1px solid rgba(255,190,90,.42);border-radius:10px;background:rgba(24,22,18,.96);box-shadow:0 6px 24px rgba(0,0,0,.24);backdrop-filter:blur(10px);color:#fff0d2;font:600 12px/1.2 system-ui,Segoe UI,sans-serif;white-space:nowrap}.label{display:flex;align-items:center;gap:7px}.dot{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#ffbd59;box-shadow:0 0 0 3px rgba(255,189,89,.15)}button{border:0;border-radius:7px;padding:7px 11px;background:#f0b34e;color:#20180b;font:700 11px/1 system-ui,Segoe UI,sans-serif;cursor:pointer}button:disabled{opacity:.65;cursor:wait}.error{display:none;color:#ffb6b6;font-weight:500}.notice.has-error .error{display:block}@media(max-width:480px){.notice{white-space:normal;gap:7px;font-size:11px;padding:7px 9px}button{padding:7px 8px}}</style><div class="notice" role="status" aria-live="polite"><span class="label"><i class="dot"></i><span>LLAMADA INICIADA · MICRÓFONO OFF</span></span><span class="error"></span><button type="button">ACTIVAR</button></div>';
+        microphoneReminderRoot.innerHTML = '<style>:host{all:initial}.notice{display:flex;align-items:center;gap:10px;box-sizing:border-box;max-width:calc(100vw - 28px);padding:7px 9px 7px 8px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(24,29,37,.94);box-shadow:0 5px 22px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.04);backdrop-filter:blur(14px);color:#edf2f7;font:500 12px/1 system-ui,Segoe UI,sans-serif;white-space:nowrap}.mic-icon{width:26px;height:26px;display:grid;place-items:center;flex:0 0 26px;border-radius:50%;background:rgba(242,181,91,.13);color:#f0bd72}.mic-icon svg{width:14px;height:14px;display:block}.label{font-size:12px;letter-spacing:.005em}.error{display:none;color:#f0b2a9;font-size:11px;font-weight:500}.notice.has-error .error{display:block}.notice.has-error .label{display:none}button{border:0;border-radius:999px;padding:7px 12px;background:#e9c18b;color:#29231c;font:650 11px/1 system-ui,Segoe UI,sans-serif;cursor:pointer;transition:background .15s ease,transform .15s ease}button:hover{background:#f3d5aa;transform:translateY(-1px)}button:focus-visible{outline:2px solid #f3d5aa;outline-offset:2px}button:disabled{opacity:.65;cursor:wait;transform:none}@media(max-width:480px){.notice{gap:8px;padding:6px 7px 6px 6px}.mic-icon{width:24px;height:24px;flex-basis:24px}.label{font-size:11px}button{padding:7px 10px}}</style><div class="notice" role="status" aria-live="polite"><span class="mic-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21m-4 0h8M4 4l16 16"></path></svg></span><span class="label">Micrófono apagado</span><span class="error">No se pudo activar</span><button type="button">Activar</button></div>';
         document.documentElement.appendChild(microphoneReminderHost);
         var button = microphoneReminderRoot.querySelector("button");
         button.addEventListener("click", function () {
           if (microphoneReminderBusy || !runtimeMarker.active) return;
           microphoneReminderBusy = true;
           button.disabled = true;
-          button.textContent = "VERIFICANDO…";
+          button.textContent = "Activando…";
           microphoneReminderError = "";
           chrome.runtime.sendMessage({
             type: "SIGNAL_EXTENSION_MICROPHONE_SET", muted: false, source: "call-start-mic-reminder"
@@ -1996,9 +1996,9 @@
                 var error = microphoneReminderRoot.querySelector(".error");
                 var action = microphoneReminderRoot.querySelector("button");
                 notice.classList.add("has-error");
-                error.textContent = microphoneReminderError;
+                error.textContent = "No se pudo activar";
                 action.disabled = false;
-                action.textContent = "REINTENTAR";
+                action.textContent = "Reintentar";
               }
               emit("CALL_MICROPHONE_REMINDER_ACTIVATION_FAILED", { callId: callId, error: microphoneReminderError }, "error");
               return;
@@ -2009,7 +2009,7 @@
               syncCallMicrophoneReminder();
               if (microphoneReminderHost) {
                 var action = microphoneReminderRoot.querySelector("button");
-                if (action) { action.disabled = false; action.textContent = "ACTIVAR"; }
+                if (action) { action.disabled = false; action.textContent = "Activar"; }
               }
               emit("CALL_MICROPHONE_REMINDER_ACTIVATION_VERIFIED", { callId: callId, muted: false }, "info");
             });
@@ -2028,7 +2028,7 @@
     if (errorNode) errorNode.textContent = microphoneReminderError;
     if (action && !microphoneReminderBusy) {
       action.disabled = false;
-      action.textContent = microphoneReminderError ? "REINTENTAR" : "ACTIVAR";
+      action.textContent = microphoneReminderError ? "Reintentar" : "Activar";
     }
   }
 

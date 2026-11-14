@@ -81,6 +81,9 @@ assert.ok(background.includes("sender.tab && isAuthorizedProfileUrl(sender.tab.u
   "only the authorized profile may persist ONLINE/OFFLINE state");
 
 assert.ok(content.includes("function syncCallMicrophoneReminder()"), "small call-start reminder must exist");
+assert.ok(content.includes("<span class=\"label\">Micrófono apagado</span>"), "reminder label must stay minimal");
+assert.ok(content.includes("<button type=\"button\">Activar</button>"), "reminder action must use concise sentence case");
+assert.ok(!content.includes("LLAMADA INICIADA · MICRÓFONO OFF"), "the reminder must not repeat verbose call-start wording");
 assert.ok(content.includes("top:12px;left:50%;transform:translateX(-50%)"),
   "reminder must be centered along the top edge");
 assert.ok(content.includes('type: "SIGNAL_EXTENSION_MICROPHONE_SET", muted: false'),
