@@ -174,7 +174,14 @@ assert.equal(manifest.permissions.includes("tabCapture"),true,"only the isolated
 const tabAudioPreflight=read("extension/ui/tab-audio-preflight.js");
 assert.ok(tabAudioPreflight.includes('api.tabCapture.capture({ audio: true, video: false }'),"tab preflight must capture audio only");
 assert.ok(tabAudioPreflight.includes("gain.connect(context.destination)"),"tab preflight must return captured output to headphones");
-assert.ok(tabAudioPreflight.includes('callState.callStartedAt') && tabAudioPreflight.includes('/call/'),"tab preflight must fail closed during calls");
+const callGuardStart = tabAudioPreflight.indexOf("function activeCall()");
+const callGuardEnd = tabAudioPreflight.indexOf("function validateTab(", callGuardStart);
+const callGuard = tabAudioPreflight.slice(callGuardStart, callGuardEnd);
+assert.ok(callGuardStart >= 0 && callGuardEnd > callGuardStart &&
+  callGuard.includes("callState.callStartedAt") &&
+  callGuard.includes("^\\/call\\/") &&
+  callGuard.includes("test(path)"),
+  "tab preflight must fail closed during calls");
 assert.equal(/getUserMedia|MediaRecorder|fetch\(|chrome\.storage\.local\.set/.test(tabAudioPreflight),false,"tab preflight must not access the microphone, record or transmit audio");
 assert.equal(manifest.host_permissions.includes("https://api.groq.com/*"),false);
 assert.equal(manifest.content_scripts.some(e=>e.js?.includes("extension/youtube-caption-adapter.js")),false);
