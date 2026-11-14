@@ -1,47 +1,20 @@
 # Signal Interpreter — llamadas entrantes, últimos diez minutos
 
-- Ventana UTC: 2026-11-14T20:08:58.877Z → 2026-11-14T20:18:58.877Z
-- Generado: 2026-11-14T20:18:58.877Z
-- Eventos: 408 · lotes fuente: 46
+- Ventana UTC: 2026-11-14T20:14:44.854Z → 2026-11-14T20:24:44.854Z
+- Generado: 2026-11-14T20:24:44.854Z
+- Eventos: 367 · lotes fuente: 36
 - Reloj cliente corregido con recibo relay: 0
-- Reloj cliente sin verificación de recibo: 408
+- Reloj cliente sin verificación de recibo: 367
 
 ## Resumen
-- Intentos observados: 3
-- Contestadas: 0 · perdidas confirmadas: 3
+- Intentos observados: 2
+- Contestadas: 0 · perdidas confirmadas: 2
 - Clic sin ruta: 0 · timbrados sin diálogo correlacionado: 0
 - Sin desenlace concluyente: 0
-- Detecciones de diálogo/botón: 3 / 3
-- Bloqueos de autocontestación: 3 · clics: 0
+- Detecciones de diálogo/botón: 2 / 2
+- Bloqueos de autocontestación: 2 · clics: 0
 
 ## Intentos
-
-### e1251f60-0b4d-4e07-a91e-a82798d3afe9 — missed
-- Detectada: 2026-11-14T20:11:21.493Z · modalidad: OPI
-- Tab: 220929880 · eventos: 20
-- Botón: {"found":true,"notFound":false,"disabled":false} · estado readiness: {"blockedReasons":["IDLE_CONFIRM_AGAIN"],"ready":false,"availability":"online","authorizedProfile":true,"configEnabled":true,"labSafetyLock":false,"presenceArmed":false,"presenceReason":"idle-confirm-again","presenceGeneration":16,"reason":"availability","reasonCode":"availability"}
-- Desenlace/motivo: "dialog_closed_without_connect"
-- Señales ausentes: ninguna identificada
-  - 2026-11-14T20:11:21.493Z · INCOMING_DIALOG_DETECTED · info
-  - 2026-11-14T20:11:21.493Z · AUTO_ANSWER_BLOCKED · warn
-  - 2026-11-14T20:11:21.493Z · CONNECT_BUTTON_FOUND · info
-  - 2026-11-14T20:11:22.099Z · AUTO_ANSWER_READINESS · info · heartbeat
-  - 2026-11-14T20:11:22.144Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-14T20:11:22.173Z · AUTO_ANSWER_BOOTSTRAP_REQUESTED · info
-  - 2026-11-14T20:11:22.344Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-14T20:11:22.498Z · AUTO_ANSWER_READINESS · info · availability
-  - 2026-11-14T20:11:22.499Z · INCOMING_DIALOG_CLOSED · info · dialog-removed
-  - 2026-11-14T20:11:23.850Z · PAGE_VISIBILITY_CHANGED · info
-  - 2026-11-14T20:11:23.866Z · PAGE_LIFECYCLE · info
-  - 2026-11-14T20:11:24.894Z · PERFORMANCE_HEARTBEAT · info · heartbeat
-  - 2026-11-14T20:11:25.410Z · PLATFORM_SURFACE_SNAPSHOT · info
-  - 2026-11-14T20:11:25.927Z · AUTO_ANSWER_BOOTSTRAP_INJECTED · info
-  - 2026-11-14T20:11:26.373Z · PAGE_LIFECYCLE · info
-  - 2026-11-14T20:11:26.374Z · PAGE_VISIBILITY_CHANGED · info
-  - 2026-11-14T20:11:26.462Z · INCOMING_RING_SIGNAL · info
-  - 2026-11-14T20:11:27.026Z · INCOMING_ATTEMPT_REGISTERED · info
-  - 2026-11-14T20:11:31.713Z · INCOMING_DIALOG_CLOSED_OBSERVED · info · dialog-removed
-  - 2026-11-14T20:11:38.274Z · MISSED_CALL_CLASSIFIED · warn · dialog_closed_without_connect
 
 ### eefe6946-6ba9-4120-8eb1-eb46577381ee — missed
 - Detectada: 2026-11-14T20:16:08.770Z · modalidad: OPI
