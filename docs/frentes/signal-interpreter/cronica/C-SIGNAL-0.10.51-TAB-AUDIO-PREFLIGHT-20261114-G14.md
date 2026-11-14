@@ -44,3 +44,12 @@ El export termina durante este ciclo; no contiene una respuesta final posterior.
 - El control G14 vigente prohíbe audio/captura real, llamadas reales y manipulación/recarga de Chrome. La función queda implementada y cubierta por pruebas sintéticas, no aceptada en dispositivo.
 - La candidata usa manifiesto en la raíz del paquete y el README describe cargar esa raíz; antes de una futura carga debe reconciliarse esta disposición con la ruta operativa de extensión declarada en las reglas del frente. No se dio instrucción de carga ni se materializó localmente la candidata.
 - Siguiente paso autorizado: revisar CI del HEAD `96a960f...`; mantener PR #95 en draft. La prueba acústica real requiere ampliar expresamente el alcance G14 y aceptación humana posterior.
+
+
+## Addendum de CI · 2026-11-14
+
+- En el HEAD `96a960f96d770486dca65aca8b96af0347d38fd7`, `Live Caption static audit` pasó; `Observability static audit` falló porque `tools/observability-static-audit.mjs:42` todavía exigía `0.10.50` frente al manifiesto `0.10.51`.
+- Se actualizó únicamente esa aserción a `0.10.51`. Commit actual `e8add360435eec1c3f444353578b2f71dd1679eb`; blob leído de vuelta `b677271aecb223d0689f5f5b72eb343c0ffe251c`.
+- PR #95 permanece OPEN / DRAFT / NOT MERGED; GitHub reporta `mergeable=true`; HEAD `e8add360...`, 37 commits / 29 archivos modificados.
+- La consulta de workflows para `e8add360...` no devolvió ejecuciones. No hay CI verificada para este SHA; los PASS anteriores no se trasladan. No existe acción de dispatch manual disponible en la integración usada.
+- Próximo paso: obtener los cuatro resultados de CI sobre `e8add360...`; mantener draft y no fusionar ni liberar.
