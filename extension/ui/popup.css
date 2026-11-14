@@ -274,3 +274,17 @@ small,.status-line{font-size:14px;line-height:1.5;color:#bac3cf}.mic-card,.quick
 .mic-preflight-level output { min-width:42px; color:#d9e6f2; text-align:right; font:700 12px ui-monospace,monospace; }
 .mic-preflight-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .mic-preflight-note { color:#8fa0af; line-height:1.45; }
+
+
+/* 0.10.51 — isolated pre-call tab-output diagnostic. */
+.tab-audio-preflight-card { display:grid; gap:9px; padding:12px; }
+.tab-audio-preflight-badge { border:1px solid #526d91; border-radius:999px; padding:4px 8px; color:#cfe4ff; background:#26364d; font:700 11px/1.2 ui-monospace,monospace; }
+.tab-audio-preflight-badge[data-state="testing"] { color:#d1fae5; border-color:#356a4d; background:#183024; }
+.tab-audio-preflight-badge[data-state="passed"] { color:#d1fae5; border-color:#356a4d; background:#183024; }
+.tab-audio-preflight-badge[data-state="failed"] { color:#ffe0e0; border-color:#7a4444; background:#351c1c; }
+.tab-audio-preflight-status { margin:0; color:#c0ccd8; min-height:2.8em; font-size:13px; line-height:1.45; }
+.tab-audio-preflight-level { display:flex; align-items:center; gap:10px; }
+.tab-audio-preflight-level meter { width:100%; height:14px; accent-color:#42b883; }
+.tab-audio-preflight-level output { min-width:42px; color:#d9e6f2; text-align:right; font:700 12px ui-monospace,monospace; }
+.tab-audio-preflight-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.tab-audio-preflight-note { color:#8fa0af; line-height:1.45; }
