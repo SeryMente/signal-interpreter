@@ -1848,8 +1848,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         state.transcriptionStatus = { phase: "stopped", connected: false, engine: "groq" };
       }
       var availabilityStored=await chrome.storage.local.get(["signalPlatformAvailability"]);
-      var platformAvailability=String(availabilityStored.signalPlatformAvailability&&availabilityStored.signalPlatformAvailability.state||
-        tabAvailability.get(Number(state.callSourceTabId))||"unknown");
+      var platformAvailability=String(availabilityStored.signalPlatformAvailability&&availabilityStored.signalPlatformAvailability.state||"unknown");
       var restoreMuted=availabilityMicrophoneMuted(platformAvailability);
       if(restoreMuted===null)restoreMuted=true;
       var endMuteResult=state.callSourceTabId!=null
@@ -3148,7 +3147,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         var eventTabId = sender.tab && sender.tab.id;
         var availabilityState = String(event.payload && event.payload.state || "unknown");
         if (Number.isFinite(Number(eventTabId))) tabAvailability.set(Number(eventTabId), availabilityState);
-        if (sender.tab && isAuthorizedCloudUrl(sender.tab.url) &&
+        if (sender.tab && isAuthorizedProfileUrl(sender.tab.url) &&
             (availabilityState === "online" || availabilityState === "offline")) {
           var availabilitySnapshot = {
             state: availabilityState, tabId: Number(sender.tab.id), checkedAt: event.timestamp || iso()
