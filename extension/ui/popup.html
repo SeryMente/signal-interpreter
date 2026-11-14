@@ -36,6 +36,27 @@
         </div>
       </section>
 
+      <section class="tab-audio-preflight-card sub-card" aria-labelledby="tab-audio-preflight-title">
+        <div class="sub-head">
+          <div><strong id="tab-audio-preflight-title">Prueba de salida de audio de esta pestaña</strong><small>Antes de llamar · tono sintético · sin micrófono ni envío</small></div>
+          <span id="tabAudioPreflightBadge" class="tab-audio-preflight-badge" data-state="idle">LISTO</span>
+        </div>
+        <p id="tabAudioPreflightStatus" class="tab-audio-preflight-status" role="status" aria-live="polite">Abre My Profile o la pantalla de espera de Cloud Interpreter y mantén este panel abierto durante la prueba.</p>
+        <div class="tab-audio-preflight-level">
+          <meter id="tabAudioPreflightMeter" min="0" max="1" value="0">0%</meter>
+          <output id="tabAudioPreflightLevel">0%</output>
+        </div>
+        <div class="tab-audio-preflight-actions">
+          <button id="tabAudioPreflightStart" class="button secondary" type="button" disabled>Probar salida</button>
+          <button id="tabAudioPreflightStop" class="button secondary" type="button" disabled>Detener</button>
+        </div>
+        <div class="tab-audio-preflight-actions">
+          <button id="tabAudioPreflightHeard" class="button secondary" type="button" disabled>Sí, lo escuché</button>
+          <button id="tabAudioPreflightNotHeard" class="button secondary" type="button" disabled>No lo escuché</button>
+        </div>
+        <small class="tab-audio-preflight-note">Captura temporal de audio solo de la pestaña de perfil. Emite un tono local, lo mide y lo devuelve a los auriculares. No graba, almacena ni transmite audio. Se bloquea al detectar una llamada activa.</small>
+      </section>
+
       <section class="mic-preflight-card sub-card" aria-labelledby="mic-preflight-title">
         <div class="sub-head">
           <div><strong id="mic-preflight-title">Prueba local del micrófono</strong><small>Antes de iniciar llamadas · sin enviar audio</small></div>
@@ -188,6 +209,7 @@
     <script src="../telemetry-db.js"></script>
     <script src="../observability-relay.js"></script>
     <script src="microphone-preflight.js"></script>
+    <script src="tab-audio-preflight.js"></script>
     <script src="time-format.js"></script>
     <script src="popup.js"></script>
   </body>
