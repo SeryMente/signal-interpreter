@@ -170,3 +170,30 @@ La descripción de procedencia y estado que figura en la redacción histórica a
 - La prioridad inmediata es corregir hashes/invariantes y regresión overlay/hotload, ejecutar las suites nuevas y portar solo los deltas revisados; la PR está 115 commits ahead y 783 behind respecto de main.
 - La decisión ZDR sigue siendo una compuerta local declarativa que debe reflejar una comprobación real del operador en la consola de Groq; el flag de UI no demuestra la configuración del proveedor.
 
+
+
+## SI-OP-04 — Ruta Windows parametrizada por el perfil del usuario
+
+**Estado:** RATIFICADA por instrucción directa del operador · 2026-11-14 · G14  
+**Ámbito:** materialización, actualización y carga local de Signal Interpreter en Windows.
+
+### Regla
+
+El nombre del usuario/perfil de Windows puede variar entre equipos o sesiones. No debe codificarse un nombre fijo como `fila4`, `PC 13` o cualquier otro. La ruta se construye siempre desde la variable de entorno `%USERPROFILE%`; el resto del sufijo es estable:
+
+- Workspace: `%USERPROFILE%\Desktop\SeryMente`
+- Repositorio: `%USERPROFILE%\Desktop\SeryMente\signal-interpreter`
+- Carpeta exacta de extensión para Chrome: `%USERPROFILE%\Desktop\SeryMente\signal-interpreter\extension`
+
+### Procedimiento obligatorio
+
+1. Resolver `$env:USERPROFILE` en la sesión efectiva del usuario Windows de destino y verificar que corresponde al perfil que utilizará Chrome.
+2. Construir las rutas combinando ese perfil con el sufijo fijo `Desktop\SeryMente\signal-interpreter\extension`. No sustituir ni normalizar el resto del sufijo.
+3. No asumir que el usuario de Windows coincide con la identidad que opera/elevó RDC. Los artefactos deben quedar bajo el perfil de destino autorizado, nunca en el perfil de la cuenta operadora por conveniencia.
+4. Antes de descargar o actualizar, inventariar el destino y preservar cualquier archivo existente o modificado. No sobrescribir silenciosamente contenido local.
+5. Descargar desde un commit/artefacto remoto identificado por SHA; verificar el commit esperado, el inventario y los hashes del paquete. La carpeta `extension` debe contener directamente `manifest.json` y todos los archivos requeridos.
+6. La descarga no equivale a instalación del Native Messaging host, carga en Chrome ni aceptación funcional. Aplican SI-OP-01 y las compuertas de control vigentes.
+
+### Regla de verificación
+
+En cada materialización, el recibo debe registrar el valor de `USERPROFILE` observado, la ruta resuelta, el usuario Windows, el commit fuente y el resultado del inventario/hash. Los ejemplos históricos con `C:\Users\fila4` u otros perfiles son evidencia de sesiones concretas, no rutas canónicas fijas.
