@@ -5,7 +5,7 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const expectedVersion = "0.10.50";
+const expectedVersion = "0.10.51";
 const readText = (p) => readFileSync(resolve(root, p), "utf8");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex").toUpperCase();
 const manifest = JSON.parse(readText("manifest.json"));
@@ -92,7 +92,9 @@ assert.ok(background.includes("CALL_START_MICROPHONE_MUTED"), "call-start mute v
 assert.ok(background.includes("function withMicrophoneTimeout(promise, timeoutMs, fallback)"), "microphone message deadline is missing");
 assert.ok(background.includes("1000,"), "content message must have a finite response timeout");
 assert.ok(popupJs.includes("},12000);"), "popup toggle watchdog is missing");
-assert.ok(background.includes('setMainClientMicrophoneMuted(state.callSourceTabId,true,"call-ended")'), "call-end mute is missing");
+assert.ok(background.includes("signalPlatformAvailability"), "last verified platform availability must drive post-call microphone state");
+assert.ok(background.includes("availabilityMicrophoneMuted(platformAvailability)"), "ONLINE/OFFLINE post-call microphone policy is missing");
+assert.ok(background.includes("restoreMuted===false"), "OFFLINE must explicitly restore the microphone ON after a call");
 assert.ok(micGuard.includes("var muted=old?!!old.muted:true;"), "main-world microphone default is not muted");
 assert.ok(presenceGuard.includes("signalPresenceGuardSession") && presenceGuard.includes("Promise.all(["), "presence continuity/parallel authorization is missing");
 assert.ok(contentRuntime.includes("postAuthorizationRevalidationFailureCodes") && contentRuntime.includes("revalidationFailureCodes.length > 0"), "pre-click authorization revalidation is missing");
@@ -112,3 +114,14 @@ console.log("PASS: manifest identity/version and native host binary hash");
 console.log("PASS: global overlay switch/shortcut and hotload-disposal guards");
 console.log("PASS: installer inventory schema compatibility (static contract)");
 console.log("NOTE: this test does not exercise Chrome or a live call.");
+
+
+const tabAudioPreflight = readText("extension/ui/tab-audio-preflight.js");
+assert.ok(popup.includes('id="tabAudioPreflightStart"') && popup.includes('id="tabAudioPreflightHeard"'), "tab audio preflight controls are absent");
+assert.ok(popup.includes('src="tab-audio-preflight.js"'), "tab audio preflight script is not loaded");
+assert.ok(manifest.permissions.includes("tabCapture"), "tabCapture permission is absent");
+assert.ok(tabAudioPreflight.includes("gain.connect(context.destination)"), "captured tab audio is not returned to the output");
+assert.ok(!tabAudioPreflight.includes("getUserMedia"), "tab audio preflight must not request microphone access");
+assert.ok(!tabAudioPreflight.includes("fetch("), "tab audio preflight must not transmit audio");
+assert.ok(existsSync(resolve(root, "tools/tab-audio-preflight-test.mjs")), "tab audio preflight regression test is missing");
+console.log("PASS: pre-call tab audio capture, local tone reinjection and user audibility confirmation (static contract)");

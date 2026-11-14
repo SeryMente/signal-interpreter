@@ -2,6 +2,10 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
+## 0.10.51 — diagnóstico previo de salida de audio de pestaña (candidata, no liberada)
+
+Desde el popup, en My Profile/pantalla de espera, **Prueba de salida de audio de esta pestaña** inicia una captura temporal `chrome.tabCapture` del audio de esa pestaña, inyecta un tono sintético de 1.45 s, lo mide y reenvía el flujo capturado a `AudioContext.destination`. El operador confirma si lo escuchó. Se bloquea fuera de `/profile/<id>` y con llamada activa; no solicita micrófono, no graba ni transmite audio y libera pista/contexto al finalizar o cerrar el popup. PASS requiere señal capturada y confirmación auditiva del operador. Un resultado de captura sin escucha se reporta como fallo de salida, no como PASS.
+
 ## Candidata consolidada 0.10.38 — NO liberada
 
 Integra la protección de presencia explícita y segmentación conservadora de subtítulos nativos, junto con las correcciones verificadas de instalación/recarga de main. El manifiesto y las pruebas de la candidata usan 0.10.38; main continúa en 0.10.37 hasta superar las compuertas. El atajo global existente permanece en Ctrl+Shift+8. No activa captura de micrófono, audio de pestaña ni fallback Groq. La aceptación en Windows/Chrome real sigue siendo obligatoria.
@@ -25,7 +29,7 @@ En cada computadora registra/carga la carpeta para su usuario Windows. Sin rutas
 
 **Chrome Live Caption → Windows UI Automation → Native Messaging → overlay de la llamada**
 
-No se captura audio de pestaña ni micrófono, no se usa Groq y no se reproduce la conversación. No se carga el SDK Groq ni la llave local en el service worker. Los controles de mute de la llamada y sus tonos breves permanecen independientes.
+El runtime de captions no captura audio de conversación ni micrófono, no usa Groq y no reproduce la conversación. El diagnóstico previo de salida es una función independiente y solo reproduce un tono sintético local desde la pestaña de perfil. No se carga el SDK Groq ni la llave local en el service worker. Los controles de mute de la llamada y sus tonos breves permanecen independientes.
 
 Los carriles CLIENTE · ENGLISH / LEP · ESPAÑOL representan idioma del texto observado, no identidad del hablante. No se genera traducción ni otro idioma que Chrome no produzca. Historial/copiar/buscar/posición y tamaño se conservan.
 

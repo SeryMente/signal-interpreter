@@ -11,7 +11,7 @@ const micGuard = read("extension/mic-guard-main.js");
 
 const policyStart = background.indexOf("function nextMicrophoneToggleMuted(state)");
 const internalStart = background.indexOf("async function setExtensionMicrophoneMutedInternal");
-const internalEnd = background.indexOf("  function setExtensionMicrophoneMuted(muted, source)", internalStart);
+const internalEnd = background.indexOf("  function setExtensionMicrophoneMuted(muted, source, preferredTabId)", internalStart);
 assert.ok(policyStart >= 0 && internalStart > policyStart && internalEnd > internalStart,
   "microphone policy and internal boundaries must exist");
 
@@ -156,8 +156,12 @@ assert.doesNotMatch(callStart, /setExtensionMicrophoneMuted\(false,\s*"call-acce
   "call acceptance must not auto-unmute");
 
 const closeCall = background.slice(closeCallAt, background.indexOf("function savePlatformSnapshot", closeCallAt));
-assert.match(closeCall, /setMainClientMicrophoneMuted\(state\.callSourceTabId,true,"call-ended"\)/,
-  "call end must remute the outgoing track");
+assert.match(closeCall, /signalPlatformAvailability/,
+  "call end must use the last verified platform availability");
+assert.match(closeCall, /availabilityMicrophoneMuted\(platformAvailability\)/,
+  "call end must restore microphone state from ONLINE/OFFLINE");
+assert.match(closeCall, /restoreMuted===false/,
+  "offline call end must explicitly permit verified unmute");
 
 assert.ok(background.includes("function withMicrophoneTimeout(promise, timeoutMs, fallback)"));
 assert.ok(background.includes("1000,"));

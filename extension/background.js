@@ -1712,7 +1712,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         dailyCallsToday: Number(state.dailyCalls && state.dailyCalls[localDay()] || 0)
       }, "info", "background");
       record("TRANSCRIPTION_MODULE_READY", { callId: callId, engine: "groq-whisper" }, "info", "background");
-      requestCallAlert(callId, "call-route-confirmed");
+
       refreshExchangeRate("call-start").catch(function(error){
         record("CALL_START_EXCHANGE_RATE_ERROR",{callId:callId,error:String(error)},"warn","background");
       });
@@ -1739,75 +1739,6 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       });
     });
   }
-  var callAlertInFlight = new Map();
-  function requestCallAlert(callId, trigger) {
-    if (!callId || callAlertInFlight.has(callId)) return;
-    callAlertInFlight.set(callId, Date.now());
-    chrome.storage.local.get(["effectifConfig", "effectifCallAlert", "effectifPageBeep"], function (stored) {
-      var config = Object.assign({}, DEFAULT_CONFIG, stored.effectifConfig || {});
-      if (!config.soundEnabled || !callId) {
-        callAlertInFlight.delete(callId);
-        return;
-      }
-      var now = Date.now();
-      var previous = stored.effectifCallAlert || {};
-      var pageBeep = stored.effectifPageBeep || {};
-      if (pageBeep.callId === callId && pageBeep.playedAt && now - Number(pageBeep.playedAt) < 5000) {
-        callAlertInFlight.delete(callId);
-        record("CALL_ALERT_SOUND_SUPPRESSED_PAGE_BEEP", { callId: callId, trigger: trigger || "call-route-confirmed", pageBeepAt: pageBeep.playedAt }, "info", "runtime");
-        return;
-      }
-      if (previous.callId === callId && previous.playedAt) {
-        callAlertInFlight.delete(callId);
-        return;
-      }
-      if (previous.callId === callId && previous.requestedAt && now - Number(previous.requestedAt) < 4000 && !previous.failedAt) {
-        callAlertInFlight.delete(callId);
-        return;
-      }
-      var marker = {
-        callId: callId,
-        requestedAt: now,
-        playedAt: null,
-        failedAt: null,
-        attempts: 0,
-        trigger: trigger || "call-route-confirmed"
-      };
-      chrome.storage.local.set({ effectifCallAlert: marker });
-      record("CALL_ALERT_SOUND_REQUESTED", {
-        callId: marker.callId, trigger: marker.trigger, requestedAt: now
-      }, "info", "background");
-      function attemptSound(attempt) {
-        marker.attempts = attempt;
-        playSound(Math.max(0.95, Number(config.volume || 0))).then(function () {
-          var playedAt = Date.now();
-          chrome.storage.local.set({
-            effectifCallAlert: Object.assign({}, marker, { playedAt: playedAt, failedAt: null })
-          });
-          callAlertInFlight.delete(callId);
-          record("CALL_ALERT_SOUND_PLAYED", {
-            callId: marker.callId, trigger: marker.trigger,
-            latencyMs: playedAt - now, attempts: attempt, prominent: true
-          }, "info", "offscreen");
-        }).catch(function (error) {
-          if (attempt < 3) {
-            setTimeout(function () { attemptSound(attempt + 1); }, attempt === 1 ? 250 : 600);
-            return;
-          }
-          chrome.storage.local.set({
-            effectifCallAlert: Object.assign({}, marker, { failedAt: Date.now(), error: String(error) })
-          });
-          callAlertInFlight.delete(callId);
-          record("CALL_ALERT_SOUND_ERROR", {
-            callId: marker.callId, trigger: marker.trigger,
-            latencyMs: Date.now() - now, attempts: attempt, message: String(error)
-          }, "error", "offscreen");
-        });
-      }
-      attemptSound(1);
-    });
-  }
-
   function alertOnConnect(event) {
     mutateState(async function (state) {
       var payload = event.payload || {};
@@ -1916,17 +1847,23 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
         state.transcriptionTabId = null;
         state.transcriptionStatus = { phase: "stopped", connected: false, engine: "groq" };
       }
+      var availabilityStored=await chrome.storage.local.get(["signalPlatformAvailability"]);
+      var platformAvailability=String(availabilityStored.signalPlatformAvailability&&availabilityStored.signalPlatformAvailability.state||"unknown");
+      var restoreMuted=availabilityMicrophoneMuted(platformAvailability);
+      if(restoreMuted===null)restoreMuted=true;
       var endMuteResult=state.callSourceTabId!=null
-        ? await setMainClientMicrophoneMuted(state.callSourceTabId,true,"call-ended")
+        ? await setMainClientMicrophoneMuted(state.callSourceTabId,restoreMuted,"call-ended-"+platformAvailability,restoreMuted===false)
         : {verified:false,error:"missing-call-source-tab"};
-      state.microphoneMuted=true; state.microphoneMuteRequested=true;
+      var finalMuted=endMuteResult.verified===true?restoreMuted:true;
+      state.microphoneMuted=finalMuted; state.microphoneMuteRequested=restoreMuted;
       state.microphoneMuteStatus=endMuteResult.verified===true?"applied":"error";
-      state.microphoneOutputMuted=true;
+      state.microphoneOutputMuted=finalMuted;
       state.microphoneOutputStatus=endMuteResult.verified===true?"applied":"error";
       state.microphoneOutputTrackCount=Number(endMuteResult.trackCount||0);
       state.microphoneOutputSenderCount=Number(endMuteResult.senderCount||0);
       state.groqCapture=Object.assign({},state.groqCapture||{},{microphoneMuted:true});
-      if(endMuteResult.verified!==true)record("CALL_ENDED_MICROPHONE_MUTE_NOT_VERIFIED",{callId:closedCallId,error:endMuteResult.error||"verification-failed"},"error","microphone");
+      record("CALL_ENDED_MICROPHONE_POLICY_APPLIED",{callId:closedCallId,availability:platformAvailability,requestedMuted:restoreMuted,muted:finalMuted,verified:endMuteResult.verified===true},endMuteResult.verified===true?"info":"error","microphone");
+      if(endMuteResult.verified!==true)record("CALL_ENDED_MICROPHONE_POLICY_NOT_VERIFIED",{callId:closedCallId,availability:platformAvailability,error:endMuteResult.error||"verification-failed"},"error","microphone");
       state.callStartedAt = null; state.callId = null; state.callModality = null; state.callSourceTabId = null; state.pendingCallEnd = null;
       record("CALL_TIMER_STOPPED", Object.assign({}, call, {
         confirmation: source === "rating-route" ? "rating-route" : "fallback-route",
@@ -2685,6 +2622,47 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     return{ok:false,muted:!!muted,verified:false,inactive:false,error:lastError||"verification-failed",attempts:3};
   }
 
+  function availabilityMicrophoneMuted(availability) {
+    if (availability === "online") return true;
+    if (availability === "offline") return false;
+    return null;
+  }
+  async function applyPlatformAvailabilityMicrophonePolicy(availability, tab) {
+    var desiredMuted = availabilityMicrophoneMuted(String(availability || ""));
+    if (desiredMuted === null) return { ok: false, skipped: true, reason: "availability-unknown" };
+    if (!tab || !Number.isFinite(Number(tab.id)) || !isAuthorizedProfileUrl(tab.url)) {
+      return { ok: false, skipped: true, reason: "authorized-profile-tab-required" };
+    }
+    var stored = await chrome.storage.local.get(["effectifState"]);
+    var state = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+    if (hasActiveCall(state)) {
+      record("PLATFORM_AVAILABILITY_MICROPHONE_POLICY_DEFERRED", {
+        availability: availability, desiredMuted: desiredMuted, callId: state.callId || null,
+        tabId: Number(tab.id), policy: "active-call-always-starts-muted"
+      }, "info", "microphone");
+      return { ok: true, skipped: true, reason: "active-call-fail-closed", muted: !!state.microphoneOutputMuted };
+    }
+    var alreadyApplied = state.microphoneMuted === desiredMuted &&
+      state.microphoneOutputMuted === desiredMuted &&
+      state.microphoneMuteStatus === "applied" && state.microphoneOutputStatus === "applied";
+    if (alreadyApplied) return { ok: true, verified: true, unchanged: true, muted: desiredMuted };
+    var result = await setExtensionMicrophoneMuted(
+      desiredMuted, "platform-availability-" + availability, Number(tab.id)
+    );
+    if (!result || result.verified !== true || !!result.muted !== desiredMuted) {
+      record("PLATFORM_AVAILABILITY_MICROPHONE_POLICY_ERROR", {
+        availability: availability, desiredMuted: desiredMuted, tabId: Number(tab.id),
+        error: result && result.error || "verification-failed"
+      }, "error", "microphone");
+      return Object.assign({ ok: false, verified: false, muted: true }, result || {});
+    }
+    record("PLATFORM_AVAILABILITY_MICROPHONE_POLICY_APPLIED", {
+      availability: availability, muted: desiredMuted, tabId: Number(tab.id),
+      policy: availability === "online" ? "waiting-for-call-muted" : "offline-microphone-on"
+    }, "info", "microphone");
+    return result;
+  }
+
   function nextMicrophoneToggleMuted(state) {
     return !state.microphoneMuted;
   }
@@ -2700,7 +2678,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       groqCapture: Object.assign({}, state && state.groqCapture || {}, { microphoneMuted: true })
     });
   }
-  async function setExtensionMicrophoneMutedInternal(muted, source) {
+  async function setExtensionMicrophoneMutedInternal(muted, source, preferredTabId) {
     var desired=!!muted;
     var stored=await chrome.storage.local.get(["effectifState"]);
     var state=normalizeHotloadState(normalizeStateShape(Object.assign(baseState(),stored.effectifState||{})));
@@ -2715,7 +2693,8 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       var controlTabs=[];
       try { controlTabs=await chrome.tabs.query({url:AUTHORIZED_ORIGIN+"/*"}); } catch (_) {}
       controlTabs=(controlTabs||[]).filter(function(tab){return tab&&tab.id!=null&&isAuthorizedCloudUrl(tab.url);});
-      var controlTab=controlTabs.find(function(tab){return Number(tab.id)===Number(state.callSourceTabId);})||
+      var controlTab=controlTabs.find(function(tab){return preferredTabId!=null&&Number(tab.id)===Number(preferredTabId);})||
+        controlTabs.find(function(tab){return Number(tab.id)===Number(state.callSourceTabId);})||
         controlTabs.find(function(tab){return tab.active===true;})||controlTabs[0]||null;
       if(controlTab){
         var preCallOutput=await setMainClientMicrophoneMuted(controlTab.id,desired,source||"pre-call-toggle",true);
@@ -2854,7 +2833,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     await chrome.storage.local.set({effectifState:cloneStateForStorage(state)});
     if (hasActiveCall(state)) setCaptionPreviewForActiveCall(!SignalCaptionBridge.isFresh(4500), "microphone-state-applied").catch(function () {});
     record("EXTENSION_MICROPHONE_MUTE_APPLIED",{desired:desired,source:source||"unknown",callId:state.callId||null,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,recoveredBaseline:!!outputResult.recoveredBaseline,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)},"info","microphone");
-    if(cachedConfig.soundEnabled!==false){
+    if(!hasActiveCall(state)&&cachedConfig.soundEnabled!==false){
       try{
         Promise.resolve(playSound(Math.max(0.05,Number(cachedConfig.volume||0.8)),desired?"mute-on":"mute-off"))
           .then(function(){
@@ -2868,11 +2847,11 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     }
     return{ok:true,muted:desired,verified:true,captureVerified:captureResult.verified,outputVerified:!!outputResult.verified,trackCount:Number(outputResult.trackCount||0),senderCount:Number(outputResult.senderCount||0)};
   }
-  function setExtensionMicrophoneMuted(muted, source) {
+  function setExtensionMicrophoneMuted(muted, source, preferredTabId) {
     var run = microphoneMuteQueue.then(function () {
-      return setExtensionMicrophoneMutedInternal(muted, source);
+      return setExtensionMicrophoneMutedInternal(muted, source, preferredTabId);
     }, function () {
-      return setExtensionMicrophoneMutedInternal(muted, source);
+      return setExtensionMicrophoneMutedInternal(muted, source, preferredTabId);
     });
     microphoneMuteQueue = run.catch(function (error) {
       record("EXTENSION_MICROPHONE_MUTE_QUEUE_ERROR", { error: String(error) }, "error", "microphone");
@@ -3166,7 +3145,21 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       if (event.action === "PLATFORM_SESSION_STARTED" || event.action === "PLATFORM_SESSION_ENDED") handleSession(event);
       if (event.action === "AVAILABILITY_STATE") {
         var eventTabId = sender.tab && sender.tab.id;
-        if (Number.isFinite(Number(eventTabId))) tabAvailability.set(Number(eventTabId), event.payload && event.payload.state || "unknown");
+        var availabilityState = String(event.payload && event.payload.state || "unknown");
+        if (Number.isFinite(Number(eventTabId))) tabAvailability.set(Number(eventTabId), availabilityState);
+        if (sender.tab && isAuthorizedProfileUrl(sender.tab.url) &&
+            (availabilityState === "online" || availabilityState === "offline")) {
+          var availabilitySnapshot = {
+            state: availabilityState, tabId: Number(sender.tab.id), checkedAt: event.timestamp || iso()
+          };
+          chrome.storage.local.set({ signalPlatformAvailability: availabilitySnapshot }).then(function () {
+            return applyPlatformAvailabilityMicrophonePolicy(availabilityState, sender.tab);
+          }).catch(function (error) {
+            record("PLATFORM_AVAILABILITY_MICROPHONE_POLICY_ERROR", {
+              availability: availabilityState, tabId: Number(sender.tab.id), error: String(error)
+            }, "error", "microphone");
+          });
+        }
         handleAvailability(event);
         if (Number.isFinite(Number(eventTabId))) refreshAllActionIndicators().catch(function () {});
       }
@@ -3205,7 +3198,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
           state.autoAnswerTelemetry.confirmations = Number(state.autoAnswerTelemetry.confirmations || 0) + 1;
           state.autoAnswerTelemetry.lastConfirmedAt = event.timestamp;
         }, "answer-flow-confirmed").catch(function () {});
-        requestCallAlert(event.payload && event.payload.callId || null, "answer-flow-confirmed");
+
       }
       if (event.action === "CONNECT_ROUTE_TIMEOUT") {
         mutateState(async function (state) {
@@ -3284,9 +3277,17 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
       return true;
     }
     if (message.type === "EFFECTIF_TEST_SOUND") {
-      playSound(message.volume).then(function () {
-        record("ALERT_SOUND_TESTED", {}, "info", "popup"); sendResponse({ ok: true });
-      }).catch(function (error) { sendResponse({ ok: false, error: String(error) }); });
+      chrome.storage.local.get(["effectifState"], function (stored) {
+        var currentState = normalizeHotloadState(normalizeStateShape(Object.assign(baseState(), stored.effectifState || {})));
+        if (hasActiveCall(currentState)) {
+          record("ALERT_SOUND_TEST_BLOCKED_ACTIVE_CALL", {}, "warn", "popup");
+          sendResponse({ ok: false, error: "No se reproducen tonos durante una llamada activa." });
+          return;
+        }
+        playSound(message.volume).then(function () {
+          record("ALERT_SOUND_TESTED", {}, "info", "popup"); sendResponse({ ok: true });
+        }).catch(function (error) { sendResponse({ ok: false, error: String(error) }); });
+      });
       return true;
     }
     if (message.type === "EFFECTIF_PLATFORM_SNAPSHOT") {

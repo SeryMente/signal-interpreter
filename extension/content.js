@@ -3,7 +3,7 @@
   var RUNTIME_VERSION = chrome.runtime.getManifest().version;
   var SIGNAL_RUNTIME_MARKER = "__SIGNAL_INTERPRETER_CLOUD_RUNTIME__";
   var ANSWER_LEASE_MARKER = "__SIGNAL_INTERPRETER_ANSWER_LEASE__";
-  var CALL_BEEP_MARKER = "__SIGNAL_INTERPRETER_CALL_BEEP__";
+
   var existingRuntimeMarker = window[SIGNAL_RUNTIME_MARKER];
   if (existingRuntimeMarker && existingRuntimeMarker.active) {
     if (existingRuntimeMarker.extensionId === chrome.runtime.id && existingRuntimeMarker.version === RUNTIME_VERSION) {
@@ -13,8 +13,11 @@
     }
     try { if (typeof existingRuntimeMarker.dispose === "function") existingRuntimeMarker.dispose("runtime-upgrade-replaced"); } catch (_) {}
   }
-  try { Array.from(document.querySelectorAll("#signal-interpreter-earnings-overlay")).forEach(function (node) { node.remove(); }); }
-  catch (_) { var staleEarningsOverlay = document.getElementById("signal-interpreter-earnings-overlay"); if (staleEarningsOverlay) staleEarningsOverlay.remove(); }
+  try { Array.from(document.querySelectorAll("#signal-interpreter-earnings-overlay,#signal-interpreter-call-mic-reminder")).forEach(function (node) { node.remove(); }); }
+  catch (_) {
+    var staleEarningsOverlay = document.getElementById("signal-interpreter-earnings-overlay"); if (staleEarningsOverlay) staleEarningsOverlay.remove();
+    var staleMicReminder = document.getElementById("signal-interpreter-call-mic-reminder"); if (staleMicReminder) staleMicReminder.remove();
+  }
   var runtimeMarker = { extensionId: chrome.runtime.id, version: RUNTIME_VERSION, active: true, startedAt: new Date().toISOString(), dispose: deactivateForHotload };
   window[SIGNAL_RUNTIME_MARKER] = runtimeMarker;
   try { delete window.__SIGNAL_INTERPRETER_CLOUD_V0913__; } catch (_) {}
@@ -53,6 +56,11 @@
   var activeCallEarnings = {};
   var overlayHost = null;
   var overlayRoot = null;
+  var microphoneReminderHost = null;
+  var microphoneReminderRoot = null;
+  var microphoneReminderTimer = null;
+  var microphoneReminderBusy = false;
+  var microphoneReminderError = "";
   var screenshotOverlayPreviousVisibility=null;
   var overlayTimer = null;
   var overlayLifecycleActive = false;
@@ -102,7 +110,7 @@
   var lastIncomingBlockedSignature = "";
   var lastAvailability = "";
   var readinessTimer = null;
-  var lastSpokenCallId = "";
+
   var lastMediaSignature = "";
   var lastMediaAt = 0;
   var lastScreenSignature = "";
@@ -642,53 +650,6 @@
       ? parts[0] * 3600 + parts[1] * 60 + parts[2]
       : parts[0] * 60 + parts[1];
   }
-  function playPageCallBeep(trigger, callId, flowId) {
-    if (!config.soundEnabled) return false;
-    var now = Date.now();
-    var marker = window[CALL_BEEP_MARKER] || {};
-    if (marker.playedAt && now - Number(marker.playedAt) < 15000 &&
-        ((callId && marker.callId === callId) || (flowId && marker.flowId === flowId))) return true;
-    var volume = Math.max(0.15, Math.min(1, Number(config.volume) || 0.8));
-    window[CALL_BEEP_MARKER] = Object.assign({}, marker, { callId: callId || marker.callId || null, flowId: flowId || marker.flowId || null, requestedAt: now, playedAt: null, trigger: trigger || "call-route-entered" });
-    emit("CALL_ALERT_PAGE_BEEP_REQUESTED", { callId: callId || null, flowId: flowId || null, trigger: trigger || "call-route-entered" });
-    try {
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) throw new Error("AudioContext no disponible");
-      var ctx = new Ctx(), o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime;
-      o.frequency.setValueAtTime(880, t); o.frequency.setValueAtTime(1174.66, t + 0.12);
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume * 0.45), t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
-      o.connect(g); g.connect(ctx.destination);
-      var playedAt = Date.now();
-      o.onended = function () { try { ctx.close(); } catch (_) {} };
-      o.start(t); o.stop(t + 0.37);
-      window[CALL_BEEP_MARKER] = Object.assign({}, window[CALL_BEEP_MARKER], { playedAt: playedAt });
-      try { chrome.storage.local.set({ effectifPageBeep: { callId: callId || null, flowId: flowId || null, playedAt: playedAt, trigger: trigger || "call-route-entered" } }); } catch (_) {}
-      emit("CALL_ALERT_PAGE_BEEP_PLAYED", { callId: callId || null, flowId: flowId || null, trigger: trigger || "call-route-entered" });
-      return true;
-    } catch (error) {
-      window[CALL_BEEP_MARKER] = Object.assign({}, window[CALL_BEEP_MARKER], { error: String(error) });
-      emit("CALL_ALERT_PAGE_BEEP_ERROR", { callId: callId || null, flowId: flowId || null, trigger: trigger || "call-route-entered", error: String(error) }, "warn");
-      return false;
-    }
-  }
-  function speakConfirmedAnswer(callId, flowId) {
-    if (!config.soundEnabled || !callId || lastSpokenCallId === callId) return false;
-    lastSpokenCallId = callId;
-    try {
-      if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) throw new Error("SpeechSynthesis no disponible");
-      var utterance = new SpeechSynthesisUtterance("Llamada entrante.");
-      utterance.lang = "es-MX";
-      utterance.volume = Math.max(0.15, Math.min(1, Number(config.volume) || 0.8));
-      utterance.rate = 1;
-      utterance.pitch = 1;
-      window.speechSynthesis.speak(utterance);
-      emit("CALL_ALERT_TTS_PLAYED", { callId: callId, flowId: flowId || null, phrase: "Llamada entrante.", lang: "es-MX" });
-      return true;
-    } catch (error) {
-      emit("CALL_ALERT_TTS_ERROR", { callId: callId, flowId: flowId || null, error: String(error) }, "warn");
-      return false;
-    }
-  }
   function callActivationEvidence() {
     var endButtons = Array.from(document.querySelectorAll("button,[role='button']")).filter(visibleElement).filter(function (element) {
       return /^End call$/i.test(normalized(element.getAttribute("aria-label") || element.textContent || ""));
@@ -854,8 +815,8 @@
         window[ANSWER_LEASE_MARKER] = Object.assign({}, window[ANSWER_LEASE_MARKER] || {}, answerFlow, {
           callId: callRouteId, routeConfirmed: true, confirmedAt: iso()
         });
-        playPageCallBeep("confirmed-answer-route", callRouteId, answerFlow.flowId);
-        speakConfirmedAnswer(callRouteId, answerFlow.flowId);
+
+
         emit("ANSWER_FLOW_ROUTE_CONFIRMED", {
           flowId: answerFlow.flowId,
           callId: callRouteId,
@@ -1984,6 +1945,93 @@
     });
   }
 
+  function removeCallMicrophoneReminder(reason) {
+    if (microphoneReminderHost) microphoneReminderHost.remove();
+    microphoneReminderHost = null;
+    microphoneReminderRoot = null;
+    microphoneReminderBusy = false;
+    microphoneReminderError = "";
+    if (reason) emit("CALL_MICROPHONE_REMINDER_HIDDEN", { reason: reason, callId: currentCallId() || null });
+  }
+  function syncCallMicrophoneReminder() {
+    if (!runtimeMarker.active) return;
+    var callId = currentCallId();
+    if (!callId || isRatingRoute() || config.overlaysGlobalEnabled === false) {
+      if (microphoneReminderHost) removeCallMicrophoneReminder(!callId ? "call-route-ended" : isRatingRoute() ? "rating-route" : "global-overlays-hidden");
+      return;
+    }
+    var microphoneReady = state && state.microphoneMuted === false &&
+      state.microphoneOutputMuted === false &&
+      state.microphoneMuteStatus === "applied" &&
+      state.microphoneOutputStatus === "applied";
+    if (microphoneReady) {
+      if (microphoneReminderHost) removeCallMicrophoneReminder("microphone-output-verified-on");
+      return;
+    }
+    if (!document.documentElement) return;
+    if (!microphoneReminderHost || !microphoneReminderHost.isConnected || !microphoneReminderRoot) {
+      try {
+        microphoneReminderHost = document.createElement("div");
+        microphoneReminderHost.id = "signal-interpreter-call-mic-reminder";
+        microphoneReminderHost.style.cssText = "all:initial;position:fixed;z-index:2147483647;top:12px;left:50%;transform:translateX(-50%);pointer-events:auto";
+        microphoneReminderRoot = microphoneReminderHost.attachShadow({ mode: "closed" });
+        microphoneReminderRoot.innerHTML = '<style>:host{all:initial}.notice{display:flex;align-items:center;gap:10px;box-sizing:border-box;max-width:calc(100vw - 28px);padding:7px 9px 7px 8px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(24,29,37,.94);box-shadow:0 5px 22px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.04);backdrop-filter:blur(14px);color:#edf2f7;font:500 12px/1 system-ui,Segoe UI,sans-serif;white-space:nowrap}.mic-icon{width:26px;height:26px;display:grid;place-items:center;flex:0 0 26px;border-radius:50%;background:rgba(242,181,91,.13);color:#f0bd72}.mic-icon svg{width:14px;height:14px;display:block}.label{font-size:12px;letter-spacing:.005em}.error{display:none;color:#f0b2a9;font-size:11px;font-weight:500}.notice.has-error .error{display:block}.notice.has-error .label{display:none}button{border:0;border-radius:999px;padding:7px 12px;background:#e9c18b;color:#29231c;font:650 11px/1 system-ui,Segoe UI,sans-serif;cursor:pointer;transition:background .15s ease,transform .15s ease}button:hover{background:#f3d5aa;transform:translateY(-1px)}button:focus-visible{outline:2px solid #f3d5aa;outline-offset:2px}button:disabled{opacity:.65;cursor:wait;transform:none}@media(max-width:480px){.notice{gap:8px;padding:6px 7px 6px 6px}.mic-icon{width:24px;height:24px;flex-basis:24px}.label{font-size:11px}button{padding:7px 10px}}</style><div class="notice" role="status" aria-live="polite"><span class="mic-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21m-4 0h8M4 4l16 16"></path></svg></span><span class="label">Micrófono apagado</span><span class="error">No se pudo activar</span><button type="button">Activar</button></div>';
+        document.documentElement.appendChild(microphoneReminderHost);
+        var button = microphoneReminderRoot.querySelector("button");
+        button.addEventListener("click", function () {
+          if (microphoneReminderBusy || !runtimeMarker.active) return;
+          microphoneReminderBusy = true;
+          button.disabled = true;
+          button.textContent = "Activando…";
+          microphoneReminderError = "";
+          chrome.runtime.sendMessage({
+            type: "SIGNAL_EXTENSION_MICROPHONE_SET", muted: false, source: "call-start-mic-reminder"
+          }, function (response) {
+            var runtimeError = chrome.runtime && chrome.runtime.lastError;
+            if (runtimeError || !response || response.ok !== true || response.verified !== true || response.muted !== false) {
+              microphoneReminderBusy = false;
+              microphoneReminderError = String(runtimeError && runtimeError.message || response && response.error || "No se pudo verificar el micrófono.");
+              if (microphoneReminderRoot) {
+                var notice = microphoneReminderRoot.querySelector(".notice");
+                var error = microphoneReminderRoot.querySelector(".error");
+                var action = microphoneReminderRoot.querySelector("button");
+                notice.classList.add("has-error");
+                error.textContent = "No se pudo activar";
+                action.disabled = false;
+                action.textContent = "Reintentar";
+              }
+              emit("CALL_MICROPHONE_REMINDER_ACTIVATION_FAILED", { callId: callId, error: microphoneReminderError }, "error");
+              return;
+            }
+            chrome.storage.local.get(["effectifState"], function (stored) {
+              if (stored && stored.effectifState) state = stored.effectifState;
+              microphoneReminderBusy = false;
+              syncCallMicrophoneReminder();
+              if (microphoneReminderHost) {
+                var action = microphoneReminderRoot.querySelector("button");
+                if (action) { action.disabled = false; action.textContent = "Activar"; }
+              }
+              emit("CALL_MICROPHONE_REMINDER_ACTIVATION_VERIFIED", { callId: callId, muted: false }, "info");
+            });
+          });
+        });
+      } catch (error) {
+        removeCallMicrophoneReminder("mount-failed");
+        emit("CALL_MICROPHONE_REMINDER_MOUNT_FAILED", { callId: callId, error: String(error) }, "error");
+        return;
+      }
+    }
+    var notice = microphoneReminderRoot && microphoneReminderRoot.querySelector(".notice");
+    var errorNode = microphoneReminderRoot && microphoneReminderRoot.querySelector(".error");
+    var action = microphoneReminderRoot && microphoneReminderRoot.querySelector("button");
+    if (notice) notice.classList.toggle("has-error", !!microphoneReminderError);
+    if (errorNode) errorNode.textContent = microphoneReminderError;
+    if (action && !microphoneReminderBusy) {
+      action.disabled = false;
+      action.textContent = microphoneReminderError ? "Reintentar" : "Activar";
+    }
+  }
+
   function reportOverlayLifecycle(action, payload, level, dedupeKey) {
     var callId = payload && payload.callId || currentCallId() || overlayLifecycleCallId || null;
     var key = dedupeKey ? String(action) + "|" + String(callId || "no-call") + "|" + String(dedupeKey) : null;
@@ -2351,6 +2399,9 @@
     installNavigationObservers();
     if (navigationProbeTimer) clearInterval(navigationProbeTimer);
     navigationProbeTimer = setInterval(function () { observePlatformUrl("interval"); }, 1000);
+    if (microphoneReminderTimer) clearInterval(microphoneReminderTimer);
+    microphoneReminderTimer = setInterval(syncCallMicrophoneReminder, 200);
+    syncCallMicrophoneReminder();
     emit("PLATFORM_SESSION_STARTED", { title: safe(document.title), userAgent: navigator.userAgent, language: navigator.language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
     emit("OBSERVER_STARTED", { autoAnswerEnabled: config.autoAnswerEnabled });
     emitIntegrity("startup");
@@ -2383,6 +2434,8 @@
     }
     if (platformSurfaceTimer) { clearTimeout(platformSurfaceTimer); platformSurfaceTimer = null; }
     if (navigationProbeTimer) { clearInterval(navigationProbeTimer); navigationProbeTimer = null; }
+    if (microphoneReminderTimer) { clearInterval(microphoneReminderTimer); microphoneReminderTimer = null; }
+    removeCallMicrophoneReminder("runtime-stopped");
     if (telemetryTimer) { clearInterval(telemetryTimer); telemetryTimer = null; }
     emit("OBSERVER_STOPPED", { reason: reason || "config" });
   }
@@ -2396,6 +2449,7 @@
     syncPageFavicon();
     autoAnswer();
     renderOverlay();
+    syncCallMicrophoneReminder();
     if (!isTarget() || !config.autoAnswerEnabled || currentCallId()) { if (answerWatchdog) { clearTimeout(answerWatchdog); answerWatchdog = null; } }
     syncPageFavicon();
     emitAutoAnswerReadiness("config");
@@ -2415,7 +2469,7 @@
   chrome.storage.onChanged.addListener(function (changes, area) {
     if (area !== "local") return;
     if (changes.signalLabLock) { labSafetyLock = changes.signalLabLock.newValue === true; if (labSafetyLock && answerWatchdog) {clearTimeout(answerWatchdog);answerWatchdog=null;} }
-    if (changes.effectifState) { state = changes.effectifState.newValue || {}; renderOverlay(); }
+    if (changes.effectifState) { state = changes.effectifState.newValue || {}; renderOverlay(); syncCallMicrophoneReminder(); }
     if (changes.effectifPlatformMirror) { platformMirror = changes.effectifPlatformMirror.newValue || {}; renderOverlay(); }
     if (changes.effectifCallEarnings) { activeCallEarnings = changes.effectifCallEarnings.newValue || {}; renderOverlay(); }
     if (changes.effectifConfig) {
@@ -2430,6 +2484,7 @@
         if (isTarget() && earningsOverlayEnabled()) startOverlayActivationWatchdog("global-overlays-enabled");
         else stopOverlayActivationWatchdog(!earningsOverlayEnabled() ? (config.overlaysGlobalEnabled === false ? "global-overlays-hidden" : "preference-disabled") : "host-mismatch");
         renderOverlay();
+        syncCallMicrophoneReminder();
       } else { apply(newConfig); }
     }
   });

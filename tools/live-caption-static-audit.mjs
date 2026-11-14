@@ -22,7 +22,7 @@ const payload=read("extension/native/SignalInterpreter.CaptionHost.exe.b64").tri
 const obsSync=read("extension/observation-sync.js");
 const relay=read("extension/observability-relay.js");
 
-assert.equal(manifest.version,"0.10.50");
+assert.equal(manifest.version,"0.10.51");
 assert.ok(background.includes('liveCaptionInterpreterEnabled: false'), "el micrófono está fuera del alcance actual");
 assert.equal(background.includes('if (language === "es") source = "yo"'), false, "el historial del service worker no debe convertir idioma en identidad del hablante");
 assert.ok(overlay.includes('core.roleForSource(item.source, language)'), "el render respeta la fuente del hablante");
@@ -170,7 +170,19 @@ assert.equal(/localhost:\\d+/.test(obsSync),false);
 console.log("LIVE_CAPTION_STATIC_AUDIT=PASS");
 assert.equal(/getUserMedia\(\{\s*audio:\s*true/.test(offscreen),false,"offscreen must never request a microphone");
 
-assert.equal(manifest.permissions.includes("tabCapture"),false);
+assert.equal(manifest.permissions.includes("tabCapture"),true,"only the isolated pre-call tab-output diagnostic requires tabCapture");
+const tabAudioPreflight=read("extension/ui/tab-audio-preflight.js");
+assert.ok(tabAudioPreflight.includes('api.tabCapture.capture({ audio: true, video: false }'),"tab preflight must capture audio only");
+assert.ok(tabAudioPreflight.includes("gain.connect(context.destination)"),"tab preflight must return captured output to headphones");
+const callGuardStart = tabAudioPreflight.indexOf("function activeCall()");
+const callGuardEnd = tabAudioPreflight.indexOf("function validateTab(", callGuardStart);
+const callGuard = tabAudioPreflight.slice(callGuardStart, callGuardEnd);
+assert.ok(callGuardStart >= 0 && callGuardEnd > callGuardStart &&
+  callGuard.includes("callState.callStartedAt") &&
+  callGuard.includes("^\\/call\\/") &&
+  callGuard.includes("test(path)"),
+  "tab preflight must fail closed during calls");
+assert.equal(/getUserMedia|MediaRecorder|fetch\(|chrome\.storage\.local\.set/.test(tabAudioPreflight),false,"tab preflight must not access the microphone, record or transmit audio");
 assert.equal(manifest.host_permissions.includes("https://api.groq.com/*"),false);
 assert.equal(manifest.content_scripts.some(e=>e.js?.includes("extension/youtube-caption-adapter.js")),false);
 for(const code of [background,offscreen,popup]){

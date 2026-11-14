@@ -30,6 +30,7 @@ jobs:
           node --check extension/hotkey-fallback.js
           node --check tools/global-microphone-hotkey-test.mjs
           node --check tools/microphone-feedback-test.mjs
+          node --check tools/call-audio-isolation-test.mjs
           node --check extension/platform-screenshot.js
           node --check tools/observability-relay/api/screenshot.js
           node --check extension/offscreen.js
@@ -52,6 +53,9 @@ jobs:
           node --check extension/youtube-caption-adapter.js
           node --check extension/ui/popup.js
           node --check extension/ui/microphone-preflight.js
+          node --check extension/ui/tab-audio-preflight.js
+          node --check tools/tab-audio-preflight-test.mjs
+          node --check tools/availability-microphone-policy-test.mjs
           node --check extension/observability-relay.js
           node --check tools/observability-relay/api/batch.js
           node --check extension/observation-sync.js
@@ -81,6 +85,8 @@ jobs:
           node tools/presence-connect-test.mjs
           node tools/autoanswer-runtime-guard-test.mjs
           node tools/caption-language-spans-test.mjs
+      - name: Platform availability microphone policy regression
+        run: node tools/availability-microphone-policy-test.mjs
       - name: Platform learning unit test
         run: node tools/observability/platform-learning-test.mjs
       - name: Screenshot relay unit test
@@ -99,8 +105,12 @@ jobs:
         run: node tools/global-microphone-hotkey-test.mjs
       - name: Microphone feedback unit test
         run: node tools/microphone-feedback-test.mjs
+      - name: Call audio isolation unit test
+        run: node tools/call-audio-isolation-test.mjs
       - name: Local microphone preflight lifecycle unit test
         run: node tools/microphone-preflight-test.mjs
+      - name: Isolated pre-call tab audio output preflight regression
+        run: node tools/tab-audio-preflight-test.mjs
       - name: Platform screenshot unit test
         run: node tools/platform-screenshot-test.mjs
       - name: GitHub package pipeline unit test
