@@ -11,7 +11,7 @@ const micGuard = read("extension/mic-guard-main.js");
 
 const policyStart = background.indexOf("function nextMicrophoneToggleMuted(state)");
 const internalStart = background.indexOf("async function setExtensionMicrophoneMutedInternal");
-const internalEnd = background.indexOf("  function setExtensionMicrophoneMuted(muted, source)", internalStart);
+const internalEnd = background.indexOf("  function setExtensionMicrophoneMuted(muted, source, preferredTabId)", internalStart);
 assert.ok(policyStart >= 0 && internalStart > policyStart && internalEnd > internalStart,
   "microphone policy and internal boundaries must exist");
 
