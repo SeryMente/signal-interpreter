@@ -10,7 +10,7 @@ assert.ok(policyStart >= 0 && policyEnd > policyStart, "availability microphone 
 
 let currentState = {
   microphoneMuted: true, microphoneOutputMuted: true,
-  microphoneMuteStatus: "applied", microphoneOutputStatus: "applied",
+  microphoneMuteStatus: "unapplied", microphoneOutputStatus: "unapplied",
   callId: null, callStartedAt: null
 };
 let activeCall = false;
