@@ -7,7 +7,7 @@ assert.match(bg,/EXTENSION_MICROPHONE_PRECALL_INTENT_SAVED/);
 assert.match(bg,/microphoneOutputMuted:\s*true,/);
 assert.match(bg,/setExtensionMicrophoneMuted\(true, "call-start-safe"\)/);
 assert.doesNotMatch(bg,/setExtensionMicrophoneMuted\(false, "call-accepted"\)/);
-assert.match(bg,/setMainClientMicrophoneMuted\(state\.callSourceTabId,true,"call-ended"\)/);assert.match(bg,/var hotloadMuted=!activeCallTab\|\|hotloadState\.microphoneMuted===true;/);
+assert.match(bg,/var availabilityStored=await chrome\.storage\.local\.get\(\["signalPlatformAvailability"\]\)/);assert.match(bg,/var restoreMuted=availabilityMicrophoneMuted\(platformAvailability\)/);assert.match(bg,/if\(restoreMuted===null\)restoreMuted=true/);assert.match(bg,/setMainClientMicrophoneMuted\(state\.callSourceTabId,restoreMuted,"call-ended-"\+platformAvailability,restoreMuted===false\)/);assert.match(bg,/var finalMuted=endMuteResult\.verified===true\?restoreMuted:true/);assert.match(bg,/var hotloadMuted=!activeCallTab\|\|hotloadState\.microphoneMuted===true;/);
 assert.match(bg,/chrome\.tabs\.create\(\{url:targetUrl,active:true\}\)/);assert.doesNotMatch(bg,/never-reapply-stale-mute-on-unmute-failure/);
 assert.match(mic,/var muted=old\?!!old\.muted:true;/);assert.match(mic,/live\.length===0&&muted/);assert.match(mic,/No se libera el micrófono/);
 assert.match(income,/overlayMinimized: false/);assert.match(income,/getElementById\("minimize"\)/);assert.match(income,/classList\.toggle\("minimized",config\.overlayMinimized===true\)/);assert.doesNotMatch(income,/getElementById\("close"\)/);
