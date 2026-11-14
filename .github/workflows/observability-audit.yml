@@ -53,6 +53,8 @@ jobs:
           node --check extension/youtube-caption-adapter.js
           node --check extension/ui/popup.js
           node --check extension/ui/microphone-preflight.js
+          node --check extension/ui/tab-audio-preflight.js
+          node --check tools/tab-audio-preflight-test.mjs
           node --check extension/observability-relay.js
           node --check tools/observability-relay/api/batch.js
           node --check extension/observation-sync.js
@@ -104,6 +106,8 @@ jobs:
         run: node tools/call-audio-isolation-test.mjs
       - name: Local microphone preflight lifecycle unit test
         run: node tools/microphone-preflight-test.mjs
+      - name: Isolated pre-call tab audio output preflight regression
+        run: node tools/tab-audio-preflight-test.mjs
       - name: Platform screenshot unit test
         run: node tools/platform-screenshot-test.mjs
       - name: GitHub package pipeline unit test
