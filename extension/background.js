@@ -569,87 +569,174 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     if (active) await scheduleSafeRuntimeReload("update-available-active-call", true);
     else await scheduleSafeRuntimeReload("update-available-no-call");
   }
-  async function executeMainMicrophoneCommand(tabId, op, muted, source, allowEmpty) {
-    var targetTabId=Number(tabId);
-    if(!Number.isFinite(targetTabId))return{ok:false,verified:false,muted:!!muted,trackCount:0,senderCount:0,error:"No hay una pestaña de llamada controlable."};
-    try{
+  async function ensureMainMicrophoneGuards(tabId) {
+    var targetTabId = Number(tabId);
+    if (!Number.isFinite(targetTabId)) throw new Error("No hay una pestaña de llamada controlable.");
+    var frameStates = await runExtensionScript({
+      target: { tabId: targetTabId, allFrames: true },
+      world: "MAIN",
+      func: function () {
+        var guard = window.__SIGNAL_INTERPRETER_MAIN_MIC_GUARD_V1__;
+        return { present: !!guard, version: guard && guard.version || null, emergencyReleased: !!(guard && guard.emergencyReleased) };
+      }
+    });
+    var missingFrameIds = (frameStates || []).filter(function (frame) {
+      return !frame || !frame.result || frame.result.present !== true;
+    }).map(function (frame) { return Number(frame.frameId); }).filter(Number.isFinite);
+    if (missingFrameIds.length) {
       await runExtensionScript({
-        target:{tabId:targetTabId,frameIds:[0]},
-        world:"MAIN",
-        files:["mic-guard-main.js"],
-        injectImmediately:true
+        target: { tabId: targetTabId, frameIds: missingFrameIds },
+        world: "MAIN",
+        files: ["mic-guard-main.js"],
+        injectImmediately: true
       });
-    }catch(error){
-      return{ok:false,verified:false,muted:!!muted,trackCount:0,senderCount:0,error:"No se pudo inicializar el guard del micrófono: "+String(error)};
     }
-    try{
-      var executions=await runExtensionScript({
-        target:{tabId:targetTabId,frameIds:[0]},
-        world:"MAIN",
-        func:async function(input){
-          var commandEvent="__SIGNAL_INTERPRETER_MIC_COMMAND_V1__";
-          var ackEvent="__SIGNAL_INTERPRETER_MIC_ACK_V1__";
-          var requestId=crypto.randomUUID();
-          return await new Promise(function(resolve){
-            var settled=false;
-            var timeout=null;
-            function finish(value){
-              if(settled)return;
-              settled=true;
-              if(timeout)clearTimeout(timeout);
-              window.removeEventListener(ackEvent,onAck,true);
+    return {
+      frameCount: (frameStates || []).length,
+      injectedFrameIds: missingFrameIds,
+      existingVersions: (frameStates || []).map(function (frame) {
+        return frame && frame.result && frame.result.version || null;
+      })
+    };
+  }
+
+  async function executeMainMicrophoneCommand(tabId, op, muted, source, allowEmpty) {
+    var targetTabId = Number(tabId);
+    if (!Number.isFinite(targetTabId)) {
+      return { ok: false, verified: false, muted: !!muted, trackCount: 0, senderCount: 0, error: "No hay una pestaña de llamada controlable." };
+    }
+    try {
+      await ensureMainMicrophoneGuards(targetTabId);
+      var executions = await runExtensionScript({
+        target: { tabId: targetTabId, allFrames: true },
+        world: "MAIN",
+        func: async function (input) {
+          var commandEvent = "__SIGNAL_INTERPRETER_MIC_COMMAND_V1__";
+          var ackEvent = "__SIGNAL_INTERPRETER_MIC_ACK_V1__";
+          var requestId = crypto.randomUUID();
+          var guard = window.__SIGNAL_INTERPRETER_MAIN_MIC_GUARD_V1__;
+          if (!guard || guard.emergencyReleased === true) {
+            return {
+              ok: false, verified: false, muted: !!input.muted, trackCount: 0, senderCount: 0,
+              noTracks: true, error: guard ? "emergency-release-active" : "guard-not-installed"
+            };
+          }
+          return await new Promise(function (resolve) {
+            var settled = false;
+            var timeout = null;
+            function finish(value) {
+              if (settled) return;
+              settled = true;
+              if (timeout) clearTimeout(timeout);
+              window.removeEventListener(ackEvent, onAck, true);
               resolve(value);
             }
-            function onAck(event){
-              var ack=null;
-              try{ack=JSON.parse(String(event&&event.detail||""));}catch(_){}
-              if(!ack||ack.requestId!==requestId)return;
+            function onAck(event) {
+              var ack = null;
+              try { ack = JSON.parse(String(event && event.detail || "")); } catch (_) {}
+              if (!ack || ack.requestId !== requestId) return;
               finish(ack);
             }
-            window.addEventListener(ackEvent,onAck,true);
-            try{
-              document.dispatchEvent(new CustomEvent(commandEvent,{detail:JSON.stringify({
-                schema:"signal-main-mic-command/v1",
-                op:input.op,
-                requestId:requestId,
-                muted:!!input.muted,
-                allowEmpty:input.allowEmpty===true,
-                reason:input.source||"background-direct"
-              })}));
-            }catch(error){
-              finish({ok:false,verified:false,muted:!!input.muted,error:String(error)});
+            window.addEventListener(ackEvent, onAck, true);
+            try {
+              document.dispatchEvent(new CustomEvent(commandEvent, {
+                detail: JSON.stringify({
+                  schema: "signal-main-mic-command/v1",
+                  op: input.op,
+                  requestId: requestId,
+                  muted: !!input.muted,
+                  allowEmpty: input.allowEmpty === true,
+                  reason: input.source || "background-direct"
+                })
+              }));
+            } catch (error) {
+              finish({ ok: false, verified: false, muted: !!input.muted, error: String(error) });
               return;
             }
-            timeout=setTimeout(function(){
-              finish({ok:false,verified:false,muted:!!input.muted,error:"MAIN microphone guard did not acknowledge the direct request."});
-            },1500);
+            timeout = setTimeout(function () {
+              finish({
+                ok: false, verified: false, muted: !!input.muted,
+                error: "MAIN microphone guard did not acknowledge the request."
+              });
+            }, 1600);
           });
         },
-        args:[{op:op,muted:!!muted,allowEmpty:allowEmpty===true,source:source||"background-direct"}]
+        args: [{ op: op, muted: !!muted, allowEmpty: allowEmpty === true, source: source || "background-direct" }]
       });
-      var result=executions&&executions[0]&&executions[0].result;
-      return result||{ok:false,verified:false,muted:!!muted,trackCount:0,senderCount:0,error:"Direct microphone command returned no result."};
-    }catch(error){
-      return{ok:false,verified:false,muted:!!muted,trackCount:0,senderCount:0,error:String(error)};
+      var frames = (executions || []).map(function (entry) {
+        return Object.assign({ frameId: Number(entry && entry.frameId) }, entry && entry.result || {
+          ok: false, verified: false, muted: !!muted, trackCount: 0, senderCount: 0,
+          error: "Frame returned no microphone result."
+        });
+      });
+      var trackFrames = frames.filter(function (frame) {
+        return Number(frame.trackCount || 0) > 0 || Number(frame.senderCount || 0) > 0;
+      });
+      var trackCount = trackFrames.reduce(function (sum, frame) { return sum + Number(frame.trackCount || 0); }, 0);
+      var senderCount = trackFrames.reduce(function (sum, frame) { return sum + Number(frame.senderCount || 0); }, 0);
+      var frameErrors = frames.filter(function (frame) {
+        if (frame.noTracks === true && Number(frame.trackCount || 0) === 0 && Number(frame.senderCount || 0) === 0) return false;
+        if (op === "set" && muted === true && Number(frame.trackCount || 0) === 0 && Number(frame.senderCount || 0) === 0) {
+          return frame.verified !== true || frame.muted !== true;
+        }
+        if (Number(frame.trackCount || 0) === 0 && Number(frame.senderCount || 0) === 0) return false;
+        return frame.verified !== true || (op === "set" && !!frame.muted !== !!muted);
+      });
+      var emptyAllowed = op === "set" && muted === false && allowEmpty === true && trackFrames.length === 0 &&
+        frames.length > 0 && frames.every(function (frame) { return frame.verified === true && frame.muted === false; });
+      if (op === "set" && muted === false && allowEmpty !== true && trackFrames.length === 0) {
+        return {
+          ok: false, verified: false, muted: true, trackCount: 0, senderCount: 0,
+          frameCount: frames.length, frameResults: frames,
+          error: "No se encontró ninguna pista WebRTC saliente en los frames de la llamada."
+        };
+      }
+      if (frames.length === 0 || frameErrors.length > 0) {
+        var firstError = frameErrors[0] && frameErrors[0].error;
+        return {
+          ok: false, verified: false, muted: !!muted, trackCount: trackCount, senderCount: senderCount,
+          frameCount: frames.length, frameResults: frames,
+          error: firstError || "La verificación del micrófono falló en uno o más frames."
+        };
+      }
+      if (op === "probe") {
+        var probeVerified = trackFrames.length > 0 && trackFrames.every(function (frame) { return frame.verified === true; });
+        return {
+          ok: probeVerified, verified: probeVerified, muted: trackFrames.length ? !!trackFrames[0].muted : false,
+          trackCount: trackCount, senderCount: senderCount, frameCount: frames.length,
+          frameResults: frames, noTracks: trackFrames.length === 0,
+          error: probeVerified ? null : "No se pudo verificar una pista WebRTC saliente en los frames de la llamada."
+        };
+      }
+      if (muted === false && !emptyAllowed && trackFrames.length === 0) {
+        return {
+          ok: false, verified: false, muted: true, trackCount: 0, senderCount: 0,
+          frameCount: frames.length, frameResults: frames,
+          error: "No hay una pista saliente que permita confirmar la activación del micrófono."
+        };
+      }
+      return {
+        ok: true, verified: true, muted: !!muted, trackCount: trackCount,
+        senderCount: senderCount, frameCount: frames.length, frameResults: frames,
+        transport: "all-frames", preCall: !!emptyAllowed
+      };
+    } catch (error) {
+      return {
+        ok: false, verified: false, muted: !!muted, trackCount: 0, senderCount: 0,
+        error: String(error)
+      };
     }
   }
 
   async function probeMainClientMicrophone(tabId, source) {
-    var targetTabId=Number(tabId);
-    if(!Number.isFinite(targetTabId))return{ok:false,verified:false,muted:false,trackCount:0,senderCount:0,error:"No hay una pestaña de llamada controlable."};
-    var lastError=null;
-    for(var attempt=1;attempt<=3;attempt+=1){
-      try{
-        var response=await chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_PROBE",source:source||"heartbeat"});
-        if(response&&response.verified===true)return Object.assign({},response,{ok:true,attempts:attempt,transport:"content"});
-        lastError=response&&response.error||"La sonda del micrófono no pudo verificar la salida.";
-      }catch(error){lastError=String(error);}
-      var direct=await executeMainMicrophoneCommand(targetTabId,"probe",false,source||"background-direct");
-      if(direct&&direct.verified===true)return Object.assign({},direct,{ok:true,attempts:attempt,transport:"direct-main"});
-      lastError=direct&&direct.error||lastError;
-    }
-    return{ok:false,verified:false,muted:false,trackCount:0,senderCount:0,error:lastError||"probe-failed",attempts:3};
+    var result = await executeMainMicrophoneCommand(tabId, "probe", false, source || "heartbeat", false);
+    return Object.assign({}, result, {
+      ok: result && result.verified === true,
+      attempts: 1,
+      transport: "all-frames"
+    });
   }
+
   async function hotloadHeartbeat(trigger) {
     var now = Date.now();
     if (now - hotloadLastHeartbeatAt < HOTLOAD_HEARTBEAT_MIN_MS) return;
@@ -799,7 +886,7 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
               try { window.__SIGNAL_INTERPRETER_CLOUD_RUNTIME__ = null; } catch (_) {}
             }
           });
-          await runExtensionScript({ target: { tabId: tabId }, files: ["mic-guard-main.js"], world: "MAIN", injectImmediately: true });
+          await ensureMainMicrophoneGuards(tabId);
           await runExtensionScript({ target: { tabId: tabId }, files: ["content.js"], world: "ISOLATED", injectImmediately: true });
           await runExtensionScript({ target: { tabId: tabId }, files: ["live-caption-core.js", "live-caption-overlay.js"], world: "ISOLATED", injectImmediately: true });
           var captionProbe = null;
