@@ -8,6 +8,7 @@ on:
       - "extension/**"
       - "tools/verify-release-package.mjs"
       - "tools/microphone-preflight-test.mjs"
+      - "tools/microphone-local-preflight-guard-test.mjs"
       - "tools/tab-audio-preflight-test.mjs"
       - "tools/microphone-global-toggle-test.mjs"
       - ".github/workflows/extension-package.yml"
@@ -36,6 +37,8 @@ jobs:
         run: node tools/verify-release-package.mjs
       - name: Test local microphone preflight lifecycle
         run: node tools/microphone-preflight-test.mjs
+      - name: Test local preflight isolation from outbound microphone mute
+        run: node tools/microphone-local-preflight-guard-test.mjs
       - name: Test isolated pre-call tab audio output preflight
         run: node tools/tab-audio-preflight-test.mjs
       - name: Test global microphone toggle and safe call lifecycle

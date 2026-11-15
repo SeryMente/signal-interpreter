@@ -12,9 +12,10 @@ function ack(id,p){try{document.dispatchEvent(new CustomEvent(AE,{detail:JSON.st
 function audio(t){return!!t&&t.kind==="audio"&&typeof t.id==="string"}
 function known(t){return audio(t)&&tracks.has(t.id)}
 function remember(t){if(!audio(t))return;tracks.set(t.id,t);try{if(muted)t.enabled=false}catch(_){}}
-function stream(s){try{s.getAudioTracks().forEach(remember)}catch(_){}return s}
 function sender(s){if(!s)return;try{if(audio(s.track))remember(s.track);if(known(s.track))senders.add(s)}catch(_) {}}
-function patchGum(){try{var md=navigator.mediaDevices;if(!md||typeof md.getUserMedia!=="function")return;var cur=md.getUserMedia;if(cur.__signalMicWrapped){patches.gum=true;return}var orig=cur.bind(md),wrap=function(c){return orig(c).then(function(s){if(c&&c.audio)stream(s);return s})};Object.defineProperty(wrap,"__signalMicWrapped",{value:true});Object.defineProperty(md,"getUserMedia",{value:wrap,configurable:true,writable:true});patches.gum=true}catch(_){}}
+// Local getUserMedia captures serve device preflight and preview; they are not outgoing call tracks.
+// Remove the legacy wrapper on hotload, then mute only when a track enters an RTP sender.
+function patchGum(){try{var md=navigator.mediaDevices;if(!md)return;var cur=md.getUserMedia;if(cur&&cur.__signalMicWrapped&&Object.prototype.hasOwnProperty.call(md,"getUserMedia")){try{delete md.getUserMedia}catch(_){}}patches.gum=typeof md.getUserMedia==="function"}catch(_){patches.gum=false}}
 function patchPC(){try{var C=window.RTCPeerConnection;if(!C||!C.prototype)return;var p=C.prototype;
 if(typeof p.getSenders==="function"&&!p.getSenders.__signalMicWrapped){var og=p.getSenders,gw=function(){var a=og.apply(this,arguments)||[];a.forEach(sender);return a};Object.defineProperty(gw,"__signalMicWrapped",{value:true});Object.defineProperty(p,"getSenders",{value:gw,configurable:true,writable:true})}
 if(typeof p.addTrack==="function"&&!p.addTrack.__signalMicWrapped){var oa=p.addTrack,aw=function(t){var s=oa.apply(this,arguments);if(audio(t)){remember(t);sender(s);if(muted)try{t.enabled=false}catch(_){}}return s};Object.defineProperty(aw,"__signalMicWrapped",{value:true});Object.defineProperty(p,"addTrack",{value:aw,configurable:true,writable:true});patches.addTrack=true}

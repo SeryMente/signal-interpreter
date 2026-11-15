@@ -30,6 +30,7 @@ jobs:
           node --check extension/hotkey-fallback.js
           node --check tools/global-microphone-hotkey-test.mjs
           node --check tools/microphone-feedback-test.mjs
+          node --check tools/microphone-local-preflight-guard-test.mjs
           node --check tools/call-audio-isolation-test.mjs
           node --check extension/platform-screenshot.js
           node --check tools/observability-relay/api/screenshot.js
@@ -99,6 +100,8 @@ jobs:
         run: node tools/hotload-active-call-test.mjs
       - name: Microphone guard unit test
         run: node tools/microphone-guard-test.mjs
+      - name: Local preflight versus outbound microphone guard regression
+        run: node tools/microphone-local-preflight-guard-test.mjs
       - name: Global mouse mute unit test
         run: node tools/global-mouse-gesture-test.mjs
       - name: Global microphone hotkey unit test
