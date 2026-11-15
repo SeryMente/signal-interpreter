@@ -1,3 +1,7 @@
+## 0.10.52 — preflight local separado del mute de salida
+
+La protección ya no deshabilita pistas crudas obtenidas por `getUserMedia()`, porque también se usan en las pruebas locales de dispositivo. Al crear o reemplazar un emisor RTP, la pista saliente continúa silenciada mientras el estado de protección sea `muted=true`. En hotload se elimina el wrapper de `getUserMedia()` de versiones anteriores para que una pestaña ya abierta deje de bloquear la prueba local.
+
 # Signal Interpreter — Extension
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
