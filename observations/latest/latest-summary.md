@@ -1,13 +1,13 @@
 # Signal Interpreter · latest observation
 
-- Batch: batch-597f57f7-bd57-4570-9c49-5c9394af6a42
-- Creado: 2026-11-15T07:04:47.195Z
+- Batch: batch-a4eadb37-d709-4f4b-ad1d-8f6a9ba1212b
+- Creado: 2026-11-15T07:05:49.204Z
 - Trigger: event-window
 - Extensión: 0.10.50
-- Eventos: 17
+- Eventos: 6
 - Errores: 0
 - Warnings: 0
-- Secuencia: 24532 → 24548
+- Secuencia: 24576 → 24581
 - Identidades de plataforma: 14
 - Snapshots de plataforma: 2271
 - Deltas de plataforma: 2250
@@ -15,12 +15,11 @@
 ## Categorías
 
 {
-  "RUNTIME": 17
+  "RUNTIME": 6
 }
 
 ## Acciones
 
 {
-  "AUTO_ANSWER_READINESS": 16,
-  "PERFORMANCE_HEARTBEAT": 1
+  "AUTO_ANSWER_READINESS": 6
 }
