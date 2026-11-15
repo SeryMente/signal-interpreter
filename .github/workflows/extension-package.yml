@@ -14,6 +14,7 @@ on:
       - "tools/microphone-guard-test.mjs"
       - "tools/microphone-frame-routing-test.mjs"
       - "tools/microphone-legacy-hotload-test.mjs"
+      - "tools/signal-interpreter-longitudinal-regression-test.mjs"
       - ".github/workflows/extension-package.yml"
   push:
     branches: [main]
@@ -53,6 +54,8 @@ jobs:
         run: node tools/microphone-frame-routing-test.mjs
       - name: Test legacy microphone guard hotload migration
         run: node tools/microphone-legacy-hotload-test.mjs
+      - name: Test longitudinal call and microphone safety contract
+        run: node tools/signal-interpreter-longitudinal-regression-test.mjs
       - name: Build installable unpacked-extension ZIP
         shell: bash
         run: |
