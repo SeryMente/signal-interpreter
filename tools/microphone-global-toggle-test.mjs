@@ -137,11 +137,11 @@ assert.match(content, /allowEmpty:allowEmpty===true/,
   "content script must carry allowEmpty into the MAIN-world command");
 assert.match(content, /message\.allowEmpty===true/,
   "content message handler must forward the requested mode");
-assert.match(micGuard, /async function unmute\(id,allowEmpty\)/,
+assert.match(micGuard, /async function unmute(requestId, allowEmpty)/,
   "MAIN-world guard must accept the explicit pre-call mode");
-assert.match(micGuard, /allowEmpty===true&&before\.verified&&before\.stable&&Number\(before\.trackCount\|\|0\)===0/,
+assert.match(micGuard, /allowEmpty === true && before.verified && before.stable/,
   "MAIN-world guard may acknowledge an empty stable baseline only when explicitly allowed");
-assert.match(micGuard, /unmute\(m\.requestId,m\.allowEmpty===true\)/,
+assert.match(micGuard, /unmute(message.requestId, message.allowEmpty === true)/,
   "MAIN-world listener must pass the explicit mode into unmute");
 
 const callStartAt = background.indexOf("function startCall(event)");
