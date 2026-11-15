@@ -11,7 +11,7 @@
   if (previousState && previousState.timer !== null && previousState.timer !== undefined) {
     try { clearInterval(previousState.timer); } catch (_) {}
   }
-  var old = previousState && previousState.version === "2.0" ? previousState : null;
+  var old = previousState && (previousState.version === "1.0" || previousState.version === "2.0") ? previousState : null;
   var state = old || {
     version: "2.0",
     startedAt: new Date().toISOString(),
@@ -36,6 +36,7 @@
     try { clearInterval(timer); } catch (_) {}
     timer = null;
   }
+  state.legacyWrappers = state.legacyWrappers === true || !!(previousState && previousState.version === "1.0");
   state.version = "2.0";
   state.tracks = tracks;
   state.senders = senders;
@@ -66,7 +67,10 @@
   function remember(track) {
     if (!isAudio(track)) return;
     tracks.set(track.id, track);
-    try { if (isMuted()) track.enabled = false; } catch (_) {}
+    try {
+      if (state.emergencyReleased === true) track.enabled = true;
+      else if (isMuted()) track.enabled = false;
+    } catch (_) {}
   }
   function rememberSender(sender) {
     if (!sender) return;
@@ -79,7 +83,8 @@
   }
   function patchMethod(owner, name, makeWrapper, patchName) {
     try {
-      if (!owner || typeof owner[name] !== "function" || owner[name].__signalMicWrapped) return;
+      if (!owner || typeof owner[name] !== "function") return;
+      if (owner[name].__signalMicWrapped && owner[name].__signalMicOriginal) return;
       var descriptor = Object.getOwnPropertyDescriptor(owner, name) || null;
       var original = owner[name];
       var wrapper = makeWrapper(original);
@@ -173,6 +178,14 @@
     patchClone();
   }
   function restorePatches() {
+    // 1.0 did not retain original prototype references. Keep the new outer
+    // wrappers as a passive compatibility shim so stale 1.0 closures cannot
+    // re-disable tracks after emergency release.
+    if (state.legacyWrappers === true) {
+      state.emergencyShimActive = true;
+      state.emergencyShimInstalledAt = now();
+      return;
+    }
     for (var index = patchRecords.length - 1; index >= 0; index -= 1) {
       var entry = patchRecords[index];
       try {
