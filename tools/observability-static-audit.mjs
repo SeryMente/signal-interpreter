@@ -214,7 +214,7 @@ assert.ok(micGuard.includes("replaceTrack"));
 assert.ok(micGuard.includes("setInterval"));
 assert.ok(micGuard.includes("stableReport"));
 assert.ok(micGuard.includes("stableSamples"));
-assert.ok(micGuard.includes("},50);"));
+assert.match(micGuard,/},\s*50\);/,"the MAIN microphone guard must retain its 50 ms enforcement interval");
 assert.ok(globalMouse.includes("left+right-hold"));
 assert.ok(globalMouse.includes("__SIGNAL_INTERPRETER_GLOBAL_MOUSE_GESTURE_V2__"));
 assert.ok(globalMouse.includes("240"));
