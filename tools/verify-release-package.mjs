@@ -105,6 +105,7 @@ assert.ok(background.includes("target: { tabId: targetTabId, allFrames: true }")
 assert.ok(background.includes("No se encontró ninguna pista WebRTC saliente"), "active-call unmute does not require an outgoing track");
 assert.ok(existsSync(resolve(root, "tools/microphone-guard-test.mjs")), "main microphone guard regression test is missing");
 assert.ok(existsSync(resolve(root, "tools/microphone-frame-routing-test.mjs")), "all-frame microphone regression test is missing");
+assert.ok(existsSync(resolve(root, "tools/microphone-legacy-hotload-test.mjs")), "legacy microphone hotload regression test is missing");
 assert.ok(presenceGuard.includes("signalPresenceGuardSession") && presenceGuard.includes("Promise.all(["), "presence continuity/parallel authorization is missing");
 assert.ok(contentRuntime.includes("postAuthorizationRevalidationFailureCodes") && contentRuntime.includes("revalidationFailureCodes.length > 0"), "pre-click authorization revalidation is missing");
 assert.ok(background.includes("live-console-sender-required") && background.includes("captionHistory:captionHistory"), "protected native caption history hydration is missing");
