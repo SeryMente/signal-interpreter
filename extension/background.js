@@ -2682,32 +2682,38 @@ importScripts("presence-guard.js","live-caption-core.js","live-caption-bridge.js
     ]).finally(function(){if(timer)clearTimeout(timer);});
   }
   async function setMainClientMicrophoneMuted(tabId, muted, source, allowEmpty) {
-    var targetTabId=Number(tabId);
-    if(!Number.isFinite(targetTabId))return{ok:false,muted:!!muted,verified:false,inactive:true,error:"No hay una pestaña de llamada controlable."};
-    var lastError=null;
-    for(var attempt=1;attempt<=2;attempt+=1){
-      try{
-        var response=await withMicrophoneTimeout(
-          chrome.tabs.sendMessage(targetTabId,{type:"SIGNAL_MAIN_MICROPHONE_SET",muted:!!muted,allowEmpty:allowEmpty===true,source:source||"background"}),
-          1000,
-          {ok:false,verified:false,muted:!!muted,error:"Timeout esperando verificación del contenido; se intentará el canal MAIN directo."}
-        );
-        if(response&&response.verified===true&&!!response.muted===!!muted){
-          record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(response.trackCount||0),senderCount:Number(response.senderCount||0),recoveredBaseline:!!response.recoveredBaseline,attempts:attempt,transport:"content"},"info","microphone");
-          return Object.assign({},response,{ok:true,inactive:false,attempts:attempt,transport:"content"});
-        }
-        lastError=response&&response.error||"La salida del micrófono no pudo verificarse.";
-      }catch(error){lastError=String(error);}
-      var direct=await executeMainMicrophoneCommand(targetTabId,"set",!!muted,source||"background-direct",allowEmpty===true);
-      if(direct&&direct.verified===true&&!!direct.muted===!!muted){
-        record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED",{tabId:targetTabId,muted:!!muted,source:source||"background",trackCount:Number(direct.trackCount||0),senderCount:Number(direct.senderCount||0),recoveredBaseline:!!direct.recoveredBaseline,attempts:attempt,transport:"direct-main"},"info","microphone");
-        return Object.assign({},direct,{ok:true,inactive:false,attempts:attempt,transport:"direct-main"});
-      }
-      lastError=direct&&direct.error||lastError;
+    var targetTabId = Number(tabId);
+    if (!Number.isFinite(targetTabId)) {
+      return { ok: false, muted: !!muted, verified: false, inactive: true, error: "No hay una pestaña de llamada controlable." };
     }
-    record("EXTENSION_MICROPHONE_OUTPUT_VERIFY_ERROR",{tabId:targetTabId,muted:!!muted,source:source||"background",error:lastError||"verification-failed",attempts:3},"error","microphone");
-    return{ok:false,muted:!!muted,verified:false,inactive:false,error:lastError||"verification-failed",attempts:3};
+    var lastError = null;
+    for (var attempt = 1; attempt <= 2; attempt += 1) {
+      var result = await executeMainMicrophoneCommand(
+        targetTabId, "set", !!muted, source || "background", allowEmpty === true
+      ).catch(function (error) {
+        return { ok: false, muted: !!muted, verified: false, error: String(error) };
+      });
+      if (result && result.verified === true && !!result.muted === !!muted) {
+        record("EXTENSION_MICROPHONE_OUTPUT_VERIFIED", {
+          tabId: targetTabId, muted: !!muted, source: source || "background",
+          trackCount: Number(result.trackCount || 0), senderCount: Number(result.senderCount || 0),
+          frameCount: Number(result.frameCount || 0), attempts: attempt, transport: "all-frames"
+        }, "info", "microphone");
+        return Object.assign({}, result, { ok: true, inactive: false, attempts: attempt, transport: "all-frames" });
+      }
+      lastError = result && result.error || "La salida del micrófono no pudo verificarse en todos los frames.";
+      if (lastError === "emergency-release-active") break;
+    }
+    record("EXTENSION_MICROPHONE_OUTPUT_VERIFY_ERROR", {
+      tabId: targetTabId, muted: !!muted, source: source || "background",
+      error: lastError || "verification-failed", attempts: 2
+    }, "error", "microphone");
+    return {
+      ok: false, muted: !!muted, verified: false, inactive: false,
+      error: lastError || "verification-failed", attempts: 2
+    };
   }
+
 
   function availabilityMicrophoneMuted(availability) {
     if (availability === "online") return true;
