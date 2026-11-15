@@ -23,7 +23,7 @@ La captura local mediante `getUserMedia()` permanece habilitada para comprobar e
 
 - El guardián comparte el estado de mute entre reinyecciones y enruta las órdenes a todos los frames de la pestaña.
 - Al entrar en llamada, la activación exige encontrar y verificar una pista WebRTC saliente real; un frame sin pista no invalida otro frame que sí la tenga.
-- **Desbloqueo de emergencia:** `Ctrl+Alt+Shift+M` libera las pistas de audio que el guardián conoce, detiene su watchdog y restaura los métodos WebRTC que había reemplazado. Funciona en la página que ya recibió esta versión, aunque se desinstale después la extensión.
+- **Desbloqueo de emergencia:** `Ctrl+Alt+Shift+M` libera las pistas de audio que el guardián conoce y detiene su watchdog. En páginas que ya tenían el guardián 0.10.52, conserva una capa pasiva de compatibilidad: la versión anterior no guardó referencias a los métodos WebRTC originales, por lo que no es posible restaurarlos literalmente sin recargar la página. Esa capa evita que el wrapper antiguo vuelva a silenciar pistas nuevas.
 - La emergencia queda enclavada hasta recargar la página; recargar o abandonar la pestaña también destruye el contexto JavaScript de una versión anterior.
 - El desbloqueo evita dejar el micrófono silenciado por la extensión; no puede revivir una pista terminada ni sustituir la prueba acústica del operador.
 
