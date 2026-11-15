@@ -8,7 +8,7 @@
   var EMERGENCY_MESSAGE = "__SIGNAL_INTERPRETER_MIC_EMERGENCY_RELEASE_V1__";
   var EMERGENCY_KEY = "KeyM";
   var previousState = window[KEY] || null;
-  if (previousState && previousState.timer) {
+  if (previousState && previousState.timer !== null && previousState.timer !== undefined) {
     try { clearInterval(previousState.timer); } catch (_) {}
   }
   var old = previousState && previousState.version === "2.0" ? previousState : null;
@@ -30,7 +30,7 @@
   var senders = state.senders instanceof Set ? state.senders : new Set();
   var patchRecords = Array.isArray(state.patchRecords) ? state.patchRecords : [];
   var patches = state.patches || {};
-  var timer = state.timer || null;
+  var timer = state.timer !== null && state.timer !== undefined ? state.timer : null;
 
   if (timer) {
     try { clearInterval(timer); } catch (_) {}
@@ -337,7 +337,7 @@
         }
       } catch (_) {}
     });
-    if (timer) {
+    if (timer !== null && timer !== undefined) {
       try { clearInterval(timer); } catch (_) {}
       timer = null;
     }
