@@ -2,6 +2,22 @@
 
 <!-- BEGIN_CANONICAL_CORE -->
 
+<!-- BEGIN_CORTE_VIGENTE_20261115 -->
+
+## Corte vigente de continuidad · 2026-11-15
+
+- Exportación `ChatGPT-SI-20261115-1413.md` recuperada completa por RDC desde PC14 (1,919 líneas). El original permanece privado en Downloads; no se publica el transcript íntegro.
+- `main/manifest.json` confirma **0.10.52**. La corrección `fe6589303982c752db85e4c6d82e41416003cf04` es ancestro de la punta observada de `main`, `c35ed9fdd38fccd4a522ab4a329f938a081e8639` (108 commits adelante, cero atrás).
+- Según el export, PC14 recibió 0.10.52 y el paquete pasó 61/61 SHA-256, con respaldo verificado. Esto no prueba el runtime activo: la recarga de Chrome quedó **NO EJECUTADA / NO VERIFICADA**.
+- La causa identificada fue el silenciamiento temprano de pistas `getUserMedia()` que interfería con la prueba local. La corrección separa diagnóstico local y pista saliente; aceptación acústica y llamada real siguen sin demostrarse.
+- **No utilizar la GUI/navegador Chrome mediante RDC**: la última salida histórica reconoció esa interacción y confirmó que no se verificó recarga. No abrir/cerrar pestañas ni recargar. En esta retoma solo se leyó el archivo de Downloads en PC14.
+- Control consultado: G14 ACTIVO, agente único; FOL1 PREPARADA / NO ACTIVA; folio PENDIENTE / NO ASIGNADO. DUG canónico: Samantha v399 · NX-399m.
+- Crónica y última salida visible reproducida literalmente: [C-SIGNAL-RETOMA-20261115-G14-0.10.52.md](cronica/C-SIGNAL-RETOMA-20261115-G14-0.10.52.md).
+
+Este corte prevalece sobre los snapshots históricos de versión/estado que aparecen más abajo; no reescribe esos antecedentes ni amplía autorizaciones.
+
+<!-- END_CORTE_VIGENTE_20261115 -->
+
 ## Control e identidad
 
 - Frente: **Signal Interpreter**; propietario: `SeryMente/signal-interpreter`.
