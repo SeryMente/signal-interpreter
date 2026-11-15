@@ -7,7 +7,11 @@
   var EMERGENCY_EVENT = "__SIGNAL_INTERPRETER_MIC_EMERGENCY_RELEASED_V1__";
   var EMERGENCY_MESSAGE = "__SIGNAL_INTERPRETER_MIC_EMERGENCY_RELEASE_V1__";
   var EMERGENCY_KEY = "KeyM";
-  var old = window[KEY] && window[KEY].version === "2.0" ? window[KEY] : null;
+  var previousState = window[KEY] || null;
+  if (previousState && previousState.timer) {
+    try { clearInterval(previousState.timer); } catch (_) {}
+  }
+  var old = previousState && previousState.version === "2.0" ? previousState : null;
   var state = old || {
     version: "2.0",
     startedAt: new Date().toISOString(),
@@ -263,8 +267,9 @@
       return;
     }
     if (Number(before.trackCount || 0) === 0 && Number(before.senderCount || 0) === 0) {
+      setMuted(false);
       ack(requestId, {
-        ok: false, muted: true, verified: false, stable: !!before.stable,
+        ok: false, muted: false, verified: false, stable: !!before.stable,
         stableSamples: before.stableSamples || 0, trackCount: 0, senderCount: 0,
         noTracks: true,
         error: "Este frame no tiene una pista WebRTC saliente registrada."
