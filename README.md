@@ -5,19 +5,27 @@
 
 Asistente independiente para interpretación médica en tiempo real sobre Cloud Interpreter.
 
-## Uso portable — Windows + Chrome · versión 0.10.52
+## Uso portable — Windows + Chrome · versión 0.10.53
 
 El ZIP de `main` contiene la extensión cargable: `manifest.json` está en la **raíz** de la carpeta extraída, no dentro de `extension/`.
 
 1. Descarga el ZIP de `main` y extráelo en una carpeta estable y escribible. No lo extraigas encima de una versión anterior ni mezcles carpetas.
 2. Fuera de una llamada activa y con la misma cuenta de Windows que ejecuta Chrome, ejecuta **`PREPARAR-Y-CARGAR.cmd`**. Este ejecuta `INSTALAR.ps1`, valida la identidad y los SHA-256, prepara y prueba el ejecutable Native Messaging, lo instala en `%LOCALAPPDATA%\SignalInterpreter\NativeMessagingHost` y registra el manifiesto en HKCU. No requiere una instalación separada del puente, Node.js, Python, compilador ni privilegios de administrador. No reinicia Chrome.
 3. En `chrome://extensions`, activa el modo desarrollador y elige **Cargar descomprimida**. Selecciona la **raíz extraída** que contiene `manifest.json`; no selecciones `extension/` ni muevas la carpeta después de cargarla. Desactiva una copia anterior de Signal Interpreter para evitar duplicados.
-4. Comprueba que Chrome muestra la versión `0.10.52`. El atajo global del micrófono es `Ctrl+Shift+.` (`Ctrl+Shift+Period`); el control del popup funciona también desde la pantalla de espera.
+4. Comprueba que Chrome muestra la versión `0.10.53`. El atajo global del micrófono es `Ctrl+Shift+.` (`Ctrl+Shift+Period`); el control del popup funciona también desde la pantalla de espera.
 5. La prueba en vivo corresponde al operador: confirma que Live Caption nativo de Windows/Chrome está activo y verifica los segmentos inglés/español, la continuidad del overlay y el comportamiento de presencia en una sesión controlada. La prueba del protocolo Native Messaging y el recibo `INSTALACION-RESULTADO.json` **no prueban** captions reales ni aceptación de una llamada.
 
-### Prueba local del micrófono · 0.10.52
+### Prueba local del micrófono · 0.10.53
 
 La captura local mediante `getUserMedia()` permanece habilitada para comprobar el dispositivo y su nivel de señal. El mute fail-closed se aplica cuando una pista entra en un emisor WebRTC; la prueba local no se añade a la llamada ni envía audio.
+
+### Protección de micrófono y recuperación de emergencia · 0.10.53
+
+- El guardián comparte el estado de mute entre reinyecciones y enruta las órdenes a todos los frames de la pestaña.
+- Al entrar en llamada, la activación exige encontrar y verificar una pista WebRTC saliente real; un frame sin pista no invalida otro frame que sí la tenga.
+- **Desbloqueo de emergencia:** `Ctrl+Alt+Shift+M` libera las pistas de audio que el guardián conoce, detiene su watchdog y restaura los métodos WebRTC que había reemplazado. Funciona en la página que ya recibió esta versión, aunque se desinstale después la extensión.
+- La emergencia queda enclavada hasta recargar la página; recargar o abandonar la pestaña también destruye el contexto JavaScript de una versión anterior.
+- El desbloqueo evita dejar el micrófono silenciado por la extensión; no puede revivir una pista terminada ni sustituir la prueba acústica del operador.
 
 ### Diagnóstico de salida de audio de pestaña · 0.10.51
 
