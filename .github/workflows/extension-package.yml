@@ -49,6 +49,8 @@ jobs:
         run: node tools/microphone-guard-test.mjs
       - name: Test all-frame microphone routing
         run: node tools/microphone-frame-routing-test.mjs
+      - name: Test legacy microphone guard hotload migration
+        run: node tools/microphone-legacy-hotload-test.mjs
       - name: Build installable unpacked-extension ZIP
         shell: bash
         run: |
