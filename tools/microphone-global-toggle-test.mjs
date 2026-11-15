@@ -141,7 +141,7 @@ assert.match(micGuard, /async function unmute\(requestId, allowEmpty\)/,
   "MAIN-world guard must accept the explicit pre-call mode");
 assert.match(micGuard, /allowEmpty === true && before.verified && before.stable/,
   "MAIN-world guard may acknowledge an empty stable baseline only when explicitly allowed");
-assert.match(micGuard, /unmute(message.requestId, message.allowEmpty === true)/,
+assert.match(micGuard, /unmute\(message.requestId, message.allowEmpty === true\)/,
   "MAIN-world listener must pass the explicit mode into unmute");
 
 const callStartAt = background.indexOf("function startCall(event)");
