@@ -36,7 +36,7 @@
     try { clearInterval(timer); } catch (_) {}
     timer = null;
   }
-  state.legacyWrappers = state.legacyWrappers === true || !!(previousState && previousState.version === "1.0");
+  state.legacyWrappers = state.legacyWrappers === true || !!(previousState && previousState.version !== "2.0");
   state.version = "2.0";
   state.tracks = tracks;
   state.senders = senders;
@@ -82,6 +82,7 @@
     try {
       if (!owner || typeof owner[name] !== "function") return;
       if (owner[name].__signalMicWrapped && owner[name].__signalMicOriginal) return;
+      if (owner[name].__signalMicWrapped && !owner[name].__signalMicOriginal) state.legacyWrappers = true;
       var descriptor = Object.getOwnPropertyDescriptor(owner, name) || null;
       var original = owner[name];
       var wrapper = makeWrapper(original);
