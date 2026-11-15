@@ -137,7 +137,7 @@ assert.match(content, /allowEmpty:allowEmpty===true/,
   "content script must carry allowEmpty into the MAIN-world command");
 assert.match(content, /message\.allowEmpty===true/,
   "content message handler must forward the requested mode");
-assert.match(micGuard, /async function unmute(requestId, allowEmpty)/,
+assert.match(micGuard, /async function unmute\(requestId, allowEmpty\)/,
   "MAIN-world guard must accept the explicit pre-call mode");
 assert.match(micGuard, /allowEmpty === true && before.verified && before.stable/,
   "MAIN-world guard may acknowledge an empty stable baseline only when explicitly allowed");
