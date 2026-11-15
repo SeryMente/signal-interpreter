@@ -67,10 +67,7 @@
   function remember(track) {
     if (!isAudio(track)) return;
     tracks.set(track.id, track);
-    try {
-      if (state.emergencyReleased === true) track.enabled = true;
-      else if (isMuted()) track.enabled = false;
-    } catch (_) {}
+    try { track.enabled = state.emergencyReleased === true || !isMuted(); } catch (_) {}
   }
   function rememberSender(sender) {
     if (!sender) return;
@@ -355,6 +352,7 @@
       timer = null;
     }
     state.timer = null;
+    var methodsRestorable = patchRecords.length;
     restorePatches();
     if (state.commandListener) {
       try { document.removeEventListener(COMMAND_EVENT, state.commandListener, true); } catch (_) {}
@@ -366,7 +364,9 @@
     state.active = false;
     var result = {
       ok: true, released: true, muted: false, enabledTrackCount: enabledTracks,
-      restoredPatchCount: 5, timerStopped: true, at: state.emergencyReleasedAt,
+      restoredPatchCount: state.legacyWrappers === true ? 0 : methodsRestorable,
+      compatibilityShimActive: state.legacyWrappers === true,
+      timerStopped: true, at: state.emergencyReleasedAt,
       reason: state.emergencyReleaseReason
     };
     state.emergencyReleaseResult = result;
