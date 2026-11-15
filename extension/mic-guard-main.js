@@ -1,69 +1,445 @@
-(function(){
-"use strict";
-var K="__SIGNAL_INTERPRETER_MAIN_MIC_GUARD_V1__",CE="__SIGNAL_INTERPRETER_MIC_COMMAND_V1__",AE="__SIGNAL_INTERPRETER_MIC_ACK_V1__";
-var old=window[K]&&window[K].version==="1.0"?window[K]:null;
-var muted=old?!!old.muted:true;
-var tracks=old&&old.tracks instanceof Map?old.tracks:new Map();
-var senders=old&&old.senders instanceof Set?old.senders:new Set();
-var patches=old&&old.patches?old.patches:{gum:false,addTrack:false,addTransceiver:false,replaceTrack:false,clone:false};
-var timer=old&&old.timer?old.timer:null;if(timer)clearInterval(timer);
-function now(){return new Date().toISOString()}
-function ack(id,p){try{document.dispatchEvent(new CustomEvent(AE,{detail:JSON.stringify(Object.assign({version:"1.0",requestId:id||null,timestamp:now()},p||{}))}))}catch(_){}}
-function audio(t){return!!t&&t.kind==="audio"&&typeof t.id==="string"}
-function known(t){return audio(t)&&tracks.has(t.id)}
-function remember(t){if(!audio(t))return;tracks.set(t.id,t);try{if(muted)t.enabled=false}catch(_){}}
-function sender(s){if(!s)return;try{if(audio(s.track))remember(s.track);if(known(s.track))senders.add(s)}catch(_) {}}
-// Local getUserMedia captures serve device preflight and preview; they are not outgoing call tracks.
-// Remove the legacy wrapper on hotload, then mute only when a track enters an RTP sender.
-function patchGum(){try{var md=navigator.mediaDevices;if(!md)return;var cur=md.getUserMedia;if(cur&&cur.__signalMicWrapped&&Object.prototype.hasOwnProperty.call(md,"getUserMedia")){try{delete md.getUserMedia}catch(_){}}patches.gum=typeof md.getUserMedia==="function"}catch(_){patches.gum=false}}
-function patchPC(){try{var C=window.RTCPeerConnection;if(!C||!C.prototype)return;var p=C.prototype;
-if(typeof p.getSenders==="function"&&!p.getSenders.__signalMicWrapped){var og=p.getSenders,gw=function(){var a=og.apply(this,arguments)||[];a.forEach(sender);return a};Object.defineProperty(gw,"__signalMicWrapped",{value:true});Object.defineProperty(p,"getSenders",{value:gw,configurable:true,writable:true})}
-if(typeof p.addTrack==="function"&&!p.addTrack.__signalMicWrapped){var oa=p.addTrack,aw=function(t){var s=oa.apply(this,arguments);if(audio(t)){remember(t);sender(s);if(muted)try{t.enabled=false}catch(_){}}return s};Object.defineProperty(aw,"__signalMicWrapped",{value:true});Object.defineProperty(p,"addTrack",{value:aw,configurable:true,writable:true});patches.addTrack=true}
-if(typeof p.addTransceiver==="function"&&!p.addTransceiver.__signalMicWrapped){var ot=p.addTransceiver,tw=function(t){var r=ot.apply(this,arguments);if(audio(t)){remember(t);sender(r&&r.sender);if(muted)try{t.enabled=false}catch(_) {}}return r};Object.defineProperty(tw,"__signalMicWrapped",{value:true});Object.defineProperty(p,"addTransceiver",{value:tw,configurable:true,writable:true});patches.addTransceiver=true}
-}catch(_){}try{var sp=window.RTCRtpSender&&window.RTCRtpSender.prototype;if(sp&&typeof sp.replaceTrack==="function"&&!sp.replaceTrack.__signalMicWrapped){var or=sp.replaceTrack,rw=function(t){if(audio(t)){remember(t);if(muted)try{t.enabled=false}catch(_) {}}var r=or.apply(this,arguments);if(known(t))sender(this);return r};Object.defineProperty(rw,"__signalMicWrapped",{value:true});Object.defineProperty(sp,"replaceTrack",{value:rw,configurable:true,writable:true});patches.replaceTrack=true}}catch(_){}}
-function patchClone(){try{var p=window.MediaStreamTrack&&window.MediaStreamTrack.prototype;if(!p||typeof p.clone!=="function"||p.clone.__signalMicWrapped)return;var oc=p.clone,cw=function(){var c=oc.apply(this,arguments);if(known(this)){remember(c);if(muted)try{c.enabled=false}catch(_) {}}return c};Object.defineProperty(cw,"__signalMicWrapped",{value:true});Object.defineProperty(p,"clone",{value:cw,configurable:true,writable:true});patches.clone=true}catch(_){}}
-function patch(){patchGum();patchPC();patchClone()}
-function report(){var live=Array.from(tracks.values()).filter(function(t){try{return t.readyState!=="ended"}catch(_){return false}});tracks.clear();live.forEach(function(t){tracks.set(t.id,t)});Array.from(senders).forEach(function(s){try{if(!s.track||s.track.readyState==="ended"||!known(s.track))senders.delete(s)}catch(_){}});
-var tok=(live.length===0&&muted)||(live.length>0&&live.every(function(t){try{return t.enabled===!muted}catch(_){return false}})),sok=senders.size===0||Array.from(senders).every(function(s){try{return!!s.track&&s.track.enabled===!muted}catch(_){return false}});return{trackCount:live.length,senderCount:senders.size,verified:tok&&sok}}
-function wait(ms){return new Promise(function(resolve){setTimeout(resolve,ms)})}
-async function stableReport(samples,gap){var first=null,last=null;for(var i=0;i<samples;i+=1){last=report();if(!last.verified)return Object.assign({},last,{stable:false,stableSamples:i+1});if(!first)first=last;else if(last.trackCount!==first.trackCount||last.senderCount!==first.senderCount)return Object.assign({},last,{verified:false,stable:false,unstable:true,stableSamples:i+1});if(i+1<samples)await wait(gap)}return Object.assign({},last,{stable:true,stableSamples:samples})}
-async function forceMute(id){muted=true;state.muted=true;patch();tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_) {}});var r=await stableReport(3,20);ack(id,{ok:r.verified&&r.stable,muted:true,verified:r.verified&&r.stable,stable:!!r.stable,stableSamples:r.stableSamples||0,trackCount:r.trackCount,senderCount:r.senderCount,patches:patches,error:r.verified&&r.stable?null:"No se pudo verificar de forma estable la pista saliente del micrófono."})}
-async function unmute(id,allowEmpty){
-patch();
-var recoveredBaseline=false;
-var before=await stableReport(2,15);
-if(allowEmpty===true&&before.verified&&before.stable&&Number(before.trackCount||0)===0&&Number(before.senderCount||0)===0){
-  muted=false;state.muted=false;
-  ack(id,{ok:true,muted:false,verified:true,stable:true,stableSamples:before.stableSamples||2,trackCount:0,senderCount:0,patches:patches,preCall:true});
-  return;
-}
-if(!before.verified||!before.stable){
-  // A hotload or platform track transition can leave a live track briefly inconsistent.
-  // Re-establish and verify a muted baseline, then continue this same explicit unmute request.
-  muted=true;state.muted=true;
-  tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_){}});
-  var safe=await stableReport(3,25);
-  if(!safe.verified||!safe.stable||Number(safe.trackCount||0)<1){
-    ack(id,{ok:false,muted:true,verified:false,stable:!!safe.stable,stableSamples:safe.stableSamples||0,trackCount:safe.trackCount,senderCount:safe.senderCount,error:"No se libera el micrófono: no fue posible restablecer una pista saliente viva y estable.",recoveryBaselineAttempted:true});
-    return;
+(function () {
+  "use strict";
+
+  var KEY = "__SIGNAL_INTERPRETER_MAIN_MIC_GUARD_V1__";
+  var COMMAND_EVENT = "__SIGNAL_INTERPRETER_MIC_COMMAND_V1__";
+  var ACK_EVENT = "__SIGNAL_INTERPRETER_MIC_ACK_V1__";
+  var EMERGENCY_EVENT = "__SIGNAL_INTERPRETER_MIC_EMERGENCY_RELEASED_V1__";
+  var EMERGENCY_MESSAGE = "__SIGNAL_INTERPRETER_MIC_EMERGENCY_RELEASE_V1__";
+  var EMERGENCY_KEY = "KeyM";
+  var old = window[KEY] && window[KEY].version === "2.0" ? window[KEY] : null;
+  var state = old || {
+    version: "2.0",
+    startedAt: new Date().toISOString(),
+    muted: true,
+    tracks: new Map(),
+    senders: new Set(),
+    patches: { gum: false, getSenders: false, addTrack: false, addTransceiver: false, replaceTrack: false, clone: false },
+    patchRecords: [],
+    timer: null,
+    commandListener: null,
+    emergencyKeyHandler: null,
+    emergencyMessageHandler: null,
+    emergencyReleased: false
+  };
+  var tracks = state.tracks instanceof Map ? state.tracks : new Map();
+  var senders = state.senders instanceof Set ? state.senders : new Set();
+  var patchRecords = Array.isArray(state.patchRecords) ? state.patchRecords : [];
+  var patches = state.patches || {};
+  var timer = state.timer || null;
+
+  if (timer) {
+    try { clearInterval(timer); } catch (_) {}
+    timer = null;
   }
-  recoveredBaseline=true;
-}
-muted=false;state.muted=false;
-tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=true}catch(_){}});
-var r=await stableReport(3,20);
-if(!r.verified||!r.stable){
-  muted=true;state.muted=true;
-  tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_){}});
-  r=await stableReport(3,20);
-  ack(id,{ok:false,muted:true,verified:false,stable:!!r.stable,stableSamples:r.stableSamples||0,trackCount:r.trackCount,senderCount:r.senderCount,error:"El unmute no pudo verificarse de forma estable; el micrófono permanece silenciado.",recoveredBaseline:recoveredBaseline});
-  return;
-}
-ack(id,{ok:true,muted:false,verified:true,stable:true,stableSamples:r.stableSamples||3,trackCount:r.trackCount,senderCount:r.senderCount,patches:patches,recoveredBaseline:recoveredBaseline});
-}
-document.addEventListener(CE,function(e){var m=null;try{m=JSON.parse(String(e&&e.detail||""))}catch(_){}if(!m||m.schema!=="signal-main-mic-command/v1")return;if(m.op==="set"){if(m.muted)forceMute(m.requestId);else unmute(m.requestId,m.allowEmpty===true)}else if(m.op==="probe"){patch();stableReport(2,15).then(function(r){ack(m.requestId,{ok:true,muted:muted,verified:r.verified,stable:!!r.stable,stableSamples:r.stableSamples||0,trackCount:r.trackCount,senderCount:r.senderCount,patches:patches})}).catch(function(error){ack(m.requestId,{ok:false,muted:muted,verified:false,stable:false,error:String(error),patches:patches})})}},true);
-var state=old||{version:"1.0",startedAt:now(),commandEvent:CE,ackEvent:AE,tracks:tracks,senders:senders,patches:patches,muted:muted,timer:null};
-state.tracks=tracks;state.senders=senders;state.patches=patches;state.muted=muted;patch();
-timer=setInterval(function(){patch();if(muted)tracks.forEach(function(t){try{if(t.readyState!=="ended")t.enabled=false}catch(_) {}})},50);
-state.timer=timer;state.lastPatchedAt=now();window[K]=state;
+  state.version = "2.0";
+  state.tracks = tracks;
+  state.senders = senders;
+  state.patchRecords = patchRecords;
+  state.patches = patches;
+  state.timer = null;
+  state.muted = state.muted === true;
+
+  function now() { return new Date().toISOString(); }
+  function isAudio(track) {
+    return !!track && track.kind === "audio" && typeof track.id === "string";
+  }
+  function isMuted() { return state.muted === true; }
+  function setMuted(value) {
+    state.muted = value === true;
+    state.lastStateChangeAt = now();
+    return state.muted;
+  }
+  function ack(requestId, payload) {
+    try {
+      document.dispatchEvent(new CustomEvent(ACK_EVENT, {
+        detail: JSON.stringify(Object.assign({
+          version: "2.0", requestId: requestId || null, timestamp: now()
+        }, payload || {}))
+      }));
+    } catch (_) {}
+  }
+  function remember(track) {
+    if (!isAudio(track)) return;
+    tracks.set(track.id, track);
+    try { if (isMuted()) track.enabled = false; } catch (_) {}
+  }
+  function rememberSender(sender) {
+    if (!sender) return;
+    try {
+      if (isAudio(sender.track)) {
+        remember(sender.track);
+        senders.add(sender);
+      }
+    } catch (_) {}
+  }
+  function patchMethod(owner, name, makeWrapper, patchName) {
+    try {
+      if (!owner || typeof owner[name] !== "function" || owner[name].__signalMicWrapped) return;
+      var descriptor = Object.getOwnPropertyDescriptor(owner, name) || null;
+      var original = owner[name];
+      var wrapper = makeWrapper(original);
+      Object.defineProperty(wrapper, "__signalMicWrapped", { value: true });
+      Object.defineProperty(wrapper, "__signalMicOriginal", { value: original });
+      Object.defineProperty(owner, name, {
+        configurable: true,
+        enumerable: descriptor ? descriptor.enumerable : false,
+        writable: true,
+        value: wrapper
+      });
+      patchRecords.push({ owner: owner, name: name, descriptor: descriptor, wrapper: wrapper });
+      patches[patchName] = true;
+    } catch (_) {
+      patches[patchName] = false;
+    }
+  }
+  function patchGetUserMedia() {
+    try {
+      var mediaDevices = navigator.mediaDevices;
+      if (!mediaDevices) return;
+      var current = mediaDevices.getUserMedia;
+      if (current && current.__signalMicWrapped &&
+          Object.prototype.hasOwnProperty.call(mediaDevices, "getUserMedia")) {
+        try { delete mediaDevices.getUserMedia; } catch (_) {}
+      }
+      patches.gum = typeof mediaDevices.getUserMedia === "function";
+    } catch (_) { patches.gum = false; }
+  }
+  function patchPeerConnections() {
+    try {
+      var prototype = window.RTCPeerConnection && window.RTCPeerConnection.prototype;
+      patchMethod(prototype, "getSenders", function (original) {
+        return function () {
+          var result = original.apply(this, arguments) || [];
+          result.forEach(rememberSender);
+          return result;
+        };
+      }, "getSenders");
+      patchMethod(prototype, "addTrack", function (original) {
+        return function (track) {
+          var result = original.apply(this, arguments);
+          if (isAudio(track)) {
+            remember(track);
+            rememberSender(result);
+          }
+          return result;
+        };
+      }, "addTrack");
+      patchMethod(prototype, "addTransceiver", function (original) {
+        return function (track) {
+          var result = original.apply(this, arguments);
+          if (isAudio(track)) {
+            remember(track);
+            rememberSender(result && result.sender);
+          }
+          return result;
+        };
+      }, "addTransceiver");
+    } catch (_) {}
+    try {
+      var senderPrototype = window.RTCRtpSender && window.RTCRtpSender.prototype;
+      patchMethod(senderPrototype, "replaceTrack", function (original) {
+        return function (track) {
+          var result = original.apply(this, arguments);
+          if (isAudio(track)) {
+            remember(track);
+            rememberSender(this);
+          }
+          return result;
+        };
+      }, "replaceTrack");
+    } catch (_) {}
+  }
+  function patchClone() {
+    try {
+      var prototype = window.MediaStreamTrack && window.MediaStreamTrack.prototype;
+      patchMethod(prototype, "clone", function (original) {
+        return function () {
+          var clone = original.apply(this, arguments);
+          if (tracks.has(this.id)) remember(clone);
+          return clone;
+        };
+      }, "clone");
+    } catch (_) {}
+  }
+  function patch() {
+    if (state.emergencyReleased) return;
+    patchGetUserMedia();
+    patchPeerConnections();
+    patchClone();
+  }
+  function restorePatches() {
+    for (var index = patchRecords.length - 1; index >= 0; index -= 1) {
+      var entry = patchRecords[index];
+      try {
+        var current = Object.getOwnPropertyDescriptor(entry.owner, entry.name);
+        if (!current || current.value !== entry.wrapper) continue;
+        if (entry.descriptor) Object.defineProperty(entry.owner, entry.name, entry.descriptor);
+        else delete entry.owner[entry.name];
+      } catch (_) {}
+    }
+    patchRecords.length = 0;
+    state.patchRecords = patchRecords;
+    state.patches = { gum: patches.gum === true, getSenders: false, addTrack: false, addTransceiver: false, replaceTrack: false, clone: false };
+  }
+  function report() {
+    var liveTracks = Array.from(tracks.values()).filter(function (track) {
+      try { return track.readyState !== "ended"; } catch (_) { return false; }
+    });
+    tracks.clear();
+    liveTracks.forEach(function (track) { tracks.set(track.id, track); });
+    Array.from(senders).forEach(function (sender) {
+      try {
+        if (!sender.track || sender.track.readyState === "ended" || !tracks.has(sender.track.id)) senders.delete(sender);
+      } catch (_) { senders.delete(sender); }
+    });
+    var tracksVerified = liveTracks.length === 0 && isMuted();
+    if (liveTracks.length > 0) {
+      tracksVerified = liveTracks.every(function (track) {
+        try { return track.enabled === !isMuted(); } catch (_) { return false; }
+      });
+    }
+    var sendersVerified = Array.from(senders).every(function (sender) {
+      try { return !!sender.track && sender.track.enabled === !isMuted(); } catch (_) { return false; }
+    });
+    return {
+      trackCount: liveTracks.length,
+      senderCount: senders.size,
+      verified: tracksVerified && sendersVerified
+    };
+  }
+  function wait(ms) { return new Promise(function (resolve) { setTimeout(resolve, ms); }); }
+  async function stableReport(samples, gap) {
+    var first = null, last = null;
+    for (var index = 0; index < samples; index += 1) {
+      last = report();
+      if (!last.verified) return Object.assign({}, last, { stable: false, stableSamples: index + 1 });
+      if (!first) first = last;
+      else if (last.trackCount !== first.trackCount || last.senderCount !== first.senderCount) {
+        return Object.assign({}, last, { verified: false, stable: false, unstable: true, stableSamples: index + 1 });
+      }
+      if (index + 1 < samples) await wait(gap);
+    }
+    return Object.assign({}, last, { stable: true, stableSamples: samples });
+  }
+  async function forceMute(requestId) {
+    if (state.emergencyReleased) {
+      ack(requestId, { ok: false, muted: false, verified: false, error: "emergency-release-active" });
+      return;
+    }
+    setMuted(true);
+    patch();
+    tracks.forEach(function (track) {
+      try { if (track.readyState !== "ended") track.enabled = false; } catch (_) {}
+    });
+    var result = await stableReport(3, 20);
+    ack(requestId, {
+      ok: result.verified && result.stable,
+      muted: true,
+      verified: result.verified && result.stable,
+      stable: !!result.stable,
+      stableSamples: result.stableSamples || 0,
+      trackCount: result.trackCount,
+      senderCount: result.senderCount,
+      patches: patches,
+      error: result.verified && result.stable ? null : "No se pudo verificar de forma estable la pista saliente del micrófono."
+    });
+  }
+  async function unmute(requestId, allowEmpty) {
+    if (state.emergencyReleased) {
+      ack(requestId, { ok: false, muted: false, verified: false, error: "emergency-release-active" });
+      return;
+    }
+    patch();
+    var before = await stableReport(2, 15);
+    if (allowEmpty === true && before.verified && before.stable &&
+        Number(before.trackCount || 0) === 0 && Number(before.senderCount || 0) === 0) {
+      setMuted(false);
+      ack(requestId, {
+        ok: true, muted: false, verified: true, stable: true,
+        stableSamples: before.stableSamples || 2, trackCount: 0, senderCount: 0,
+        patches: patches, preCall: true, noTracks: true
+      });
+      return;
+    }
+    if (Number(before.trackCount || 0) === 0 && Number(before.senderCount || 0) === 0) {
+      ack(requestId, {
+        ok: false, muted: true, verified: false, stable: !!before.stable,
+        stableSamples: before.stableSamples || 0, trackCount: 0, senderCount: 0,
+        noTracks: true,
+        error: "Este frame no tiene una pista WebRTC saliente registrada."
+      });
+      return;
+    }
+    if (!before.verified || !before.stable) {
+      setMuted(true);
+      tracks.forEach(function (track) {
+        try { if (track.readyState !== "ended") track.enabled = false; } catch (_) {}
+      });
+      var safe = await stableReport(3, 25);
+      if (!safe.verified || !safe.stable || Number(safe.trackCount || 0) < 1) {
+        ack(requestId, {
+          ok: false, muted: true, verified: false, stable: !!safe.stable,
+          stableSamples: safe.stableSamples || 0, trackCount: safe.trackCount,
+          senderCount: safe.senderCount,
+          error: "No se libera el micrófono: no fue posible restablecer una pista saliente viva y estable.",
+          recoveryBaselineAttempted: true
+        });
+        return;
+      }
+    }
+    setMuted(false);
+    tracks.forEach(function (track) {
+      try { if (track.readyState !== "ended") track.enabled = true; } catch (_) {}
+    });
+    var result = await stableReport(3, 20);
+    if (!result.verified || !result.stable) {
+      setMuted(true);
+      tracks.forEach(function (track) {
+        try { if (track.readyState !== "ended") track.enabled = false; } catch (_) {}
+      });
+      result = await stableReport(3, 20);
+      ack(requestId, {
+        ok: false, muted: true, verified: false, stable: !!result.stable,
+        stableSamples: result.stableSamples || 0, trackCount: result.trackCount,
+        senderCount: result.senderCount,
+        error: "El unmute no pudo verificarse de forma estable; el micrófono permanece silenciado."
+      });
+      return;
+    }
+    ack(requestId, {
+      ok: true, muted: false, verified: true, stable: true,
+      stableSamples: result.stableSamples || 3, trackCount: result.trackCount,
+      senderCount: result.senderCount, patches: patches
+    });
+  }
+  function emergencyRelease(reason) {
+    if (state.emergencyReleased) return state.emergencyReleaseResult || { ok: true, alreadyReleased: true };
+    setMuted(false);
+    var enabledTracks = 0;
+    tracks.forEach(function (track) {
+      try {
+        if (track.readyState !== "ended") {
+          track.enabled = true;
+          if (track.enabled === true) enabledTracks += 1;
+        }
+      } catch (_) {}
+    });
+    senders.forEach(function (sender) {
+      try {
+        if (sender.track && sender.track.kind === "audio" && sender.track.readyState !== "ended") {
+          sender.track.enabled = true;
+        }
+      } catch (_) {}
+    });
+    if (timer) {
+      try { clearInterval(timer); } catch (_) {}
+      timer = null;
+    }
+    state.timer = null;
+    restorePatches();
+    if (state.commandListener) {
+      try { document.removeEventListener(COMMAND_EVENT, state.commandListener, true); } catch (_) {}
+      state.commandListener = null;
+    }
+    state.emergencyReleased = true;
+    state.emergencyReleasedAt = now();
+    state.emergencyReleaseReason = String(reason || "manual-emergency").slice(0, 80);
+    state.active = false;
+    var result = {
+      ok: true, released: true, muted: false, enabledTrackCount: enabledTracks,
+      restoredPatchCount: 5, timerStopped: true, at: state.emergencyReleasedAt,
+      reason: state.emergencyReleaseReason
+    };
+    state.emergencyReleaseResult = result;
+    try {
+      document.dispatchEvent(new CustomEvent(EMERGENCY_EVENT, { detail: JSON.stringify(result) }));
+    } catch (_) {}
+    return result;
+  }
+  function broadcastEmergency() {
+    try {
+      var frames = document.querySelectorAll("iframe,frame");
+      Array.prototype.forEach.call(frames, function (frame) {
+        try { if (frame.contentWindow) frame.contentWindow.postMessage(EMERGENCY_MESSAGE, "*"); } catch (_) {}
+      });
+    } catch (_) {}
+  }
+  function emergencyMessageHandler(event) {
+    if (!event || event.origin !== location.origin || event.data !== EMERGENCY_MESSAGE) return;
+    emergencyRelease("emergency-hotkey-broadcast");
+    if (window === window.top) broadcastEmergency();
+  }
+  function emergencyKeyHandler(event) {
+    if (!event || !event.ctrlKey || !event.altKey || !event.shiftKey ||
+        (event.code !== EMERGENCY_KEY && String(event.key || "").toLowerCase() !== "m")) return;
+    try { event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation(); } catch (_) {}
+    emergencyRelease("ctrl-alt-shift-m");
+    try {
+      if (window.top && window.top !== window) window.top.postMessage(EMERGENCY_MESSAGE, "*");
+      else window.top.postMessage(EMERGENCY_MESSAGE, "*");
+    } catch (_) { broadcastEmergency(); }
+  }
+  function commandListener(event) {
+    if (state.emergencyReleased) return;
+    var message = null;
+    try { message = JSON.parse(String(event && event.detail || "")); } catch (_) {}
+    if (!message || message.schema !== "signal-main-mic-command/v1") return;
+    if (message.op === "set") {
+      if (message.muted) forceMute(message.requestId);
+      else unmute(message.requestId, message.allowEmpty === true);
+    } else if (message.op === "probe") {
+      patch();
+      stableReport(2, 15).then(function (result) {
+        ack(message.requestId, {
+          ok: true, muted: isMuted(), verified: result.verified,
+          stable: !!result.stable, stableSamples: result.stableSamples || 0,
+          trackCount: result.trackCount, senderCount: result.senderCount,
+          noTracks: Number(result.trackCount || 0) === 0 && Number(result.senderCount || 0) === 0,
+          patches: patches
+        });
+      }).catch(function (error) {
+        ack(message.requestId, { ok: false, muted: isMuted(), verified: false, stable: false, error: String(error), patches: patches });
+      });
+    } else if (message.op === "emergency-release") {
+      var result = emergencyRelease(message.reason || "command");
+      ack(message.requestId, Object.assign({ verified: true }, result));
+    }
+  }
+
+  if (state.commandListener) {
+    try { document.removeEventListener(COMMAND_EVENT, state.commandListener, true); } catch (_) {}
+  }
+  state.commandListener = commandListener;
+  document.addEventListener(COMMAND_EVENT, state.commandListener, true);
+
+  if (state.emergencyKeyHandler) {
+    try { window.removeEventListener("keydown", state.emergencyKeyHandler, true); } catch (_) {}
+  }
+  if (state.emergencyMessageHandler) {
+    try { window.removeEventListener("message", state.emergencyMessageHandler, true); } catch (_) {}
+  }
+  state.emergencyKeyHandler = emergencyKeyHandler;
+  state.emergencyMessageHandler = emergencyMessageHandler;
+  window.addEventListener("keydown", state.emergencyKeyHandler, true);
+  window.addEventListener("message", state.emergencyMessageHandler, true);
+  window.__SIGNAL_INTERPRETER_MIC_EMERGENCY_RELEASE__ = emergencyRelease;
+
+  if (!state.emergencyReleased) {
+    patch();
+    timer = setInterval(function () {
+      patch();
+      if (isMuted()) {
+        tracks.forEach(function (track) {
+          try { if (track.readyState !== "ended") track.enabled = false; } catch (_) {}
+        });
+      }
+    }, 50);
+    state.timer = timer;
+    state.active = true;
+    state.lastPatchedAt = now();
+  } else {
+    restorePatches();
+  }
+  window[KEY] = state;
 })();
