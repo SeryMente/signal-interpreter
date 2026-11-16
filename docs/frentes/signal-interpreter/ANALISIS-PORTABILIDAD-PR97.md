@@ -18,6 +18,7 @@ Eso permite afirmar **cero conflictos de contenido detectados en esos paths**, n
 | Base declarada por PR | 22470b66c86b68dad2757783eccc5aa0e2a3bb1c |
 | Main leído justo antes del branch Sprint 1 | 8a096410101634a86e5042e6a75c9f617660577b |
 | Main posterior consultado durante Sprint 1 | b380c8aca32c43887ab6b3dc836aecb9a6ad99ce |
+| Main al cierre de Sprint 1 | bbfc012d31f793f8b03c0737cc7eb20dcf965cbc |
 | Mergeability devuelta por API | unknown / null |
 | Archivos en la PR | 27 |
 | Commits únicos de la PR desde su base declarada | 45 |
