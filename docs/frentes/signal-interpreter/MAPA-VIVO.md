@@ -105,4 +105,6 @@ El término **activo** aquí significa que está declarado, importado o conectad
 | manifest.json de main vs carpeta PC14 extraída | main 0.10.52; paquete local PC14 0.10.53 | No equiparar paquete local con main o runtime; falta recibo de instalación |
 | observations/manifest.json + health | Runtime reportado 0.10.50; esperado 0.10.52; recibo no disponible | No usar telemetría como prueba de versión efectiva hasta reparar INC-002 |
 
+El análisis detallado de archivos, conflictos de contenido y orden mínimo de portabilidad de PR #97 para Sprint 2 está en [ANALISIS-PORTABILIDAD-PR97.md](ANALISIS-PORTABILIDAD-PR97.md).
+
 **Regla de precedencia documental:** para hechos actuales, el SHA y los archivos del repositorio prevalecen sobre prosa histórica. Para estados de acceptance, el read-back del operador prevalece sobre el paquete construido. Los antecedentes explican por qué existe una decisión, pero no reviven una autorización ni sustituyen evidencia actual.
