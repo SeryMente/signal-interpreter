@@ -7,6 +7,7 @@
 
 - [Registro de incidencias y candados antirregresión](REGISTRO-INCIDENCIAS.md) — filosofía: **Un error no debe tenerse dos veces**. Contiene causa raíz, invariante, cobertura automatizada y aceptación pendiente.
 - [Mapa Vivo del Repositorio](MAPA-VIVO.md) — arquitectura comprobada contra un SHA fijo de main, runtime activo, funciones apagadas y documentación histórica.
+- [Análisis de portabilidad de PR #97 para Sprint 2](ANALISIS-PORTABILIDAD-PR97.md) — inventario exacto de archivos, cotejo de blobs/observations y secuencia mínima segura; no autoriza portar ni fusionar.
 
 Estos documentos son instrumentos subordinados de consulta y trazabilidad. No sustituyen este núcleo canónico ni convierten una candidata de PR, una observación o un test sintético en aceptación de producto.
 
