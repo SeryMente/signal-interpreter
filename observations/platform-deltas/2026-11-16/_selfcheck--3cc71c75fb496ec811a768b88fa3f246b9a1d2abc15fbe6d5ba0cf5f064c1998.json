@@ -1,0 +1,56 @@
+{
+  "schema": "signal-interpreter-platform-delta/v1",
+  "type": "changed",
+  "identityKey": "https://app.cloudinterpreter.com|/selfcheck|",
+  "fromSnapshotId": "snap-ad2512fd-27ab-46bb-a1ba-76034df8cd92",
+  "toSnapshotId": "snap-52ed3b6b-e493-4cc1-985b-7a9058b57bae",
+  "fromHash": "0fa9e9fb58c322e0e61489081ade66c7df5820a9b9f0ac988a292d97b94852af",
+  "toHash": "3cc71c75fb496ec811a768b88fa3f246b9a1d2abc15fbe6d5ba0cf5f064c1998",
+  "capturedAt": "2026-11-16T17:54:03.269Z",
+  "summary": {
+    "added": 0,
+    "removed": 1,
+    "changed": 1,
+    "sections": [
+      "resources"
+    ]
+  },
+  "changes": [
+    {
+      "kind": "removed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/logFetcher.fetchInterpreterLogs|fetch]",
+      "value": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/logFetcher.fetchInterpreterLogs",
+        "initiatorType": "fetch",
+        "durationMs": 134,
+        "transferBytes": 567,
+        "encodedBytes": 267,
+        "decodedBytes": 522,
+        "protocol": "http/1.1"
+      }
+    },
+    {
+      "kind": "changed",
+      "path": "resources.recent[https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>|fetch]",
+      "before": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 824,
+        "transferBytes": 727,
+        "encodedBytes": 427,
+        "decodedBytes": 780,
+        "protocol": "http/1.1"
+      },
+      "after": {
+        "url": "https://app.cloudinterpreter.com/api/trpc/user.findLPInterpreterRate?input=<VALUE>",
+        "initiatorType": "fetch",
+        "durationMs": 746,
+        "transferBytes": 350,
+        "encodedBytes": 50,
+        "decodedBytes": 33,
+        "protocol": "http/1.1"
+      }
+    }
+  ],
+  "truncated": false
+}
