@@ -2,6 +2,16 @@
 
 <!-- BEGIN_CANONICAL_CORE -->
 
+<!-- SPRINT 1 · MAPA VIVO Y SISTEMA ANTIRREGRESIÓN -->
+## Instrumentos de orden y trazabilidad · Sprint 1
+
+- [Registro de incidencias y candados antirregresión](REGISTRO-INCIDENCIAS.md) — filosofía: **Un error no debe tenerse dos veces**. Contiene causa raíz, invariante, cobertura automatizada y aceptación pendiente.
+- [Mapa Vivo del Repositorio](MAPA-VIVO.md) — arquitectura comprobada contra un SHA fijo de main, runtime activo, funciones apagadas y documentación histórica.
+
+Estos documentos son instrumentos subordinados de consulta y trazabilidad. No sustituyen este núcleo canónico ni convierten una candidata de PR, una observación o un test sintético en aceptación de producto.
+
+
+
 <!-- BEGIN_CORTE_VIGENTE_20261115 -->
 
 ## Corte vigente de continuidad · 2026-11-15
