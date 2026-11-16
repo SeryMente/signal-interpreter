@@ -11,6 +11,10 @@ on:
       - "tools/microphone-local-preflight-guard-test.mjs"
       - "tools/tab-audio-preflight-test.mjs"
       - "tools/microphone-global-toggle-test.mjs"
+      - "tools/microphone-guard-test.mjs"
+      - "tools/microphone-frame-routing-test.mjs"
+      - "tools/microphone-legacy-hotload-test.mjs"
+      - "tools/signal-interpreter-longitudinal-regression-test.mjs"
       - ".github/workflows/extension-package.yml"
   push:
     branches: [main]
@@ -21,6 +25,7 @@ on:
       - "extension/**"
       - "tools/verify-release-package.mjs"
       - "tools/microphone-preflight-test.mjs"
+      - "tools/microphone-legacy-hotload-test.mjs"
       - "tools/tab-audio-preflight-test.mjs"
       - ".github/workflows/extension-package.yml"
 permissions:
@@ -43,6 +48,14 @@ jobs:
         run: node tools/tab-audio-preflight-test.mjs
       - name: Test global microphone toggle and safe call lifecycle
         run: node tools/microphone-global-toggle-test.mjs
+      - name: Test MAIN microphone guard, hotload and emergency release
+        run: node tools/microphone-guard-test.mjs
+      - name: Test all-frame microphone routing
+        run: node tools/microphone-frame-routing-test.mjs
+      - name: Test legacy microphone guard hotload migration
+        run: node tools/microphone-legacy-hotload-test.mjs
+      - name: Test longitudinal call and microphone safety contract
+        run: node tools/signal-interpreter-longitudinal-regression-test.mjs
       - name: Build installable unpacked-extension ZIP
         shell: bash
         run: |

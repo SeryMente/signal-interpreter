@@ -39,7 +39,7 @@ const callLifecycleSyncTest=read("tools/observability-call-lifecycle-sync-test.m
 const relayBatchApi=read("tools/observability-relay/api/batch.js");
 const freshnessWorkflow=read(".github/workflows/observability-freshness.yml");
 
-assert.equal(manifest.version,"0.10.52");
+assert.equal(manifest.version,"0.10.53");
 assert.equal(manifest.permissions.includes("nativeMessaging"),true);
 assert.ok(manifest.permissions.includes("storage"));
 assert.ok(manifest.permissions.includes("alarms"));
@@ -214,7 +214,7 @@ assert.ok(micGuard.includes("replaceTrack"));
 assert.ok(micGuard.includes("setInterval"));
 assert.ok(micGuard.includes("stableReport"));
 assert.ok(micGuard.includes("stableSamples"));
-assert.ok(micGuard.includes("},50);"));
+assert.match(micGuard,/},\s*50\);/,"the MAIN microphone guard must retain its 50 ms enforcement interval");
 assert.ok(globalMouse.includes("left+right-hold"));
 assert.ok(globalMouse.includes("__SIGNAL_INTERPRETER_GLOBAL_MOUSE_GESTURE_V2__"));
 assert.ok(globalMouse.includes("240"));

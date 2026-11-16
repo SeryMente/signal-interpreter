@@ -62,13 +62,26 @@ const previousState = {
 };
 const clearedIntervals = [];
 const intervals = [];
+const windowListeners = new Map();
 const windowObject = {
   [KEY]: previousState,
   navigator: { mediaDevices },
   RTCPeerConnection: FakePeerConnection,
   RTCRtpSender: FakeSender,
-  MediaStreamTrack: FakeTrack
+  MediaStreamTrack: FakeTrack,
+  location: { origin: "https://app.cloudinterpreter.com" },
+  addEventListener(type, listener) {
+    const list = windowListeners.get(type) || [];
+    list.push(listener); windowListeners.set(type, list);
+  },
+  removeEventListener(type, listener) {
+    windowListeners.set(type, (windowListeners.get(type) || []).filter((item) => item !== listener));
+  },
+  querySelectorAll() { return []; },
+  postMessage() {}
 };
+windowObject.window = windowObject;
+windowObject.top = windowObject;
 const sandbox = {
   window: windowObject,
   navigator: windowObject.navigator,
